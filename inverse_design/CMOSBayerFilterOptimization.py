@@ -17,7 +17,7 @@ import time
 # Create FDTD hook
 #
 fdtd_hook = lumapi.FDTD()
-fdtd_interconnect = lumapi.FDTD()
+fdtd_interconnect = lumapi.INTERCONNECT()
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
