@@ -42,8 +42,8 @@ forward_src['name'] = 'forward_src'
 forward_src['direction'] = 'Backward'
 forward_src['x span'] = lateral_aperture_um * 1e-6
 forward_src['y span'] = lateral_aperture_um * 1e-6
-forward_src['z max'] = src_maximum_vertical_um
-forward_src['z min'] = src_minimum_vertical_um
+forward_src['z max'] = src_maximum_vertical_um * 1e-6
+forward_src['z min'] = src_minimum_vertical_um * 1e-6
 forward_src['wavelength start'] = lambda_min_um * 1e-6
 forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
