@@ -17,6 +17,7 @@ import time
 # Create FDTD hook
 #
 fdtd_hook = lumapi.FDTD()
+lumerical_handle = lumapi.open('fdtd')
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
@@ -224,4 +225,8 @@ for epoch in range(0, num_epochs):
 		# 		disable_all_sources()
 		# 		(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 		# 		fdtd_hook.run()
+
+
+
+lumapi.close(lumerical_handle)
 
