@@ -197,7 +197,7 @@ def get_monitor_data(monitor_name, monitor_field):
 	monitor_data = {}
 	load_file = h5py.File(data_transfer_filename)
 	for k, v in load_file.items():
-    	monitor_data[k] = np.array(v)
+		monitor_data[k] = np.array(v)
 
 	end_time = time.time()
 
