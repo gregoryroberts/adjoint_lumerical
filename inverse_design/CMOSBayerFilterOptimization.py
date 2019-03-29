@@ -205,6 +205,7 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
 
+	print(monitor_data.keys())
 	return monitor_data
 
 #
