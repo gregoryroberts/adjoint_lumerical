@@ -45,9 +45,9 @@ fdtd['mesh type'] = 'uniform'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
-fdtd['mesh cells x'] = fdtd_region_minimum_vertical_voxels
-fdtd['mesh cells y'] = fdtd_region_minimum_vertical_voxels
-fdtd['mesh cells z'] = fdtd_region_minimum_lateral_voxels
+fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
+fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
+fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
@@ -222,7 +222,7 @@ for epoch in range(0, num_epochs):
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
 
-			# forward_e_fields[xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
+			forward_e_fields[xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
@@ -232,13 +232,11 @@ for epoch in range(0, num_epochs):
 		#
 		# Step 2: Run all the adjoint optimizations for both x- and y-polarized adjoint sources
 		#
-		# for adj_src_idx in range(0, num_adjoint_sources):
-		# 	for xy_idx in range(0, 2):
-		# 		disable_all_sources()
-		# 		(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
-		# 		fdtd_hook.run()
+		for adj_src_idx in range(0, num_adjoint_sources):
+			for xy_idx in range(0, 2):
+				disable_all_sources()
+				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
+				fdtd_hook.run()
 
 
-
-lumapi.close(lumerical_handle)
 
