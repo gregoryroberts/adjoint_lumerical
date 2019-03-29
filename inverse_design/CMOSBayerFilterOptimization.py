@@ -10,6 +10,8 @@ import CMOSBayerFilter
 import lumapi
 
 import numpy as np
+import scipy.io
+import time
 
 #
 # Create FDTD hook
@@ -178,6 +180,19 @@ forward_e_fields = {}
 focal_data = {}
 adjoint_e_fields = {}
 
+def get_monitor_data(monitor_name, monitor_field):
+	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
+	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
+	lumapi.evalscript(fdtd_hook, lumerical_data_name + " = getresult(" + monitor_name + ", " + monitor_field + ");")
+
+	start_time = time.time()
+	lumapi.evalscript(fdtd_hook, "matlabsave(" + data_transfer_filename + ", " + lumerical_data_name + ");")
+	monitor_data = scipy.io.loadmat(data_transfer_filename)
+	end_time = time.time()
+
+	print("\nIt took " + str(end_time - start_time) + " seconds to retrieve the monitor data\n")
+	return monitor_data
+
 #
 # Run the optimization
 #
@@ -199,7 +214,7 @@ for epoch in range(0, num_epochs):
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data[xy_names[xy_idx]].append(fdtd_hook.getresult(focal_monitors[adj_src_idx]['name'], 'E'))
+				focal_data[xy_names[xy_idx]].append(get_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
 
 		#
