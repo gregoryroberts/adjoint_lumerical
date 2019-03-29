@@ -184,19 +184,23 @@ def get_monitor_data(monitor_name, monitor_field):
 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
 	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
 
-	command1 = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\'');"
+	lumerical_handle = lumapi.open('fdtd')
+
+	command1 = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
 	command2 = "matlabsave(\'" + data_transfer_filename + "\', " + lumerical_data_name + ");"
 
 	print(command1)
 	print(command2)
-	lumapi.evalScript(fdtd_hook, command1)
+	lumapi.evalScript(lumerical_handle, command1)
 
 	start_time = time.time()
-	lumapi.evalScript(fdtd_hook, command2)
+	lumapi.evalScript(lumerical_handle, command2)
 	monitor_data = scipy.io.loadmat(data_transfer_filename)
 	end_time = time.time()
 
 	print("\nIt took " + str(end_time - start_time) + " seconds to retrieve the monitor data\n")
+
+	lumapi.close(lumerical_handle)
 
 	return monitor_data
 
