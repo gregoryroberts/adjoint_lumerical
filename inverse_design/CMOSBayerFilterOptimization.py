@@ -120,7 +120,7 @@ design_efield_monitor['output Hz'] = 0
 # compute the figure of merit as well as weight the adjoint simulations properly in calculation of the
 # gradient.
 #
-adjoint_monitors = []
+focal_monitors = []
 
 for adj_src in range(0, num_adjoint_sources):
 	focal_monitor = fdtd_hook.addpower()
@@ -134,7 +134,7 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['use source limits'] = 1
 	focal_monitor['frequency points'] = num_design_frequency_points
 
-	adjoint_monitors.append(focal_monitor)
+	focal_monitors.append(focal_monitor)
 
 
 #
@@ -175,6 +175,7 @@ def disable_all_sources():
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
 forward_e_fields = {}
+focal_data = {}
 
 #
 # Run the optimization
@@ -192,5 +193,9 @@ for epoch in range(0, num_epochs):
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
 
-			forward_e_fields[xy_names[xy_idx]] = design_efield_monitor.E
+			forward_e_fields[xy_names[xy_idx]] = fdtd_hook.get_result(design_efield_monitor['name'], 'E')
+
+			focal_data[xy_names[xy_idx]] = []
+			for adj_src_idx in range(0, num_adjoint_sources):
+				focal_data[xy_names[xy_idx]].append(fdtd_hook.get_result(focal_monitors[adj_src_idx]['name'], 'E'))
 
