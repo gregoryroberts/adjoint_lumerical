@@ -187,13 +187,12 @@ def get_monitor_data(monitor_name, monitor_field):
 	command1 = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
 	command2 = "matlabsave(\'" + data_transfer_filename + "\', " + lumerical_data_name + ");"
 
-	print(command1)
-	print(command2)
+
 	lumapi.evalScript(fdtd_hook.handle, command1)
 
 	start_time = time.time()
+
 	lumapi.evalScript(fdtd_hook.handle, command2)
-	# monitor_data = scipy.io.loadmat(data_transfer_filename)
 	monitor_data = {}
 	load_file = h5py.File(data_transfer_filename)
 	for k, v in load_file.items():
@@ -201,8 +200,7 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	end_time = time.time()
 
-
-	print("\nIt took " + str(end_time - start_time) + " seconds to retrieve the monitor data\n")
+	print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
 
 	return monitor_data
 
