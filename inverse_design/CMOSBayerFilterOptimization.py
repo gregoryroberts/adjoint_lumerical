@@ -129,6 +129,8 @@ bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * 
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
 
+cur_permittivity = bayer_filter.get_permittivity()
+design_import.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
 #
 # Run a forward simulation by disabling all adjoint sources and enabling forward source
@@ -139,4 +141,4 @@ for adj_src in range(0, num_adjoint_sources):
 
 forward_src.enabled = 1
 
-# fdtd_hook.run()
+fdtd_hook.run()
