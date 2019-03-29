@@ -17,7 +17,6 @@ import time
 # Create FDTD hook
 #
 fdtd_hook = lumapi.FDTD()
-lumerical_handle = lumapi.open('fdtd')
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
@@ -184,6 +183,9 @@ adjoint_e_fields = {}
 def get_monitor_data(monitor_name, monitor_field):
 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
 	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
+
+	lumerical_handle = lumapi.open('fdtd')
+
 	lumapi.evalScript(lumerical_handle, lumerical_data_name + " = getresult(" + monitor_name + ", " + monitor_field + ");")
 
 	start_time = time.time()
@@ -192,6 +194,8 @@ def get_monitor_data(monitor_name, monitor_field):
 	end_time = time.time()
 
 	print("\nIt took " + str(end_time - start_time) + " seconds to retrieve the monitor data\n")
+
+	lumapi.close(lumerical_handle)
 	return monitor_data
 
 #
