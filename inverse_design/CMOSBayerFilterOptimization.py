@@ -17,7 +17,7 @@ import numpy as np
 fdtd_hook = lumapi.FDTD()
 
 #
-# Create project folder
+# Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
@@ -30,8 +30,6 @@ fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
 shutil.copy2(python_src_directory + "/CMOSBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSBayerFilterParameters.py")
-
-sys.exit(1)
 
 #
 # Set up the FDTD region and mesh
@@ -52,26 +50,36 @@ fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
 #
+# General polarized source information
+#
+xy_phi_rotations = [0, 90]
+xy_names = ['x', 'y']
+
+
+#
 # Add a TFSF plane wave forward source at normal incidence
 #
-forward_src = fdtd_hook.addtfsf()
-forward_src['name'] = 'forward_src'
-forward_src['direction'] = 'Backward'
-forward_src['x span'] = lateral_aperture_um * 1e-6
-forward_src['y span'] = lateral_aperture_um * 1e-6
-forward_src['z max'] = src_maximum_vertical_um * 1e-6
-forward_src['z min'] = src_minimum_vertical_um * 1e-6
-forward_src['wavelength start'] = lambda_min_um * 1e-6
-forward_src['wavelength stop'] = lambda_max_um * 1e-6
+forward_sources = []
+
+for xy_idx in range(0, 2):
+	forward_src = fdtd_hook.addtfsf()
+	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
+	forward_src['phi'] = xy_phi_rotations[xy_idx]
+	forward_src['direction'] = 'Backward'
+	forward_src['x span'] = lateral_aperture_um * 1e-6
+	forward_src['y span'] = lateral_aperture_um * 1e-6
+	forward_src['z max'] = src_maximum_vertical_um * 1e-6
+	forward_src['z min'] = src_minimum_vertical_um * 1e-6
+	forward_src['wavelength start'] = lambda_min_um * 1e-6
+	forward_src['wavelength stop'] = lambda_max_um * 1e-6
+
+	forward_sources.append(forward_src)
 
 #
 # Place dipole adjoint sources at the focal plane that can ring in both
 # x-axis and y-axis
 #
 adjoint_sources = []
-
-xy_phi_rotations = [0, 90]
-xy_names = ['x', 'y']
 
 for adj_src_idx in range(0, num_adjoint_sources):
 	adjoint_sources.append([])
@@ -150,13 +158,39 @@ cur_permittivity = bayer_filter.get_permittivity()
 fdtd_hook.select("design_import")
 fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
+
 #
-# Run a forward simulation by disabling all adjoint sources and enabling forward source
+# Disable all sources in the simulation, so that we can selectively turn single sources on at a time
 #
-for adj_src in range(0, num_adjoint_sources):
+def disable_all_sources():
 	for xy_idx in range(0, 2):
-		(adjoint_sources[adj_src][xy_idx]).enabled = 0
+		(forward_sources[xy_idx]).enabled = 0
 
-forward_src.enabled = 1
+	for adj_src in range(0, num_adjoint_sources):
+		for xy_idx in range(0, 2):
+			(adjoint_sources[adj_src][xy_idx]).enabled = 0
 
-fdtd_hook.run()
+
+#
+# Set up some numpy arrays to handle all the data we will pull out of the simulation.
+#
+forward_e_fields = {}
+
+#
+# Run the optimization
+#
+for epoch in range(0, num_epochs):
+	bayer_filter.update_filters(epoch)
+
+	for iteration in range(0, num_iterations_per_epoch):
+
+		#
+		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
+		#
+		for xy_idx in range(0, 2):
+			disable_all_sources()
+			(forward_sources[xy_idx]).enabled = 1
+			fdtd_hook.run()
+
+			forward_e_fields[xy_names[xy_idx]] = design_efield_monitor.E
+
