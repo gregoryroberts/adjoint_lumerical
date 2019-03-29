@@ -20,7 +20,7 @@ fdtd_hook = lumapi.FDTD()
 #
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 fdtd_hook.newproject()
-fdtd_hook.save(projects_directory_location + project_name)
+fdtd_hook.save(projects_directory_location + "/" + project_name)
 
 sys.exit(1)
 
