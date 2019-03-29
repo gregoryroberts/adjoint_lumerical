@@ -75,7 +75,7 @@ for adj_src in range(0, num_adjoint_sources):
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
 # the adjoint gradient
 #
-design_efield_monitor = fdtd_hook.profile()
+design_efield_monitor = fdtd_hook.addprofile()
 design_efield_monitor['name'] = 'design_efield_monitor'
 design_efield_monitor['monitor type'] = '3D'
 design_efield_monitor['x span'] = device_size_lateral_um * 1e-6
@@ -98,7 +98,7 @@ design_efield_monitor['output Hz'] = 0
 adjoint_monitors = []
 
 for adj_src in range(0, num_adjoint_sources):
-	focal_monitor = fdtd_hook.power()
+	focal_monitor = fdtd_hook.addpower()
 	focal_monitor['name'] = 'focal_monitor_' + str(adj_src)
 	focal_monitor['monitor type'] = 'point'
 	focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
@@ -115,7 +115,7 @@ for adj_src in range(0, num_adjoint_sources):
 #
 # Add device region and create device permittivity
 #
-design_import = fdtd_hook.import()
+design_import = fdtd_hook.addimport()
 design_import['name'] = 'design_import'
 design_import['x span'] = device_size_lateral_um * 1e-6
 design_import['y span'] = device_size_lateral_um * 1e-6
