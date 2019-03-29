@@ -64,7 +64,7 @@ forward_sources = []
 for xy_idx in range(0, 2):
 	forward_src = fdtd_hook.addtfsf()
 	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
-	forward_src['phi'] = xy_phi_rotations[xy_idx]
+	forward_src['angle phi'] = xy_phi_rotations[xy_idx]
 	forward_src['direction'] = 'Backward'
 	forward_src['x span'] = lateral_aperture_um * 1e-6
 	forward_src['y span'] = lateral_aperture_um * 1e-6
