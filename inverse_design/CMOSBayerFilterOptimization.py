@@ -16,8 +16,9 @@ import time
 #
 # Create FDTD hook
 #
+lumerical_handle = lumapi.open('fdtd')#FDTD()
 fdtd_hook = lumapi.FDTD()
-fdtd_interconnect = lumapi.INTERCONNECT()
+# fdtd_interconnect = lumapi.INTERCONNECT()
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
@@ -192,10 +193,10 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	print(command1)
 	print(command2)
-	lumapi.evalScript(fdtd_interconnect, command1)
+	lumapi.evalScript(lumerical_handle, command1)
 
 	start_time = time.time()
-	lumapi.evalScript(fdtd_interconnect, command2)
+	lumapi.evalScript(lumerical_handle, command2)
 	monitor_data = scipy.io.loadmat(data_transfer_filename)
 	end_time = time.time()
 
