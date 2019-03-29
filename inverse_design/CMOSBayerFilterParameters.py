@@ -82,4 +82,4 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 adjoint_vertical_um = -focal_length_um
 num_adjoint_sources = 4
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
-adjiont_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
+adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
