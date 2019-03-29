@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
@@ -18,6 +19,7 @@ fdtd_hook = lumapi.FDTD()
 #
 # Create project folder
 #
+python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 projects_directory_location += "/" + project_name
 
@@ -26,6 +28,10 @@ if not os.path.isdir(projects_directory_location):
 
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
+
+shutil.copy2(python_src_directory + "/CMOSBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSBayerFilterParameters.py")
+
+sys.exit(1)
 
 #
 # Set up the FDTD region and mesh
