@@ -13,6 +13,9 @@ import numpy as np
 import h5py
 import time
 
+import matplotlib.pyplot as plt
+
+
 #
 # Create FDTD hook
 #
@@ -221,6 +224,9 @@ for epoch in range(0, num_epochs):
 			fdtd_hook.run()
 
 			forward_e_fields[xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
+
+			plt.imshow(forward_e_fields[xy_names[xy_idx]]["E"][:, :, 10, 12, 1]
+			plt.show()
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
