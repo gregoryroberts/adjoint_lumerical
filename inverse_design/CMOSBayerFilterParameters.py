@@ -5,6 +5,11 @@
 import numpy as np
 
 #
+# Files
+#
+project_name = 'cmos_bidirectional_bars'
+
+#
 # Optical
 #
 background_index = 1.0
@@ -83,3 +88,14 @@ adjoint_vertical_um = -focal_length_um
 num_adjoint_sources = 4
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
+
+
+#
+# Optimization
+#
+num_epochs = 8
+num_iterations_per_epoch = 25
+
+epoch_start_permittivity_change_max_percentage = 20
+epoch_end_permittivity_change_max_percentage = 5
+
