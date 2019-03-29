@@ -209,8 +209,7 @@ for epoch in range(0, num_epochs):
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
 
-			# forward_e_fields[xy_names[xy_idx]] = fdtd_hook.getresult(design_efield_monitor['name'], 'E')
-			forward_e_fields[xy_names[xy_idx]] = design_efield_monitor.results.E
+			forward_e_fields[xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
