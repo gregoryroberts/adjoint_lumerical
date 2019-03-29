@@ -166,9 +166,9 @@ def disable_all_sources():
 	for xy_idx in range(0, 2):
 		(forward_sources[xy_idx]).enabled = 0
 
-	for adj_src in range(0, num_adjoint_sources):
+	for adj_src_idx in range(0, num_adjoint_sources):
 		for xy_idx in range(0, 2):
-			(adjoint_sources[adj_src][xy_idx]).enabled = 0
+			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 
 #
@@ -176,6 +176,7 @@ def disable_all_sources():
 #
 forward_e_fields = {}
 focal_data = {}
+adjoint_e_fields = {}
 
 #
 # Run the optimization
@@ -193,9 +194,20 @@ for epoch in range(0, num_epochs):
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
 
-			forward_e_fields[xy_names[xy_idx]] = fdtd_hook.getresult(design_efield_monitor['name'], 'E')
+			# forward_e_fields[xy_names[xy_idx]] = fdtd_hook.getresult(design_efield_monitor['name'], 'E')
+			forward_e_fields[xy_names[xy_idx]] = design_efield_monitor.results.E
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
 				focal_data[xy_names[xy_idx]].append(fdtd_hook.getresult(focal_monitors[adj_src_idx]['name'], 'E'))
+
+
+		#
+		# Step 2: Run all the adjoint optimizations for both x- and y-polarized adjoint sources
+		#
+		for adj_src_idx in range(0, num_adjoint_sources):
+			for xy_idx in range(0, 2):
+				disable_all_sources()
+				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
+				fdtd_hook.run()
 
