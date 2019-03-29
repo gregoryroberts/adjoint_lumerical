@@ -56,20 +56,20 @@ adjoint_sources = []
 xy_phi_rotations = [0, 90]
 xy_names = ['x', 'y']
 
-for adj_src in range(0, num_adjoint_sources):
+for adj_src_idx in range(0, num_adjoint_sources):
 	adjoint_sources.append([])
 	for xy_idx in range(0, 2):
 		adj_src = fdtd_hook.adddipole()
-		adj_src['name'] = 'adj_src_' + str(adj_src) + xy_names[xy_idx]
-		adj_src['x'] = adjoint_x_positions_um[adj_src] * 1e-6
-		adj_src['y'] = adjoint_y_positions_um[adj_src] * 1e-6
+		adj_src['name'] = 'adj_src_' + str(adj_src_idx) + xy_names[xy_idx]
+		adj_src['x'] = adjoint_x_positions_um[adj_src_idx] * 1e-6
+		adj_src['y'] = adjoint_y_positions_um[adj_src_idx] * 1e-6
 		adj_src['z'] = adjoint_vertical_um * 1e-6
 		adj_src['theta'] = 90
 		adj_src['phi'] = xy_phi_rotations[xy_idx]
 		adj_src['wavelength start'] = lambda_min_um * 1e-6
 		adj_src['wavelength stop'] = lambda_max_um * 1e-6
 
-		adjoint_sources[adj_src].append(adj_src)
+		adjoint_sources[adj_src_idx].append(adj_src)
 
 #
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
