@@ -184,8 +184,8 @@ def get_monitor_data(monitor_name, monitor_field):
 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
 	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
 
-	command1 = lumerical_data_name + " = getresult(" + monitor_name + ", " + monitor_field + ");"
-	command2 = "matlabsave(" + data_transfer_filename + ", " + lumerical_data_name + ");"
+	command1 = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\'');"
+	command2 = "matlabsave(\'" + data_transfer_filename + "\', " + lumerical_data_name + ");"
 
 	print(command1)
 	print(command2)
