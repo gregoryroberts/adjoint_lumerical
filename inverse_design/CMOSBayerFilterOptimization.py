@@ -12,9 +12,14 @@ import lumapi
 import numpy as np
 
 #
-# Set up the FDTD simulation object
+# Create FDTD hook
 #
-fdtd = lumapi.FDTD()
+fdtd_hook = lumapi.FDTD()
+
+#
+# Set up the FDTD region and mesh
+#
+fdtd = fdtd_hook.addfdtd()
 fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
@@ -32,7 +37,7 @@ fdtd['background index'] = background_index
 #
 # Add a TFSF plane wave forward source at normal incidence
 #
-forward_src = lumapi.TFSF()
+forward_src = fdtd_hook.addtfsf()
 forward_src['name'] = 'forward_src'
 forward_src['direction'] = 'Backward'
 forward_src['x span'] = lateral_aperture_um * 1e-6
@@ -54,7 +59,7 @@ xy_names = ['x', 'y']
 for adj_src in range(0, num_adjoint_sources):
 	adjoint_sources.append([])
 	for xy_idx in range(0, 2):
-		adj_src = lumapi.Dipole()
+		adj_src = fdtd_hook.dipole()
 		adj_src['name'] = 'adj_src_' + str(adj_src) + xy_names[xy_idx]
 		adj_src['x'] = adjoint_x_positions_um[adj_src] * 1e-6
 		adj_src['y'] = adjoint_y_positions_um[adj_src] * 1e-6
@@ -70,7 +75,7 @@ for adj_src in range(0, num_adjoint_sources):
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
 # the adjoint gradient
 #
-design_efield_monitor = lumapi.Profile()
+design_efield_monitor = fdtd_hook.profile()
 design_efield_monitor['name'] = 'design_efield_monitor'
 design_efield_monitor['monitor type'] = '3D'
 design_efield_monitor['x span'] = device_size_lateral_um * 1e-6
@@ -93,7 +98,7 @@ design_efield_monitor['output Hz'] = 0
 adjoint_monitors = []
 
 for adj_src in range(0, num_adjoint_sources):
-	focal_monitor = lumapi.Power()
+	focal_monitor = fdtd_hook.power()
 	focal_monitor['name'] = 'focal_monitor_' + str(adj_src)
 	focal_monitor['monitor type'] = 'point'
 	focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
@@ -110,7 +115,7 @@ for adj_src in range(0, num_adjoint_sources):
 #
 # Add device region and create device permittivity
 #
-design_import = fdtd.Import()
+design_import = fdtd_hook.import()
 design_import['name'] = 'design_import'
 design_import['x span'] = device_size_lateral_um * 1e-6
 design_import['y span'] = device_size_lateral_um * 1e-6
@@ -134,4 +139,4 @@ for adj_src in range(0, num_adjoint_sources):
 
 forward_src.enabled = 1
 
-fdtd.run()
+fdtd_hook.run()
