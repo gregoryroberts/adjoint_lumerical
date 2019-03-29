@@ -9,8 +9,8 @@ import numpy as np
 # Set up the FDTD simulation object
 #
 fdtd = lumapi.FDTD()
-fdtd['x span'] = fdtd_region_size_horizontal_um * 1e-6
-fdtd['y span'] = fdtd_region_size_horizontal_um * 1e-6
+fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
+fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
 fdtd['mesh type'] = 'uniform'
@@ -19,7 +19,7 @@ fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
 fdtd['mesh cells x'] = fdtd_region_minimum_vertical_voxels
 fdtd['mesh cells y'] = fdtd_region_minimum_vertical_voxels
-fdtd['mesh cells z'] = fdtd_region_minimum_horizontal_voxels
+fdtd['mesh cells z'] = fdtd_region_minimum_lateral_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
