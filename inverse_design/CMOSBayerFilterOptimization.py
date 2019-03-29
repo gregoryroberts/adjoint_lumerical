@@ -1,0 +1,131 @@
+from CMOSBayerFilterParameters import *
+import CMOSBayerFilter
+
+import lumapi
+
+import numpy as np
+
+#
+# Set up the FDTD simulation object
+#
+fdtd = lumapi.FDTD()
+fdtd['x span'] = fdtd_region_size_horizontal_um * 1e-6
+fdtd['y span'] = fdtd_region_size_horizontal_um * 1e-6
+fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
+fdtd['mesh type'] = 'uniform'
+fdtd['define x mesh by'] = 'number of mesh cells'
+fdtd['define y mesh by'] = 'number of mesh cells'
+fdtd['define z mesh by'] = 'number of mesh cells'
+fdtd['mesh cells x'] = fdtd_region_minimum_vertical_voxels
+fdtd['mesh cells y'] = fdtd_region_minimum_vertical_voxels
+fdtd['mesh cells z'] = fdtd_region_minimum_horizontal_voxels
+fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
+fdtd['background index'] = background_index
+
+#
+# Add a TFSF plane wave forward source at normal incidence
+#
+forward_src = lumapi.TFSF()
+forward_src['name'] = 'forward_src'
+forward_src['direction'] = 'Backward'
+forward_src['x span'] = lateral_aperture_um * 1e-6
+forward_src['y span'] = lateral_aperture_um * 1e-6
+forward_src['z max'] = src_maximum_vertical_um
+forward_src['z min'] = src_minimum_vertical_um
+forward_src['wavelength start'] = lambda_min_um * 1e-6
+forward_src['wavelength stop'] = lambda_max_um * 1e-6
+
+#
+# Place dipole adjoint sources at the focal plane that can ring in both
+# x-axis and y-axis
+#
+adjoint_sources = []
+
+xy_phi_rotations = [0, 90]
+xy_names = ['x', 'y']
+
+for adj_src in range(0, num_adjoint_sources):
+	adjoint_sources.append([])
+	for xy_idx in range(0, 2):
+		adj_src = lumapi.Dipole()
+		adj_src['name'] = 'adj_src_' + str(adj_src) + xy_names[xy_idx]
+		adj_src['x'] = adjoint_x_positions_um[adj_src] * 1e-6
+		adj_src['y'] = adjoint_y_positions_um[adj_src] * 1e-6
+		adj_src['z'] = adjoint_vertical_um * 1e-6
+		adj_src['theta'] = 90
+		adj_src['phi'] = xy_phi_rotations[xy_idx]
+		adj_src['wavelength start'] = lambda_min_um * 1e-6
+		adj_src['wavelength stop'] = lambda_max_um * 1e-6
+
+		adjoint_sources[adj_src].append(adj_src)
+
+#
+# Set up the volumetric electric field monitor inside the design region.  We will need this compute
+# the adjoint gradient
+#
+design_efield_monitor = lumapi.Profile()
+design_efield_monitor['name'] = 'design_efield_monitor'
+design_efield_monitor['monitor type'] = '3D'
+design_efield_monitor['x span'] = device_size_lateral_um * 1e-6
+design_efield_monitor['y span'] = device_size_lateral_um * 1e-6
+design_efield_monitor['z max'] = device_vertical_maximum_um * 1e-6
+design_efield_monitor['z min'] = device_vertical_minimum_um * 1e-6
+design_efield_monitor['override global monitor settings'] = 1
+design_efield_monitor['use linear wavelength spacing'] = 1
+design_efield_monitor['use source limits'] = 1
+design_efield_monitor['frequency points'] = num_design_frequency_points
+design_efield_monitor['output Hx'] = 0
+design_efield_monitor['output Hy'] = 0
+design_efield_monitor['output Hz'] = 0
+
+#
+# Set up adjoint point monitors to get electric field strength at focus spots.  This will allow us to
+# compute the figure of merit as well as weight the adjoint simulations properly in calculation of the
+# gradient.
+#
+adjoint_monitors = []
+
+for adj_src in range(0, num_adjoint_sources):
+	focal_monitor = lumapi.Power()
+	focal_monitor['name'] = 'focal_monitor_' + str(adj_src)
+	focal_monitor['monitor type'] = 'point'
+	focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
+	focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
+	focal_monitor['z'] = adjoint_vertical_um * 1e-6
+	focal_monitor['override global monitor settings'] = 1
+	focal_monitor['use linear wavelength spacing'] = 1
+	focal_monitor['use source limits'] = 1
+	focal_monitor['frequency points'] = num_design_frequency_points
+
+	adjoint_monitors.append(focal_monitor)
+
+
+#
+# Add device region and create device permittivity
+#
+design_import = fdtd.Import()
+design_import['name'] = 'design_import'
+design_import['x span'] = device_size_lateral_um * 1e-6
+design_import['y span'] = device_size_lateral_um * 1e-6
+design_import['z max'] = device_vertical_maximum_um * 1e-6
+design_import['z min'] = device_vertical_minimum_um * 1e-6
+
+bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
+bayer_filter = inverse_design.CMOSBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale)
+
+bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
+bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
+bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
+
+
+#
+# Run a forward simulation by disabling all adjoint sources and enabling forward source
+#
+for adj_src in range(0, num_adjoint_sources):
+	for xy_idx in range(0, 2):
+		(adjoint_sources[adj_src][xy_idx]).enabled = 0
+
+forward_src.enabled = 1
+
+fdtd.run()
