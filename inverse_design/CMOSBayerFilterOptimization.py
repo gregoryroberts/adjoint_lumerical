@@ -10,7 +10,7 @@ import CMOSBayerFilter
 import lumapi
 
 import numpy as np
-import scipy.io
+import h5py
 import time
 
 #
@@ -193,8 +193,14 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	start_time = time.time()
 	lumapi.evalScript(fdtd_hook.handle, command2)
-	monitor_data = scipy.io.loadmat(data_transfer_filename)
+	# monitor_data = scipy.io.loadmat(data_transfer_filename)
+	monitor_data = {}
+	load_file = h5py.File(data_transfer_filename)
+	for k, v in load_file.items():
+    	monitor_data[k] = np.array(v)
+
 	end_time = time.time()
+
 
 	print("\nIt took " + str(end_time - start_time) + " seconds to retrieve the monitor data\n")
 
