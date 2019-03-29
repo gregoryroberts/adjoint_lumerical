@@ -135,7 +135,7 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 #
 for adj_src in range(0, num_adjoint_sources):
 	for xy_idx in range(0, 2):
-		(adjoint_sources[adj_src][xy_idx]).eanbled = 0
+		(adjoint_sources[adj_src][xy_idx]).enabled = 0
 
 forward_src.enabled = 1
 
