@@ -183,10 +183,10 @@ adjoint_e_fields = {}
 def get_monitor_data(monitor_name, monitor_field):
 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
 	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
-	lumapi.evalscript(fdtd_hook, lumerical_data_name + " = getresult(" + monitor_name + ", " + monitor_field + ");")
+	lumapi.evalScript(fdtd_hook, lumerical_data_name + " = getresult(" + monitor_name + ", " + monitor_field + ");")
 
 	start_time = time.time()
-	lumapi.evalscript(fdtd_hook, "matlabsave(" + data_transfer_filename + ", " + lumerical_data_name + ");")
+	lumapi.evalScript(fdtd_hook, "matlabsave(" + data_transfer_filename + ", " + lumerical_data_name + ");")
 	monitor_data = scipy.io.loadmat(data_transfer_filename)
 	end_time = time.time()
 
