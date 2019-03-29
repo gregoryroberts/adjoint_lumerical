@@ -123,7 +123,7 @@ design_import['z max'] = device_vertical_maximum_um * 1e-6
 design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = inverse_design.CMOSBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale)
+bayer_filter = CMOSBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale)
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
@@ -135,7 +135,7 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 #
 for adj_src in range(0, num_adjoint_sources):
 	for xy_idx in range(0, 2):
-		(adjoint_sources[adj_src][xy_idx])["enabled"] = 0
+		(adjoint_sources[adj_src][xy_idx]).eanbled = 0
 
 forward_src.enabled = 1
 
