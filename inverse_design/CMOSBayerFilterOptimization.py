@@ -225,7 +225,7 @@ for epoch in range(0, num_epochs):
 
 			forward_e_fields[xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
 
-			plt.imshow(forward_e_fields[xy_names[xy_idx]]["E"][:, :, 10, 12, 1]
+			plt.imshow(forward_e_fields[xy_names[xy_idx]]["E"][:, :, 10, 12, 1])
 			plt.show()
 
 			focal_data[xy_names[xy_idx]] = []
