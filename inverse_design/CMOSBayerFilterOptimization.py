@@ -59,7 +59,7 @@ xy_names = ['x', 'y']
 for adj_src in range(0, num_adjoint_sources):
 	adjoint_sources.append([])
 	for xy_idx in range(0, 2):
-		adj_src = fdtd_hook.dipole()
+		adj_src = fdtd_hook.adddipole()
 		adj_src['name'] = 'adj_src_' + str(adj_src) + xy_names[xy_idx]
 		adj_src['x'] = adjoint_x_positions_um[adj_src] * 1e-6
 		adj_src['y'] = adjoint_y_positions_um[adj_src] * 1e-6
@@ -139,4 +139,4 @@ for adj_src in range(0, num_adjoint_sources):
 
 forward_src.enabled = 1
 
-fdtd_hook.run()
+# fdtd_hook.run()
