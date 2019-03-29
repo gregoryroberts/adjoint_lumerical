@@ -19,8 +19,13 @@ fdtd_hook = lumapi.FDTD()
 # Create project folder
 #
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+projects_directory_location += "/" + project_name
+
+if not os.path.isdir(projects_directory_location):
+	os.mkdir(projects_directory_location)
+
 fdtd_hook.newproject()
-fdtd_hook.save(projects_directory_location + "/" + project_name + "/" + "optimization")
+fdtd_hook.save(projects_directory_location + "/optimization")
 
 #
 # Set up the FDTD region and mesh
