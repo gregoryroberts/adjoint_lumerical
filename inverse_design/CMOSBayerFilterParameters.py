@@ -82,13 +82,26 @@ src_maximum_vertical_um = device_size_verical_um + 0.5 * vertical_gap_size_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
 #
+# Spectral and polarization selectivity information
+#
+polarizations_focal_plane_map = [ ['x', 'y'], ['x'], ['x', 'y'], ['y'] ]
+polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
+# We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
+spectral_focal_plane_map = [
+	np.arange(0, num_points_per_band),
+	np.arange(num_points_per_band, 2 * num_points_per_band),
+	np.arange(2 * num_points_per_band, 3 * num_points_per_band),
+	np.arange(num_points_per_band, 2 * num_points_per_band)
+]
+
+#
 # Adjoint sources
 #
 adjoint_vertical_um = -focal_length_um
-num_adjoint_sources = 4
+num_focal_spots = 4
+num_adjoint_sources = num_adjoint_sources
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
-
 
 #
 # Optimization

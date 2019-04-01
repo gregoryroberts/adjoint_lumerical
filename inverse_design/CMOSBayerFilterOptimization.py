@@ -168,6 +168,8 @@ fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filt
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
 #
 def disable_all_sources():
+	fdtd_hook.switchtolayout()
+
 	for xy_idx in range(0, 2):
 		(forward_sources[xy_idx]).enabled = 0
 
@@ -176,37 +178,44 @@ def disable_all_sources():
 			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 
+
+#
+# Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
+# python process.  This is much faster than going through Lumerical's interop library
+#
+def get_monitor_data(monitor_name, monitor_field):
+	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
+	extracted_data_name - lumerical_data_name + "_data"
+	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
+
+	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
+	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
+	command_save_data_to_file = "matlabsave(\'" + data_transfer_filename + "\', " + extracted_data_name + ");"
+
+
+	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
+	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
+
+	start_time = time.time()
+
+	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
+	monitor_data = {}
+	load_file = h5py.File(data_transfer_filename)
+
+	monitor_data = np.array(load_file[extracted_data_name])
+
+	print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
+
+	return monitor_data
+
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
 forward_e_fields = {}
 focal_data = {}
-adjoint_e_fields = {}
+adjoint_e_fields = []
 
-def get_monitor_data(monitor_name, monitor_field):
-	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
-	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
-
-	command1 = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
-	command2 = "matlabsave(\'" + data_transfer_filename + "\', " + lumerical_data_name + ");"
-
-
-	lumapi.evalScript(fdtd_hook.handle, command1)
-
-	start_time = time.time()
-
-	lumapi.evalScript(fdtd_hook.handle, command2)
-	monitor_data = {}
-	load_file = h5py.File(data_transfer_filename)
-	for k, v in load_file.items():
-		monitor_data[k] = np.array(v)
-
-	end_time = time.time()
-
-	print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
-
-	print(monitor_data.keys())
-	return monitor_data
+figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
 #
 # Run the optimization
@@ -233,15 +242,66 @@ for epoch in range(0, num_epochs):
 			for adj_src_idx in range(0, num_adjoint_sources):
 				focal_data[xy_names[xy_idx]].append(get_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
+		#
+		# Step 2: Compute the figure of merit
+		#
+		figure_of_merit_per_focal_spot = []
+		for focal_idx in range(0, num_focal_spots):
+			compute_fom = 0
+
+			polarizations = polarizations_focal_plane_map[focal_idx]
+			spectral_indices = spectral_focal_plane_map[focal_idx]
+
+			for polarization_idx in range(0, len(polarizations)):
+				compute_fom += np.sum( np.abs(focal_data[polarizations[polarization_idx]][spectral_focal_plane_map])**2 )
+
+			figure_of_merit_per_focal_spot[focal_idx] = compute_fom
+
+		# When we combine figures of merit, we can either just do a straight average or we can do a weighted average
+		# based on performance.  Or we can just apply the weighting to the gradient update of the permittivity.
+
+		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
+		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
+
 
 		#
-		# Step 2: Run all the adjoint optimizations for both x- and y-polarized adjoint sources
+		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources.
 		#
 		for adj_src_idx in range(0, num_adjoint_sources):
+			adjoint_e_fields.append({})
 			for xy_idx in range(0, 2):
 				disable_all_sources()
 				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 				fdtd_hook.run()
+
+				adjoint_e_fields[adj_src_idx][xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
+
+
+		#
+		# Step 4: Compute the gradient by appropriately weighting the fields from all the adjoint sources and combining
+		# with the fields from the forward source.
+		#
+		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape), np.zeros(cur_permittivity.shape) ]
+		for adj_src_idx in range(0, num_adjoint_sources):
+			polarizations = polarizations_focal_plane_map[focal_idx]
+			spectral_indices = spectral_focal_plane_map[focal_idx]
+
+			for get_polarization in polarizations:
+				for weight_adjoint_polarization in ['x', 'y']:
+
+					weight_adjoint_fields = (
+						np.conj(focal_data[get_polarization][spectral_indices, weight_adjoint_polarization]) *
+						adjoint_e_fields[adj_src_idx][weight_adjoint_polarization][:, :, :, spectral_indices, :]
+					)
+					dot_with_forward_fields = weight_adjoint_fields * forward_e_fields[get_polarization][:, :, :, spectral_indices, :]
+					sum_dot_product = np.sum(dot_with_forward_fields)
+
+					# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
+					# added back in.  Maximum value of intensity by wavelength at focal spot
+					xy_polarized_gradients[polarization_name_to_idx[get_polarization]] += sum_dot_product
+
+
+
 
 
 
