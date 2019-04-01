@@ -229,7 +229,6 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 #
 forward_e_fields = {}
 focal_data = {}
-adjoint_e_fields = []
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
@@ -289,44 +288,36 @@ for epoch in range(0, num_epochs):
 		#
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources.
 		#
+		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape), np.zeros(cur_permittivity.shape) ]
+
 		for adj_src_idx in range(0, num_adjoint_sources):
-			adjoint_e_fields.append({})
+			polarizations = polarizations_focal_plane_map[focal_idx]
+			spectral_indices = spectral_focal_plane_map[focal_idx]
+
+			adjoint_e_fields = []
 			for xy_idx in range(0, 2):
 				disable_all_sources()
 				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 				fdtd_hook.run()
 
-				adjoint_e_fields[adj_src_idx][xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+				adjoint_e_fields.append(
+					get_complex_monitor_data(design_efield_monitor['name'], 'E'))
 
+			for pol_idx in range(0, len(polarizations)):
+				pol_name = polarizations[pol_idx]
+				get_focal_data = focal_data[pol_name][adj_src_idx]
+				pol_name_to_idx = polarization_name_to_idx[pol_name]
 
-		#
-		# Step 4: Compute the gradient by appropriately weighting the fields from all the adjoint sources and combining
-		# with the fields from the forward source.
-		#
-		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape), np.zeros(cur_permittivity.shape) ]
-		for adj_src_idx in range(0, num_adjoint_sources):
-			polarizations = polarizations_focal_plane_map[focal_idx]
-			spectral_indices = spectral_focal_plane_map[focal_idx]
-
-			for get_polarization in polarizations:
-				for weight_adjoint_polarization in ['x', 'y']:
-
-					get_focal_data = focal_data[get_polarization][adj_src_idx]
+				for xy_idx in range(0, 2):
 					source_weight = np.conj(
-						get_focal_data[adj_src_idx][:, spectral_focal_plane_map[adj_src_idx][0] : spectral_focal_plane_map[adj_src_idx][1] : 1, 0, 0, 0])
+						get_focal_data[adj_src_idx][xy_idx, spectral_focal_plane_map[adj_src_idx][0] : spectral_focal_plane_map[adj_src_idx][1] : 1, 0, 0, 0])
 
-					weight_adjoint_fields = (
-						source_weight *
-						adjoint_e_fields[adj_src_idx][weight_adjoint_polarization][:, spectral_indices, :, :, :]
-					)
-					dot_with_forward_fields = weight_adjoint_fields * forward_e_fields[get_polarization][:, spectral_indices, :, :, :]
-					sum_dot_product = np.sum(dot_with_forward_fields, axis=0)
 
 					# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
 					# added back in.  Maximum value of intensity by wavelength at focal spot
-					xy_polarized_gradients[polarization_name_to_idx[get_polarization]] += sum_dot_product
-
-
+					xy_polarized_gradients[pol_name_to_idx] += np.sum(
+						source_weight * adjoint_e_fields[xy_idx][:, spectral_indices, :, :, :] * forward_e_fields[pol_name][:, spectral_indices, :, :, :]
+						axis=0)
 
 
 
