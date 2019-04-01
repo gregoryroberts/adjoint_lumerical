@@ -269,7 +269,8 @@ for epoch in range(0, num_epochs):
 				print(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1, 0, 0, 0])
 				compute_fom += np.sum( np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1, 0, 0, 0])**2 )
 
-			figure_of_merit_per_focal_spot[focal_idx] = compute_fom
+			print("Focal spot FOM = " + str(compute_fom))
+			figure_of_merit_per_focal_spot.append(compute_fom)
 
 		# When we combine figures of merit, we can either just do a straight average or we can do a weighted average
 		# based on performance.  Or we can just apply the weighting to the gradient update of the permittivity.
