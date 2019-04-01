@@ -176,9 +176,6 @@ def disable_all_sources():
 		for xy_idx in range(0, 2):
 			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
-def convert_array(input_array, output_dtype, func):
-	return np.array([func(xi) for xi in input_array], dtype=output_dtype)
-
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
 # python process.  This is much faster than going through Lumerical's interop library
@@ -219,10 +216,6 @@ def get_monitor_data(monitor_name, monitor_field):
 def get_complex_monitor_data(monitor_name, monitor_field):
 	data = get_monitor_data(monitor_name, monitor_field)
 	return (data['real'] + np.complex(0, 1) * data['imag'])
-	# return convert_array(
-	# 	get_monitor_data(monitor_name, monitor_field),
-	# 	np.complex,
-	# 	lambda x: x[0] + np.complex(0, 1) * x[1])
 
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
