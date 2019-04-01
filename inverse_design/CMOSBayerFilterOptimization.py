@@ -193,14 +193,21 @@ def get_monitor_data(monitor_name, monitor_field):
 	print(command_extract_data)
 	print(command_save_data_to_file)
 
+	print("pre first command")
 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
+	print("post first command")
 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
+	print("post second command")
+
 
 	start_time = time.time()
 
 	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
+	print("post third command")
 	monitor_data = {}
 	load_file = h5py.File(data_transfer_filename + ".mat")
+	print("post data load into python")
+
 
 	print(load_file)
 	print(load_file.keys())
