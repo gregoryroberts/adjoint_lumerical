@@ -177,7 +177,7 @@ def disable_all_sources():
 			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 def convert_array(input_array, output_dtype, func):
-	return np.array([func(xi) for xi in input_array])
+	return np.array([func(xi) for xi in input_array], dtype=np.complex)
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
