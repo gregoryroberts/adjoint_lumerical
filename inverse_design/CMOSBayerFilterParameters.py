@@ -99,7 +99,7 @@ spectral_focal_plane_map = [
 #
 adjoint_vertical_um = -focal_length_um
 num_focal_spots = 4
-num_adjoint_sources = num_adjoint_sources
+num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
 
