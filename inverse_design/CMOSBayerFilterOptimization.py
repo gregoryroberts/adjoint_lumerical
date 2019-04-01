@@ -257,8 +257,8 @@ for epoch in range(0, num_epochs):
 
 			# show_img = forward_e_fields[xy_names[xy_idx]][:, :, 10, 12, 1]
 			pull_data = forward_e_fields[xy_names[xy_idx]][1, 12, :, :, 10]
-			convert_data = convert_array(pull_data, np.complex, lambda x: x[0] + np.complex(0, 1)*x[1])
-			plt.imshow(np.abs(convert_array))
+			convert_data = convert_array(pull_data, np.complex, lambda x: x[0] + np.complex(0, 1) * x[1])
+			plt.imshow(np.abs(convert_data))
 			plt.show()
 
 			focal_data[xy_names[xy_idx]] = []
