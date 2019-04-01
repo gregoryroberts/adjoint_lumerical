@@ -88,10 +88,14 @@ polarizations_focal_plane_map = [ ['x', 'y'], ['x'], ['x', 'y'], ['y'] ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
 spectral_focal_plane_map = [
-	np.arange(0, num_points_per_band),
-	np.arange(num_points_per_band, 2 * num_points_per_band),
-	np.arange(2 * num_points_per_band, 3 * num_points_per_band),
-	np.arange(num_points_per_band, 2 * num_points_per_band)
+	[0, num_points_per_band],
+	[num_points_per_band, 2 * num_points_per_band],
+	[2 * num_points_per_band, 3 * num_points_per_band],
+	[num_points_per_band, 2 * num_points_per_band]
+	# np.arange(0, num_points_per_band),
+	# np.arange(num_points_per_band, 2 * num_points_per_band),
+	# np.arange(2 * num_points_per_band, 3 * num_points_per_band),
+	# np.arange(num_points_per_band, 2 * num_points_per_band)
 ]
 
 #
