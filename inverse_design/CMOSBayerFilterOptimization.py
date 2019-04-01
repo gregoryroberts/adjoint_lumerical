@@ -256,6 +256,7 @@ for epoch in range(0, num_epochs):
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
 		for xy_idx in range(0, 2):
+			print("Doing forward source number " + str(xy_idx))
 			disable_all_sources()
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
