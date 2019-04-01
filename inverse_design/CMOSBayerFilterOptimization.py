@@ -210,6 +210,8 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	monitor_data = np.array(load_file[extracted_data_name])
 
+	end_time = time.time()
+
 	print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
 
 	return monitor_data
