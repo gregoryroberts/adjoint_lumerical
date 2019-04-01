@@ -247,7 +247,6 @@ for epoch in range(0, num_epochs):
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
 				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
-				print(focal_data[xy_names[xy_idx]][-1])
 
 		#
 		# Step 2: Compute the figure of merit
