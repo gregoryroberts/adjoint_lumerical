@@ -176,10 +176,6 @@ def disable_all_sources():
 		for xy_idx in range(0, 2):
 			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
-
-def structured_to_complex(element):
-	return element[0] + np.complex(0, 1) * element[1]
-
 def convert_array(input_array, output_dtype, func):
 	input_array_shape = input_array.shape
 	num_elements = functools.reduce(lambda x, y: x * y, input_array_shape)
@@ -233,7 +229,7 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 	return convert_array(
 		get_monitor_data(monitor_name, monitor_field),
 		np.complex,
-		structured_to_complex)
+		lambda x: x[0] + np.complex(0, 1) * x[1])
 
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
