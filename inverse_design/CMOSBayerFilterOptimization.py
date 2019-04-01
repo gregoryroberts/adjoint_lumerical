@@ -238,18 +238,16 @@ for epoch in range(0, num_epochs):
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
 		for xy_idx in range(0, 2):
-			print("Doing forward source number " + str(xy_idx))
 			disable_all_sources()
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
 
-			print("Fetching design volume monitor")
 			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E'),
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
-				print("Fetching adjoint monitor " + str(adj_src_idx))
 				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+				print(focal_data[xy_names[xy_idx]][-1])
 
 		#
 		# Step 2: Compute the figure of merit
