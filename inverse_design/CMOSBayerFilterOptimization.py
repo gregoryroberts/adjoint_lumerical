@@ -203,7 +203,7 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
 	monitor_data = {}
-	load_file = h5py.File(data_transfer_filename)
+	load_file = h5py.File(data_transfer_filename + ".mat")
 
 	print(load_file)
 	print(load_file.keys())
