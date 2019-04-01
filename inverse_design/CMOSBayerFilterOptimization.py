@@ -185,7 +185,7 @@ def disable_all_sources():
 #
 def get_monitor_data(monitor_name, monitor_field):
 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
-	extracted_data_name - lumerical_data_name + "_data"
+	extracted_data_name = lumerical_data_name + "_data"
 	data_transfer_filename = "data_transfer_" + monitor_name + "_" + monitor_field
 
 	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
