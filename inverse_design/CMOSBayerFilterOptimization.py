@@ -238,6 +238,7 @@ for epoch in range(0, num_epochs):
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
 		for xy_idx in range(0, 2):
+			print("Working on forward source " + str(xy_idx))
 			disable_all_sources()
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
@@ -248,11 +249,15 @@ for epoch in range(0, num_epochs):
 			for adj_src_idx in range(0, num_adjoint_sources):
 				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
+			print("Finished forward source " + str(xy_idx))
+
+
 		#
 		# Step 2: Compute the figure of merit
 		#
 		figure_of_merit_per_focal_spot = []
 		for focal_idx in range(0, num_focal_spots):
+			print("Computing FOM for focal idx " + str(focal_idx))
 			compute_fom = 0
 
 			polarizations = polarizations_focal_plane_map[focal_idx]
