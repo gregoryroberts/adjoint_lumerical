@@ -266,7 +266,7 @@ for epoch in range(0, num_epochs):
 				get_focal_data = focal_data[polarizations[polarization_idx]]
 				print(get_focal_data[focal_idx].shape)
 
-				print(get_focal_data[focal_idx][:, spectral_focal_plane_map[0] : spectral_focal_plane_map[1] : 1, 0, 0, 0])
+				print(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1, 0, 0, 0])
 				compute_fom += np.sum( np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1, 0, 0, 0])**2 )
 
 			figure_of_merit_per_focal_spot[focal_idx] = compute_fom
