@@ -304,12 +304,16 @@ for epoch in range(0, num_epochs):
 			for get_polarization in polarizations:
 				for weight_adjoint_polarization in ['x', 'y']:
 
+					get_focal_data = focal_data[get_polarization][adj_src_idx]
+					source_weight = np.conj(
+						get_focal_data[adj_src_idx][:, spectral_focal_plane_map[adj_src_idx][0] : spectral_focal_plane_map[adj_src_idx][1] : 1, 0, 0, 0])
+
 					weight_adjoint_fields = (
-						np.conj(focal_data[get_polarization][spectral_indices, weight_adjoint_polarization]) *
-						adjoint_e_fields[adj_src_idx][weight_adjoint_polarization][:, :, :, spectral_indices, :]
+						source_weight *
+						adjoint_e_fields[adj_src_idx][weight_adjoint_polarization][:, spectral_indices, :, :, :]
 					)
-					dot_with_forward_fields = weight_adjoint_fields * forward_e_fields[get_polarization][:, :, :, spectral_indices, :]
-					sum_dot_product = np.sum(dot_with_forward_fields)
+					dot_with_forward_fields = weight_adjoint_fields * forward_e_fields[get_polarization][:, spectral_indices, :, :, :]
+					sum_dot_product = np.sum(dot_with_forward_fields, axis=0)
 
 					# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
 					# added back in.  Maximum value of intensity by wavelength at focal spot
