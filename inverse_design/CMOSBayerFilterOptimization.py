@@ -316,7 +316,7 @@ for epoch in range(0, num_epochs):
 					# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
 					# added back in.  Maximum value of intensity by wavelength at focal spot
 					xy_polarized_gradients[pol_name_to_idx] += np.sum(
-						source_weight * adjoint_e_fields[xy_idx][:, spectral_indices, :, :, :] * forward_e_fields[pol_name][:, spectral_indices, :, :, :]
+						source_weight * adjoint_e_fields[xy_idx][:, spectral_indices, :, :, :] * forward_e_fields[pol_name][:, spectral_indices, :, :, :],
 						axis=0)
 
 
