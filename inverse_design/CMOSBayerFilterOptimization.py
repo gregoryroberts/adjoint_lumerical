@@ -177,16 +177,7 @@ def disable_all_sources():
 			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 def convert_array(input_array, output_dtype, func):
-	input_array_shape = input_array.shape
-	num_elements = functools.reduce(lambda x, y: x * y, input_array_shape)
-	converted_array = np.zeros(num_elements, dtype=output_dtype)
-
-	flatten_input = input_array.flatten()
-
-	for idx in range(0, num_elements):
-		converted_array[idx] = func(flatten_input[idx])
-
-	return converted_array.reshape(input_array_shape)
+	return np.array([func(xi) for xi in input_array])
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
