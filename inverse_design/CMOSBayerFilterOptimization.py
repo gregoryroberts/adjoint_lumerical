@@ -177,6 +177,20 @@ def disable_all_sources():
 			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 
+def structured_to_complex(element):
+	return element[0] + np.complex(0, 1) * element[1]
+
+def convert_array(input_array, output_dtype, func):
+	input_array_shape = input_array.shape
+	num_elements = functools.reduce(lambda x, y: x * y, input_array_shape)
+	converted_array = np.zeros(num_elements, dtype=output_dtype)
+
+	flatten_input = input_array.flatten()
+
+	for idx in range(0, num_elements):
+		converted_array[idx] = func(flatten_input[idx])
+
+	return converted_array.reshape(input_array_shape)
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
@@ -215,18 +229,11 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	return monitor_data
 
-
-def convert_array(input_array, output_dtype, func):
-	input_array_shape = input_array.shape
-	num_elements = functools.reduce(lambda x, y: x * y, input_array_shape)
-	converted_array = np.zeros(num_elements, dtype=output_dtype)
-
-	flatten_input = input_array.flatten()
-
-	for idx in range(0, num_elements):
-		converted_array[idx] = func(flatten_input[idx])
-
-	return converted_array.reshape(input_array_shape)
+def get_complex_monitor_data(monitor_name, monitor_field):
+	return convert_array(
+		get_monitor_data(monitor_name, monitor_field),
+		np.complex,
+		structured_to_complex)
 
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
@@ -253,17 +260,11 @@ for epoch in range(0, num_epochs):
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
 
-			forward_e_fields[xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
-
-			# show_img = forward_e_fields[xy_names[xy_idx]][:, :, 10, 12, 1]
-			pull_data = forward_e_fields[xy_names[xy_idx]][1, 12, :, :, 10]
-			convert_data = convert_array(pull_data, np.complex, lambda x: x[0] + np.complex(0, 1) * x[1])
-			plt.imshow(np.abs(convert_data))
-			plt.show()
+			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E'),
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data[xy_names[xy_idx]].append(get_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
 		#
 		# Step 2: Compute the figure of merit
@@ -297,7 +298,7 @@ for epoch in range(0, num_epochs):
 				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 				fdtd_hook.run()
 
-				adjoint_e_fields[adj_src_idx][xy_names[xy_idx]] = get_monitor_data(design_efield_monitor['name'], 'E')
+				adjoint_e_fields[adj_src_idx][xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
 
 		#
