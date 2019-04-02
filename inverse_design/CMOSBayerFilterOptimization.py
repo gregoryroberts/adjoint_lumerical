@@ -291,8 +291,8 @@ for epoch in range(0, num_epochs):
 		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape), np.zeros(cur_permittivity.shape) ]
 
 		for adj_src_idx in range(0, num_adjoint_sources):
-			polarizations = polarizations_focal_plane_map[focal_idx]
-			spectral_indices = spectral_focal_plane_map[focal_idx]
+			polarizations = polarizations_focal_plane_map[adj_src_idx]
+			spectral_indices = spectral_focal_plane_map[adj_src_idx]
 
 			adjoint_e_fields = []
 			for xy_idx in range(0, 2):
@@ -310,7 +310,7 @@ for epoch in range(0, num_epochs):
 
 				for xy_idx in range(0, 2):
 					source_weight = np.conj(
-						get_focal_data[adj_src_idx][xy_idx, spectral_focal_plane_map[adj_src_idx][0] : spectral_focal_plane_map[adj_src_idx][1] : 1, 0, 0, 0])
+						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
 
 					print(source_weight.shape)
 					print(adjoint_e_fields[xy_idx].shape)
