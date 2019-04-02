@@ -305,7 +305,7 @@ for epoch in range(0, num_epochs):
 
 			for pol_idx in range(0, len(polarizations)):
 				pol_name = polarizations[pol_idx]
-				get_focal_data = focal_data[pol_name][adj_src_idx]
+				get_focal_data = focal_data[pol_name]
 				pol_name_to_idx = polarization_name_to_idx[pol_name]
 
 				for xy_idx in range(0, 2):
