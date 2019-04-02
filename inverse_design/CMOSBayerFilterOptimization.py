@@ -312,6 +312,10 @@ for epoch in range(0, num_epochs):
 					source_weight = np.conj(
 						get_focal_data[adj_src_idx][xy_idx, spectral_focal_plane_map[adj_src_idx][0] : spectral_focal_plane_map[adj_src_idx][1] : 1, 0, 0, 0])
 
+					print(source_weight.shape)
+					print(adjoint_e_fields[xy_idx].shape)
+					print(forward_e_fields[pol_name].shape)
+
 					for spectral_idx in range(0, source_weight.shape[0]):
 						# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
 						# added back in.  Maximum value of intensity by wavelength at focal spot
