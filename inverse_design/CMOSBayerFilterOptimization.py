@@ -217,7 +217,8 @@ focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-average_design_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
+average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
+max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
 step_size_start = 1.
 
@@ -381,13 +382,16 @@ for epoch in range(0, num_epochs):
 		bayer_filter.step(-design_gradient, step_size)
 		cur_design_variable = bayer_filter.get_design_variable()
 
+		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
 		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
 
 		step_size_evolution[epoch][iteration] = step_size
-		average_design_change_evolution[epoch][iteration] = average_design_variable_change
+		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
+		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
-		np.save(projects_directory_location + "/average_design_change_evolution.npy", max_design_variable_change)
+		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
+		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 
 
