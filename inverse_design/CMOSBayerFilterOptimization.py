@@ -288,7 +288,7 @@ for epoch in range(0, num_epochs):
 		#
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources.
 		#
-		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape), np.zeros(cur_permittivity.shape) ]
+		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape, dtype=np.complex), np.zeros(cur_permittivity.shape, dtype=np.complex) ]
 
 		for adj_src_idx in range(0, num_adjoint_sources):
 			polarizations = polarizations_focal_plane_map[adj_src_idx]
