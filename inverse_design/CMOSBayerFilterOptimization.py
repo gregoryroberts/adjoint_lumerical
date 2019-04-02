@@ -362,10 +362,10 @@ for epoch in range(0, num_epochs):
 			difference = np.abs(proposed_design_variable - cur_design_variable)
 			max_relative_difference = np.max(difference / (1e-6 + np.abs(cur_design_variable)))
 
-			if (max_relative_difference < max_change_design) and (max_relative_difference > min_change_design):
+			if (max_relative_difference <= max_change_design) and (max_relative_difference >= min_change_design):
 				step_size_start = step_size
 				break
-			elif (max_relative_difference < max_change_design):
+			elif (max_relative_difference <= max_change_design):
 				step_size *= 2
 			else:
 				step_size /= 2
