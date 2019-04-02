@@ -332,12 +332,12 @@ for epoch in range(0, num_epochs):
 		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
-		max_change_design = 0.01 * (
+		max_change_design = (
 			epoch_end_permittivity_change_max +
 			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
 		)
 
-		min_change_design = 0.01 * (
+		min_change_design = (
 			epoch_end_permittivity_change_min +
 			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
 		)
