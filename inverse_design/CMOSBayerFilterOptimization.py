@@ -216,6 +216,8 @@ forward_e_fields = {}
 focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
+step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
+average_design_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
 step_size_start = 1.
 
@@ -360,7 +362,6 @@ for epoch in range(0, num_epochs):
 			max_relative_difference = np.max(difference / (1e-6 + np.abs(cur_design_variable)))
 
 			if (max_relative_difference <= max_change_design) and (max_relative_difference >= min_change_design):
-				step_size_start = step_size
 				break
 			elif (max_relative_difference <= max_change_design):
 				step_size *= 2
@@ -375,7 +376,19 @@ for epoch in range(0, num_epochs):
 				check_last = True
 				last = 0
 
+		step_size_start = step_size
+
+		last_design_variable = cur_design_variable.copy()
 		bayer_filter.step(-design_gradient, step_size)
+		cur_design_variable = bayer_filter.get_design_variable()
+
+		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
+
+		step_size_evolution[epoch][iteration] = step_size
+		average_design_change_evolution[epoch][iteration] = average_design_variable_change
+
+		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
+		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_change_evolution)
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 
 
