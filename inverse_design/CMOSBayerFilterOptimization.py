@@ -317,8 +317,8 @@ for epoch in range(0, num_epochs):
 						# added back in.  Maximum value of intensity by wavelength at focal spot
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
 							source_weight[spectral_idx] *
-							adjoint_e_fields[xy_idx][:, spectral_indices[adj_src_idx][0] + spectral_idx, :, :, :] *
-							forward_e_fields[pol_name][:, spectral_indices[adj_src_idx][0] + spectral_idx, :, :, :],
+							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
+							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
 							axis=0)
 
 
