@@ -92,10 +92,6 @@ spectral_focal_plane_map = [
 	[num_points_per_band, 2 * num_points_per_band],
 	[2 * num_points_per_band, 3 * num_points_per_band],
 	[num_points_per_band, 2 * num_points_per_band]
-	# np.arange(0, num_points_per_band),
-	# np.arange(num_points_per_band, 2 * num_points_per_band),
-	# np.arange(2 * num_points_per_band, 3 * num_points_per_band),
-	# np.arange(num_points_per_band, 2 * num_points_per_band)
 ]
 
 #
