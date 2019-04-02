@@ -193,30 +193,20 @@ def get_monitor_data(monitor_name, monitor_field):
 	print(command_extract_data)
 	print(command_save_data_to_file)
 
-	print("pre first command")
 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
-	print("post first command")
 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
-	print("post second command")
 
-
-	start_time = time.time()
+	# start_time = time.time()
 
 	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
-	print("post third command")
 	monitor_data = {}
 	load_file = h5py.File(data_transfer_filename + ".mat")
-	print("post data load into python")
-
-
-	print(load_file)
-	print(load_file.keys())
 
 	monitor_data = np.array(load_file[extracted_data_name])
 
-	end_time = time.time()
+	# end_time = time.time()
 
-	print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
+	# print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
 
 	return monitor_data
 
@@ -241,12 +231,12 @@ for epoch in range(0, num_epochs):
 	bayer_filter.update_filters(epoch)
 
 	for iteration in range(0, num_iterations_per_epoch):
+		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
 		for xy_idx in range(0, 2):
-			print("Working on forward source " + str(xy_idx))
 			disable_all_sources()
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
@@ -257,27 +247,20 @@ for epoch in range(0, num_epochs):
 			for adj_src_idx in range(0, num_adjoint_sources):
 				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
-			print("Finished forward source " + str(xy_idx))
-
 
 		#
 		# Step 2: Compute the figure of merit
 		#
 		figure_of_merit_per_focal_spot = []
 		for focal_idx in range(0, num_focal_spots):
-			print("Computing FOM for focal idx " + str(focal_idx))
 			compute_fom = 0
 
 			polarizations = polarizations_focal_plane_map[focal_idx]
 
 			for polarization_idx in range(0, len(polarizations)):
 				get_focal_data = focal_data[polarizations[polarization_idx]]
-				print(get_focal_data[focal_idx].shape)
-
-				print(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1, 0, 0, 0])
 				compute_fom += np.sum( np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1, 0, 0, 0])**2 )
 
-			print("Focal spot FOM = " + str(compute_fom))
 			figure_of_merit_per_focal_spot.append(compute_fom)
 
 		# When we combine figures of merit, we can either just do a straight average or we can do a weighted average
@@ -316,10 +299,6 @@ for epoch in range(0, num_epochs):
 					source_weight = np.conj(
 						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
 
-					print(source_weight.shape)
-					print(adjoint_e_fields[xy_idx].shape)
-					print((forward_e_fields[pol_name]).shape)
-
 					for spectral_idx in range(0, source_weight.shape[0]):
 						# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
 						# added back in.  Maximum value of intensity by wavelength at focal spot
@@ -332,7 +311,7 @@ for epoch in range(0, num_epochs):
 		#
 		# Step 4: Step the design variable.
 		#
-		device_gradient = xy_polarized_gradients[0] + xy_polarized_gradients[1]
+		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
 		max_change_design = 0.01 * (
@@ -341,14 +320,17 @@ for epoch in range(0, num_epochs):
 		)
 
 		min_change_design = 0.01 * (
-			epoch_end_permittivity_change_max_percentage +
-			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max_percentage / (num_iterations_per_epoch - 1))
+			epoch_end_permittivity_change_min_percentage +
+			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min_percentage / (num_iterations_per_epoch - 1))
 		)
 
 
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		step_size = step_size_start
+
+		check_last = False
+		last = 0
 
 		while True:
 			proposed_design_variable = cur_design_variable + step_size * design_gradient
@@ -367,10 +349,19 @@ for epoch in range(0, num_epochs):
 				break
 			elif (max_relative_difference <= max_change_design):
 				step_size *= 2
+				if (last ^ 1) and check_last:
+					break
+				check_last = True
+				last = 1
 			else:
 				step_size /= 2
+				if (last ^ 0) and check_last:
+					break
+				check_last = True
+				last = 0
 
 		bayer_filter.step(-design_gradient, step_size)
+		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 
 
 
