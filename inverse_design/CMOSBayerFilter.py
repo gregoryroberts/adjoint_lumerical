@@ -120,7 +120,7 @@ class CMOSBayerFilter(device.Device):
 
 		z_voxel_layers = self.size[2]
 		num_voxels_per_layer = np.floor(z_voxel_layers / 5)
-		self.num_z_layers = 6
+		self.num_z_layers = 8
 		self.layering_z_3 = layering.Layering(2, self.num_z_layers)
 
 		single_layer = 1

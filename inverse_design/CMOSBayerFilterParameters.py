@@ -26,16 +26,6 @@ focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
 #
-# Spectral
-#
-lambda_min_um = 0.4
-lambda_max_um = 0.7
-
-num_bands = 3
-num_points_per_band = 10
-num_design_frequency_points = num_bands * num_points_per_band
-
-#
 # Device
 #
 mesh_spacing_um = 0.02
@@ -48,6 +38,19 @@ device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
+
+#
+# Spectral
+#
+lambda_min_um = 0.4
+lambda_max_um = 0.7
+
+num_bands = 3
+num_points_per_band = 10
+num_design_frequency_points = num_bands * num_points_per_band
+
+lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
+max_intensity_by_wavelength = (device_size_lateral_um)^4 / (focal_length_um**2 * lambda_values_um**2)
 
 #
 # Fabrication Constraints

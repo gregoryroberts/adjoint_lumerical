@@ -260,12 +260,24 @@ for epoch in range(0, num_epochs):
 
 			for polarization_idx in range(0, len(polarizations)):
 				get_focal_data = focal_data[polarizations[polarization_idx]]
-				compute_fom += np.sum( np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1, 0, 0, 0])**2 )
+
+				max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
+
+				for spectral_idx in range(0, max_intensity_weighting.shape[0]):
+					compute_fom += np.sum(
+						(
+							np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] + spectral_idx, 0, 0, 0])**2 /
+							max_intensity_weighting[spectral_idx]
+						)
+					)
 
 			figure_of_merit_per_focal_spot.append(compute_fom)
 
-		# When we combine figures of merit, we can either just do a straight average or we can do a weighted average
-		# based on performance.  Or we can just apply the weighting to the gradient update of the permittivity.
+		figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
+
+		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
+		performance_weighting -= np.min(performance_weighting)
+		performance_weighting /= np.sum(performance_weighting)
 
 		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
@@ -281,6 +293,8 @@ for epoch in range(0, num_epochs):
 		for adj_src_idx in range(0, num_adjoint_sources):
 			polarizations = polarizations_focal_plane_map[adj_src_idx]
 			spectral_indices = spectral_focal_plane_map[adj_src_idx]
+
+			gradient_performance_weight = performance_weighting[adj_src_idx]
 
 			adjoint_e_fields = []
 			for xy_idx in range(0, 2):
@@ -300,11 +314,11 @@ for epoch in range(0, num_epochs):
 					source_weight = np.conj(
 						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
 
+					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
+
 					for spectral_idx in range(0, source_weight.shape[0]):
-						# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
-						# added back in.  Maximum value of intensity by wavelength at focal spot
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
-							source_weight[spectral_idx] *
+							(source_weight[spectral_idx] * gradient_performance_weight / max_intensity_weighting[spectral_idx]) *
 							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
 							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
 							axis=0)
