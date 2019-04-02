@@ -50,7 +50,7 @@ num_points_per_band = 10
 num_design_frequency_points = num_bands * num_points_per_band
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
-max_intensity_by_wavelength = (device_size_lateral_um)^4 / (focal_length_um**2 * lambda_values_um**2)
+max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um**2 * lambda_values_um**2)
 
 #
 # Fabrication Constraints
