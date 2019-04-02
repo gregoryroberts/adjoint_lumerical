@@ -286,7 +286,8 @@ for epoch in range(0, num_epochs):
 
 
 		#
-		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources.
+		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
+		# gradients for x- and y-polarized forward sources.
 		#
 		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape, dtype=np.complex), np.zeros(cur_permittivity.shape, dtype=np.complex) ]
 
@@ -324,6 +325,10 @@ for epoch in range(0, num_epochs):
 							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
 							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
 							axis=0)
+
+		#
+		# Step 4: Step the design variable.
+		#
 
 
 
