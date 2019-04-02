@@ -359,7 +359,7 @@ for epoch in range(0, num_epochs):
 										0.0)
 
 			difference = np.abs(proposed_design_variable - cur_design_variable)
-			max_relative_difference = np.max(difference / (1e-6 + np.abs(cur_design_variable)))
+			max_relative_difference = np.mean(difference / (1e-3 + np.abs(cur_design_variable)))
 
 			if (max_relative_difference <= max_change_design) and (max_relative_difference >= min_change_design):
 				break
