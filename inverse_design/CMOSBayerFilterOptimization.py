@@ -249,7 +249,7 @@ for epoch in range(0, num_epochs):
 			(forward_sources[xy_idx]).enabled = 1
 			fdtd_hook.run()
 
-			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E'),
+			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
@@ -314,7 +314,7 @@ for epoch in range(0, num_epochs):
 
 					print(source_weight.shape)
 					print(adjoint_e_fields[xy_idx].shape)
-					print(forward_e_fields[pol_name].shape)
+					print((forward_e_fields[pol_name]).shape)
 
 					for spectral_idx in range(0, source_weight.shape[0]):
 						# Currently, this weights all gradients equally. I believe there is another scaling with wavelength that needs to be
