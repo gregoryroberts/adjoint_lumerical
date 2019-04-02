@@ -332,13 +332,13 @@ for epoch in range(0, num_epochs):
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
 		max_change_design = 0.01 * (
-			epoch_end_permittivity_change_max_percentage +
-			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max_percentage / (num_iterations_per_epoch - 1))
+			epoch_end_permittivity_change_max +
+			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
 		)
 
 		min_change_design = 0.01 * (
-			epoch_end_permittivity_change_min_percentage +
-			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min_percentage / (num_iterations_per_epoch - 1))
+			epoch_end_permittivity_change_min +
+			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
 		)
 
 
