@@ -158,11 +158,6 @@ bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * 
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
 
-cur_permittivity = bayer_filter.get_permittivity()
-fdtd_hook.select("design_import")
-fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
-
-
 #
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
 #
@@ -232,6 +227,12 @@ for epoch in range(0, num_epochs):
 
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
+
+		fdtd_hook.switchtolayout()
+		cur_permittivity = bayer_filter.get_permittivity()
+		fdtd_hook.select("design_import")
+		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+
 
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
