@@ -351,7 +351,6 @@ for epoch in range(0, num_epochs):
 
 		while True:
 			proposed_design_variable = cur_design_variable + step_size * design_gradient
-
 			proposed_design_variable = np.maximum(
 										np.minimum(
 											proposed_design_variable,
@@ -359,11 +358,11 @@ for epoch in range(0, num_epochs):
 										0.0)
 
 			difference = np.abs(proposed_design_variable - cur_design_variable)
-			max_relative_difference = np.mean(difference / (1e-3 + np.abs(cur_design_variable)))
+			max_difference = np.max(difference)
 
-			if (max_relative_difference <= max_change_design) and (max_relative_difference >= min_change_design):
+			if (max_difference <= max_change_design) and (max_difference >= min_change_design):
 				break
-			elif (max_relative_difference <= max_change_design):
+			elif (max_difference <= max_change_design):
 				step_size *= 2
 				if (last ^ 1) and check_last:
 					break
@@ -382,13 +381,13 @@ for epoch in range(0, num_epochs):
 		bayer_filter.step(-design_gradient, step_size)
 		cur_design_variable = bayer_filter.get_design_variable()
 
-		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
+		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
 
 		step_size_evolution[epoch][iteration] = step_size
 		average_design_change_evolution[epoch][iteration] = average_design_variable_change
 
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
-		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_change_evolution)
+		np.save(projects_directory_location + "/average_design_change_evolution.npy", max_design_variable_change)
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 
 
