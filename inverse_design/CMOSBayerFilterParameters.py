@@ -69,8 +69,8 @@ fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
 fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um
 fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
 
-fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
-fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
+fdtd_region_minimum_vertical_voxels = 1 + int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
+fdtd_region_minimum_lateral_voxels = 1 + int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
 
 fdtd_simulation_time_fs = 10#700
 
