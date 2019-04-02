@@ -232,6 +232,8 @@ focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
+step_size_start = 1.
+
 #
 # Run the optimization
 #
@@ -284,6 +286,7 @@ for epoch in range(0, num_epochs):
 		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
 
+		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
 
 		#
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
@@ -329,6 +332,45 @@ for epoch in range(0, num_epochs):
 		#
 		# Step 4: Step the design variable.
 		#
+		device_gradient = xy_polarized_gradients[0] + xy_polarized_gradients[1]
+		design_gradient = bayer_filter.backpropagate(device_gradient)
+
+		max_change_design = 0.01 * (
+			epoch_end_permittivity_change_max_percentage +
+			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max_percentage / (num_iterations_per_epoch - 1))
+		)
+
+		min_change_design = 0.01 * (
+			epoch_end_permittivity_change_max_percentage +
+			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max_percentage / (num_iterations_per_epoch - 1))
+		)
+
+
+		cur_design_variable = bayer_filter.get_design_variable()
+
+		step_size = step_size_start
+
+		while True:
+			proposed_design_variable = cur_design_variable + step_size * design_gradient
+
+			proposed_design_variable = np.maximum(
+										np.minimum(
+											proposed_design_variable,
+											1.0),
+										0.0)
+
+			difference = np.abs(proposed_design_variable - cur_design_variable)
+			max_relative_difference = np.max(difference / (1e-6 + np.abs(cur_design_variable)))
+
+			if (max_relative_difference < max_change_design) and (max_relative_difference > min_change_design):
+				step_size_start = step_size
+				break
+			elif (max_relative_difference < max_change_design):
+				step_size *= 2
+			else:
+				step_size /= 2
+
+		bayer_filter.step(-design_gradient, step_size)
 
 
 

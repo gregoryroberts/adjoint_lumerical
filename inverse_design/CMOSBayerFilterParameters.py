@@ -111,4 +111,9 @@ num_iterations_per_epoch = 25
 
 epoch_start_permittivity_change_max_percentage = 20
 epoch_end_permittivity_change_max_percentage = 5
+epoch_range_permittivity_change_max_percentage = epoch_start_permittivity_change_max_percentage - epoch_end_permittivity_change_max_percentage
+
+epoch_start_permittivity_change_min_percentage = 5
+epoch_end_permittivity_change_min_percentage = 0
+epoch_range_permittivity_change_min_percentage = epoch_start_permittivity_change_max_percentage - epoch_end_permittivity_change_max_percentage
 
