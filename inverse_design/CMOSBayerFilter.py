@@ -8,13 +8,14 @@ import numpy as np
 
 class CMOSBayerFilter(device.Device):
 
-	def __init__(self, size, permittivity_bounds, init_permittivity):
+	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers):
 		super(CMOSBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
 
-		self.init_filters_and_variables()
+		self.num_z_layers = num_z_layers
 		self.flip_threshold = 0.5
 		self.minimum_design_value = 0
 		self.maximum_design_value = 1
+		self.init_filters_and_variables()
 
 		self.update_permittivity()
 
@@ -109,7 +110,7 @@ class CMOSBayerFilter(device.Device):
 		self.num_variables = 1 + self.num_filters
 
 		# Start the sigmoids at weak strengths
-		self.sigmoid_beta = 0.0125
+		self.sigmoid_beta = 0.0625
 		self.sigmoid_eta = 0.5
 		self.sigmoid_0 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		self.sigmoid_2 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
@@ -118,14 +119,16 @@ class CMOSBayerFilter(device.Device):
 		self.blur_half_width = 2
 		self.max_blur_1 = square_blur.SquareBlur(alpha, self.blur_half_width)
 
+		x_dimension_idx = 0
+		y_dimension_idx = 1
+		z_dimension_idx = 2
+
 		z_voxel_layers = self.size[2]
-		num_voxels_per_layer = np.floor(z_voxel_layers / 5)
-		self.num_z_layers = 8
-		self.layering_z_3 = layering.Layering(2, self.num_z_layers)
+		self.layering_z_3 = layering.Layering(z_dimension_idx, self.num_z_layers)
 
 		single_layer = 1
-		layering_x_4 = layering.Layering(0, single_layer)
-		layering_y_4 = layering.Layering(1, single_layer)
+		layering_x_4 = layering.Layering(x_dimension_idx, single_layer)
+		layering_y_4 = layering.Layering(y_dimension_idx, single_layer)
 		self.layering_xy_4 = [layering_x_4, layering_y_4]
 
 		scale_min = self.permittivity_bounds[0]
