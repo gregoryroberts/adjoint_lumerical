@@ -14,24 +14,24 @@ project_name = 'cmos_bidirectional_bars'
 #
 background_index = 1.0
 min_device_index = 1.0
-max_device_index = 1.5
+max_device_index = 1.45
 
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 1.5
+focal_length_um = 3.75
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
 #
 # Device
 #
-mesh_spacing_um = 0.02
+mesh_spacing_um = 0.05
 
-device_size_lateral_um = 2
-device_size_verical_um = 2
+device_size_lateral_um = 5
+device_size_verical_um = 5
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
@@ -42,8 +42,8 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 0.4
-lambda_max_um = 0.7
+lambda_min_um = 1
+lambda_max_um = 1.75
 
 num_bands = 3
 num_points_per_band = 10
@@ -59,7 +59,7 @@ min_feature_size_um = 0.1
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 10
+num_vertical_layers = 12
 
 #
 # FDTD
