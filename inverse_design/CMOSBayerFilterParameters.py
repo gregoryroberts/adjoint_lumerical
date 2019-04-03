@@ -64,8 +64,8 @@ num_vertical_layers = 10
 #
 # FDTD
 #
-vertical_gap_size_um = 0.5
-lateral_gap_size_um = 0.2
+vertical_gap_size_um = 1.0
+lateral_gap_size_um = 0.5
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
