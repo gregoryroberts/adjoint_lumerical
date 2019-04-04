@@ -187,17 +187,11 @@ def get_monitor_data(monitor_name, monitor_field):
 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
 
-	# start_time = time.time()
-
 	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
 	monitor_data = {}
 	load_file = h5py.File(data_transfer_filename + ".mat")
 
 	monitor_data = np.array(load_file[extracted_data_name])
-
-	# end_time = time.time()
-
-	# print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
 
 	return monitor_data
 
@@ -218,178 +212,79 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 1.
 
-#
-# Run the optimization
-#
-for epoch in range(0, num_epochs):
-	bayer_filter.update_filters(epoch)
+finite_difference_z = int(device_voxels_vertical / 2.)
+finite_difference_downscale_factor = 8
+finite_difference_voxels_lateral = int( np.ceil( device_voxels_lateral / finite_difference_downscale_factor ) )
 
-	for iteration in range(0, num_iterations_per_epoch):
-		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
+finite_difference_slice = np.zeros((finite_difference_voxels_lateral, finite_difference_voxels_lateral, num_focal_spots))
 
-		fdtd_hook.switchtolayout()
-		cur_permittivity = bayer_filter.get_permittivity()
+h = 1e-3
+
+
+def compute_fom_per_focal_spot(focal_data):
+	figure_of_merit_per_focal_spot = []
+	for focal_idx in range(0, num_focal_spots):
+		compute_fom = 0
+
+		polarizations = ['x']
+
+		for polarization_idx in range(0, len(polarizations)):
+			get_focal_data = focal_data[polarizations[polarization_idx]]
+
+			max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
+
+			for spectral_idx in range(0, max_intensity_weighting.shape[0]):
+				compute_fom += np.sum(
+					(
+						np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] + spectral_idx, 0, 0, 0])**2 /
+						max_intensity_weighting[spectral_idx]
+					)
+				)
+
+		figure_of_merit_per_focal_spot.append(compute_fom)
+
+	figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
+	return figure_of_merit_per_focal_spot
+
+
+fdtd_hook.switchtolayout()
+cur_permittivity = bayer_filter.get_permittivity()
+fdtd_hook.select("design_import")
+fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+
+disable_all_sources()
+forward_sources['x'].enabled = 1
+fdtd_hook.run()
+
+focal_data_init['x'] = []
+for adj_src_idx in range(0, num_adjoint_sources):
+	focal_data_init['x'].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+
+init_fom = compute_fom_per_focal_spot(focal_data_init)
+
+for fd_row in np.arange(0, device_voxels_lateral, finite_difference_downscale_factor):
+	print("Working on row = " + str(fd_row))
+	for fd_col in np.arange(0, device_voxels_lateral, finite_difference_downscale_factor):
+		cur_permittivity[fd_row, fd_col] += h
+
+		disable_all_sources()
 		fdtd_hook.select("design_import")
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+		forward_sources['x'].enabled = 1
+		fdtd_hook.run()
 
-
-		#
-		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
-		#
-		for xy_idx in range(0, 2):
-			disable_all_sources()
-			(forward_sources[xy_idx]).enabled = 1
-			fdtd_hook.run()
-
-			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-
-			focal_data[xy_names[xy_idx]] = []
-			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
-
-
-		#
-		# Step 2: Compute the figure of merit
-		#
-		figure_of_merit_per_focal_spot = []
-		for focal_idx in range(0, num_focal_spots):
-			compute_fom = 0
-
-			polarizations = polarizations_focal_plane_map[focal_idx]
-
-			for polarization_idx in range(0, len(polarizations)):
-				get_focal_data = focal_data[polarizations[polarization_idx]]
-
-				max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
-
-				for spectral_idx in range(0, max_intensity_weighting.shape[0]):
-					compute_fom += np.sum(
-						(
-							np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] + spectral_idx, 0, 0, 0])**2 /
-							max_intensity_weighting[spectral_idx]
-						)
-					)
-
-			figure_of_merit_per_focal_spot.append(compute_fom)
-
-		figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
-
-		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
-		performance_weighting -= np.min(performance_weighting)
-		performance_weighting /= np.sum(performance_weighting)
-
-		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
-		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
-
-		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
-
-		#
-		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
-		# gradients for x- and y-polarized forward sources.
-		#
-		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape, dtype=np.complex), np.zeros(cur_permittivity.shape, dtype=np.complex) ]
-
+		focal_data['x'] = []
 		for adj_src_idx in range(0, num_adjoint_sources):
-			polarizations = polarizations_focal_plane_map[adj_src_idx]
-			spectral_indices = spectral_focal_plane_map[adj_src_idx]
+			focal_data['x'].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
-			gradient_performance_weight = performance_weighting[adj_src_idx]
+		fom = compute_fom_per_focal_spot(focal_data)
 
-			adjoint_e_fields = []
-			for xy_idx in range(0, 2):
-				disable_all_sources()
-				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
-				fdtd_hook.run()
+		compute_fd = (fom - init_fom) / h
+		print("Computed FD is " + str(compute_fd))
 
-				adjoint_e_fields.append(
-					get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+		finite_difference_slice[fd_row, fd_col, :] = compute_fd
 
-			for pol_idx in range(0, len(polarizations)):
-				pol_name = polarizations[pol_idx]
-				get_focal_data = focal_data[pol_name]
-				pol_name_to_idx = polarization_name_to_idx[pol_name]
-
-				for xy_idx in range(0, 2):
-					source_weight = np.conj(
-						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
-
-					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
-
-					for spectral_idx in range(0, source_weight.shape[0]):
-						xy_polarized_gradients[pol_name_to_idx] += np.sum(
-							(source_weight[spectral_idx] * gradient_performance_weight / max_intensity_weighting[spectral_idx]) *
-							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
-							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
-							axis=0)
-
-		#
-		# Step 4: Step the design variable.
-		#
-		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
-		design_gradient = bayer_filter.backpropagate(device_gradient)
-
-		max_change_design = (
-			epoch_end_permittivity_change_max +
-			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
-		)
-
-		min_change_design = (
-			epoch_end_permittivity_change_min +
-			(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
-		)
+		cur_permittivity[fd_row, fd_col] -= h
 
 
-		cur_design_variable = bayer_filter.get_design_variable()
-
-		step_size = step_size_start
-
-		check_last = False
-		last = 0
-
-		while True:
-			proposed_design_variable = cur_design_variable + step_size * design_gradient
-			proposed_design_variable = np.maximum(
-										np.minimum(
-											proposed_design_variable,
-											1.0),
-										0.0)
-
-			difference = np.abs(proposed_design_variable - cur_design_variable)
-			max_difference = np.max(difference)
-
-			if (max_difference <= max_change_design) and (max_difference >= min_change_design):
-				break
-			elif (max_difference <= max_change_design):
-				step_size *= 2
-				if (last ^ 1) and check_last:
-					break
-				check_last = True
-				last = 1
-			else:
-				step_size /= 2
-				if (last ^ 0) and check_last:
-					break
-				check_last = True
-				last = 0
-
-		step_size_start = step_size
-
-		last_design_variable = cur_design_variable.copy()
-		bayer_filter.step(-design_gradient, step_size)
-		cur_design_variable = bayer_filter.get_design_variable()
-
-		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
-		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
-
-		step_size_evolution[epoch][iteration] = step_size
-		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
-		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
-
-		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
-		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
-		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
-		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
-
-
-
-
+np.save(projects_directory_location + "/finite_difference.npy", finite_difference_slice)

@@ -21,6 +21,10 @@ class Device:
 	def get_design_variable(self):
 		return self.w[0]
 
+	def set_design_variable(self, new_design):
+		self.w[0] = new_design
+		self.update_permittivity()
+
 	def get_permittivity(self):
 		return self.w[-1]
 
