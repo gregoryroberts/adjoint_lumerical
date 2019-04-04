@@ -283,8 +283,6 @@ for fd_row in np.arange(0, device_voxels_lateral, finite_difference_downscale_fa
 		fom = compute_fom_per_focal_spot(focal_data)
 
 		compute_fd = (fom - init_fom) / h
-		print("Computed FD is " + str(compute_fd))
-
 		finite_difference_slice[fd_array_index_row, fd_array_index_col, :] = compute_fd
 
 		cur_permittivity[fd_row, fd_col] -= h
