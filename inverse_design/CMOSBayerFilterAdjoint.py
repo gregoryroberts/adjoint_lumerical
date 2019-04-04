@@ -269,8 +269,6 @@ for adj_src_idx in range(0, num_adjoint_sources):
 	polarizations = polarizations_focal_plane_map[adj_src_idx]
 	spectral_indices = spectral_focal_plane_map[adj_src_idx]
 
-	gradient_performance_weight = performance_weighting[adj_src_idx]
-
 	adjoint_e_fields = []
 	for xy_idx in range(0, 2):
 		disable_all_sources()
@@ -293,7 +291,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
 
 			for spectral_idx in range(0, source_weight.shape[0]):
 				xy_polarized_gradients[pol_name_to_idx] += np.sum(
-					(source_weight[spectral_idx] * gradient_performance_weight / max_intensity_weighting[spectral_idx]) *
+					(source_weight[spectral_idx] / max_intensity_weighting[spectral_idx]) *
 					adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
 					forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
 					axis=0)
