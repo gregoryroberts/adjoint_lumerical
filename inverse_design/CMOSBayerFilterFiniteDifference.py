@@ -287,5 +287,4 @@ for fd_row in np.arange(0, device_voxels_lateral, finite_difference_downscale_fa
 
 		cur_permittivity[fd_row, fd_col] -= h
 
-
-np.save(projects_directory_location + "/finite_difference.npy", finite_difference_slice)
+		np.save(projects_directory_location + "/finite_difference.npy", finite_difference_slice)
