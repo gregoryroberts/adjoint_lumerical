@@ -253,7 +253,7 @@ fdtd_hook.select("design_import")
 fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
 disable_all_sources()
-forward_sources['x'].enabled = 1
+forward_sources[0].enabled = 1
 fdtd_hook.run()
 
 focal_data_init['x'] = []
@@ -270,7 +270,7 @@ for fd_row in np.arange(0, device_voxels_lateral, finite_difference_downscale_fa
 		disable_all_sources()
 		fdtd_hook.select("design_import")
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
-		forward_sources['x'].enabled = 1
+		forward_sources[0].enabled = 1
 		fdtd_hook.run()
 
 		focal_data['x'] = []
