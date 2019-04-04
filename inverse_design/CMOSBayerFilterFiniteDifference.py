@@ -202,8 +202,8 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
-forward_e_fields = {}
 focal_data = {}
+focal_data_init = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
