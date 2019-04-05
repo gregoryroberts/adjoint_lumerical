@@ -290,7 +290,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
 			max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
 
 			for spectral_idx in range(0, source_weight.shape[0]):
-				xy_polarized_gradients[pol_name_to_idx][:, :, :, adj_src_idx] += np.sum(
+				x_polarized_gradients[:, :, :, adj_src_idx] += np.sum(
 					(source_weight[spectral_idx] / max_intensity_weighting[spectral_idx]) *
 					adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
 					forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
@@ -299,7 +299,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
 #
 # Step 4: Step the design variable.
 #
-device_gradient_xpol = 2 * np.real( xy_polarized_gradients[0] )
+device_gradient_xpol = 2 * np.real( x_polarized_gradients )
 
 np.save(projects_directory_location + "/adjoint_device_gradient_xpol.npy", device_gradient_xpol)
 
