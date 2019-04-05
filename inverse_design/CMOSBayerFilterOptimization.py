@@ -326,6 +326,10 @@ for epoch in range(0, num_epochs):
 		# Step 4: Step the design variable.
 		#
 		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
+		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
+		device_gradient = np.swapaxes(device_gradient, 0, 2)
+
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
 		max_change_design = (
