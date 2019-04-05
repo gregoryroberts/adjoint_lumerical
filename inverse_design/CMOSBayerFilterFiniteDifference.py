@@ -218,7 +218,7 @@ finite_difference_voxels_lateral = int( np.ceil( device_voxels_lateral / finite_
 
 finite_difference_slice = np.zeros((finite_difference_voxels_lateral, finite_difference_voxels_lateral, num_focal_spots))
 
-h = 1e-3
+h = 2.5e-2
 
 
 def compute_fom_per_focal_spot(focal_data):
