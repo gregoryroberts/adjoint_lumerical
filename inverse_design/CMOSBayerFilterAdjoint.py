@@ -240,7 +240,7 @@ figure_of_merit_per_focal_spot = []
 for focal_idx in range(0, num_focal_spots):
 	compute_fom = 0
 
-	polarizations = polarizations_focal_plane_map[focal_idx]
+	polarizations = ['x']
 
 	for polarization_idx in range(0, len(polarizations)):
 		get_focal_data = focal_data[polarizations[polarization_idx]]
@@ -263,10 +263,10 @@ figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
 # Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
 # gradients for x- and y-polarized forward sources.
 #
-xy_polarized_gradients = [ np.zeros(cur_permittivity.shape, dtype=np.complex), np.zeros(cur_permittivity.shape, dtype=np.complex) ]
+x_polarized_gradients = np.zeros((cur_permittivity.shape[0], cur_permittivity.shape[1], cur_permittivity.shape[2], num_focal_spots), dtype=np.complex)
 
 for adj_src_idx in range(0, num_adjoint_sources):
-	polarizations = polarizations_focal_plane_map[adj_src_idx]
+	polarizations = ['x']
 	spectral_indices = spectral_focal_plane_map[adj_src_idx]
 
 	adjoint_e_fields = []
@@ -290,7 +290,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
 			max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
 
 			for spectral_idx in range(0, source_weight.shape[0]):
-				xy_polarized_gradients[pol_name_to_idx] += np.sum(
+				xy_polarized_gradients[pol_name_to_idx][:, :, :, adj_src_idx] += np.sum(
 					(source_weight[spectral_idx] / max_intensity_weighting[spectral_idx]) *
 					adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
 					forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
@@ -300,10 +300,8 @@ for adj_src_idx in range(0, num_adjoint_sources):
 # Step 4: Step the design variable.
 #
 device_gradient_xpol = 2 * np.real( xy_polarized_gradients[0] )
-design_gradient_xpol = bayer_filter.backpropagate(device_gradient)
 
 np.save(projects_directory_location + "/adjoint_device_gradient_xpol.npy", device_gradient_xpol)
-np.save(projects_directory_location + "/adjoint_design_gradient_xpol.npy", design_gradient_xpol)
 
 
 
