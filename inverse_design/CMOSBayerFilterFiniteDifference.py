@@ -268,7 +268,7 @@ for fd_row in np.arange(0, device_voxels_lateral, finite_difference_downscale_fa
 		fd_array_index_row = int(np.floor(fd_row / finite_difference_downscale_factor))
 		fd_array_index_col = int(np.floor(fd_col / finite_difference_downscale_factor))
 
-		cur_permittivity[fd_row, fd_col] += h
+		cur_permittivity[fd_row, fd_col, finite_difference_z] += h
 
 		disable_all_sources()
 		fdtd_hook.select("design_import")
@@ -285,6 +285,8 @@ for fd_row in np.arange(0, device_voxels_lateral, finite_difference_downscale_fa
 		compute_fd = (fom - init_fom) / h
 		finite_difference_slice[fd_array_index_row, fd_array_index_col, :] = compute_fd
 
-		cur_permittivity[fd_row, fd_col] -= h
+		print('finite diff = ' + str(compute_fd))
+
+		cur_permittivity[fd_row, fd_col, finite_difference_z] -= h
 
 		np.save(projects_directory_location + "/finite_difference.npy", finite_difference_slice)
