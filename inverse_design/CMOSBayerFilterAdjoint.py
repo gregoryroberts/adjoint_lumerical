@@ -282,9 +282,18 @@ for adj_src_idx in range(0, num_adjoint_sources):
 		adjoint_e_fields.append(
 			get_complex_monitor_data(design_efield_monitor['name'], 'E'))
 
-		# plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, :, :, 0]))
-		# plt.colorbar()
-		# plt.show()
+		plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, :, :, 0]))
+		plt.colorbar()
+		plt.show()
+
+		plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, :, 0, :]))
+		plt.colorbar()
+		plt.show()
+
+		plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, 0, :, :]))
+		plt.colorbar()
+		plt.show()
+
 
 	for pol_idx in range(0, len(polarizations)):
 		pol_name = polarizations[pol_idx]
