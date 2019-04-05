@@ -90,11 +90,18 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 polarizations_focal_plane_map = [ ['x', 'y'], ['x'], ['x', 'y'], ['y'] ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
+# spectral_focal_plane_map = [
+# 	[0, num_points_per_band],
+# 	[num_points_per_band, 2 * num_points_per_band],
+# 	[2 * num_points_per_band, 3 * num_points_per_band],
+# 	[num_points_per_band, 2 * num_points_per_band]
+# ]
+
 spectral_focal_plane_map = [
 	[0, num_points_per_band],
-	[num_points_per_band, 2 * num_points_per_band],
-	[2 * num_points_per_band, 3 * num_points_per_band],
-	[num_points_per_band, 2 * num_points_per_band]
+	[0, num_points_per_band],
+	[0, num_points_per_band],
+	[0, num_points_per_band]
 ]
 
 #
