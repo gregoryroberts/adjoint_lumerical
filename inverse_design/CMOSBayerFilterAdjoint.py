@@ -228,9 +228,9 @@ for xy_idx in range(0, 2):
 
 	forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-	plt.imshow(np.abs(forward_e_fields[xy_names[xy_idx]][0, 0, :, :, 0]))
-	plt.colorbar()
-	plt.show()
+	# plt.imshow(np.abs(forward_e_fields[xy_names[xy_idx]][0, 0, :, :, 0]))
+	# plt.colorbar()
+	# plt.show()
 
 	focal_data[xy_names[xy_idx]] = []
 	for adj_src_idx in range(0, num_adjoint_sources):
@@ -282,17 +282,19 @@ for adj_src_idx in range(0, num_adjoint_sources):
 		adjoint_e_fields.append(
 			get_complex_monitor_data(design_efield_monitor['name'], 'E'))
 
-		plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, :, :, 0]))
-		plt.colorbar()
-		plt.show()
+		# plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, :, :, 0]))
+		# plt.colorbar()
+		# plt.show()
 
-		plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, :, 0, :]))
-		plt.colorbar()
-		plt.show()
+		# plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, :, 0, :]))
+		# plt.colorbar()
+		# plt.show()
 
-		plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, 0, :, :]))
-		plt.colorbar()
-		plt.show()
+		# This one looks the most reasonable, and the other two look similar.
+		# I believe this one is the actual z = 0 slice!
+		# plt.imshow(np.abs(adjoint_e_fields[xy_idx][0, 0, 0, :, :]))
+		# plt.colorbar()
+		# plt.show()
 
 
 	for pol_idx in range(0, len(polarizations)):
@@ -316,9 +318,11 @@ for adj_src_idx in range(0, num_adjoint_sources):
 #
 # Step 4: Step the design variable.
 #
-device_gradient_xpol = 2 * np.real( x_polarized_gradients )
+device_gradient_xpol_real = 2 * np.real( x_polarized_gradients )
+device_gradient_xpol_imag = 2 * np.imag( x_polarized_gradients )
 
-np.save(projects_directory_location + "/adjoint_device_gradient_xpol.npy", device_gradient_xpol)
+np.save(projects_directory_location + "/adjoint_device_gradient_xpol_real.npy", device_gradient_xpol_real)
+np.save(projects_directory_location + "/adjoint_device_gradient_xpol_imag.npy", device_gradient_xpol_imag)
 
 
 
