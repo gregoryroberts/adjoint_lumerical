@@ -217,6 +217,12 @@ cur_permittivity = bayer_filter.get_permittivity()
 fdtd_hook.select("design_import")
 fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
+cur_permittivity[100, :, :] = np.ones((101, 101))
+cur_permittivity[100, :, 0:10] = 2
+fdtd_hook.select("design_import")
+fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+
+sys.exit(1)
 
 #
 # Step 1: Run the forward optimization for both x- and y-polarized plane waves.
