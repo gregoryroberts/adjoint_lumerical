@@ -117,7 +117,10 @@ class CMOSBayerFilter(device.Device):
 
 		alpha = 8
 		self.blur_half_width = 2
-		self.max_blur_1 = square_blur.SquareBlur(alpha, self.blur_half_width)
+		# Only blur in x and y because we are layering in z
+		self.max_blur_1 = square_blur.SquareBlur(
+			alpha,
+			[self.blur_half_width, self.blur_half_width, 0])
 
 		x_dimension_idx = 0
 		y_dimension_idx = 1
