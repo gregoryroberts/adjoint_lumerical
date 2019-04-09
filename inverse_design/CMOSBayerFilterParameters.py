@@ -59,7 +59,7 @@ min_feature_size_um = 0.1
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 10
+num_vertical_layers = 12
 
 #
 # FDTD
