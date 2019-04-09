@@ -6,6 +6,8 @@ import square_blur as square_blur
 
 import numpy as np
 
+from CMOSBayerFilterParameters import *
+
 class CMOSBayerFilter(device.Device):
 
 	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers):
@@ -116,7 +118,7 @@ class CMOSBayerFilter(device.Device):
 		self.sigmoid_2 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 
 		alpha = 8
-		self.blur_half_width = 2
+		self.blur_half_width = blur_half_width_voxels
 		# Only blur in x and y because we are layering in z
 		self.max_blur_1 = square_blur.SquareBlur(
 			alpha,

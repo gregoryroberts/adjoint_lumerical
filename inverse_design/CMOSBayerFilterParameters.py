@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_bidirectional_bars'
+project_name = 'cmos_bidirectional_bars_smaller_feature_size'
 
 #
 # Optical
