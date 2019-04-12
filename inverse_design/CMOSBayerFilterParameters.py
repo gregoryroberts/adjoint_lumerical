@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_bidirectional_bars_test_pipeline'
+project_name = 'cmos_bidirectional_bars_5x5x7p2um'
 
 #
 # Optical
@@ -31,7 +31,7 @@ focal_plane_center_vertical_um = -focal_length_um
 mesh_spacing_um = 0.05
 
 device_size_lateral_um = 5
-device_size_verical_um = 5
+device_size_verical_um = 7.2
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
@@ -109,10 +109,8 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-# num_epochs = 8
-# num_iterations_per_epoch = 25
-num_epochs = 1
-num_iterations_per_epoch = 1
+num_epochs = 8
+num_iterations_per_epoch = 25
 
 epoch_start_permittivity_change_max = 0.25
 epoch_end_permittivity_change_max = 0.05

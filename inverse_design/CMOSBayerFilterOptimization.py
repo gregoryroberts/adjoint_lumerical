@@ -332,9 +332,6 @@ for epoch in range(0, num_epochs):
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
-		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
-		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
-
 		max_change_design = epoch_start_permittivity_change_max
 		min_change_design = epoch_start_permittivity_change_min
 
@@ -397,6 +394,8 @@ for epoch in range(0, num_epochs):
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
+		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
+		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
 		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
 		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
