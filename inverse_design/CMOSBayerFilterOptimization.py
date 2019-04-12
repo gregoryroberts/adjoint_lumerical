@@ -287,7 +287,9 @@ for epoch in range(0, num_epochs):
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
 		# gradients for x- and y-polarized forward sources.
 		#
-		xy_polarized_gradients = [ np.zeros(cur_permittivity.shape, dtype=np.complex), np.zeros(cur_permittivity.shape, dtype=np.complex) ]
+		cur_permittivity_shape = cur_permittivity.shape
+		reversed_field_shape = [cur_permittivity_shape[2], cur_permittivity_shape[1], cur_permittivity_shape[0]]
+		xy_polarized_gradients = [ np.zeros(reversed_field_shape, dtype=np.complex), np.zeros(reversed_field_shape, dtype=np.complex) ]
 
 		for adj_src_idx in range(0, num_adjoint_sources):
 			polarizations = polarizations_focal_plane_map[adj_src_idx]
@@ -314,9 +316,6 @@ for epoch in range(0, num_epochs):
 						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
 
 					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
-
-					print((adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :]).shape)
-					print((forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :]).shape)
 
 					for spectral_idx in range(0, source_weight.shape[0]):
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
