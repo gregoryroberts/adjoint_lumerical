@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_bidirectional_bars_smaller_feature_size'
+project_name = 'cmos_bidirectional_bars_test_pipeline'
 
 #
 # Optical
@@ -109,8 +109,10 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-num_epochs = 8
-num_iterations_per_epoch = 25
+# num_epochs = 8
+# num_iterations_per_epoch = 25
+num_epochs = 1
+num_iterations_per_epoch = 1
 
 epoch_start_permittivity_change_max = 0.25
 epoch_end_permittivity_change_max = 0.05

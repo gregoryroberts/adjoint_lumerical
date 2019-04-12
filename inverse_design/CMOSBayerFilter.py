@@ -63,7 +63,7 @@ class CMOSBayerFilter(device.Device):
 		self.w[6] = var6
 
 	#
-	# Need to also overrdie the backpropagation function
+	# Need to also override the backpropagation function
 	#
 	def backpropagate(self, gradient):
 		gradient = self.scale_5.chain_rule(gradient, self.w[6], self.w[5])
@@ -123,6 +123,11 @@ class CMOSBayerFilter(device.Device):
 		self.max_blur_1 = square_blur.SquareBlur(
 			alpha,
 			[self.blur_half_width, self.blur_half_width, 0])
+
+		# self.max_blur_1 = square_blur.SquareBlur(
+		# 	alpha,
+		# 	[2, 2, 2])
+
 
 		x_dimension_idx = 0
 		y_dimension_idx = 1
