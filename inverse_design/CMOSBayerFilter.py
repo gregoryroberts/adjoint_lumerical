@@ -55,7 +55,7 @@ class CMOSBayerFilter(device.Device):
 		last_layer_start = (num_z_layers - 1) * num_z_voxels_per_layer
 
 		pull_last_layer_data = var2[:, :, last_layer_start : num_z_voxels_total]
-		var3[:, :, last_layer_start : num_z_voxels_total] = (self.max_blur_xy_2[layer_idx % 2]).forward(pull_last_layer_data)
+		var3[:, :, last_layer_start : num_z_voxels_total] = (self.max_blur_xy_2[(num_z_layers - 1) % 2]).forward(pull_last_layer_data)
 		var4[:, :, last_layer_start : num_z_voxels_total] = (
 			self.layering_xy_3[(num_z_layers - 1) % 2]).forward(
 			var3[:, :, last_layer_start : num_z_voxels_total])
@@ -109,12 +109,12 @@ class CMOSBayerFilter(device.Device):
 		pull_last_layer_var3_data = self.w[3][:, :, last_layer_start : num_z_voxels_total]
 		pull_last_layer_var2_data = self.w[2][:, :, last_layer_start : num_z_voxels_total]
 
-		gradient[:, :, last_layer_start : num_z_voxels_total] = (self.layering_xy_3[layer_idx % 2]).chain_rule(
+		gradient[:, :, last_layer_start : num_z_voxels_total] = (self.layering_xy_3[(num_z_layers - 1) % 2]).chain_rule(
 			gradient[:, :, last_layer_start : num_z_voxels_total],
 			pull_last_layer_var4_data,
 			pull_last_layer_var3_data)
 
-		gradient[:, :, last_layer_start : num_z_voxels_total] = (self.max_blur_xy_2[layer_idx % 2]).chain_rule(
+		gradient[:, :, last_layer_start : num_z_voxels_total] = (self.max_blur_xy_2[(num_z_layers - 1) % 2]).chain_rule(
 			gradient[:, :, last_layer_start : num_z_voxels_total],
 			pull_last_layer_var3_data,
 			pull_last_layer_var2_data)
