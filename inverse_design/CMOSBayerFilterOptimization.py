@@ -261,12 +261,13 @@ for epoch in range(0, num_epochs):
 				get_focal_data = focal_data[polarizations[polarization_idx]]
 
 				max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
+				total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
 
-				for spectral_idx in range(0, max_intensity_weighting.shape[0]):
+				for spectral_idx in range(0, total_weighting.shape[0]):
 					compute_fom += np.sum(
 						(
 							np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] + spectral_idx, 0, 0, 0])**2 /
-							max_intensity_weighting[spectral_idx]
+							total_weighting[spectral_idx]
 						)
 					)
 
@@ -316,10 +317,11 @@ for epoch in range(0, num_epochs):
 						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
 
 					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
+					total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
 
 					for spectral_idx in range(0, source_weight.shape[0]):
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
-							(source_weight[spectral_idx] * gradient_performance_weight / max_intensity_weighting[spectral_idx]) *
+							(source_weight[spectral_idx] * gradient_performance_weight / total_weighting[spectral_idx]) *
 							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
 							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
 							axis=0)

@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_bidirectional_bars_5x5x7p2um'
+project_name = 'cmos_bidirectional_bars_rgb_2x2x3um'
 
 #
 # Optical
@@ -21,17 +21,17 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 3.75
+focal_length_um = 1.5
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
 #
 # Device
 #
-mesh_spacing_um = 0.05
+mesh_spacing_um = 0.025
 
-device_size_lateral_um = 5
-device_size_verical_um = 7.2
+device_size_lateral_um = 2
+device_size_verical_um = 4.2
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
@@ -42,8 +42,8 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 1
-lambda_max_um = 1.75
+lambda_min_um = 0.4
+lambda_max_um = 0.7
 
 num_bands = 3
 num_points_per_band = 10
@@ -55,7 +55,7 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 #
 # Fabrication Constraints
 #
-min_feature_size_um = 0.1
+min_feature_size_um = 0.075
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
@@ -64,7 +64,7 @@ num_vertical_layers = 12
 #
 # FDTD
 #
-vertical_gap_size_um = 1.0
+vertical_gap_size_um = 0.5
 lateral_gap_size_um = 0.5
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
@@ -87,7 +87,8 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 #
 # Spectral and polarization selectivity information
 #
-polarizations_focal_plane_map = [ ['x', 'y'], ['x'], ['x', 'y'], ['y'] ]
+polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
+weight_focal_plane_map = [ 1.0, 0.5, 1.0, 0.5 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
 spectral_focal_plane_map = [

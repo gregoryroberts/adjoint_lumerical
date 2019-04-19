@@ -37,6 +37,11 @@ device = bayer_filter.get_permittivity()
 
 end = f(device)
 
+# print(np.sum(np.abs(device1 - device)))
+# print(np.sum(np.abs(device)) / (dim**3))
+# print(device)
+
+
 design[loc, loc, loc] -= h
 bayer_filter.set_design_variable(design)
 device = bayer_filter.get_permittivity()
@@ -49,5 +54,6 @@ fd_grad = (end - start) / h
 
 print('fd grad = ' + str(fd_grad))
 print('grad design = ' + str(grad_design[loc, loc, loc]))
+
 
 
