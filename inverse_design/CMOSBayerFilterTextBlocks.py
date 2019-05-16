@@ -182,7 +182,7 @@ fdtd_hook.addtogroup(x_line_group_name)
 
 for x in range(1, device_voxels_lateral):
 	fdtd_hook.select(voxel_name)
-	fdtd_hook.copy(mesh_spacing_um * 1e-6, 0, 0)
+	fdtd_hook.copy(x * mesh_spacing_um * 1e-6, 0, 0)
 	fdtd_hook.set('name', 'voxel_' + str(x))
 	# fdtd_hook.addtogroup(x_line_group_name)
 
@@ -204,7 +204,7 @@ xy_plane_group['name'] = xy_plane_group_name
 
 for y in range(1, device_voxels_lateral):
 	fdtd_hook.select(x_line_group_name)
-	fdtd_hook.copy(0, mesh_spacing_um * 1e-6, 0)
+	fdtd_hook.copy(0, y * mesh_spacing_um * 1e-6, 0)
 	fdtd_hook.addtogroup(xy_plane_group_name)
 
 fdtd_hook.select(xy_plane_group_name)
