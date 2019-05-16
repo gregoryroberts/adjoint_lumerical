@@ -167,16 +167,16 @@ device_group['name'] = 'device_group'
 for x in range(0, device_voxels_lateral):
 	for y in range(0, device_voxels_lateral):
 
-			next_rect = fdtd_hook.addrect()
-			next_rect['name'] = 'voxel_' + str(x) + '_' + str(y)
-			next_rect['x min'] = ( (-device_size_lateral_um / 2.) + x * mesh_spacing_um ) * 1e-6
-			next_rect['x max'] = ( (-device_size_lateral_um / 2.) + ( x + 1 ) * mesh_spacing_um ) * 1e-6
-			next_rect['y min'] = ( (-device_size_lateral_um / 2.) + y * mesh_spacing_um ) * 1e-6
-			next_rect['y max'] = ( (-device_size_lateral_um / 2.) + ( y + 1 ) * mesh_spacing_um ) * 1e-6
-			next_rect['z min'] = ( device_vertical_minimum_um + z * mesh_spacing_um ) * 1e-6
-			next_rect['z max'] = ( device_vertical_minimum_um + ( z + 1 ) * mesh_spacing_um ) * 1e-6
-			next_rect['index'] = str( np.sqrt( get_permittivity ) )
-			fdtd_hook.addtogroup('device_group')
+		next_rect = fdtd_hook.addrect()
+		next_rect['name'] = 'voxel_' + str(x) + '_' + str(y)
+		next_rect['x min'] = ( (-device_size_lateral_um / 2.) + x * mesh_spacing_um ) * 1e-6
+		next_rect['x max'] = ( (-device_size_lateral_um / 2.) + ( x + 1 ) * mesh_spacing_um ) * 1e-6
+		next_rect['y min'] = ( (-device_size_lateral_um / 2.) + y * mesh_spacing_um ) * 1e-6
+		next_rect['y max'] = ( (-device_size_lateral_um / 2.) + ( y + 1 ) * mesh_spacing_um ) * 1e-6
+		next_rect['z min'] = ( device_vertical_minimum_um + z * mesh_spacing_um ) * 1e-6
+		next_rect['z max'] = ( device_vertical_minimum_um + ( z + 1 ) * mesh_spacing_um ) * 1e-6
+		next_rect['index'] = str( np.sqrt( get_permittivity ) )
+		fdtd_hook.addtogroup('device_group')
 
 		for z in range(1, device_voxels_vertical):
 			fdtd_hook.copy(0, 0, mesh_spacing_um)
