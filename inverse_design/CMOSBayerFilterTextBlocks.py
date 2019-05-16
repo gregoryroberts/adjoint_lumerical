@@ -162,29 +162,58 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 fdtd_hook.redrawoff()
 
 device_group = fdtd_hook.addstructuregroup()
-device_group['name'] = 'device_group'
+device_group['name'] = 'device_volume'
 
-for x in range(0, 1):#device_voxels_lateral):
-	for y in range(0, 1):#device_voxels_lateral):
+x_line_group = fdtd_hook.addstructuregroup()
+x_line_group_name = 'device_x_line_' + str(0)
+x_line_group['name'] = x_line_group_name
 
-		next_rect = fdtd_hook.addrect()
-		next_rect['name'] = 'voxel_' + str(x) + '_' + str(y)
-		next_rect['x min'] = ( (-device_size_lateral_um / 2.) + x * mesh_spacing_um ) * 1e-6
-		next_rect['x max'] = ( (-device_size_lateral_um / 2.) + ( x + 1 ) * mesh_spacing_um ) * 1e-6
-		next_rect['y min'] = ( (-device_size_lateral_um / 2.) + y * mesh_spacing_um ) * 1e-6
-		next_rect['y max'] = ( (-device_size_lateral_um / 2.) + ( y + 1 ) * mesh_spacing_um ) * 1e-6
-		next_rect['z min'] = ( device_vertical_minimum_um + 0 * mesh_spacing_um ) * 1e-6
-		next_rect['z max'] = ( device_vertical_minimum_um + ( 0 + 1 ) * mesh_spacing_um ) * 1e-6
-		# next_rect['index'] = str( np.sqrt( get_permittivity ) )
-		fdtd_hook.addtogroup('device_group')
+for x in range(0, device_voxels_lateral):
+	next_rect = fdtd_hook.addrect()
+	next_rect['name'] = 'voxel_' + str(x)
+	next_rect['x min'] = ( (-device_size_lateral_um / 2.) + x * mesh_spacing_um ) * 1e-6
+	next_rect['x max'] = ( (-device_size_lateral_um / 2.) + ( x + 1 ) * mesh_spacing_um ) * 1e-6
+	next_rect['y min'] = ( (-device_size_lateral_um / 2.) + 0 * mesh_spacing_um ) * 1e-6
+	next_rect['y max'] = ( (-device_size_lateral_um / 2.) + ( 0 + 1 ) * mesh_spacing_um ) * 1e-6
+	next_rect['z min'] = ( device_vertical_minimum_um + 0 * mesh_spacing_um ) * 1e-6
+	next_rect['z max'] = ( device_vertical_minimum_um + ( 0 + 1 ) * mesh_spacing_um ) * 1e-6
 
-		for z in range(1, device_voxels_vertical):
-			fdtd_hook.copy(0, 0, mesh_spacing_um * 1e-6)
-			fdtd_hook.set('name', 'voxel_' + str(x) + '_' + str(y) + '_' + str(z))
+xy_plane_group = fdtd_hook.addstructuregroup()
+xy_plane_group_name = 'device_xy_plane_' + str(0)
+xy_plane_group['name'] = xy_plane_group_name
 
-			#get_permittivity = 1 + (max_device_permittivity - 1) * (x**2 + y**2 + z**2) / (device_voxels_lateral**2 + device_voxels_lateral**2 + device_voxels_vertical**2)
+for y in range(1, device_voxels_lateral):
+	fdtd_hook.select(x_line_group_name)
+	fdtd_hook.copy(0, mesh_spacing_um * 1e-6, 0)
+	fdtd_hook.addtogroup(xy_plane_group_name)
+
+fdtd_hook.select(xy_plane_group_name)
+fdtd_hook.addtogroup('device_volume')
 
 
 
-fdtd_hook.redrawoff()
+
+# for x in range(0, 1):#device_voxels_lateral):
+# 	for y in range(0, 1):#device_voxels_lateral):
+
+# 		next_rect = fdtd_hook.addrect()
+# 		next_rect['name'] = 'voxel_' + str(x) + '_' + str(y)
+# 		next_rect['x min'] = ( (-device_size_lateral_um / 2.) + x * mesh_spacing_um ) * 1e-6
+# 		next_rect['x max'] = ( (-device_size_lateral_um / 2.) + ( x + 1 ) * mesh_spacing_um ) * 1e-6
+# 		next_rect['y min'] = ( (-device_size_lateral_um / 2.) + y * mesh_spacing_um ) * 1e-6
+# 		next_rect['y max'] = ( (-device_size_lateral_um / 2.) + ( y + 1 ) * mesh_spacing_um ) * 1e-6
+# 		next_rect['z min'] = ( device_vertical_minimum_um + 0 * mesh_spacing_um ) * 1e-6
+# 		next_rect['z max'] = ( device_vertical_minimum_um + ( 0 + 1 ) * mesh_spacing_um ) * 1e-6
+# 		# next_rect['index'] = str( np.sqrt( get_permittivity ) )
+# 		fdtd_hook.addtogroup('device_group')
+
+# 		for z in range(1, device_voxels_vertical):
+# 			fdtd_hook.copy(0, 0, mesh_spacing_um * 1e-6)
+# 			fdtd_hook.set('name', 'voxel_' + str(x) + '_' + str(y) + '_' + str(z))
+
+# 			#get_permittivity = 1 + (max_device_permittivity - 1) * (x**2 + y**2 + z**2) / (device_voxels_lateral**2 + device_voxels_lateral**2 + device_voxels_vertical**2)
+
+
+
+fdtd_hook.redrawon()
 fdtd_hook.redraw()
