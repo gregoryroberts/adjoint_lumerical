@@ -171,7 +171,6 @@ for x in range(0, device_voxels_lateral):
 			get_permittivity = 1 + (max_device_permittivity - 1) * (x**2 + y**2 + z**2) / (device_voxels_lateral**2 + device_voxels_lateral**2 + device_voxels_vertical**2)
 
 			next_rect = fdtd_hook.addrect()
-			fdtd_hook.addtogroup('device_group')
 			next_rect['name'] = 'voxel_' + str(x) + '_' + str(y) + '_' + str(z)
 			next_rect['x min'] = ( (-device_size_lateral_um / 2.) + x * mesh_spacing_um ) * 1e-6
 			next_rect['x max'] = ( (-device_size_lateral_um / 2.) + ( x + 1 ) * mesh_spacing_um ) * 1e-6
@@ -180,6 +179,7 @@ for x in range(0, device_voxels_lateral):
 			next_rect['z min'] = ( device_vertical_minimum_um + z * mesh_spacing_um ) * 1e-6
 			next_rect['z max'] = ( device_vertical_minimum_um + ( z + 1 ) * mesh_spacing_um ) * 1e-6
 			next_rect['index'] = str( np.sqrt( get_permittivity ) )
+			fdtd_hook.addtogroup('device_group')
 
 fdtd_hook.redrawoff()
 fdtd_hook.redraw()
