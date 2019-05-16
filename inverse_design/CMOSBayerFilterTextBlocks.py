@@ -164,8 +164,8 @@ fdtd_hook.redrawoff()
 device_group = fdtd_hook.addstructuregroup()
 device_group['name'] = 'device_group'
 
-for x in range(0, device_voxels_lateral):
-	for y in range(0, device_voxels_lateral):
+for x in range(0, 1):#device_voxels_lateral):
+	for y in range(0, 1):#device_voxels_lateral):
 
 		next_rect = fdtd_hook.addrect()
 		next_rect['name'] = 'voxel_' + str(x) + '_' + str(y)
@@ -179,7 +179,8 @@ for x in range(0, device_voxels_lateral):
 		fdtd_hook.addtogroup('device_group')
 
 		for z in range(1, device_voxels_vertical):
-			fdtd_hook.copy(0, 0, mesh_spacing_um)
+			displaced_rect = fdtd_hook.copy(0, 0, mesh_spacing_um)
+			displaced_rect['name'] = 'voxel_' + str(x) + '_' + str(y) + '_' + str(z)
 
 			#get_permittivity = 1 + (max_device_permittivity - 1) * (x**2 + y**2 + z**2) / (device_voxels_lateral**2 + device_voxels_lateral**2 + device_voxels_vertical**2)
 
