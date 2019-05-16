@@ -161,6 +161,9 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 
 fdtd_hook.redrawoff()
 
+device_group = fdtd_hook.addstructuregroup()
+device_group['name'] = 'device_group'
+
 for x in range(0, device_voxels_lateral):
 	for y in range(0, device_voxels_lateral):
 		for z in range(0, device_voxels_vertical):
