@@ -145,12 +145,12 @@ for adj_src in range(0, num_adjoint_sources):
 #
 # Add device region and create device permittivity
 #
-design_import = fdtd_hook.addimport()
-design_import['name'] = 'design_import'
-design_import['x span'] = device_size_lateral_um * 1e-6
-design_import['y span'] = device_size_lateral_um * 1e-6
-design_import['z max'] = device_vertical_maximum_um * 1e-6
-design_import['z min'] = device_vertical_minimum_um * 1e-6
+# design_import = fdtd_hook.addimport()
+# design_import['name'] = 'design_import'
+# design_import['x span'] = device_size_lateral_um * 1e-6
+# design_import['y span'] = device_size_lateral_um * 1e-6
+# design_import['z max'] = device_vertical_maximum_um * 1e-6
+# design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
 bayer_filter = CMOSBayerFilter.CMOSBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers)
@@ -164,7 +164,7 @@ for x in range(0, device_voxels_lateral):
 	for y in range(0, device_voxels_lateral):
 		for z in range(0, device_voxels_vertical):
 
-			get_permittivity = 1 + (max_device_permittivity - 1) (x**2 + y**2 + z**2) / (device_voxels_lateral**2 + device_voxels_lateral**2 + device_voxels_vertical**2)
+			get_permittivity = 1 + (max_device_permittivity - 1) * (x**2 + y**2 + z**2) / (device_voxels_lateral**2 + device_voxels_lateral**2 + device_voxels_vertical**2)
 
 			next_rect = fdtd_hook.addrect()
 			next_rect['name'] = 'voxel_' + str(x) + '_' + str(y) + '_' + str(z)
