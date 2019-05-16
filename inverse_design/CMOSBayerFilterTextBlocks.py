@@ -173,8 +173,8 @@ for x in range(0, device_voxels_lateral):
 		next_rect['x max'] = ( (-device_size_lateral_um / 2.) + ( x + 1 ) * mesh_spacing_um ) * 1e-6
 		next_rect['y min'] = ( (-device_size_lateral_um / 2.) + y * mesh_spacing_um ) * 1e-6
 		next_rect['y max'] = ( (-device_size_lateral_um / 2.) + ( y + 1 ) * mesh_spacing_um ) * 1e-6
-		next_rect['z min'] = ( device_vertical_minimum_um + z * mesh_spacing_um ) * 1e-6
-		next_rect['z max'] = ( device_vertical_minimum_um + ( z + 1 ) * mesh_spacing_um ) * 1e-6
+		next_rect['z min'] = ( device_vertical_minimum_um + 0 * mesh_spacing_um ) * 1e-6
+		next_rect['z max'] = ( device_vertical_minimum_um + ( 0 + 1 ) * mesh_spacing_um ) * 1e-6
 		next_rect['index'] = str( np.sqrt( get_permittivity ) )
 		fdtd_hook.addtogroup('device_group')
 
