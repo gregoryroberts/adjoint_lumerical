@@ -159,6 +159,7 @@ bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * 
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
 
+fdtd_hook.redrawoff()
 
 for x in range(0, device_voxels_lateral):
 	for y in range(0, device_voxels_lateral):
@@ -175,3 +176,6 @@ for x in range(0, device_voxels_lateral):
 			next_rect['z min'] = ( device_vertical_minimum_um + z * mesh_spacing_um ) * 1e-6
 			next_rect['z max'] = ( device_vertical_minimum_um + ( z + 1 ) * mesh_spacing_um ) * 1e-6
 			next_rect['index'] = str( np.sqrt( get_permittivity ) )
+
+fdtd_hook.redrawoff()
+fdtd_hook.redraw()
