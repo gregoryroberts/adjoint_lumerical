@@ -229,6 +229,9 @@ for epoch in range(0, num_epochs):
 
 		fdtd_hook.switchtolayout()
 		cur_permittivity = bayer_filter.get_permittivity()
+		print("min permittivity = " + str(np.min(cur_permittivity)))
+		print("max permittivity = " + str(np.max(cur_permittivity)))
+		print()
 		fdtd_hook.select("design_import")
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
