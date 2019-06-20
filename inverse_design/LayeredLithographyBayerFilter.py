@@ -8,7 +8,7 @@ import numpy as np
 
 from LayeredLithographyParameters import *
 
-class CMOSBayerFilter(device.Device):
+class LayeredLithographyBayerFilter(device.Device):
 
 	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers):
 		super(CMOSBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
