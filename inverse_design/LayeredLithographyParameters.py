@@ -1,5 +1,5 @@
 #
-# Parameter file for the Bayer Filter CMOS optimization
+# Parameter file for the Bayer Filter Layered Lithography optimization
 #
 
 import numpy as np

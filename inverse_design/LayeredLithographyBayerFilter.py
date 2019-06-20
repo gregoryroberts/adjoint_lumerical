@@ -6,7 +6,7 @@ import square_blur as square_blur
 
 import numpy as np
 
-from CMOSBayerFilterParameters import *
+from LayeredLithographyParameters import *
 
 class CMOSBayerFilter(device.Device):
 

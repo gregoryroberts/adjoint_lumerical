@@ -4,8 +4,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from CMOSBayerFilterParameters import *
-import CMOSBayerFilter
+from LayeredLithographyParameters import *
+import LayeredLithographyBayerFilter
 
 import lumapi
 
