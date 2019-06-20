@@ -88,7 +88,7 @@ class LayeredLithographyBayerFilter(device.Device):
 		# or y-layering.  So, if you are layering in x, then you blur in y
 		# and vice versa.
 		#
-		max_blur_xy_2 = square_blur.SquareBlur(
+		self.max_blur_xy_2 = square_blur.SquareBlur(
 			alpha,
 			[self.blur_half_width, self.blur_half_width, 0])
 
