@@ -11,7 +11,7 @@ from LayeredLithographyParameters import *
 class LayeredLithographyBayerFilter(device.Device):
 
 	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers):
-		super(CMOSBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
+		super(LayeredLithographyBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
 
 		self.num_z_layers = num_z_layers
 		self.flip_threshold = 0.5
