@@ -216,7 +216,7 @@ step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
-step_size_start = 0.1
+step_size_start = 0.01
 
 #
 # Run the optimization
