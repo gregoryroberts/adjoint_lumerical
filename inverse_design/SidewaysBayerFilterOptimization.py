@@ -58,7 +58,7 @@ fdtd['background index'] = background_index
 #
 permittivity_block_left = fdtd_hook.addrect()
 permittivity_block_left['name'] = 'oxide_block_left'
-permittivity_block_left['x'] = 0
+permittivity_block_left['x'] = -0.5 * fdtd_region_size_lateral_um * 1e-6
 permittivity_block_left['x span'] = lateral_gap_size_um * 1e-6
 permittivity_block_left['y span'] = (4 * lateral_gap_size_um + device_size_lateral_um) * 1e-6
 permittivity_block_left['z max'] = device_vertical_maximum_um * 1e-6
@@ -67,7 +67,7 @@ permittivity_block_left['index'] = max_device_index
 
 permittivity_block_right = fdtd_hook.addrect()
 permittivity_block_right['name'] = 'oxide_block_right'
-permittivity_block_right['x'] = fdtd_region_size_lateral_um * 1e-6
+permittivity_block_right['x'] = 0.5 * fdtd_region_size_lateral_um * 1e-6
 permittivity_block_right['x span'] = lateral_gap_size_um * 1e-6
 permittivity_block_right['y span'] = (4 * lateral_gap_size_um + device_size_lateral_um) * 1e-6
 permittivity_block_right['z max'] = device_vertical_maximum_um * 1e-6
