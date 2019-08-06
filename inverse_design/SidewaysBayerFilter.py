@@ -156,12 +156,16 @@ class SidewaysBayerFilter(device.Device):
 		# or y-layering.  So, if you are layering in x, then you blur in y
 		# and vice versa.
 		#
+		max_blur_x_2 = square_blur.SquareBlur(
+			alpha,
+			[0, self.blur_half_width, 0])
 		max_blur_y_2 = square_blur.SquareBlur(
 			alpha,
 			[self.blur_half_width, 0, 0])
 		self.max_blur_xy_2 = [max_blur_x_2, max_blur_x_2]
 
 		single_layer = 1
+		layering_x_3 = layering.Layering(x_dimension_idx, single_layer)
 		layering_y_3 = layering.Layering(y_dimension_idx, single_layer)
 		self.layering_xy_3 = [layering_x_3, layering_x_3]
 
