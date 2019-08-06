@@ -159,11 +159,11 @@ class SidewaysBayerFilter(device.Device):
 		max_blur_y_2 = square_blur.SquareBlur(
 			alpha,
 			[self.blur_half_width, 0, 0])
-		self.max_blur_xy_2 = [max_blur_y_2, max_blur_y_2]
+		self.max_blur_xy_2 = [max_blur_x_2, max_blur_x_2]
 
 		single_layer = 1
 		layering_y_3 = layering.Layering(y_dimension_idx, single_layer)
-		self.layering_xy_3 = [layering_y_3, layering_y_3]
+		self.layering_xy_3 = [layering_x_3, layering_x_3]
 
 		scale_min = self.permittivity_bounds[0]
 		scale_max = self.permittivity_bounds[1]

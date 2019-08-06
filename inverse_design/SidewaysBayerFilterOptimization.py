@@ -54,7 +54,7 @@ fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
 #
-# Add a block of permittivity on the x sides of the device to break it's x translational symmetry
+# Add a block of permittivity on the x sides of the device.
 #
 permittivity_block_left = fdtd_hook.addrect()
 permittivity_block_left['name'] = 'oxide_block_left'
