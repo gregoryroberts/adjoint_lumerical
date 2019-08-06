@@ -31,7 +31,7 @@ focal_plane_center_vertical_um = -focal_length_um
 mesh_spacing_um = 0.025
 
 device_size_lateral_um = 2
-device_size_verical_um = 2
+device_size_verical_um = 4
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
@@ -59,7 +59,7 @@ min_feature_size_um = 0.075
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 5
+num_vertical_layers = 10
 
 #
 # FDTD
