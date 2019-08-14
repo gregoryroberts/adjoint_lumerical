@@ -21,7 +21,7 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 15
+focal_length_um = 16
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
@@ -64,7 +64,7 @@ num_vertical_layers = 15
 #
 # FDTD
 #
-vertical_gap_size_um = 4.5
+vertical_gap_size_um = 4
 lateral_gap_size_um = 4
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
