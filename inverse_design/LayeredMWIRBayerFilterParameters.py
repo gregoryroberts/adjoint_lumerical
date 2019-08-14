@@ -28,7 +28,7 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-mesh_spacing_um = 0.16
+mesh_spacing_um = 0.2
 
 device_size_lateral_um = 20
 device_size_verical_um = 40
