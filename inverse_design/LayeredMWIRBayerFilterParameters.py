@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_bidirectional_bars_rgb_20x20x40um'
+project_name = 'layered_mwir_2d_lithography_rgb_20x20x20um'
 
 #
 # Optical
@@ -28,7 +28,7 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-mesh_spacing_um = 0.2
+mesh_spacing_um = 0.1
 
 device_size_lateral_um = 20
 device_size_verical_um = 40
@@ -42,7 +42,7 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 3
+lambda_min_um = 3.5
 lambda_max_um = 5
 
 num_bands = 3
@@ -59,7 +59,7 @@ min_feature_size_um = 0.8
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 15
+num_vertical_layers = 8
 
 #
 # FDTD
