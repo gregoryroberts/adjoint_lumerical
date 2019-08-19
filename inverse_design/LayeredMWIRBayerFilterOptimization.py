@@ -149,8 +149,8 @@ permittivity_layer_substrate['x'] = 0
 permittivity_layer_substrate['x span'] = ( fdtd_region_size_lateral_um + 2 * lateral_gap_size_um ) * 1e-6
 permittivity_layer_substrate['y'] = 0
 permittivity_layer_substrate['y span'] = ( fdtd_region_size_lateral_um + 2 * lateral_gap_size_um ) * 1e-6
-permittivity_layer_substrate['z'] = ( device_vertical_maximum_um + vertical_gap_size_um ) * 1e-6
-permittivity_layer_substrate['z span'] = ( 2 * vertical_gap_size_um ) * 1e-6
+permittivity_layer_substrate['z min'] = ( device_vertical_maximum_um ) * 1e-6
+permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + 0.7 * vertical_gap_size_um ) * 1e-6
 permittivity_layer_substrate['index'] = max_device_index
 
 

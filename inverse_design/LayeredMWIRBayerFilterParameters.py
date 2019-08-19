@@ -64,7 +64,7 @@ num_vertical_layers = 8
 #
 # FDTD
 #
-vertical_gap_size_um = 4
+vertical_gap_size_um = 12
 lateral_gap_size_um = 4
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
@@ -81,7 +81,7 @@ fdtd_simulation_time_fs = 1500
 # Forward Source
 #
 lateral_aperture_um = device_size_lateral_um + 1
-src_maximum_vertical_um = device_size_verical_um + 0.5 * vertical_gap_size_um
+src_maximum_vertical_um = device_size_verical_um + 0.8 * vertical_gap_size_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
 #
