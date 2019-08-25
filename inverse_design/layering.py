@@ -15,6 +15,21 @@ class Layering(filter.Filter):
 		self.dim = dim
 		self.num_layers = num_layers
 
+	def get_layer_idxs(self):
+		layer_idxs = []
+
+		num_voxels_per_layer = int(num_voxels_total / self.num_layers)
+		num_voxels_last_layer = num_voxels_total - (self.num_layers - 1) * num_voxels_per_layer
+
+		for layer_idx in range(0, self.num_layers - 1):
+			layer_start = layer_idx * num_voxels_per_layer
+			layer_idxs.append( layer_start )
+
+		last_layer_start = (self.num_layers - 1) * num_voxels_per_layer
+		layer_idxs.append( last_layer_start )
+
+		return layer_idxs
+
 	def do_layering(self, data, dim, output):
 		data_shape = data.shape
 		
