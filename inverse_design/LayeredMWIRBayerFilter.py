@@ -161,7 +161,7 @@ class LayeredMWIRBayerFilter(device.Device):
 		self.w[2] = var2
 
 		var3 = np.zeros( self.w[3].shape )
-		get_layer_idxs = self.layering_z_0.get_layer_idxs()
+		get_layer_idxs = self.layering_z_0.get_layer_idxs(self.w[0].shape)
 
 		for layer in range( 0, self.layering_z_0.num_layers ):
 			get_layer_idx = get_layer_idxs[ layer ]
@@ -193,7 +193,7 @@ class LayeredMWIRBayerFilter(device.Device):
 		gradient = self.sigmoid_3.chain_rule(gradient, self.w[4], self.w[3])
 
 		var3 = np.zeros( self.w[3].shape )
-		get_layer_idxs = self.layering_z_0.get_layer_idxs()
+		get_layer_idxs = self.layering_z_0.get_layer_idxs(self.w[0].shape)
 
 		for layer in range( 0, self.layering_z_0.num_layers ):
 			get_layer_idx = get_layer_idxs[ layer ]
@@ -279,7 +279,7 @@ class LayeredMWIRBayerFilter(device.Device):
 		var0 = self.w[0]
 		var1 = self.layering_z_0.forward(var0)
 
-		get_layer_idxs = self.layering_z_0.get_layer_idxs()
+		get_layer_idxs = self.layering_z_0.get_layer_idxs(self.w[0].shape)
 
 		def make_device( input_var ):
 			return self.sigmoid_1.fabricate( self.max_blur_xy_2.fabricate( self.sigmoid_3.fabricate( input_var ) ) )
@@ -312,7 +312,7 @@ class LayeredMWIRBayerFilter(device.Device):
 		var2 = self.sigmoid_1.fabricate(var1)
 
 		var3 = np.zeros( self.w[3].shape )
-		get_layer_idxs = self.layering_z_0.get_layer_idxs()
+		get_layer_idxs = self.layering_z_0.get_layer_idxs(self.w[0].shape)
 
 		for layer in range( 0, self.layering_z_0.num_layers ):
 			get_layer_idx = get_layer_idxs[ layer ]

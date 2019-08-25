@@ -15,7 +15,7 @@ class Layering(filter.Filter):
 		self.dim = dim
 		self.num_layers = num_layers
 
-	def get_layer_idxs(self):
+	def get_layer_idxs(self, variable):
 		variable_shape = variable.shape
 		num_voxels_total = variable_shape[self.dim]
 
@@ -50,8 +50,7 @@ class Layering(filter.Filter):
 
 		return output
 
-	def layer_averaging(self, variable):
-		variable_shape = variable.shape
+	def layer_averaging(self, variable_shape):
 		num_voxels_total = variable_shape[self.dim]
 
 		num_voxels_per_layer = int(num_voxels_total / self.num_layers)
