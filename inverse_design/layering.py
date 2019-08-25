@@ -16,6 +16,9 @@ class Layering(filter.Filter):
 		self.num_layers = num_layers
 
 	def get_layer_idxs(self):
+		variable_shape = variable.shape
+		num_voxels_total = variable_shape[self.dim]
+
 		layer_idxs = []
 
 		num_voxels_per_layer = int(num_voxels_total / self.num_layers)
