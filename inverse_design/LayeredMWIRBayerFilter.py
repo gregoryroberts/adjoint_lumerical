@@ -160,7 +160,22 @@ class LayeredMWIRBayerFilter(device.Device):
 		var2 = self.sigmoid_1.forward(var1)
 		self.w[2] = var2
 
-		var3 = self.max_blur_xy_2.forward(var2)
+		var3 = np.zeros( self.w[3].shape )
+		get_layer_idxs = self.layering_z_0.get_layer_idxs()
+
+		for layer in range( 0, self.layering_z_0.num_layers ):
+			get_layer_idx = get_layer_idxs[ layer ]
+			next_layer_idx = var3.shape[ 2 ]
+
+			if layer < ( self.layering_z_0.num_layers - 1 ):
+				next_layer_idx = get_layer_idxs[ layer + 1 ]
+
+			do_blur = self.max_blur_xy_2.forward(
+				var2[ :, :, get_layer_idx ] )
+
+			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
+				var3[ :, :, sublayer_idx ] = do_blur
+
 		self.w[3] = var3
 
 		var4 = self.sigmoid_3.forward(var3)
@@ -176,7 +191,25 @@ class LayeredMWIRBayerFilter(device.Device):
 	def backpropagate(self, gradient):
 		gradient = self.scale_4.chain_rule(gradient, self.w[5], self.w[4])
 		gradient = self.sigmoid_3.chain_rule(gradient, self.w[4], self.w[3])
-		gradient = self.max_blur_xy_2.chain_rule(gradient, self.w[3], self.w[2])
+
+		var3 = np.zeros( self.w[3].shape )
+		get_layer_idxs = self.layering_z_0.get_layer_idxs()
+
+		for layer in range( 0, self.layering_z_0.num_layers ):
+			get_layer_idx = get_layer_idxs[ layer ]
+			next_layer_idx = var3.shape[ 2 ]
+
+			if layer < ( self.layering_z_0.num_layers - 1 ):
+				next_layer_idx = get_layer_idxs[ layer + 1 ]
+
+			do_chain_rule = self.max_blur_xy_2.chain_rule(
+				gradient[ :, :, get_layer_idx ],
+				self.w[3][ :, :, get_layer_idx ],
+				self.w[2][ :, :, get_layer_idx ] )
+
+			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
+				gradient[ :, :, sublayer_idx ] = do_chain_rule
+
 		gradient = self.sigmoid_1.chain_rule(gradient, self.w[2], self.w[1])
 		gradient = self.layering_z_0.chain_rule(gradient, self.w[1], self.w[0])
 
@@ -277,7 +310,23 @@ class LayeredMWIRBayerFilter(device.Device):
 		var0 = self.w[0]
 		var1 = self.layering_z_0.fabricate(var0)
 		var2 = self.sigmoid_1.fabricate(var1)
-		var3 = self.max_blur_xy_2.fabricate(var2)
+
+		var3 = np.zeros( self.w[3].shape )
+		get_layer_idxs = self.layering_z_0.get_layer_idxs()
+
+		for layer in range( 0, self.layering_z_0.num_layers ):
+			get_layer_idx = get_layer_idxs[ layer ]
+			next_layer_idx = var3.shape[ 2 ]
+
+			if layer < ( self.layering_z_0.num_layers - 1 ):
+				next_layer_idx = get_layer_idxs[ layer + 1 ]
+
+			do_blur = self.max_blur_xy_2.fabricate(
+				var2[ :, :, get_layer_idx ] )
+
+			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
+				var3[ :, :, sublayer_idx ] = do_blur
+
 		var4 = self.sigmoid_3.fabricate(var3)
 		var5 = self.scale_4.fabricate(var4)
 
