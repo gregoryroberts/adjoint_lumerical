@@ -197,8 +197,6 @@ class LayeredMWIRBayerFilter(device.Device):
 		self.w[0][ self.w[0].shape[ 0 ] - 1, :, : ] = 1
 		self.w[0][ :, self.w[0].shape[ 1 ] - 1, : ] = 1
 
-		self.update_permittivity()
-
 	def init_filters_and_variables(self):
 		self.num_filters = 5
 		self.num_variables = 1 + self.num_filters
@@ -229,6 +227,8 @@ class LayeredMWIRBayerFilter(device.Device):
 		self.filters = [self.layering_z_0, self.sigmoid_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
 		self.init_variables()
+		self.update_permittivity()
+
 
 
 	def step( direction, step_size ):
