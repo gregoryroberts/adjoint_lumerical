@@ -296,11 +296,14 @@ class LayeredMWIRBayerFilter(device.Device):
 				[ self.blur_half_width, self.blur_half_width ]
 			)
 
-			if layer < ( self.layering_z_0.num_layers - 1 ):
-				var0[ :, :, get_layer_idx : get_layer_idxs[ layer + 1 ] ] = this_design
-			else:
-				var0[ :, :, get_layer_idx : var0.shape[ 2 ] ] = this_design
+			next_layer_idx = self.w[ 3 ].shape[ 2 ]
 
+			if layer < ( self.layering_z_0.num_layers - 1 ):
+				next_layer_idx = get_layer_idxs[ layer + 1 ]
+
+			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
+				var0[ :, :, sublayer_idx ] = this_design
+				
 		self.w[0] = var0
 		self.update_permittivity()
 
