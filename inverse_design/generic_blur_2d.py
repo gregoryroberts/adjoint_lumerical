@@ -147,11 +147,11 @@ class GenericBlur2D(Filter):
 									self.alpha,
 									np.subtract(
 										variable_in,
-										pad_variable_out[x_bounds[0]:x_bounds[1], y_bounds[0]:y_bounds[1], z_bounds[0]:z_bounds[1]]
+										pad_variable_out[x_bounds[0]:x_bounds[1], y_bounds[0]:y_bounds[1]]
 									)
 								)
 							),
-						pad_derivative_out[x_bounds[0]:x_bounds[1], y_bounds[0]:y_bounds[1], z_bounds[0]:z_bounds[1]])
+						pad_derivative_out[x_bounds[0]:x_bounds[1], y_bounds[0]:y_bounds[1]])
 					)
 
 		derivative_in = np.divide(derivative_in, self.number_to_blur)
