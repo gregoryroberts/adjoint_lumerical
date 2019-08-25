@@ -231,9 +231,6 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 1.
 
-bayer_filter.step(-np.random.random(bayer_filter.w[0].shape), 1.0)
-
-
 #
 # Run the optimization
 #
