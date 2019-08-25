@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_rgb_20x20x20um'
+project_name = 'layered_mwir_2d_lithography_with_topo_rgb_20x20x20um'
 
 #
 # Optical
