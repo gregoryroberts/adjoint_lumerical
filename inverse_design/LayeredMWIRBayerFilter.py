@@ -264,7 +264,7 @@ class LayeredMWIRBayerFilter(device.Device):
 
 
 
-	def step( direction, step_size ):
+	def step( self, direction, step_size ):
 		proposed_change = direction * step_size
 
 		#
