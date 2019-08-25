@@ -264,9 +264,9 @@ class LayeredMWIRBayerFilter(device.Device):
 			)
 
 			if layer < ( self.layering_z_0.num_layers - 1 ):
-				var0[ :, :, ( get_layer_idx : get_layer_idxs[ layer + 1 ] ) ] = this_design
+				var0[ :, :, get_layer_idx : get_layer_idxs[ layer + 1 ] ] = this_design
 			else:
-				var0[ :, :, ( get_layer_idx : var0.shape[ 2 ] ) ] = this_design
+				var0[ :, :, get_layer_idx : var0.shape[ 2 ] ] = this_design
 
 		self.w[0] = var0
 		self.update_permittivity()
