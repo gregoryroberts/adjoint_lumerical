@@ -60,7 +60,7 @@ class LayeredLithographyBayerFilter(device.Device):
 		self.sigmoid_beta = 0.25 * (2**epoch)
 
 		self.sigmoid_0 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
-		self.sigmoid_4 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
+		self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		self.filters = [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
 	def init_filters_and_variables(self):
