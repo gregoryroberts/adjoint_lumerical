@@ -5,6 +5,8 @@ import sigmoid as sigmoid
 import square_blur as square_blur
 import generic_blur_2d as generic_blur_2d
 
+import two_pass_conn_comp
+
 import numpy as np
 
 from LayeredMWIRBayerFilterParameters import *
@@ -264,7 +266,8 @@ class LayeredMWIRBayerFilter(device.Device):
 
 
 
-	def step( self, direction, step_size ):
+	def step( self, gradient, step_size ):
+		direction = self.backpropagate( gradient )
 		proposed_change = -direction * step_size
 
 		#
