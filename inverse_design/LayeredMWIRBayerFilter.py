@@ -265,7 +265,7 @@ class LayeredMWIRBayerFilter(device.Device):
 
 
 	def step( self, direction, step_size ):
-		proposed_change = direction * step_size
+		proposed_change = -direction * step_size
 
 		#
 		# We would like to set the border so we can maintain different types of
@@ -303,7 +303,7 @@ class LayeredMWIRBayerFilter(device.Device):
 
 			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
 				var0[ :, :, sublayer_idx ] = this_design
-				
+
 		self.w[0] = var0
 		self.update_permittivity()
 
