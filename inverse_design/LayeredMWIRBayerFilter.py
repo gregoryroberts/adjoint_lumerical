@@ -285,7 +285,7 @@ class LayeredMWIRBayerFilter(device.Device):
 		get_layer_idxs = self.layering_z_0.get_layer_idxs(self.w[0].shape)
 
 		def make_device( input_var ):
-			return self.sigmoid_1.fabricate( self.max_blur_xy_2.fabricate( self.sigmoid_3.fabricate( input_var ) ) )
+			return self.sigmoid_3.fabricate( self.max_blur_xy_2.fabricate( self.sigmoid_1.fabricate( input_var ) ) )
 
 		for layer in range( 0, self.layering_z_0.num_layers ):
 			get_layer_idx = get_layer_idxs[ layer ]
@@ -294,7 +294,7 @@ class LayeredMWIRBayerFilter(device.Device):
 
 			this_design = step_topo(
 				this_design,
-				step_size * direction[ :, :, get_layer_idx ],
+				proposed_change[ :, :, get_layer_idx ],
 				make_device,
 				[ self.blur_half_width, self.blur_half_width ]
 			)
