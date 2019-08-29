@@ -82,7 +82,7 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		self.filters = [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
 	def init_variables(self):
-		super(LayeredMWIRBayerFilter, self).init_variables()
+		super(LayeredMWIRBridgesBayerFilter, self).init_variables()
 
 		self.w[0][ 0, :, : ] = 1
 		self.w[0][ :, 0, : ] = 1
