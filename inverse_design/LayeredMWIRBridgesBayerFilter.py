@@ -178,7 +178,11 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		self.update_permittivity()
 
-		self.restrictions = np.ones( self.w[ 0 ].shape )
+		self.restrictions = np.ones( self.w[0].shape )
+		self.restrictions[ 0, :, : ] = 0
+		self.restrictions[ :, 0, : ] = 0
+		self.restrictions[ self.restrictions.shape[ 0 ] - 1, :, : ] = 0
+		self.restrictions[ :, self.restrictions.shape[ 1 ] - 1, : ] = 0
 
 
 	#
@@ -341,6 +345,12 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			print("The current number of solid components on layer " + str( layer ) + " is " + str( num_solid_labels ) )
 			print("The current number of void components on layer " + str( layer ) + " is " + str( num_void_labels ) )
 		print("\n\n")
+
+		self.restrictions[ 0, :, : ] = 0
+		self.restrictions[ :, 0, : ] = 0
+		self.restrictions[ self.restrictions.shape[ 0 ] - 1, :, : ] = 0
+		self.restrictions[ :, self.restrictions.shape[ 1 ] - 1, : ] = 0
+
 
 
 	def convert_to_binary_map(self, variable):
