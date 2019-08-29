@@ -313,8 +313,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
 				print(sublayer_idx)
-			# 	self.w[0][ :, :, sublayer_idx ] = patch_density
-			# 	self.restrictions[ :, :, sublayer_idx ] = new_restrictions
+				self.w[0][ :, :, sublayer_idx ] = patch_density
+				self.restrictions[ :, :, sublayer_idx ] = new_restrictions
 
 		print("\n\n")	
 
