@@ -308,11 +308,15 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			if layer < ( self.layering_z_1.num_layers - 1 ):
 				next_layer_idx = get_layer_idxs[ layer + 1 ]
 
-			patch_density, new_restrictions = bridges( self.w[0][ :, :, get_layer_idx ], costs[ :, :, get_layer_idx ], self.topological_correction_value )
+			bridges(
+				self.w[0][ :, :, get_layer_idx ],
+				self.restrictions[ :, :, sublayer_idx ],
+				costs[ :, :, get_layer_idx ],
+				self.topological_correction_value )
 
-			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
-				self.w[0][ :, :, sublayer_idx ] = patch_density
-				self.restrictions[ :, :, sublayer_idx ] = new_restrictions
+			for sublayer_idx in range( 1 + get_layer_idx, next_layer_idx ):
+				self.w[0][ :, :, sublayer_idx ] = self.w[0][ :, :, get_layer_idx ]
+				self.restrictions[ :, :, sublayer_idx ] = self.restrictions[ :, :, sublayer_idx ]
 
 		topological_patch_elapsed = time.time() - topological_patch_start
 		# Update the variable stack including getting the permittivity at the w[-1] position
