@@ -235,6 +235,8 @@ cur_permittivity = bayer_filter.get_permittivity()
 random_change = ( np.random.random( cur_permittivity.shape ) - 0.5 )
 print("Cur permittivity shape is " + str(cur_permittivity.shape))
 bayer_filter.step(random_change, 4)
+random_change = ( np.random.random( cur_permittivity.shape ) - 0.5 )
+bayer_filter.step(random_change, 4)
 
 
 #
