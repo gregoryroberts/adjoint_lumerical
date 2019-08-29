@@ -303,6 +303,9 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			patch_density, new_restrictions = bridges( self.w[0][ :, :, get_layer_idx ], costs[ :, :, get_layer_idx ], self.topological_correction_value )
 			elapsed_patching = time.time() - start_patching
 
+			print(patch_density.shape)
+			print(new_restrictions.shape)
+
 			print("To do layer " + str( layer ) + " took " + str( elapsed_patching ) + " seconds!")
 
 			# for sublayer_idx in range( get_layer_idx, next_layer_idx ):
