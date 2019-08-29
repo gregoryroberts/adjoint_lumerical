@@ -338,8 +338,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		for layer in range( 0, self.layering_z_1.num_layers ):
 			get_layer_idx = get_layer_idxs[ layer ]
-			[solid_labels, num_solid_labels] = skim.label( pad_cur_fabrication_target[ :, :, get_layer_idx ], neighbors=4, return_num=True )
-			[void_labels, num_void_labels] = skim.label( 1 - pad_cur_fabrication_target[ :, :, get_layer_idx ], neighbors=8, return_num=True )
+			[solid_labels, num_solid_labels] = skim.label( pad_cur_fabrication_target[ :, :, 1 + get_layer_idx ], neighbors=4, return_num=True )
+			[void_labels, num_void_labels] = skim.label( 1 - pad_cur_fabrication_target[ :, :, 1 + get_layer_idx ], neighbors=8, return_num=True )
 
 			print("The current number of solid components on layer " + str( layer ) + " is " + str( num_solid_labels ) )
 			print("The current number of void components on layer " + str( layer ) + " is " + str( num_void_labels ) )

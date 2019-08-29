@@ -231,9 +231,6 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 1.
 
-no_change = np.zeros( cur_permittivity.shape )
-bayer_filter.step( no_change, 0 )
-
 #
 # Run the optimization
 #
