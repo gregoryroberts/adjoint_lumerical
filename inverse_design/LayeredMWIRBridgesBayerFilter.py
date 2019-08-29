@@ -308,7 +308,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 			print("To do layer " + str( layer ) + " took " + str( elapsed_patching ) + " seconds!")
 
-			# for sublayer_idx in range( get_layer_idx, next_layer_idx ):
+			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
+				print(sublayer_idx)
 			# 	self.w[0][ :, :, sublayer_idx ] = patch_density
 			# 	self.restrictions[ :, :, sublayer_idx ] = new_restrictions
 
