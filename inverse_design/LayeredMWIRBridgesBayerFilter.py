@@ -310,7 +310,7 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 			bridges(
 				self.w[0][ :, :, get_layer_idx ],
-				self.restrictions[ :, :, sublayer_idx ],
+				self.restrictions[ :, :, get_layer_idx ],
 				costs[ :, :, get_layer_idx ],
 				self.topological_correction_value )
 
