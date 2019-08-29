@@ -13,7 +13,7 @@ import time
 
 from LayeredMWIRBridgesBayerFilterParameters import *
 
-def bridges(, density, costs, topological_correction_value ):
+def bridges(density, costs, topological_correction_value ):
 	binary_map = np.greater( density, 0.5 )
 	save_binary_map = binary_map.copy()
 
