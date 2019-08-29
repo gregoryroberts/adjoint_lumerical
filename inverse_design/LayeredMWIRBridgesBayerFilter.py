@@ -81,6 +81,14 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		self.filters = [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
+	def init_variables(self):
+		super(LayeredMWIRBayerFilter, self).init_variables()
+
+		self.w[0][ 0, :, : ] = 1
+		self.w[0][ :, 0, : ] = 1
+		self.w[0][ self.w[0].shape[ 0 ] - 1, :, : ] = 1
+		self.w[0][ :, self.w[0].shape[ 1 ] - 1, : ] = 1
+
 	def init_filters_and_variables(self):
 		self.num_filters = 5
 		self.num_variables = 1 + self.num_filters
