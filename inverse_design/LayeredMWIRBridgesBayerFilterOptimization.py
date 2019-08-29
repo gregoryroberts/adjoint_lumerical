@@ -231,6 +231,10 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 1.
 
+random_change = ( np.random.random( cur_permittivity.shape ) - 0.5 )
+bayer_filter.step(random_change, 4)
+
+
 #
 # Run the optimization
 #
