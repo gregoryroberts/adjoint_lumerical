@@ -12,7 +12,7 @@ class Sigmoid(filter.Filter):
 	# eta: center point of sigmoid filter
 	#
 	def __init__(self, beta, eta):
-		variable_bounds = [0, 1]
+		variable_bounds = [0.0, 1.0]
 		super(Sigmoid, self).__init__(variable_bounds)
 
 		self.beta = beta
