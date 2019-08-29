@@ -9,6 +9,8 @@ import networkx as nx
 
 import numpy as np
 
+import time
+
 from LayeredMWIRBridgesBayerFilterParameters import *
 
 
@@ -296,11 +298,17 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			get_layer_idx = get_layer_idxs[ layer ]
 			next_layer_idx = self.w[0].shape[2]
 
+			start_patching = time.time()
 			patch_density, new_restrictions = self.bridges( self.w[0][ :, :, get_layer_idx ], costs[ :, :, get_layer_idx ] )
+			elapsed_patching = time.time() - start_patching
+
+			print("To do layer " + str( layer ) + " took " + str( elapsed_patching ) + " seconds!")
 
 			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
 				self.w[0][ :, :, sublayer_idx ] = patch_density
-				self.restrictions[ :, :, sublayer_idx ] = new_restrictions			
+				self.restrictions[ :, :, sublayer_idx ] = new_restrictions
+
+		print("\n\n")	
 
 		# Update the variable stack including getting the permittivity at the w[-1] position
 		self.update_permittivity()
