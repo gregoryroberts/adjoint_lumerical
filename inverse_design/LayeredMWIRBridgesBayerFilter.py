@@ -275,7 +275,7 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		restrictions = np.logical_not( np.logical_xor( binary_map, save_binary_map ) )
 
-		return density, restrictions
+		return ( density, restrictions )
 
 	# In the step function, we should update the permittivity with update_permittivity
 	def step(self, gradient, step_size):
