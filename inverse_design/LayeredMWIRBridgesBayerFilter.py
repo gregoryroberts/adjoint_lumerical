@@ -13,10 +13,7 @@ import time
 
 from LayeredMWIRBridgesBayerFilterParameters import *
 
-def bridges(input_density, input_costs, topological_correction_value ):
-	density = input_density.copy()
-	costs = input_costs.copy()
-
+def bridges(density, restrictions, costs, topological_correction_value ):
 	binary_map = np.greater( density, 0.5 )
 	save_binary_map = binary_map.copy()
 
@@ -161,8 +158,6 @@ def bridges(input_density, input_costs, topological_correction_value ):
 			pad_binary_map[ 1 + source_x, 1 + source_y ] = True
 
 	restrictions = np.logical_not( np.logical_xor( binary_map, save_binary_map ) )
-
-	return ( density, restrictions )
 
 class LayeredMWIRBridgesBayerFilter(device.Device):
 
