@@ -299,6 +299,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		# and use that solution for the whole layer
 		#
 
+		topological_patch_start = time.time()
+
 		get_layer_idxs = self.layering_z_1.get_layer_idxs( self.w[0].shape )
 		for layer in range( 0, self.layering_z_1.num_layers ):
 			get_layer_idx = get_layer_idxs[ layer ]
@@ -307,24 +309,13 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			if layer < ( self.layering_z_1.num_layers - 1 ):
 				next_layer_idx = get_layer_idxs[ layer + 1 ]
 
-			print(self.w[0][ :, :, get_layer_idx ].shape)
-			print(costs[ :, :, get_layer_idx ].shape)
-			start_patching = time.time()
 			patch_density, new_restrictions = bridges( self.w[0][ :, :, get_layer_idx ], costs[ :, :, get_layer_idx ], self.topological_correction_value )
-			elapsed_patching = time.time() - start_patching
-
-			print(patch_density.shape)
-			print(new_restrictions.shape)
-
-			print("To do layer " + str( layer ) + " took " + str( elapsed_patching ) + " seconds!")
 
 			for sublayer_idx in range( get_layer_idx, next_layer_idx ):
-				print(sublayer_idx)
 				self.w[0][ :, :, sublayer_idx ] = patch_density
 				self.restrictions[ :, :, sublayer_idx ] = new_restrictions
 
-		print("\n\n")	
-
+		topological_patch_elapsed = time.time() - topological_patch_start
 		# Update the variable stack including getting the permittivity at the w[-1] position
 		self.update_permittivity()
 
@@ -338,10 +329,12 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		[solid_labels, num_solid_labels] = skim.label( pad_cur_fabrication_target, neighbors=4, return_num=True )
 		[void_labels, num_void_labels] = skim.label( 1 - pad_cur_fabrication_target, neighbors=8, return_num=True )
 		print("Topology Information:")
+		print("To patch all of the topology took " + str( topological_patch_elapsed ) + " seconds")
 		print("The current number of total solid components is " + str( num_solid_labels ) )
 		print("The current number of total void components is " + str( num_void_labels ) )
 
 		for layer in range( 0, self.layering_z_1.num_layers ):
+			get_layer_idx = get_layer_idxs[ layer ]
 			[solid_labels, num_solid_labels] = skim.label( pad_cur_fabrication_target[ :, :, get_layer_idx ], neighbors=4, return_num=True )
 			[void_labels, num_void_labels] = skim.label( 1 - pad_cur_fabrication_target[ :, :, get_layer_idx ], neighbors=8, return_num=True )
 
