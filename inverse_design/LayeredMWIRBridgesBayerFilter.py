@@ -13,6 +13,153 @@ import time
 
 from LayeredMWIRBridgesBayerFilterParameters import *
 
+def bridges(, density, costs, topological_correction_value ):
+	binary_map = np.greater( density, 0.5 )
+	save_binary_map = binary_map.copy()
+
+	pad_density = np.pad(
+		density,
+		(
+			( 1, 1 ), ( 1, 1 )
+		),
+		mode='constant'
+	)
+
+	pad_binary_map = np.greater( pad_density, 0.5 )
+
+	density_shape = density.shape
+	width = density_shape[ 0 ]
+	height = density_shape[ 1 ]
+
+	pad_costs = np.pad(
+		costs,
+		(
+			( 1, 1 ), ( 1, 1 )
+		),
+		mode='constant'
+	)
+
+
+	[solid_labels, num_solid_labels] = skim.label( pad_binary_map, neighbors=4, return_num=True )
+
+	if num_solid_labels <= 1:
+		return density
+
+	density_graph = nx.Graph()
+	for x_idx in range( 0, width ):
+		for y_idx in range( 0, height ):
+
+			center_node_id = ( x_idx + 1 ) * ( pad_density.shape[ 1 ] ) + ( y_idx + 1 )
+
+			for x_offset in range( 0, 3 ):
+				for y_offset in range( 0, 3 ):
+
+					if ( ( x_offset == 1 ) and ( y_offset == 1 ) ) or ( ( np.abs( x_offset - 1 ) + np.abs( y_offset - 1 ) ) > 1 ):
+						continue
+
+					next_x_idx = x_idx + x_offset
+					next_y_idx = y_idx + y_offset
+
+					if (
+						( next_x_idx == 0 ) or
+						( next_y_idx == 0 ) or
+						( next_x_idx == ( pad_density.shape[ 0 ] - 1 ) ) or
+						( next_y_idx == ( pad_density.shape[ 1 ] - 1 ) )
+					):
+						continue
+
+					next_node_id = next_x_idx * ( pad_density.shape[ 1 ] ) + next_y_idx
+
+					next_density_value = pad_binary_map[ next_x_idx, next_y_idx ]
+					cost_value = pad_costs[ next_x_idx, next_y_idx ]
+
+					if next_density_value:
+						cost_value = 0
+
+					density_graph.add_edge( center_node_id, next_node_id, weight=cost_value )
+
+	label_to_representative_pt = {}
+
+	for x_idx in range( 0, width ):
+		for y_idx in range( 0, height ):
+			density_value = pad_density[ 1 + x_idx, 1 + y_idx ]
+			component_label = solid_labels[ 1 + x_idx, 1 + y_idx ]
+
+			if ( component_label in label_to_representative_pt.keys() ) or ( not density_value ):
+				continue
+
+			label_to_representative_pt[ component_label ] = [ x_idx, y_idx ]
+
+	mst_graph = nx.Graph()
+
+	for label_idx_start in range( 0, num_solid_labels ):
+		component_start = 1 + label_idx_start
+		source_pt = label_to_representative_pt[ component_start ]
+		source_node_id = ( source_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( source_pt[ 1 ] + 1 )
+
+		min_path_all = nx.shortest_path(
+			density_graph,
+			source=source_node_id,
+			weight='weight'
+		)
+
+		for label_idx_end in range( 1 + label_idx_start, num_solid_labels ):
+
+			component_end = 1 + label_idx_end
+
+			target_pt = label_to_representative_pt[ component_end ]
+			target_node_id = ( target_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( target_pt[ 1 ] + 1 )
+
+			min_path = min_path_all[ target_node_id ]
+
+			min_path_distance = 0
+
+			for path_idx in range( 1, ( len( min_path ) - 1 ) ):
+				node_id = min_path[ path_idx ]
+
+				source_x = int( node_id / pad_density.shape[ 1 ] ) - 1
+				source_y = node_id % pad_density.shape[ 1 ] - 1
+
+				min_path_distance += pad_costs[ source_x, source_y ]
+
+			mst_graph.add_edge( component_start, component_end, weight=min_path_distance )
+
+
+	mst = nx.minimum_spanning_tree( mst_graph )
+
+	mst_edges = nx.edges( mst )
+
+	for edge in mst.edges():
+		edge_start, edge_end = edge
+
+		source_pt = label_to_representative_pt[ edge_start ]
+		target_pt = label_to_representative_pt[ edge_end ]
+
+		source_node_id = ( source_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( source_pt[ 1 ] + 1 )
+		target_node_id = ( target_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( target_pt[ 1 ] + 1 )
+
+
+		min_path = nx.shortest_path(
+			density_graph,
+			source=source_node_id,
+			target=target_node_id,
+			weight='weight'
+		)
+
+		for path_idx in range( 1, ( len( min_path ) - 1 ) ):
+			node_id = min_path[ path_idx ]
+
+			source_x = int( node_id / pad_density.shape[ 1 ] ) - 1
+			source_y = node_id % pad_density.shape[ 1 ] - 1
+
+			density[ source_x, source_y ] = topological_correction_value
+			pad_density[ 1 + source_x, 1 + source_y ] = topological_correction_value
+			binary_map[ source_x, source_y ] = True
+			pad_binary_map[ 1 + source_x, 1 + source_y ] = True
+
+	restrictions = np.logical_not( np.logical_xor( binary_map, save_binary_map ) )
+
+	return ( density, restrictions )
 
 class LayeredMWIRBridgesBayerFilter(device.Device):
 
@@ -129,156 +276,6 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		self.init_variables()
 
-	def bridges( self, density, costs ):
-		binary_map = np.greater( density, 0.5 )
-		save_binary_map = binary_map.copy()
-
-		pad_density = np.pad(
-			density,
-			(
-				( 1, 1 ), ( 1, 1 )
-			),
-			mode='constant'
-		)
-
-		pad_binary_map = np.greater( pad_density, 0.5 )
-
-		density_shape = density.shape
-		width = density_shape[ 0 ]
-		height = density_shape[ 1 ]
-
-		pad_costs = np.pad(
-			costs,
-			(
-				( 1, 1 ), ( 1, 1 )
-			),
-			mode='constant'
-		)
-
-
-		[solid_labels, num_solid_labels] = skim.label( pad_binary_map, neighbors=4, return_num=True )
-
-		if num_solid_labels <= 1:
-			return density
-
-		density_graph = nx.Graph()
-		for x_idx in range( 0, width ):
-			for y_idx in range( 0, height ):
-
-				center_node_id = ( x_idx + 1 ) * ( pad_density.shape[ 1 ] ) + ( y_idx + 1 )
-
-				for x_offset in range( 0, 3 ):
-					for y_offset in range( 0, 3 ):
-
-						if ( ( x_offset == 1 ) and ( y_offset == 1 ) ) or ( ( np.abs( x_offset - 1 ) + np.abs( y_offset - 1 ) ) > 1 ):
-							continue
-
-						next_x_idx = x_idx + x_offset
-						next_y_idx = y_idx + y_offset
-
-						if (
-							( next_x_idx == 0 ) or
-							( next_y_idx == 0 ) or
-							( next_x_idx == ( pad_density.shape[ 0 ] - 1 ) ) or
-							( next_y_idx == ( pad_density.shape[ 1 ] - 1 ) )
-						):
-							continue
-
-						next_node_id = next_x_idx * ( pad_density.shape[ 1 ] ) + next_y_idx
-
-						next_density_value = pad_binary_map[ next_x_idx, next_y_idx ]
-						cost_value = pad_costs[ next_x_idx, next_y_idx ]
-
-						if next_density_value:
-							cost_value = 0
-
-						density_graph.add_edge( center_node_id, next_node_id, weight=cost_value )
-
-		label_to_representative_pt = {}
-
-		for x_idx in range( 0, width ):
-			for y_idx in range( 0, height ):
-				density_value = pad_density[ 1 + x_idx, 1 + y_idx ]
-				component_label = solid_labels[ 1 + x_idx, 1 + y_idx ]
-
-				if ( component_label in label_to_representative_pt.keys() ) or ( not density_value ):
-					continue
-
-				label_to_representative_pt[ component_label ] = [ x_idx, y_idx ]
-
-		mst_graph = nx.Graph()
-
-		for label_idx_start in range( 0, num_solid_labels ):
-			component_start = 1 + label_idx_start
-			source_pt = label_to_representative_pt[ component_start ]
-			source_node_id = ( source_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( source_pt[ 1 ] + 1 )
-
-			min_path_all = nx.shortest_path(
-				density_graph,
-				source=source_node_id,
-				weight='weight'
-			)
-
-			for label_idx_end in range( 1 + label_idx_start, num_solid_labels ):
-
-				component_end = 1 + label_idx_end
-
-				target_pt = label_to_representative_pt[ component_end ]
-				target_node_id = ( target_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( target_pt[ 1 ] + 1 )
-
-				min_path = min_path_all[ target_node_id ]
-
-				min_path_distance = 0
-
-				for path_idx in range( 1, ( len( min_path ) - 1 ) ):
-					node_id = min_path[ path_idx ]
-
-					source_x = int( node_id / pad_density.shape[ 1 ] ) - 1
-					source_y = node_id % pad_density.shape[ 1 ] - 1
-
-					min_path_distance += pad_costs[ source_x, source_y ]
-
-				mst_graph.add_edge( component_start, component_end, weight=min_path_distance )
-
-
-		mst = nx.minimum_spanning_tree( mst_graph )
-
-		mst_edges = nx.edges( mst )
-
-		for edge in mst.edges():
-			edge_start, edge_end = edge
-
-			source_pt = label_to_representative_pt[ edge_start ]
-			target_pt = label_to_representative_pt[ edge_end ]
-
-			source_node_id = ( source_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( source_pt[ 1 ] + 1 )
-			target_node_id = ( target_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( target_pt[ 1 ] + 1 )
-
-
-			min_path = nx.shortest_path(
-				density_graph,
-				source=source_node_id,
-				target=target_node_id,
-				weight='weight'
-			)
-
-			for path_idx in range( 1, ( len( min_path ) - 1 ) ):
-				node_id = min_path[ path_idx ]
-
-				source_x = int( node_id / pad_density.shape[ 1 ] ) - 1
-				source_y = node_id % pad_density.shape[ 1 ] - 1
-
-				density[ source_x, source_y ] = self.topological_correction_value
-				pad_density[ 1 + source_x, 1 + source_y ] = self.topological_correction_value
-				binary_map[ source_x, source_y ] = True
-				pad_binary_map[ 1 + source_x, 1 + source_y ] = True
-
-		restrictions = np.logical_not( np.logical_xor( binary_map, save_binary_map ) )
-
-		print(restrictions.shape)
-		print(density.shape)
-		return ( density, restrictions )
-
 	# In the step function, we should update the permittivity with update_permittivity
 	def step(self, gradient, step_size):
 		mask_out_restrictions = gradient * self.restrictions
@@ -303,7 +300,7 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			print(self.w[0][ :, :, get_layer_idx ].shape)
 			print(costs[ :, :, get_layer_idx ].shape)
 			start_patching = time.time()
-			patch_density, new_restrictions = self.bridges( self.w[0][ :, :, get_layer_idx ], costs[ :, :, get_layer_idx ] )
+			patch_density, new_restrictions = bridges( self.w[0][ :, :, get_layer_idx ], costs[ :, :, get_layer_idx ], self.topological_correction_value )
 			elapsed_patching = time.time() - start_patching
 
 			print("To do layer " + str( layer ) + " took " + str( elapsed_patching ) + " seconds!")
