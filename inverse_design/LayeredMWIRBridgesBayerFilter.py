@@ -9,8 +9,6 @@ import networkx as nx
 
 import numpy as np
 
-import time
-
 from LayeredMWIRBridgesBayerFilterParameters import *
 
 
@@ -213,14 +211,11 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			source_pt = label_to_representative_pt[ component_start ]
 			source_node_id = ( source_pt[ 0 ] + 1 ) * ( pad_density.shape[ 1 ] ) + ( source_pt[ 1 ] + 1 )
 
-			start_shortest_path = time.time()
 			min_path_all = nx.shortest_path(
 				density_graph,
 				source=source_node_id,
 				weight='weight'
 			)
-			elapsed_shortest_path = time.time() - start_shortest_path
-			print("It took " + str( elapsed_shortest_path ) + " seconds to do shortest path")
 
 			for label_idx_end in range( 1 + label_idx_start, num_solid_labels ):
 
