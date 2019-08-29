@@ -162,8 +162,8 @@ class SquareBlur(filter.Filter):
 							variable_in[x_bounds[0]:x_bounds[1], y_bounds[0]:y_bounds[1], z_bounds[0]:z_bounds[1]])
 
 		blurred_variable[
-			start_xy : (start_xy + x_length),
-			start_xy : (start_xy + y_length),
+			start_x : (start_x + x_length),
+			start_y : (start_y + y_length),
 			start_z : (start_z + z_length)] = blurred_variable_change
 		return blurred_variable
 
