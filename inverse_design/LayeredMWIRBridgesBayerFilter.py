@@ -298,6 +298,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			get_layer_idx = get_layer_idxs[ layer ]
 			next_layer_idx = self.w[0].shape[2]
 
+			print(self.w[0][ :, :, get_layer_idx ].shape)
+			print(costs[ :, :, get_layer_idx ].shape)
 			start_patching = time.time()
 			patch_density, new_restrictions = self.bridges( self.w[0][ :, :, get_layer_idx ], costs[ :, :, get_layer_idx ] )
 			elapsed_patching = time.time() - start_patching
