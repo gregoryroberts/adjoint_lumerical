@@ -208,8 +208,11 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 	#
 	def fabricate_mask(self):
 		var0 = self.w[0]
+		print(var0.dtype)
 		var1 = self.sigmoid_0.fabricate(var0)
+		print(var1.dtype)
 		var2 = self.layering_z_1.forward(var1)
+		print(var2.dtype)
 		var3 = self.max_blur_xy_2.fabricate(var2)
 		var4 = self.sigmoid_3.fabricate(var3)
 		return var4
