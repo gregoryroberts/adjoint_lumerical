@@ -211,6 +211,7 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		print(var0.dtype)
 		var1 = self.sigmoid_0.fabricate(var0)
 		print(var1.dtype)
+		print(var1.shape)
 		var2 = self.layering_z_1.forward(var1)
 		print(var2.dtype)
 		var3 = self.max_blur_xy_2.fabricate(var2)
