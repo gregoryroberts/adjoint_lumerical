@@ -331,7 +331,7 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		cur_fabrication_target = self.fabricate_mask()
 		pad_cur_fabrication_target = np.pad(
 			cur_fabrication_target,
-			( ( 1, 1 ), ( 1, 1 ) ),
+			( ( 1, 1 ), ( 1, 1 ), ( 1, 1 ) ),
 			mode='constant'
 		)
 
