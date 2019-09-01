@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_rgb_20x20x24um'
+project_name = 'layered_mwir_2d_lithography_bridges_rgb_20x20x30um'
 
 #
 # Optical
@@ -31,7 +31,7 @@ focal_plane_center_vertical_um = -focal_length_um
 mesh_spacing_um = 0.25
 
 device_size_lateral_um = 20
-device_size_verical_um = 24
+device_size_verical_um = 30
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
@@ -59,7 +59,7 @@ min_feature_size_um = 0.75
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 8
+num_vertical_layers = 10
 
 #
 # FDTD
