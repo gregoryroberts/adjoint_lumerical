@@ -88,7 +88,7 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 # Spectral and polarization selectivity information
 #
 polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
-weight_focal_plane_map = [ 1.0, 0.5, 1.0, 0.5 ]
+weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
 spectral_focal_plane_map = [
