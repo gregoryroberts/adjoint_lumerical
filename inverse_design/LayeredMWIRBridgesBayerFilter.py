@@ -161,7 +161,7 @@ def bridges(density, restrictions, costs, topological_correction_value ):
 
 class LayeredMWIRBridgesBayerFilter(device.Device):
 
-	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers):
+	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers, num_free_iterations_between_patches):
 		super(LayeredMWIRBridgesBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
 
 		self.num_z_layers = num_z_layers
@@ -169,6 +169,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		self.minimum_design_value = 0
 		self.maximum_design_value = 1
 		self.topological_correction_value = 0.75
+		self.num_free_iterations_between_patches = num_free_iterations_between_patches
+		self.current_iteration = 0
 		self.init_filters_and_variables()
 
 		self.update_permittivity()
@@ -287,6 +289,12 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		mask_out_restrictions = gradient * self.restrictions
 
 		self.w[0] = self.proposed_design_step(mask_out_restrictions, step_size)
+
+		if ( self.current_iteration % ( 1 + self.num_free_iterations_between_patches ) ) > 0:
+			# Update the variable stack including getting the permittivity at the w[-1] position
+			self.update_permittivity()
+			return
+
 
 		#
 		# How far do we have to move? Should we include the gradient information in there as well (i.e. - weight also by the gradient?)?

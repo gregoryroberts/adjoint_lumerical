@@ -121,3 +121,8 @@ epoch_start_permittivity_change_min = 0.05
 epoch_end_permittivity_change_min = 0
 epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
 
+#
+# Topology
+#
+topology_num_free_iterations_between_patches = 20
+
