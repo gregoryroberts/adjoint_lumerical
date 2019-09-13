@@ -290,7 +290,9 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		self.w[0] = self.proposed_design_step(mask_out_restrictions, step_size)
 
-		if ( self.current_iteration % ( 1 + self.num_free_iterations_between_patches ) ) > 0:
+		self.current_iteration += 1
+
+		if ( self.current_iteration % self.num_free_iterations_between_patches ) > 0:
 			# Update the variable stack including getting the permittivity at the w[-1] position
 			self.update_permittivity()
 			return
