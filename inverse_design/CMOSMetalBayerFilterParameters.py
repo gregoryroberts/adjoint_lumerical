@@ -20,9 +20,6 @@ max_real_permittivity = -10
 min_imag_permittivity = 0
 max_imag_permittivity = 3
 
-min_device_permittivity = min_device_index**2
-max_device_permittivity = max_device_index**2
-
 init_permittivity_0_1_scale = 1.0
 
 focal_length_um = 1.5
