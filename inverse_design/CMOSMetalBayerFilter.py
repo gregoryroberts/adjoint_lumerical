@@ -117,5 +117,26 @@ class CMOSMetalBayerFilter(device.Device):
 
 		self.init_variables()
 
+
+	def proposed_design_step(self, gradient_real, gradient_imag, step_size):
+		gradient = self.backpropagate(gradient_real, gradient_imag)
+
+		proposed_design_variable = self.w[0] - np.multiply(step_size, gradient)
+		proposed_design_variable = np.maximum(
+									np.minimum(
+										proposed_design_variable,
+										self.maximum_design_value),
+									self.minimum_design_value)
+
+		return proposed_design_variable
+
+
+	# In the step function, we should update the permittivity with update_permittivity
+	def step(self, gradient_real, gradient_imag, step_size):
+		self.w[0] = self.proposed_design_step(gradient_real, gradient_imag, step_size)
+		# Update the variable stack including getting the permittivity at the w[-1] position
+		self.update_permittivity()
+
+
 	def convert_to_binary_map(self, variable):
 		return np.greater(variable, self.mid_permittivity)

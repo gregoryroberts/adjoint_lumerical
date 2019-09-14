@@ -354,20 +354,20 @@ for epoch in range(0, num_epochs):
 
 		design_gradient = bayer_filter.backpropagate(device_gradient_real, device_gradient_imag)
 
-		max_change_design = epoch_start_permittivity_change_max
-		min_change_design = epoch_start_permittivity_change_min
+		# max_change_design = epoch_start_permittivity_change_max
+		# min_change_design = epoch_start_permittivity_change_min
 
-		if num_iterations_per_epoch > 1:
+		# if num_iterations_per_epoch > 1:
 
-			max_change_design = (
-				epoch_end_permittivity_change_max +
-				(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
-			)
+		# 	max_change_design = (
+		# 		epoch_end_permittivity_change_max +
+		# 		(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
+		# 	)
 
-			min_change_design = (
-				epoch_end_permittivity_change_min +
-				(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
-			)
+		# 	min_change_design = (
+		# 		epoch_end_permittivity_change_min +
+		# 		(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
+		# 	)
 
 
 		cur_design_variable = bayer_filter.get_design_variable()
@@ -406,7 +406,7 @@ for epoch in range(0, num_epochs):
 		# step_size_start = step_size
 
 		last_design_variable = cur_design_variable.copy()
-		bayer_filter.step(-design_gradient, step_size)
+		bayer_filter.step(-device_gradient_real, -device_gradient_imag, step_size)
 
 		print( "The max amount the permittivity is changing is around" + str( np.max(np.abs(-design_gradient * step_size))) )
 
