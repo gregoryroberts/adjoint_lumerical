@@ -231,7 +231,7 @@ step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
-step_size_start = 0.001
+step_size_start = 100 * 0.001
 
 #
 # Run the optimization
@@ -408,7 +408,7 @@ for epoch in range(0, num_epochs):
 		last_design_variable = cur_design_variable.copy()
 		bayer_filter.step(-device_gradient_real, -device_gradient_imag, step_size)
 
-		print( "The max amount the permittivity is changing is around" + str( np.max(np.abs(-design_gradient * step_size))) )
+		print( "The max amount the permittivity is changing is around " + str( np.max(np.abs(-design_gradient * step_size))) )
 
 		cur_design_variable = bayer_filter.get_design_variable()
 
@@ -419,7 +419,8 @@ for epoch in range(0, num_epochs):
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
-		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
+		np.save(projects_directory_location + '/device_gradient_real.npy', device_gradient_real)
+		np.save(projects_directory_location + '/device_gradient_imag.npy', device_gradient_imag)
 		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
 		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
