@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_rgb_2x2x2um'
+project_name = 'cmos_metal_rgb_2x2x2.4um'
 
 #
 # Optical
@@ -35,7 +35,7 @@ focal_plane_center_vertical_um = -focal_length_um
 mesh_spacing_um = 0.02
 
 device_size_lateral_um = 2
-device_size_verical_um = 2
+device_size_verical_um = 2.4
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
