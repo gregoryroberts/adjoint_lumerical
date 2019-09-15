@@ -408,7 +408,7 @@ for epoch in range(0, num_epochs):
 		last_design_variable = cur_design_variable.copy()
 		bayer_filter.step(-device_gradient_real, -device_gradient_imag, step_size)
 
-		print( "The max amount the permittivity is changing is around " + str( np.max(np.abs(-design_gradient * step_size))) )
+		print( "The max amount the density is changing is around " + str( np.max(np.abs(-design_gradient * step_size))) )
 
 		cur_design_variable = bayer_filter.get_design_variable()
 

@@ -20,7 +20,7 @@ max_real_permittivity = -10
 min_imag_permittivity = 0
 max_imag_permittivity = 3
 
-init_permittivity_0_1_scale = 1.0
+init_permittivity_0_1_scale = 0.0
 
 focal_length_um = 1.5
 focal_plane_center_lateral_um = 0

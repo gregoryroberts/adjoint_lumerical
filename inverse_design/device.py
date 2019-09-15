@@ -15,8 +15,8 @@ class Device:
 
 	def init_variables(self):
 		self.filters = []
-		self.w = [np.zeros(self.size) for i in range(0, self.num_variables)]
-		self.w[0] = np.multiply(self.init_permittivity, np.ones(self.size))
+		self.w = [np.zeros(self.size, dtype=np.complex) for i in range(0, self.num_variables)]
+		self.w[0] = np.multiply(self.init_permittivity, np.ones(self.size, dtype=np.complex))
 
 	def get_design_variable(self):
 		return self.w[0]
