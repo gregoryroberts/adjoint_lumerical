@@ -18,7 +18,7 @@ min_real_permittivity =  1.3**2
 max_real_permittivity = -10
 
 min_imag_permittivity = 0
-max_imag_permittivity = 3
+max_imag_permittivity = -3
 
 init_permittivity_0_1_scale = 0.0
 
