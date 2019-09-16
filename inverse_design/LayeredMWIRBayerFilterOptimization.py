@@ -401,7 +401,7 @@ for epoch in range(0, num_epochs):
 		step_size_start = step_size
 
 		last_design_variable = cur_design_variable.copy()
-		bayer_filter.step(-design_gradient, step_size)
+		bayer_filter.step(-device_gradient, step_size)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
