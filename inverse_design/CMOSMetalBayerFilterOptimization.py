@@ -169,7 +169,7 @@ bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_latera
 bayer_filter = CMOSMetalBayerFilter.CMOSMetalBayerFilter(
 	bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers)
 
-bayer_filter.set_design_variable( np.load( projects_directory_location + "/cur_design_variable.npy", cur_design_variable ) )
+bayer_filter.set_design_variable( np.load( projects_directory_location + "/cur_design_variable.npy" ) )
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
