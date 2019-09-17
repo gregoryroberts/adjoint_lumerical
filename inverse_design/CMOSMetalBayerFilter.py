@@ -28,92 +28,95 @@ class CMOSMetalBayerFilter(device.Device):
 	def update_permittivity(self):
 		var0 = self.w[0]
 
-		var1 = self.sigmoid_0.forward(var0)
+		var1 = self.layering_z_0.forward( var0 )
 		self.w[1] = var1
 
-		var2 = self.layering_z_1.forward(var1)
+		# var1 = self.sigmoid_0.forward(var0)
+		# self.w[1] = var1
+
+		# var2 = self.layering_z_1.forward(var1)
+		# self.w[2] = var2
+
+		# var3 = self.max_blur_xy_2.forward(var2)
+		# self.w[3] = var3
+
+		# var4 = self.sigmoid_3.forward(var3)
+		# self.w[4] = var4
+
+		scale_real_1 = self.scale_1[ 0 ]
+		scale_imag_1 = self.scale_1[ 1 ]
+
+		var2 = scale_real_1.forward( var1 ) + 1j * scale_imag_1.forward( var1 )
 		self.w[2] = var2
-
-		var3 = self.max_blur_xy_2.forward(var2)
-		self.w[3] = var3
-
-		var4 = self.sigmoid_3.forward(var3)
-		self.w[4] = var4
-
-		scale_real_4 = self.scale_4[ 0 ]
-		scale_imag_4 = self.scale_4[ 1 ]
-
-		var5 = scale_real_4.forward( var4 ) + 1j * scale_imag_4.forward( var4 )
-		self.w[5] = var5
 
 
 	#
 	# Need to also override the backpropagation function
 	#
 	def backpropagate(self, gradient_real, gradient_imag):
-		scale_real_4 = self.scale_4[ 0 ]
-		scale_imag_4 = self.scale_4[ 1 ]
+		scale_real_1 = self.scale_1[ 0 ]
+		scale_imag_1 = self.scale_1[ 1 ]
 
 		gradient = (
-			scale_real_4.chain_rule( gradient_real, self.w[5], self.w[4] ) +
-			scale_imag_4.chain_rule( gradient_imag, self.w[5], self.w[4] )
+			scale_real_1.chain_rule( gradient_real, self.w[2], self.w[1] ) +
+			scale_imag_1.chain_rule( gradient_imag, self.w[2], self.w[1] )
 		)	
 
-		gradient = self.sigmoid_3.chain_rule(gradient, self.w[4], self.w[3])
-		gradient = self.max_blur_xy_2.chain_rule(gradient, self.w[3], self.w[2])
-		gradient = self.layering_z_1.chain_rule(gradient, self.w[2], self.w[1])
-		gradient = self.sigmoid_0.chain_rule(gradient, self.w[1], self.w[0])
+		# gradient = self.sigmoid_3.chain_rule(gradient, self.w[4], self.w[3])
+		# gradient = self.max_blur_xy_2.chain_rule(gradient, self.w[3], self.w[2])
+		gradient = self.layering_z_0.chain_rule(gradient, self.w[1], self.w[0])
+		# gradient = self.sigmoid_0.chain_rule(gradient, self.w[1], self.w[0])
 
 		return gradient
 
 	def update_filters(self, epoch):
-		self.sigmoid_beta = 0.25 * (2**epoch)
+		# self.sigmoid_beta = 0.25 * (2**epoch)
 
-		self.sigmoid_0 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
-		self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
-		self.filters = [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		# self.sigmoid_0 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
+		# self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
+		self.filters = [self.layering_z_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
 	def init_filters_and_variables(self):
-		self.num_filters = 5
+		self.num_filters = 2#5
 		self.num_variables = 1 + self.num_filters
 
 		# Start the sigmoids at weak strengths
-		self.sigmoid_beta = 0.0625
-		self.sigmoid_eta = 0.5
-		self.sigmoid_0 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
-		self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
+		# self.sigmoid_beta = 0.0625
+		# self.sigmoid_eta = 0.5
+		# self.sigmoid_0 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
+		# self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 
 		x_dimension_idx = 0
 		y_dimension_idx = 1
 		z_dimension_idx = 2
 
 		z_voxel_layers = self.size[2]
-		self.layering_z_1 = layering.Layering(z_dimension_idx, self.num_z_layers)
+		self.layering_z_0 = layering.Layering(z_dimension_idx, self.num_z_layers)
 
 		alpha = 8
-		self.blur_half_width = blur_half_width_voxels
+		# self.blur_half_width = blur_half_width_voxels
 		#
 		# This notation is slightly confusing, but it is meant to be the
 		# direction you blur when you are on the layer corresponding to x-
 		# or y-layering.  So, if you are layering in x, then you blur in y
 		# and vice versa.
 		#
-		self.max_blur_xy_2 = square_blur.SquareBlur(
-			alpha,
-			[self.blur_half_width, self.blur_half_width, 0])
+		# self.max_blur_xy_2 = square_blur.SquareBlur(
+		# 	alpha,
+		# 	[self.blur_half_width, self.blur_half_width, 0])
 
 		scale_real_min = np.real( self.permittivity_bounds[0] )
 		scale_real_max = np.real( self.permittivity_bounds[1] )
-		scale_real_4 = scale.Scale([scale_real_min, scale_real_max])
+		scale_real_1 = scale.Scale([scale_real_min, scale_real_max])
 
 		scale_imag_min = np.imag( self.permittivity_bounds[0] )
 		scale_imag_max = np.imag( self.permittivity_bounds[1] )
-		scale_imag_4 = scale.Scale([scale_imag_min, scale_imag_max])
+		scale_imag_1 = scale.Scale([scale_imag_min, scale_imag_max])
 
-		self.scale_4 = [ scale_real_4, scale_imag_4 ]
+		self.scale_1 = [ scale_real_1, scale_imag_1 ]
 
 		# Initialize the filter chain
-		self.filters = [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		self.filters = [self.layering_z_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
 		self.init_variables()
 

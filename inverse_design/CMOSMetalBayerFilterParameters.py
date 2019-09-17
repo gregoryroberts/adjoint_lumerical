@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_rgb_2x2x2.4um'
+project_name = 'cmos_metal_no_feature_size_rgb_2x2x2.4um'
 
 #
 # Optical
