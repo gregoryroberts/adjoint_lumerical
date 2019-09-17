@@ -29,7 +29,7 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-mesh_spacing_um = 0.025
+mesh_spacing_um = 0.02
 
 device_size_lateral_um = 2
 device_size_verical_um = 2.4
@@ -56,7 +56,7 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 #
 # Fabrication Constraints
 #
-min_feature_size_um = 0.075
+min_feature_size_um = 0.08
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
