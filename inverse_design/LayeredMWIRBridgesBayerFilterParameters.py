@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_rgb_15layers_20x20x30um'
+project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_4to6um_fixed_step_20x20x30um'
 
 #
 # Optical
@@ -42,8 +42,8 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 3.5
-lambda_max_um = 5
+lambda_min_um = 4
+lambda_max_um = 6
 
 num_bands = 3
 num_points_per_band = 10
@@ -59,7 +59,7 @@ min_feature_size_um = 0.75
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 15
+num_vertical_layers = 10
 
 #
 # FDTD
@@ -112,6 +112,9 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 num_epochs = 8
 num_iterations_per_epoch = 25
+
+use_fixed_step_size = True
+fixed_step_size = 2.0
 
 epoch_start_permittivity_change_max = 0.25
 epoch_end_permittivity_change_max = 0.05

@@ -372,38 +372,41 @@ for epoch in range(0, num_epochs):
 
 		cur_design_variable = bayer_filter.get_design_variable()
 
-		step_size = step_size_start
+		if use_fixed_step_size:
+			step_size = fixed_step_size
+		else:
+			step_size = step_size_start
 
-		check_last = False
-		last = 0
+			check_last = False
+			last = 0
 
-		while True:
-			proposed_design_variable = cur_design_variable + step_size * design_gradient
-			proposed_design_variable = np.maximum(
-										np.minimum(
-											proposed_design_variable,
-											1.0),
-										0.0)
+			while True:
+				proposed_design_variable = cur_design_variable + step_size * design_gradient
+				proposed_design_variable = np.maximum(
+											np.minimum(
+												proposed_design_variable,
+												1.0),
+											0.0)
 
-			difference = np.abs(proposed_design_variable - cur_design_variable)
-			max_difference = np.max(difference)
+				difference = np.abs(proposed_design_variable - cur_design_variable)
+				max_difference = np.max(difference)
 
-			if (max_difference <= max_change_design) and (max_difference >= min_change_design):
-				break
-			elif (max_difference <= max_change_design):
-				step_size *= 2
-				if (last ^ 1) and check_last:
+				if (max_difference <= max_change_design) and (max_difference >= min_change_design):
 					break
-				check_last = True
-				last = 1
-			else:
-				step_size /= 2
-				if (last ^ 0) and check_last:
-					break
-				check_last = True
-				last = 0
+				elif (max_difference <= max_change_design):
+					step_size *= 2
+					if (last ^ 1) and check_last:
+						break
+					check_last = True
+					last = 1
+				else:
+					step_size /= 2
+					if (last ^ 0) and check_last:
+						break
+					check_last = True
+					last = 0
 
-		step_size_start = step_size
+			step_size_start = step_size
 
 		last_design_variable = cur_design_variable.copy()
 		bayer_filter.step(-device_gradient, step_size)
