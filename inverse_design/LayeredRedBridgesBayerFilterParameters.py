@@ -43,7 +43,7 @@ device_vertical_minimum_um = 0
 # Spectral
 #
 lambda_min_um = 0.6
-lambda_max_um = 0.7
+lambda_max_um = 0.75
 
 num_bands = 1
 num_points_per_band = 30
@@ -64,7 +64,7 @@ num_vertical_layers = 10
 #
 # FDTD
 #
-vertical_gap_size_um = 3 * lambda_max_um
+vertical_gap_size_um = 2 * lambda_max_um
 lateral_gap_size_um = lambda_max_um
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
@@ -80,7 +80,7 @@ fdtd_simulation_time_fs = 1500
 #
 # Forward Source
 #
-lateral_aperture_um = device_size_lateral_um + 1
+lateral_aperture_um = 1.1 * device_size_lateral_um
 src_maximum_vertical_um = device_size_verical_um + 0.8 * vertical_gap_size_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
