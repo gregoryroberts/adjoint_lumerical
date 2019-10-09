@@ -112,7 +112,7 @@ num_epochs = 8
 num_iterations_per_epoch = 25
 
 use_fixed_step_size = True
-fixed_step_size = 0.1
+fixed_step_size = 0.01
 
 epoch_start_permittivity_change_max = 0.25
 epoch_end_permittivity_change_max = 0.05
@@ -125,5 +125,5 @@ epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoc
 #
 # Topology
 #
-topology_num_free_iterations_between_patches = 20
+topology_num_free_iterations_between_patches = 10
 
