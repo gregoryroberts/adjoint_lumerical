@@ -140,19 +140,6 @@ for adj_src in range(0, num_adjoint_sources):
 
 	focal_monitors.append(focal_monitor)
 
-#
-# Add a block of polymer at the top where the device will be adhered to a Silicon substrate
-#
-permittivity_layer_substrate = fdtd_hook.addrect()
-permittivity_layer_substrate['name'] = 'polymer_layer_substrate'
-permittivity_layer_substrate['x'] = 0
-permittivity_layer_substrate['x span'] = ( fdtd_region_size_lateral_um + 2 * lateral_gap_size_um ) * 1e-6
-permittivity_layer_substrate['y'] = 0
-permittivity_layer_substrate['y span'] = ( fdtd_region_size_lateral_um + 2 * lateral_gap_size_um ) * 1e-6
-permittivity_layer_substrate['z min'] = ( device_vertical_maximum_um ) * 1e-6
-permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + 0.7 * vertical_gap_size_um ) * 1e-6
-permittivity_layer_substrate['index'] = max_device_index
-
 
 #
 # Add device region and create device permittivity
