@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_red_2d_lithography_bridges_10layers_p6top7um_fixed_step_1p5x1p5x1p5um'
+project_name = 'layered_red_2d_lithography_bridges_10layers_p6top7um_fixed_step_larger_feature_size_1p5x1p5x1p5um'
 
 #
 # Optical
@@ -55,7 +55,7 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 #
 # Fabrication Constraints
 #
-min_feature_size_um = 0.09
+min_feature_size_um = 0.15
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
@@ -102,7 +102,7 @@ spectral_focal_plane_map = [
 adjoint_vertical_um = -focal_length_um
 num_focal_spots = 2
 num_adjoint_sources = num_focal_spots
-adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4.]
+adjoint_x_positions_um = [-device_size_lateral_um / 4., -device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4.]
 
 #
