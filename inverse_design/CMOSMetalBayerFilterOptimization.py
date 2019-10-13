@@ -239,18 +239,23 @@ def side_to_string( side_number ):
 	else:
 		return str( side_integer )
 
-for side_x in [ -1, 1, 0, 0 ]:
-	for side_y in [ 0, 0, -1, 1 ]:
-		side_block = fdtd_hook.addrect()
+device_background_side_x = [ -1, 1, 0, 0 ]
+device_background_side_y = [ 0, 0, -1, 1 ]
 
-		side_block['name'] = 'device_background_' + side_to_string( side_x ) + "_" + str( side_y )
-		side_block['z min'] = designable_device_vertical_minimum_um * 1e-6
-		side_block['z max'] = designable_device_vertical_maximum_um * 1e-6
-		side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6
-		side_block['x span'] = np.abs(side_x) * extra_lateral_space_per_side_um
-		side_block['y'] = side_y * extra_lateral_space_offset_um * 1e-6
-		side_block['y span'] = np.abs(side_y) * extra_lateral_space_per_side_um
-		side_block['index'] = device_background_index
+for device_background_side_idx in range( 0, 4 ):
+	side_x = device_background_side_x[ device_background_side_idx ]
+	side_y = device_background_side_y[ device_background_side_idx ]
+
+	side_block = fdtd_hook.addrect()
+
+	side_block['name'] = 'device_background_' + side_to_string( side_x ) + "_" + str( side_y )
+	side_block['z min'] = designable_device_vertical_minimum_um * 1e-6
+	side_block['z max'] = designable_device_vertical_maximum_um * 1e-6
+	side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6
+	side_block['x span'] = np.abs(side_x) * extra_lateral_space_per_side_um
+	side_block['y'] = side_y * extra_lateral_space_offset_um * 1e-6
+	side_block['y span'] = np.abs(side_y) * extra_lateral_space_per_side_um
+	side_block['index'] = device_background_index
 
 
 #
