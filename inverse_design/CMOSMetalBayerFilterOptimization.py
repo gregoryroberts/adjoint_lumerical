@@ -234,7 +234,7 @@ extra_lateral_space_offset_um = 0.5 * ( device_size_lateral_um + extra_lateral_s
 
 def side_to_string( side_number ):
 	side_integer = int( side_number )
-	if side < 0:
+	if side_integer < 0:
 		return ( "n" + str( np.abs( side_integer ) ) )
 	else:
 		return str( side_integer )
