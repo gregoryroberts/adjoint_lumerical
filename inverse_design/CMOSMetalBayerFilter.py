@@ -46,7 +46,7 @@ class CMOSMetalBayerFilter(device.Device):
 		scale_real_0 = self.scale_0[ 0 ]
 		scale_imag_0 = self.scale_0[ 1 ]
 
-		var1 = scale_real_1.forward( var0 ) + 1j * scale_imag_1.forward( var0 )
+		var1 = scale_real_0.forward( var0 ) + 1j * scale_imag_0.forward( var0 )
 		self.w[1] = var1
 
 
