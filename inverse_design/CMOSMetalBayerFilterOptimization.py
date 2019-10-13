@@ -189,8 +189,12 @@ metal_reflector_permittivity = (
 	)
 metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
 
+metal_reflector_region_x = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
+metal_reflector_region_y = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
+metal_reflector_region_z = 1e-6 * np.linspace(bottom_metal_reflector_start_um, bottom_metal_reflector_end_um, bottom_metal_reflector_size_vertical_voxels)
+
 fdtd_hook.select('bottom_metal_reflector')
-fdtd_hook.importnk2(metal_reflector_index, fdtd_region_size_lateral_um, fdtd_region_size_lateral_um, bottom_metal_reflector_size_vertical_um)
+fdtd_hook.importnk2(metal_reflector_index, metal_reflector_region_x, metal_reflector_region_y, metal_reflector_region_z)
 
 
 #
