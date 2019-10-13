@@ -137,7 +137,7 @@ fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / 
 fdtd_region_size_lateral_voxels = int( np.ceil( fdtd_region_size_lateral_um / mesh_spacing_um ) )
 
 
-fdtd_simulation_time_fs = 2000
+fdtd_simulation_time_fs = 3000
 
 #
 # Forward Source
