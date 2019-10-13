@@ -252,9 +252,14 @@ for device_background_side_idx in range( 0, 4 ):
 	side_block['z min'] = designable_device_vertical_minimum_um * 1e-6
 	side_block['z max'] = designable_device_vertical_maximum_um * 1e-6
 	side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6
-	side_block['x span'] = np.abs(side_x) * extra_lateral_space_per_side_um * 1e-6
+	side_block['x span'] = (
+		np.abs( side_x ) * extra_lateral_space_per_side_um +
+		( 1 - np.abs( side_x ) ) * fdtd_region_size_lateral_um ) * 1e-6
 	side_block['y'] = side_y * extra_lateral_space_offset_um * 1e-6
-	side_block['y span'] = np.abs(side_y) * extra_lateral_space_per_side_um * 1e-6
+	side_block['y span'] = (
+		np.abs( side_y ) * extra_lateral_space_per_side_um +
+		( 1 - np.abs( side_y ) ) * fdtd_region_size_lateral_um ) * 1e-6
+
 	side_block['index'] = device_background_index
 
 
