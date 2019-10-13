@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_no_feature_size_rgb_2x2x2.4um'
+project_name = 'cmos_metal_reflective_no_feature_size_no_layering_rgb_2x2xtsmc_um'
 
 #
 # Optical
@@ -23,8 +23,6 @@ max_imag_permittivity = -3
 init_permittivity_0_1_scale = 0.0
 
 focal_length_um = 1.5
-focal_plane_center_lateral_um = 0
-focal_plane_center_vertical_um = -focal_length_um
 
 #
 # Device
@@ -32,13 +30,72 @@ focal_plane_center_vertical_um = -focal_length_um
 mesh_spacing_um = 0.02
 
 device_size_lateral_um = 2
-device_size_verical_um = 2.4
+# Metal layers from M7 down to M2 (and we will use M6 as a reflector)
+# ( 6 * ( 2200 + 950 + 300 + 500 ) + 300 + 500 ) / 10000 = 2.45
+designable_size_vertical_um = 2.45
+# We will assume just air below this
+bottom_metal_reflector_size_vertical_um = 0.13
+# Top dielectric stack size we will not be designing for now because feature
+# size is pretty large
+# ( 6000 + 4000 + 2500 + 750 + 4000 + 750 + 32300 + 1100 + 7250 + 750 + 7750 + 500 + 6200 + 500 ) / 10000 = 7.435
+top_dielectric_stack_size_vertcial_um = 7.435
+
+device_size_verical_um = top_dielectric_stack_size_vertcial_um + designable_size_vertical_um + bottom_metal_reflector_size_vertical_um
+
+bottom_metal_reflector_size_vertical_voxels = 1 + int( bottom_metal_reflector_size_vertical_um / mesh_spacing_um )
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
-device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
+designable_device_voxels_vertical = 1 + int(designable_size_vertical_um / mesh_spacing_um)
 
-device_vertical_maximum_um = device_size_verical_um
-device_vertical_minimum_um = 0
+designable_device_vertical_maximum_um = designable_size_vertical_um
+designable_device_vertical_minimum_um = 0
+
+
+# Passivation and M8/M9 dielectric stack
+# Stacks organized as list with lowest layer coming first in the list
+m8_stack_layer_thickness_um = [
+	0.62, 0.05, 0.775, 0.075 ]
+m8_stack_layer_refractive_index = [
+	1.45, 2.0, 1.45, 2.0 ]
+
+m9_stack_layer_thickness_um = [
+	0.725, 0.11, 3.23 ]
+m9_stack_layer_refractive_index = [
+	1.45, 2.0, 1.45 ]
+
+pass_stack_layer_thickness_um = [
+	0.075, 0.4, 0.075, 0.65, 0.6 ]
+pass_stack_layer_refractive_index = [
+	2.0, 1.45, 2.0, 1.45, 2.0 ]
+
+#
+# copy so the extend calls following do not modify the memory for the m8 stack variable
+#
+top_dielectric_layer_thickness_um = m8_stack_layer_thickness_um.copy()
+top_dielectric_layer_thickness_um.extend( m9_stack_layer_thickness_um )
+top_dielectric_layer_thickness_um.extend( pass_stack_layer_thickness_um )
+
+top_dielectric_layer_refractice_index = m8_stack_layer_refractive_index.copy()
+top_dielectric_layer_refractice_index.extend( m9_stack_layer_refractive_index )
+top_dielectric_layer_refractice_index.extend( pass_stack_layer_refractive_index )
+
+
+bottom_metal_reflector_start_um = -bottom_metal_reflector_size_vertical_um
+bottom_metal_reflector_end_um = bottom_metal_reflector_start_um + bottom_metal_reflector_size_vertical_um
+
+m8_stack_start_um = bottom_metal_reflector_end_um + designable_size_vertical_um
+m8_stack_end_um = m8_stack_start_um + np.sum( m8_stack_layer_thickness_um )
+
+m9_stack_start_um = m8_stack_end_um
+m9_stack_end_um = m9_stack_start_um + np.sum( m9_stack_layer_thickness_um )
+
+pass_stack_start_um = m9_stack_end_um
+pass_stack_end_um = pass_stack_start_um + np.sum( pass_stack_layer_thickness_um )
+
+dielectric_stack_start_um = m8_stack_start_um
+dielectric_stack_end_um = pass_stack_end_um
+
+
 
 #
 # Spectral
@@ -70,20 +127,23 @@ lateral_gap_size_um = 0.5
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
-fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um
-fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
+fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um + focal_length_um - bottom_metal_reflector_size_vertical_um
+fdtd_region_minimum_vertical_um = -bottom_metal_reflector_end_um - vertical_gap_size_um
 
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
+
+fdtd_region_size_lateral_voxels = int( np.ceil( fdtd_region_size_lateral_um / mesh_spacing_um ) )
+
 
 fdtd_simulation_time_fs = 700
 
 #
 # Forward Source
 #
-lateral_aperture_um = device_size_lateral_um + 0.2
-src_maximum_vertical_um = device_size_verical_um + 0.5 * vertical_gap_size_um
-src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
+lateral_aperture_um = 1.05 * device_size_lateral_um
+src_maximum_vertical_um = device_size_verical_um + focal_length_um + 0.5 * vertical_gap_size_um
+src_minimum_vertical_um = bottom_metal_reflector_start_um - 0.5 * vertical_gap_size_um
 
 #
 # Spectral and polarization selectivity information
@@ -102,7 +162,7 @@ spectral_focal_plane_map = [
 #
 # Adjoint sources
 #
-adjoint_vertical_um = -focal_length_um
+adjoint_vertical_um = pass_stack_end_um + focal_length_um
 num_focal_spots = 4
 num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]

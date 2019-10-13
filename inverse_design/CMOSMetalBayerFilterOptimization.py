@@ -153,19 +153,60 @@ for adj_src in range(0, num_adjoint_sources):
 
 
 #
+# Build the dielectric stack on top of the metal
+#
+num_dielectric_layers = len( top_dielectric_layer_thickness_um )
+for dielectric_layer_idx in range( 0, num_dielectric_layers ):
+	dielectric_layer = fdtd_hook.addrect()
+	dielectric_layer['name'] = 'dielectric_layer_' + str( dielectric_layer_idx )
+	dielectric_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
+	dielectric_layer['y span'] = fdtd_region_size_lateral_um * 1e-6
+
+	dielectric_layer_z_min_um = dielectric_stack_start_um + np.sum( dielectric_stack_layer_thickness_um[ 0 : dielectric_layer_idx ] )
+	dielectric_layer_z_max_um = dielectric_layer_z_min_um + dielectric_stack_layer_thickness_um[ dielectric_layer_idx ]
+
+	dielectric_layer['z min'] = dielectric_layer_z_min_um * 1e-6
+	dielectric_layer['z max'] = dielectric_layer_z_max_um * 1e-6
+
+	dielectric_layer['index'] = dielectric_stack_layer_refractive_index[ dielectric_layer_idx ]
+
+
+#
+# Make bottom layer reflective for a reflective device.  We will do this with an nk2 material that we import the maximum
+# real and imaginary permittivity parts in for that we are using for the design.  Thus, it will reflect and account for
+# metallic loss
+#
+metal_reflector_import = fdtd_hook.addimport()
+metal_reflector_import['name'] = 'bottom_metal_reflector'
+metal_reflector_import['x span'] = fdtd_region_size_lateral_um * 1e-6
+metal_reflector_import['y span'] = fdtd_region_size_lateral_um * 1e-6
+metal_reflector_import['z min'] = bottom_metal_reflector_start_um * 1e-6
+metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
+
+metal_reflector_permittivity = (
+		( max_real_permittivity + 1j * max_imag_permittivity ) *
+		np.ones( ( fdtd_region_size_lateral_voxels, fdtd_region_size_lateral_voxels, bottom_metal_reflector_size_vertical_voxels ) )
+	)
+metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
+
+fdtd_hook.select('bottom_metal_reflector')
+fdtd_hook.importnk2(metal_reflector_index, fdtd_region_size_lateral_um, fdtd_region_size_lateral_um, bottom_metal_reflector_size_vertical_um)
+
+
+#
 # Add device region and create device permittivity
 #
 design_import = fdtd_hook.addimport()
 design_import['name'] = 'design_import'
 design_import['x span'] = device_size_lateral_um * 1e-6
 design_import['y span'] = device_size_lateral_um * 1e-6
-design_import['z max'] = device_vertical_maximum_um * 1e-6
-design_import['z min'] = device_vertical_minimum_um * 1e-6
+design_import['z min'] = designable_device_vertical_minimum_um * 1e-6
+design_import['z max'] = designable_device_vertical_maximum_um * 1e-6
 
 min_device_permittivity = min_real_permittivity + 1j * min_imag_permittivity
 max_device_permittivity = max_real_permittivity + 1j * max_imag_permittivity
 
-bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
+bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, designable_device_voxels_vertical])
 bayer_filter = CMOSMetalBayerFilter.CMOSMetalBayerFilter(
 	bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers)
 
@@ -173,7 +214,7 @@ bayer_filter = CMOSMetalBayerFilter.CMOSMetalBayerFilter(
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
+bayer_filter_region_z = 1e-6 * np.linspace(designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, designable_device_voxels_vertical)
 
 #
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
