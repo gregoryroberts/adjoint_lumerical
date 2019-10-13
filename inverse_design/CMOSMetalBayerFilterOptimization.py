@@ -220,6 +220,32 @@ bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * 
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_z = 1e-6 * np.linspace(designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, designable_device_voxels_vertical)
 
+
+#
+# Add blocks of dielectric on the side of the designable region because we will be leaving those as blank, unpatterned dielectric material
+# Would it be better to have this be a part of the bayer filter material inmport and jus tnot modify it (i.e. - mask out any changes to it).  I'm
+# thinking of how the mesh behaves here between these interacting objects.  For now, we will add the blocks around the side because this will make
+# it simpler at first and then we can move towards making a more sophisticated device class or subclass.
+# Further, in reality, this may be a stack of material in general.  However, it will be mostly the low-K dielctric background material so we will assume
+# this is not a stratified stack and is actaully just a single piece of low index material background.
+#
+extra_lateral_space_per_side_um = 0.5 * ( fdtd_region_size_lateral_um - device_size_lateral_um )
+extra_lateral_space_offset_um = 0.5 * ( device_size_lateral_um + extra_lateral_space_per_side_um )
+
+for side_x in [ -1, 1, 0, 0 ]:
+	for side_y in [ 0, 0, -1, 1 ]:
+		side_block = fdtd_hook.addrect()
+
+		side_block['name'] = 'device_background_' + str( side_x ) = "_" + str( side_y )
+		side_block['z min'] = designable_device_vertical_minimum_um * 1e-6
+		side_block['z max'] = designable_device_vertical_maximum_um * 1e-6
+		side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6
+		side_block['x span'] = np.abs(side_x) * extra_lateral_space_per_side_um
+		side_block['y'] = side_y * extra_lateral_space_offset_um * 1e-6
+		side_block['y span'] = np.abs(side_y) * extra_lateral_space_per_side_um
+		side_block['index'] = device_background_index
+
+
 #
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
 #
