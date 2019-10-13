@@ -232,11 +232,18 @@ bayer_filter_region_z = 1e-6 * np.linspace(designable_device_vertical_minimum_um
 extra_lateral_space_per_side_um = 0.5 * ( fdtd_region_size_lateral_um - device_size_lateral_um )
 extra_lateral_space_offset_um = 0.5 * ( device_size_lateral_um + extra_lateral_space_per_side_um )
 
+def side_to_string( side_number ):
+	side_integer = int( side_number )
+	if side < 0:
+		return ( "n" + str( np.abs( side_integer ) ) )
+	else:
+		return str( side_integer )
+
 for side_x in [ -1, 1, 0, 0 ]:
 	for side_y in [ 0, 0, -1, 1 ]:
 		side_block = fdtd_hook.addrect()
 
-		side_block['name'] = 'device_background_' + str( side_x ) + "_" + str( side_y )
+		side_block['name'] = 'device_background_' + side_to_string( side_x ) + "_" + str( side_y )
 		side_block['z min'] = designable_device_vertical_minimum_um * 1e-6
 		side_block['z max'] = designable_device_vertical_maximum_um * 1e-6
 		side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6

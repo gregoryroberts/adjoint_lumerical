@@ -13,6 +13,7 @@ project_name = 'cmos_metal_reflective_no_feature_size_no_layering_rgb_2x2xtsmc_u
 # Optical
 #
 background_index = 1.0
+device_background_index = 1.3
 
 min_real_permittivity =  1.3**2
 max_real_permittivity = -10
