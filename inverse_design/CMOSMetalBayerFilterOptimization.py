@@ -162,13 +162,13 @@ for dielectric_layer_idx in range( 0, num_dielectric_layers ):
 	dielectric_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
 	dielectric_layer['y span'] = fdtd_region_size_lateral_um * 1e-6
 
-	dielectric_layer_z_min_um = dielectric_stack_start_um + np.sum( dielectric_stack_layer_thickness_um[ 0 : dielectric_layer_idx ] )
-	dielectric_layer_z_max_um = dielectric_layer_z_min_um + dielectric_stack_layer_thickness_um[ dielectric_layer_idx ]
+	dielectric_layer_z_min_um = dielectric_stack_start_um + np.sum( top_dielectric_layer_thickness_um[ 0 : dielectric_layer_idx ] )
+	dielectric_layer_z_max_um = dielectric_layer_z_min_um + top_dielectric_layer_thickness_um[ dielectric_layer_idx ]
 
 	dielectric_layer['z min'] = dielectric_layer_z_min_um * 1e-6
 	dielectric_layer['z max'] = dielectric_layer_z_max_um * 1e-6
 
-	dielectric_layer['index'] = dielectric_stack_layer_refractive_index[ dielectric_layer_idx ]
+	dielectric_layer['index'] = top_dielectric_layer_refractice_index[ dielectric_layer_idx ]
 
 
 #
