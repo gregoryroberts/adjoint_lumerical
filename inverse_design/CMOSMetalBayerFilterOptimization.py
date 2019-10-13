@@ -248,7 +248,7 @@ for device_background_side_idx in range( 0, 4 ):
 
 	side_block = fdtd_hook.addrect()
 
-	side_block['name'] = 'device_background_' + side_to_string( side_x ) + "_" + str( side_y )
+	side_block['name'] = 'device_background_' + side_to_string( side_x ) + "_" + side_to_string( side_y )
 	side_block['z min'] = designable_device_vertical_minimum_um * 1e-6
 	side_block['z max'] = designable_device_vertical_maximum_um * 1e-6
 	side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6
