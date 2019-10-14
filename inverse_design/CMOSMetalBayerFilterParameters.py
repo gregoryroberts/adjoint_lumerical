@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_reflective_no_feature_size_no_layering_rgb_2x2xtsmc_um'
+project_name = 'cmos_metal_etch_passivation_reflective_no_feature_size_no_layering_rgb_2x2xtsmc_um'
 
 #
 # Optical
@@ -23,12 +23,12 @@ max_imag_permittivity = -3
 
 init_permittivity_0_1_scale = 0.0
 
-focal_length_um = 1.5
+focal_length_um = 0.9
 
 #
 # Device
 #
-mesh_spacing_um = 0.02
+mesh_spacing_um = 0.025
 
 device_size_lateral_um = 2
 # Metal layers from M7 down to M2 (and we will use M6 as a reflector)
@@ -54,20 +54,30 @@ designable_device_vertical_minimum_um = 0
 
 # Passivation and M8/M9 dielectric stack
 # Stacks organized as list with lowest layer coming first in the list
-m8_stack_layer_thickness_um = [
-	0.62, 0.05, 0.775, 0.075 ]
-m8_stack_layer_refractive_index = [
-	1.45, 2.0, 1.45, 2.0 ]
+# m8_stack_layer_thickness_um = [
+# 	0.62, 0.05, 0.775, 0.075 ]
+# m8_stack_layer_refractive_index = [
+# 	1.45, 2.0, 1.45, 2.0 ]
 
-m9_stack_layer_thickness_um = [
-	0.725, 0.11, 3.23 ]
-m9_stack_layer_refractive_index = [
-	1.45, 2.0, 1.45 ]
+m8_stack_layer_thickness_um = [ 0.62 ]
+m8_stack_layer_refractive_index = [ 1.45 ]
 
-pass_stack_layer_thickness_um = [
-	0.075, 0.4, 0.075, 0.65, 0.6 ]
-pass_stack_layer_refractive_index = [
-	2.0, 1.45, 2.0, 1.45, 2.0 ]
+# m9_stack_layer_thickness_um = [
+# 	0.725, 0.11, 3.23 ]
+# m9_stack_layer_refractive_index = [
+# 	1.45, 2.0, 1.45 ]
+
+m9_stack_layer_thickness_um = []
+m9_stack_layer_refractive_index = []
+
+# pass_stack_layer_thickness_um = [
+# 	0.075, 0.4, 0.075, 0.65, 0.6 ]
+# pass_stack_layer_refractive_index = [
+# 	2.0, 1.45, 2.0, 1.45, 2.0 ]
+
+pass_stack_layer_thickness_um = []
+pass_stack_layer_refractive_index = []
+
 
 #
 # copy so the extend calls following do not modify the memory for the m8 stack variable
@@ -137,7 +147,7 @@ fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / 
 fdtd_region_size_lateral_voxels = int( np.ceil( fdtd_region_size_lateral_um / mesh_spacing_um ) )
 
 
-fdtd_simulation_time_fs = 3000
+fdtd_simulation_time_fs = 10#3000
 
 #
 # Forward Source
@@ -176,7 +186,7 @@ num_epochs = 1
 num_iterations_per_epoch = 75
 
 use_fixed_step_size = True
-fixed_step_size = 0.01 * 7.5
+fixed_step_size = 0.01 * 3
 
 epoch_start_permittivity_change_max = 0.1
 epoch_end_permittivity_change_max = 0.02
