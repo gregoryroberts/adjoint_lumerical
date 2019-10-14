@@ -39,7 +39,9 @@ bottom_metal_reflector_size_vertical_um = 0.13
 # Top dielectric stack size we will not be designing for now because feature
 # size is pretty large
 # ( 6000 + 4000 + 2500 + 750 + 4000 + 750 + 32300 + 1100 + 7250 + 750 + 7750 + 500 + 6200 + 500 ) / 10000 = 7.435
-top_dielectric_stack_size_vertcial_um = 7.435
+# top_dielectric_stack_size_vertcial_um = 7.435
+# for now, just one of the M8 layers
+top_dielectric_stack_size_vertcial_um = 0.62
 
 device_size_verical_um = top_dielectric_stack_size_vertcial_um + designable_size_vertical_um + bottom_metal_reflector_size_vertical_um
 
@@ -153,7 +155,7 @@ fdtd_simulation_time_fs = 2000
 # Forward Source
 #
 lateral_aperture_um = 1.05 * device_size_lateral_um
-src_maximum_vertical_um = device_size_verical_um + focal_length_um + 0.5 * vertical_gap_size_um
+src_maximum_vertical_um = pass_stack_end_um + focal_length_um + 0.5 * vertical_gap_size_um
 src_minimum_vertical_um = bottom_metal_reflector_start_um - 0.5 * vertical_gap_size_um
 
 #
