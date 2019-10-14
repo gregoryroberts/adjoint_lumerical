@@ -322,7 +322,7 @@ average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
 # todo(groberts): should we go fixed step size?  The current method is somewhat adaptive.
-step_size_start = 10 * 0.001
+step_size_start = fixed_step_size # 10 * 0.001
 
 #
 # Run the optimization
