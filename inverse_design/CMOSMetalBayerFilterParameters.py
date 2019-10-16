@@ -188,7 +188,7 @@ num_epochs = 1
 num_iterations_per_epoch = 75
 
 use_fixed_step_size = True
-fixed_step_size = 0.01 * 3
+fixed_step_size = 0.01 * 3 / 4
 
 epoch_start_permittivity_change_max = 0.1
 epoch_end_permittivity_change_max = 0.02
