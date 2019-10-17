@@ -44,7 +44,7 @@ if not os.path.isdir(projects_directory_location):
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/CMOSMDielectricAirBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSDielectricAirBayerFilterParameters.py")
+shutil.copy2(python_src_directory + "/CMOSDielectricAirBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSDielectricAirBayerFilterParameters.py")
 
 #
 # Set up the FDTD region and mesh
