@@ -62,7 +62,7 @@ class CMOSMetalBayerFilter(device.Device):
 			scale_imag_1.chain_rule( gradient_imag, self.w[2], self.w[1] )
 		)	
 
-		gradient = sigmoid_0.chain_rule( gradient, self.w[1], self.w[0] )
+		gradient = self.sigmoid_0.chain_rule( gradient, self.w[1], self.w[0] )
 
 		# gradient = self.sigmoid_3.chain_rule(gradient, self.w[4], self.w[3])
 		# gradient = self.max_blur_xy_2.chain_rule(gradient, self.w[3], self.w[2])
