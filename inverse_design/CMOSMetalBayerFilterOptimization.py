@@ -327,7 +327,7 @@ step_size_start = fixed_step_size # 10 * 0.001
 #
 # Run the optimization
 #
-for epoch in range(0, num_epochs):
+for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 
 	for iteration in range(0, num_iterations_per_epoch):

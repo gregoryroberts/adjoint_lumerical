@@ -186,6 +186,7 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 num_epochs = 8#1
 num_iterations_per_epoch = 15#75
+start_epoch = 3
 
 use_fixed_step_size = True
 fixed_step_size = 0.01 * 3 / 4
