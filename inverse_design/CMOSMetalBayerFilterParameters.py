@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_etch_passivation_reflective_no_feature_size_no_layering_rgb_2x2xtsmc_um'
+project_name = 'cmos_metal_many_opt_points_etch_passivation_reflective_no_feature_size_no_layering_rgb_2x2xtsmc_um'
 
 #
 # Optical
@@ -117,7 +117,7 @@ lambda_min_um = 0.4
 lambda_max_um = 0.7
 
 num_bands = 3
-num_points_per_band = 20
+num_points_per_band = 50
 num_design_frequency_points = num_bands * num_points_per_band
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
@@ -184,9 +184,9 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-num_epochs = 8#1
-num_iterations_per_epoch = 15#75
-start_epoch = 3
+num_epochs = 1
+num_iterations_per_epoch = 75
+start_epoch = 0
 
 use_fixed_step_size = True
 fixed_step_size = 8 * 0.01 * 3 / 2
