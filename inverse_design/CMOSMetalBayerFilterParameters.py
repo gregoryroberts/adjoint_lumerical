@@ -117,7 +117,7 @@ lambda_min_um = 0.4
 lambda_max_um = 0.7
 
 num_bands = 3
-num_points_per_band = 50
+num_points_per_band = 30
 num_design_frequency_points = num_bands * num_points_per_band
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
