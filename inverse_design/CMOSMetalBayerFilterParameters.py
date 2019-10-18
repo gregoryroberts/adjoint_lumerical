@@ -13,9 +13,9 @@ project_name = 'cmos_metal_many_opt_points_etch_passivation_reflective_no_featur
 # Optical
 #
 background_index = 1.0
-device_background_index = 1.3
+device_background_index = 1.35
 
-min_real_permittivity =  1.3**2
+min_real_permittivity =  1.35**2
 max_real_permittivity = -10
 
 min_imag_permittivity = 0
