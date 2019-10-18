@@ -47,7 +47,7 @@ device_size_verical_um = top_dielectric_stack_size_vertcial_um + designable_size
 
 bottom_metal_reflector_size_vertical_voxels = 1 + int( bottom_metal_reflector_size_vertical_um / mesh_spacing_um )
 
-device_voxels_lateral = 3 + int(device_size_lateral_um / mesh_spacing_um)
+device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 designable_device_voxels_vertical = 3 + int(designable_size_vertical_um / mesh_spacing_um)
 
 designable_device_vertical_maximum_um = designable_size_vertical_um
