@@ -314,10 +314,9 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 fdtd_hook.switchtolayout()
 design_variable = bayer_filter.get_design_variable()
 bin_design_variable = np.ones( design_variable.shape ) * np.greater( design_variable, 0.5 )
-bayer_filter.set_design_variable( bin_design_variable )
-cur_permittivity = bayer_filter.get_permittivity()
+bin_permittivity = min_device_permittivity + bin_design_variable * max_device_permittivity
 
-cur_index = permittivity_to_index( cur_permittivity )
+cur_index = permittivity_to_index( bin_permittivity )
 fdtd_hook.select("design_import")
 fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
