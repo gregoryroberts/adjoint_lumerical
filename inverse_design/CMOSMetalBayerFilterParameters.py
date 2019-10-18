@@ -32,8 +32,8 @@ mesh_spacing_um = 0.025
 
 device_size_lateral_um = 2
 # Metal layers from M7 down to M2 (and we will use M6 as a reflector)
-# ( 6 * ( 2200 + 950 + 300 + 500 ) + 300 + 500 ) / 10000 = 2.45
-designable_size_vertical_um = 2.45
+# ( 6 * ( 2200 + 950 + 300 + 500 ) - 300 + 300 + 500 ) / 10000 = 2.42
+designable_size_vertical_um = 2.42
 # We will assume just air below this
 bottom_metal_reflector_size_vertical_um = 0.13
 # Top dielectric stack size we will not be designing for now because feature
@@ -130,7 +130,7 @@ min_feature_size_um = 0.08
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 8
+num_vertical_layers = 6
 
 #
 # FDTD
