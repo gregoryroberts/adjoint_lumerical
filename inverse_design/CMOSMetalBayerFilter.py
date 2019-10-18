@@ -13,6 +13,10 @@ class CMOSMetalBayerFilter(device.Device):
 	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers):
 		super(CMOSMetalBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
 
+		self.x_dimension_idx = 0
+		self.y_dimension_idx = 1
+		self.z_dimension_idx = 2
+
 		self.num_z_layers = num_z_layers
 		self.flip_threshold = 0.5
 		self.minimum_design_value = 0
@@ -76,7 +80,7 @@ class CMOSMetalBayerFilter(device.Device):
 		self.sigmoid_beta = 0.25 * (2**epoch)
 
 		z_voxel_layers = self.size[2]
-		self.layering_z_0 = layering.Layering(z_dimension_idx, self.num_z_layers)
+		self.layering_z_0 = layering.Layering(self.z_dimension_idx, self.num_z_layers)
 
 		self.sigmoid_1 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		# self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
@@ -87,7 +91,7 @@ class CMOSMetalBayerFilter(device.Device):
 		self.num_variables = 1 + self.num_filters
 
 		z_voxel_layers = self.size[2]
-		self.layering_z_0 = layering.Layering(z_dimension_idx, self.num_z_layers)
+		self.layering_z_0 = layering.Layering(self.z_dimension_idx, self.num_z_layers)
 
 		# Start the sigmoids at weak strengths
 		self.sigmoid_beta = 0.0625
@@ -95,9 +99,6 @@ class CMOSMetalBayerFilter(device.Device):
 		self.sigmoid_1 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		# self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 
-		# x_dimension_idx = 0
-		# y_dimension_idx = 1
-		# z_dimension_idx = 2
 
 		# alpha = 8
 		# self.blur_half_width = blur_half_width_voxels
