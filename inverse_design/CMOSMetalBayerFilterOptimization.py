@@ -200,25 +200,79 @@ fdtd_hook.importnk2(metal_reflector_index, metal_reflector_region_x, metal_refle
 #
 # Add device region and create device permittivity
 #
-design_import = fdtd_hook.addimport()
-design_import['name'] = 'design_import'
-design_import['x span'] = device_size_lateral_um * 1e-6
-design_import['y span'] = device_size_lateral_um * 1e-6
-design_import['z min'] = designable_device_vertical_minimum_um * 1e-6
-design_import['z max'] = designable_device_vertical_maximum_um * 1e-6
 
 min_device_permittivity = min_real_permittivity + 1j * min_imag_permittivity
 max_device_permittivity = max_real_permittivity + 1j * max_imag_permittivity
 
-bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, designable_device_voxels_vertical])
-bayer_filter = CMOSMetalBayerFilter.CMOSMetalBayerFilter(
-	bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers)
+#
+# Here, many devices will actually be added, one for each actually designable region.  When the region is not
+# designable, we will just add a block of material there.  This applies for things like the via and capping layers
+#
+number_device_layers = len( layer_thicknesses_um )
 
-bayer_filter.set_design_variable( np.load( projects_directory_location + "/cur_design_variable.npy" ) )
+design_e_field_monitors = []
+bayer_filters = []
+bayer_filter_regions_z = []
+design_imports = []
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_z = 1e-6 * np.linspace(designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, designable_device_voxels_vertical)
+
+for device_layer_idx in range( 0, number_device_layers ):
+	layer_vertical_maximum_um = designable_device_vertical_maximum_um - np.sum( layer_thicknesses_um[ 0 : device_layer_idx ] )
+	layer_vertical_minimum_um = layer_vertical_maximum_um - layer_thicknesses_um[ device_layer_idx ]
+
+	if is_layer_designable[ device_layer_idx ]:
+
+		efield_monitor = fdtd_hook.addprofile()
+		efield_monitor['name'] = 'efield_monitor_' + str( device_layer_idx )
+		efield_monitor['monitor type'] = '3D'
+		efield_monitor['x span'] = device_size_lateral_um * 1e-6
+		efield_monitor['y span'] = device_size_lateral_um * 1e-6
+		efield_monitor['z min'] = layer_vertical_minimum_um * 1e-6
+		efield_monitor['z max'] = layer_vertical_maximum_um * 1e-6
+		efield_monitor['override global monitor settings'] = 1
+		efield_monitor['use linear wavelength spacing'] = 1
+		efield_monitor['use source limits'] = 1
+		efield_monitor['frequency points'] = num_design_frequency_points
+		efield_monitor['output Hx'] = 0
+		efield_monitor['output Hy'] = 0
+		efield_monitor['output Hz'] = 0
+
+		one_vertical_layer = 1
+		layer_bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, layer_thicknesses_voxels[device_layer_idx]])
+		layer_bayer_filter = CMOSMetalBayerFilter.CMOSMetalBayerFilter(
+			layer_bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, one_vertical_layer)
+
+		bayer_filter_region_z = 1e-6 * np.linspace(layer_vertical_minimum_um, layer_vertical_maximum_um, layer_thicknesses_voxels[device_layer_idx])
+
+		# bayer_filter.set_design_variable( np.load( projects_directory_location + "/cur_design_variable.npy" ) )
+
+		layer_import = fdtd_hook.addimport()
+		layer_import['name'] = 'layer_import_' + str( device_layer_idx )
+		layer_import['x span'] = device_size_lateral_um * 1e-6
+		layer_import['y span'] = device_size_lateral_um * 1e-6
+		layer_import['z min'] = layer_vertical_minimum_um * 1e-6
+		layer_import['z max'] = layer_vertical_maximum_um * 1e-6
+
+
+		design_e_field_monitors.append( efield_monitor )
+		bayer_filters.append( layer_bayer_filter )
+		bayer_filter_regions_z.append( bayer_filter_region_z )
+		design_imports.append( layer_import )
+
+
+	else:
+		blank_layer = fdtd_hook.addrect()
+		blank_layer['name'] = 'device_layer_' + str(device_layer_idx)
+		blank_layer['x span'] = device_size_lateral_um * 1e-6
+		blank_layer['y span'] = device_size_lateral_um * 1e-6
+		blank_layer['z min'] = layer_vertical_minimum_um * 1e-6
+		blank_layer['z max'] = layer_vertical_maximum_um * 1e-6
+		blank_layer['index'] = layer_background_index[ device_layer_idx ]
+
+
+
 
 
 #
@@ -321,8 +375,53 @@ step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
-# todo(groberts): should we go fixed step size?  The current method is somewhat adaptive.
-step_size_start = fixed_step_size # 10 * 0.001
+step_size_start = fixed_step_size
+
+
+def import_filters():
+	fdtd_hook.switchtolayout()
+
+	for device_layer_idx in range( 0, len( bayer_filters ) ):
+		if is_layer_designable[ device_layer_idx ]:
+			bayer_filter = bayer_filters[ bayer_filter_idx ]
+
+			cur_permittivity = bayer_filter.get_permittivity()
+			cur_index = permittivity_to_index( cur_permittivity )
+
+			design_import = design_imports[ device_layer_idx ]
+
+			fdtd_hook.select( design_import[ "name" ] )
+			fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_regions_z[ device_layer_idx ] )
+
+def update_filters( device_step_real, device_step_imag, step_size ):
+	for device_layer_idx in range( 0, len( bayer_filters ) ):
+		bayer_filter = bayer_filters[ device_layer_idx ]
+
+		cur_design_variable = bayer_filter.get_design_variable()
+		last_design_variable = cur_design_variable.copy()
+
+		layer_vertical_maximum_um = designable_device_vertical_maximum_um - np.sum( layer_thicknesses_um[ 0 : device_layer_idx ] )
+		layer_vertical_minimum_um = layer_vertical_maximum_um - layer_thicknesses_um[ device_layer_idx ]
+
+		layer_vertical_minimum_voxels = int( ( layer_vertical_minimum_um - designable_device_vertical_minimum_um ) / mesh_spacing_um )
+		layer_vertical_maximum_voxels = layer_vertical_minimum_voxels + layer_thicknesses_voxels[ device_layer_idx ]
+
+		bayer_filter.step(
+			device_step_real[ :, :, ( layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ) ],
+			device_step_imag[ :, :, ( layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ) ],
+			step_size )
+
+		cur_design_variable = bayer_filter.get_design_variable()
+
+		average_design_variable_change = np.mean( np.abs( last_design_variable - cur_design_variable ) )
+		max_design_variable_change = np.max( np.abs( last_design_variable - cur_design_variable ) )
+
+		print( "The max amount the density is changing for layer " + str( device_layer_idx ) + " is around " + str( max_design_variable_change ) )
+		print( "The mean amount the density is changing for layer " + str( device_layer_idx ) + " is around " + str( average_design_variable_change ) )
+	
+		np.save(projects_directory_location + "/cur_design_variable_" + str( device_layer_idx ) + ".npy", cur_design_variable)
+
+	print()
 
 #
 # Run the optimization
@@ -333,12 +432,8 @@ for epoch in range(start_epoch, num_epochs):
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
-		fdtd_hook.switchtolayout()
-		cur_permittivity = bayer_filter.get_permittivity()
-		cur_index = permittivity_to_index( cur_permittivity )
-		fdtd_hook.select("design_import")
-		fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
-
+		# Import all the bayer filters
+		import_filters()
 
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
@@ -445,68 +540,17 @@ for epoch in range(start_epoch, num_epochs):
 
 		design_gradient = bayer_filter.backpropagate(device_gradient_real, device_gradient_imag)
 
-		# max_change_design = epoch_start_permittivity_change_max
-		# min_change_design = epoch_start_permittivity_change_min
-
-		# if num_iterations_per_epoch > 1:
-
-		# 	max_change_design = (
-		# 		epoch_end_permittivity_change_max +
-		# 		(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
-		# 	)
-
-		# 	min_change_design = (
-		# 		epoch_end_permittivity_change_min +
-		# 		(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
-		# 	)
-
-
-		cur_design_variable = bayer_filter.get_design_variable()
-
 		step_size = step_size_start
 
-		# check_last = False
-		# last = 0
+		update_filters( -device_gradient_real, -device_gradient_imag, step_size )
 
-		# while True:
-		# 	proposed_design_variable = cur_design_variable + step_size * design_gradient
-		# 	proposed_design_variable = np.maximum(
-		# 								np.minimum(
-		# 									proposed_design_variable,
-		# 									1.0),
-		# 								0.0)
-
-		# 	difference = np.abs(proposed_design_variable - cur_design_variable)
-		# 	max_difference = np.max(difference)
-
-		# 	if (max_difference <= max_change_design) and (max_difference >= min_change_design):
-		# 		break
-		# 	elif (max_difference <= max_change_design):
-		# 		step_size *= 2
-		# 		if (last ^ 1) and check_last:
-		# 			break
-		# 		check_last = True
-		# 		last = 1
-		# 	else:
-		# 		step_size /= 2
-		# 		if (last ^ 0) and check_last:
-		# 			break
-		# 		check_last = True
-		# 		last = 0
-
-		# step_size_start = step_size
-
-		last_design_variable = cur_design_variable.copy()
-		bayer_filter.step(-device_gradient_real, -device_gradient_imag, step_size)
-
-		print( "The max amount the density is changing is around " + str( np.max(np.abs(-design_gradient * step_size))) )
-		print( "The mean amount the density is changing is around " + str( np.mean(np.abs(-design_gradient * step_size))) )
-		print()
-
-		cur_design_variable = bayer_filter.get_design_variable()
-
-		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
-		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
+		#
+		# Would be nice to see how much it actually changed because some things will just
+		# hit the wall even if they have a high desired change, but for now this is ok.  We
+		# will do that for each individual iteration
+		#
+		average_design_variable_change = np.mean( np.abs( step_size * design_gradient ) )
+		max_design_variable_change = np.max( np.abs( step_size * design_gradient ) )
 
 		step_size_evolution[epoch][iteration] = step_size
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
@@ -518,7 +562,6 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
 		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
 		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
-		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 
 
 

@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_many_opt_points_etch_passivation_reflective_no_feature_size_no_layering_rgb_2x2xtsmc_um'
+project_name = 'cmos_metal_many_opt_points_etch_passivation_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
 
 #
 # Optical
@@ -23,6 +23,10 @@ max_imag_permittivity = -3
 
 init_permittivity_0_1_scale = 0.0
 
+#
+# todo(groberts): this a pretty short focal length.  Where is it with respect to?  Possibly, we should
+# push this out to around 1.5um like we have been doing in the past for visible splitters.
+#
 focal_length_um = 0.9
 
 #
@@ -42,6 +46,8 @@ layer_thicknesses_um = [
 	0.08, 0.22, 0.095, # M2
 	0.08, # part of M1 until the copper reflecting layer on M1
 ]
+
+layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_thicknesses_um ]
 
 layer_background_index = [
 	1.45, # leftover from M8
@@ -87,7 +93,7 @@ device_size_verical_um = top_dielectric_stack_size_vertcial_um + designable_size
 bottom_metal_reflector_size_vertical_voxels = 1 + int( bottom_metal_reflector_size_vertical_um / mesh_spacing_um )
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
-designable_device_voxels_vertical = 3 + int(designable_size_vertical_um / mesh_spacing_um)
+designable_device_voxels_vertical = 1 + int(designable_size_vertical_um / mesh_spacing_um)
 
 designable_device_vertical_maximum_um = designable_size_vertical_um
 designable_device_vertical_minimum_um = 0
@@ -133,13 +139,13 @@ min_feature_size_um = 0.08
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
 blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 
-num_vertical_layers = 6
+# num_vertical_layers = 6
 
 #
 # FDTD
 #
 vertical_gap_size_um = 0.5
-lateral_gap_size_um = 0.5
+lateral_gap_size_um = 0.75
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
@@ -157,7 +163,7 @@ fdtd_simulation_time_fs = 2000
 #
 # Forward Source
 #
-lateral_aperture_um = 1.05 * device_size_lateral_um
+lateral_aperture_um = 1.1 * device_size_lateral_um
 src_maximum_vertical_um = pass_stack_end_um + focal_length_um + 0.5 * vertical_gap_size_um
 src_minimum_vertical_um = bottom_metal_reflector_start_um - 0.5 * vertical_gap_size_um
 
