@@ -406,10 +406,10 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		last_design_variable = cur_design_variable.copy()
 
 		layer_vertical_maximum_um = designable_device_vertical_maximum_um - np.sum( layer_thicknesses_um[ 0 : device_layer_idx ] )
-		layer_vertical_minimum_um = layer_vertical_maximum_um - layer_thicknesses_um[ device_layer_idx ]
+		layer_vertical_minimum_um = layer_vertical_maximum_um - bayer_filter_regions_z[ device_layer_idx ][ -1 ]
 
 		layer_vertical_minimum_voxels = int( ( layer_vertical_minimum_um - designable_device_vertical_minimum_um ) / mesh_spacing_um )
-		layer_vertical_maximum_voxels = layer_vertical_minimum_voxels + layer_thicknesses_voxels[ device_layer_idx ]
+		layer_vertical_maximum_voxels = layer_vertical_minimum_voxels + len( bayer_filter_regions_z[ device_layer_idx ] )
 
 		bayer_filter.step(
 			device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
