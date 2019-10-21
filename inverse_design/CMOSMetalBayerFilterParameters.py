@@ -114,10 +114,6 @@ bottom_metal_reflector_end_um = bottom_metal_reflector_start_um + bottom_metal_r
 m8_stack_start_um = bottom_metal_reflector_end_um + designable_size_vertical_um
 m8_stack_end_um = m8_stack_start_um + np.sum( m8_stack_layer_thickness_um )
 
-dielectric_stack_start_um = m8_stack_start_um
-dielectric_stack_end_um = pass_stack_end_um
-
-
 
 #
 # Spectral
@@ -164,7 +160,7 @@ fdtd_simulation_time_fs = 2000
 # Forward Source
 #
 lateral_aperture_um = 1.1 * device_size_lateral_um
-src_maximum_vertical_um = pass_stack_end_um + focal_length_um + 0.5 * vertical_gap_size_um
+src_maximum_vertical_um = m8_stack_end_um + focal_length_um + 0.5 * vertical_gap_size_um
 src_minimum_vertical_um = bottom_metal_reflector_start_um - 0.5 * vertical_gap_size_um
 
 #
@@ -184,7 +180,7 @@ spectral_focal_plane_map = [
 #
 # Adjoint sources
 #
-adjoint_vertical_um = pass_stack_end_um + focal_length_um
+adjoint_vertical_um = m8_stack_end_um + focal_length_um
 num_focal_spots = 4
 num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
