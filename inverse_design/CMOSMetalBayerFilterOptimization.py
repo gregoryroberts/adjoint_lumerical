@@ -91,6 +91,21 @@ for xy_idx in range(0, 2):
 	forward_sources.append(forward_src)
 
 #
+# Disable all sources in the simulation, so that we can selectively turn single sources on at a time
+#
+def disable_all_sources():
+	fdtd_hook.switchtolayout()
+
+	for xy_idx in range(0, 2):
+		(forward_sources[xy_idx]).enabled = 0
+
+	for adj_src_idx in range(0, num_adjoint_sources):
+		for xy_idx in range(0, 2):
+			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
+
+
+
+#
 # Place dipole adjoint sources at the focal plane that can ring in both
 # x-axis and y-axis
 #
@@ -150,6 +165,21 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['frequency points'] = num_design_frequency_points
 
 	focal_monitors.append(focal_monitor)
+
+
+e_forward_no_device = {}
+
+for xy_idx in range(0, 2):
+	disable_all_sources()
+	(forward_sources[xy_idx]).enabled = 1
+	fdtd_hook.run()
+
+	forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+	e_forward_no_device[xy_names[xy_idx]] = []
+	for adj_src_idx in range(0, num_adjoint_sources):
+		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+
 
 
 #
@@ -273,8 +303,6 @@ for device_layer_idx in range( 0, number_device_layers ):
 
 
 
-
-
 #
 # Add blocks of dielectric on the side of the designable region because we will be leaving those as blank, unpatterned dielectric material
 # Would it be better to have this be a part of the bayer filter material inmport and jus tnot modify it (i.e. - mask out any changes to it).  I'm
@@ -317,18 +345,6 @@ for device_background_side_idx in range( 0, 4 ):
 	side_block['index'] = device_background_index
 
 
-#
-# Disable all sources in the simulation, so that we can selectively turn single sources on at a time
-#
-def disable_all_sources():
-	fdtd_hook.switchtolayout()
-
-	for xy_idx in range(0, 2):
-		(forward_sources[xy_idx]).enabled = 0
-
-	for adj_src_idx in range(0, num_adjoint_sources):
-		for xy_idx in range(0, 2):
-			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
@@ -393,7 +409,7 @@ def import_filters():
 			fdtd_hook.select( design_import[ "name" ] )
 			fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_regions_z[ device_layer_idx ] )
 
-def update_filters( device_step_real, device_step_imag, step_size ):
+def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
 		bayer_filter = bayer_filters[ device_layer_idx ]
 
@@ -427,7 +443,8 @@ def update_filters( device_step_real, device_step_imag, step_size ):
 # Run the optimization
 #
 for epoch in range(start_epoch, num_epochs):
-	bayer_filter.update_filters(epoch)
+	for device_layer_idx in range( 0, len( bayer_filters ) ):
+		bayer_filters[ device_layer_idx ].update_filters( epoch )
 
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
@@ -447,7 +464,9 @@ for epoch in range(start_epoch, num_epochs):
 
 			focal_data[xy_names[xy_idx]] = []
 			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+				focal_data[xy_names[xy_idx]].append(
+					get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E') -
+					e_forward_no_device[xy_names[xy_idx]][adj_src_idx] )
 
 
 		#
@@ -542,7 +561,7 @@ for epoch in range(start_epoch, num_epochs):
 
 		step_size = step_size_start
 
-		update_filters( -device_gradient_real, -device_gradient_imag, step_size )
+		update_bayer_filters( -device_gradient_real, -device_gradient_imag, step_size )
 
 		#
 		# Would be nice to see how much it actually changed because some things will just
