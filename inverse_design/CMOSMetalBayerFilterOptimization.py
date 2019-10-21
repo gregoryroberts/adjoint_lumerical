@@ -31,6 +31,7 @@ def permittivity_to_index( permittivity ):
 #
 fdtd_hook = lumapi.FDTD()
 
+
 #
 # Create project folder and save out the parameter file for documentation for this optimization
 #
@@ -45,6 +46,40 @@ fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
 shutil.copy2(python_src_directory + "/CMOSMetalBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSMetalBayerFilter.py")
+
+#
+# Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
+# python process.  This is much faster than going through Lumerical's interop library
+#
+def get_monitor_data(monitor_name, monitor_field):
+	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
+	extracted_data_name = lumerical_data_name + "_data"
+	data_transfer_filename = projects_directory_location + "/data_transfer_" + monitor_name + "_" + monitor_field
+
+	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
+	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
+	command_save_data_to_file = "matlabsave(\'" + data_transfer_filename + "\', " + extracted_data_name + ");"
+
+	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
+	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
+
+	# start_time = time.time()
+
+	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
+	monitor_data = {}
+	load_file = h5py.File(data_transfer_filename + ".mat")
+
+	monitor_data = np.array(load_file[extracted_data_name])
+
+	# end_time = time.time()
+
+	# print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
+
+	return monitor_data
+
+def get_complex_monitor_data(monitor_name, monitor_field):
+	data = get_monitor_data(monitor_name, monitor_field)
+	return (data['real'] + np.complex(0, 1) * data['imag'])
 
 #
 # Set up the FDTD region and mesh
@@ -345,40 +380,6 @@ for device_background_side_idx in range( 0, 4 ):
 	side_block['index'] = device_background_index
 
 
-
-#
-# Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
-# python process.  This is much faster than going through Lumerical's interop library
-#
-def get_monitor_data(monitor_name, monitor_field):
-	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
-	extracted_data_name = lumerical_data_name + "_data"
-	data_transfer_filename = projects_directory_location + "/data_transfer_" + monitor_name + "_" + monitor_field
-
-	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
-	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
-	command_save_data_to_file = "matlabsave(\'" + data_transfer_filename + "\', " + extracted_data_name + ");"
-
-	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
-	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
-
-	# start_time = time.time()
-
-	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
-	monitor_data = {}
-	load_file = h5py.File(data_transfer_filename + ".mat")
-
-	monitor_data = np.array(load_file[extracted_data_name])
-
-	# end_time = time.time()
-
-	# print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
-
-	return monitor_data
-
-def get_complex_monitor_data(monitor_name, monitor_field):
-	data = get_monitor_data(monitor_name, monitor_field)
-	return (data['real'] + np.complex(0, 1) * data['imag'])
 
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
