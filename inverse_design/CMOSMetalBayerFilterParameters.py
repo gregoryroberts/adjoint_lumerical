@@ -30,10 +30,49 @@ focal_length_um = 0.9
 #
 mesh_spacing_um = 0.025
 
+
+layer_thicknesses_um = [
+	0.05, # leftover from M8
+	0.22, 0.095,       # M7
+	# here, we are combining the two capping layers from layer N to layer (N - 1) into one since they are very thin
+	0.08, 0.22, 0.095, # M6
+	0.08, 0.22, 0.095, # M5
+	0.08, 0.22, 0.095, # M4
+	0.08, 0.22, 0.095, # M3
+	0.08, 0.22, 0.095, # M2
+	0.08, # part of M1 until the copper reflecting layer on M1
+]
+
+layer_background_index = [
+	1.45, # leftover from M8
+	1.35, 1.35,       # M7
+	1.45, 1.35, 1.35, # M6
+	1.45, 1.35, 1.35, # M5
+	1.45, 1.35, 1.35, # M4
+	1.45, 1.35, 1.35, # M3
+	1.45, 1.35, 1.35, # M2
+	1.45, # part of M1 until the copper reflecting layer on M1
+]
+
+is_layer_designable = [
+	False,
+	True, False,        # M7
+	False, True, False, # M6
+	False, True, False, # M5
+	False, True, False, # M4
+	False, True, False, # M3
+	False, True, False, # M2
+	False,
+]
+
+m8_stack_layer_thickness_um = [ 0.62 ]
+m8_stack_layer_refractive_index = [ 1.45 ]
+
+
 device_size_lateral_um = 2
 # Metal layers from M7 down to M2 (and we will use M6 as a reflector)
 # ( 6 * ( 2200 + 950 + 300 + 500 ) - 300 + 300 + 500 ) / 10000 = 2.42
-designable_size_vertical_um = 2.42
+designable_size_vertical_um = np.sum( layer_thicknesses_um )# 2.42
 # We will assume just air below this
 bottom_metal_reflector_size_vertical_um = 0.13
 # Top dielectric stack size we will not be designing for now because feature
@@ -41,7 +80,7 @@ bottom_metal_reflector_size_vertical_um = 0.13
 # ( 6000 + 4000 + 2500 + 750 + 4000 + 750 + 32300 + 1100 + 7250 + 750 + 7750 + 500 + 6200 + 500 ) / 10000 = 7.435
 # top_dielectric_stack_size_vertcial_um = 7.435
 # for now, just one of the M8 layers
-top_dielectric_stack_size_vertcial_um = 0.62
+top_dielectric_stack_size_vertcial_um = m8_stack_layer_thickness_um[ 0 ]
 
 device_size_verical_um = top_dielectric_stack_size_vertcial_um + designable_size_vertical_um + bottom_metal_reflector_size_vertical_um
 
@@ -54,43 +93,13 @@ designable_device_vertical_maximum_um = designable_size_vertical_um
 designable_device_vertical_minimum_um = 0
 
 
-# Passivation and M8/M9 dielectric stack
-# Stacks organized as list with lowest layer coming first in the list
-# m8_stack_layer_thickness_um = [
-# 	0.62, 0.05, 0.775, 0.075 ]
-# m8_stack_layer_refractive_index = [
-# 	1.45, 2.0, 1.45, 2.0 ]
-
-m8_stack_layer_thickness_um = [ 0.62 ]
-m8_stack_layer_refractive_index = [ 1.45 ]
-
-# m9_stack_layer_thickness_um = [
-# 	0.725, 0.11, 3.23 ]
-# m9_stack_layer_refractive_index = [
-# 	1.45, 2.0, 1.45 ]
-
-m9_stack_layer_thickness_um = []
-m9_stack_layer_refractive_index = []
-
-# pass_stack_layer_thickness_um = [
-# 	0.075, 0.4, 0.075, 0.65, 0.6 ]
-# pass_stack_layer_refractive_index = [
-# 	2.0, 1.45, 2.0, 1.45, 2.0 ]
-
-pass_stack_layer_thickness_um = []
-pass_stack_layer_refractive_index = []
-
 
 #
 # copy so the extend calls following do not modify the memory for the m8 stack variable
 #
 top_dielectric_layer_thickness_um = m8_stack_layer_thickness_um.copy()
-top_dielectric_layer_thickness_um.extend( m9_stack_layer_thickness_um )
-top_dielectric_layer_thickness_um.extend( pass_stack_layer_thickness_um )
 
 top_dielectric_layer_refractice_index = m8_stack_layer_refractive_index.copy()
-top_dielectric_layer_refractice_index.extend( m9_stack_layer_refractive_index )
-top_dielectric_layer_refractice_index.extend( pass_stack_layer_refractive_index )
 
 
 bottom_metal_reflector_start_um = -bottom_metal_reflector_size_vertical_um
@@ -98,12 +107,6 @@ bottom_metal_reflector_end_um = bottom_metal_reflector_start_um + bottom_metal_r
 
 m8_stack_start_um = bottom_metal_reflector_end_um + designable_size_vertical_um
 m8_stack_end_um = m8_stack_start_um + np.sum( m8_stack_layer_thickness_um )
-
-m9_stack_start_um = m8_stack_end_um
-m9_stack_end_um = m9_stack_start_um + np.sum( m9_stack_layer_thickness_um )
-
-pass_stack_start_um = m9_stack_end_um
-pass_stack_end_um = pass_stack_start_um + np.sum( pass_stack_layer_thickness_um )
 
 dielectric_stack_start_um = m8_stack_start_um
 dielectric_stack_end_um = pass_stack_end_um
