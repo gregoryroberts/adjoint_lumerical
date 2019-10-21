@@ -209,8 +209,6 @@ for xy_idx in range(0, 1):#2):
 	(forward_sources[xy_idx]).enabled = 1
 	fdtd_hook.run()
 
-	forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-
 	e_forward_no_device[xy_names[xy_idx]] = []
 	for adj_src_idx in range(0, num_adjoint_sources):
 		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
