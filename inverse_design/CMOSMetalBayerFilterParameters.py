@@ -114,6 +114,8 @@ bottom_metal_reflector_end_um = bottom_metal_reflector_start_um + bottom_metal_r
 m8_stack_start_um = bottom_metal_reflector_end_um + designable_size_vertical_um
 m8_stack_end_um = m8_stack_start_um + np.sum( m8_stack_layer_thickness_um )
 
+dielectric_stack_start_um = m8_stack_start_um
+dielectric_stack_end_um = m8_stack_end_um
 
 #
 # Spectral
