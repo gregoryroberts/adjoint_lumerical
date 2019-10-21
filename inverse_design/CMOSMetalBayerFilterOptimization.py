@@ -423,8 +423,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		layer_vertical_maximum_voxels = layer_vertical_minimum_voxels + layer_thicknesses_voxels[ device_layer_idx ]
 
 		bayer_filter.step(
-			device_step_real[ :, :, ( layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ) ],
-			device_step_imag[ :, :, ( layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ) ],
+			device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
+			device_step_imag[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
 			step_size )
 
 		cur_design_variable = bayer_filter.get_design_variable()
