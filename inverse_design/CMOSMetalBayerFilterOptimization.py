@@ -220,6 +220,8 @@ test_change = np.zeros( extract_field_shape.shape )
 for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
 	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
 
+fdtd_hook.switchtolayout()
+
 #
 # Build the dielectric stack on top of the metal
 #
