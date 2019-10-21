@@ -202,20 +202,25 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitors.append(focal_monitor)
 
 
-# e_forward_no_device = {}
+e_forward_no_device = {}
 
-# for xy_idx in range(0, 2):
-# 	disable_all_sources()
-# 	(forward_sources[xy_idx]).enabled = 1
-# 	fdtd_hook.run()
+for xy_idx in range(0, 1):#2):
+	disable_all_sources()
+	(forward_sources[xy_idx]).enabled = 1
+	fdtd_hook.run()
 
-# 	forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+	forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-# 	e_forward_no_device[xy_names[xy_idx]] = []
-# 	for adj_src_idx in range(0, num_adjoint_sources):
-# 		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+	e_forward_no_device[xy_names[xy_idx]] = []
+	for adj_src_idx in range(0, num_adjoint_sources):
+		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
-
+test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+extract_field_shape = test_e_fields[0, 0, :, :, :]
+extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
+test_change = np.zeros( extract_field_shape.shape )
+for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
+	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
 
 #
 # Build the dielectric stack on top of the metal
@@ -275,7 +280,6 @@ max_device_permittivity = max_real_permittivity + 1j * max_imag_permittivity
 #
 number_device_layers = len( layer_thicknesses_um )
 
-design_e_field_monitors = []
 bayer_filters = []
 bayer_filter_regions_z = []
 design_imports = []
@@ -288,21 +292,6 @@ for device_layer_idx in range( 0, number_device_layers ):
 	layer_vertical_minimum_um = layer_vertical_maximum_um - layer_thicknesses_um[ device_layer_idx ]
 
 	if is_layer_designable[ device_layer_idx ]:
-
-		efield_monitor = fdtd_hook.addprofile()
-		efield_monitor['name'] = 'efield_monitor_' + str( device_layer_idx )
-		efield_monitor['monitor type'] = '3D'
-		efield_monitor['x span'] = device_size_lateral_um * 1e-6
-		efield_monitor['y span'] = device_size_lateral_um * 1e-6
-		efield_monitor['z min'] = layer_vertical_minimum_um * 1e-6
-		efield_monitor['z max'] = layer_vertical_maximum_um * 1e-6
-		efield_monitor['override global monitor settings'] = 1
-		efield_monitor['use linear wavelength spacing'] = 1
-		efield_monitor['use source limits'] = 1
-		efield_monitor['frequency points'] = num_design_frequency_points
-		efield_monitor['output Hx'] = 0
-		efield_monitor['output Hy'] = 0
-		efield_monitor['output Hz'] = 0
 
 		one_vertical_layer = 1
 		layer_bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, layer_thicknesses_voxels[device_layer_idx]])
@@ -321,7 +310,6 @@ for device_layer_idx in range( 0, number_device_layers ):
 		layer_import['z max'] = layer_vertical_maximum_um * 1e-6
 
 
-		design_e_field_monitors.append( efield_monitor )
 		bayer_filters.append( layer_bayer_filter )
 		bayer_filter_regions_z.append( bayer_filter_region_z )
 		design_imports.append( layer_import )
@@ -395,12 +383,12 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 step_size_start = fixed_step_size
 
 
-def import_filters():
+def import_bayer_filters():
 	fdtd_hook.switchtolayout()
 
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
 		if is_layer_designable[ device_layer_idx ]:
-			bayer_filter = bayer_filters[ bayer_filter_idx ]
+			bayer_filter = bayer_filters[ device_layer_idx ]
 
 			cur_permittivity = bayer_filter.get_permittivity()
 			cur_index = permittivity_to_index( cur_permittivity )
@@ -440,6 +428,11 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 
 	print()
 
+
+
+update_bayer_filters( -test_change, -test_change, 0.25 )
+import_bayer_filters()
+
 #
 # Run the optimization
 #
@@ -451,7 +444,7 @@ for epoch in range(start_epoch, num_epochs):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
 		# Import all the bayer filters
-		import_filters()
+		import_bayer_filters()
 
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
