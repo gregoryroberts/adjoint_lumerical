@@ -503,8 +503,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
 		# gradients for x- and y-polarized forward sources.
 		#
-		cur_permittivity_shape = cur_permittivity.shape
-		reversed_field_shape = [cur_permittivity_shape[2], cur_permittivity_shape[1], cur_permittivity_shape[0]]
+		reversed_field_shape = [designable_device_voxels_vertical, device_voxels_lateral, device_voxels_lateral]
 		xy_polarized_gradients = [ np.zeros(reversed_field_shape, dtype=np.complex), np.zeros(reversed_field_shape, dtype=np.complex) ]
 
 		for adj_src_idx in range(0, num_adjoint_sources):
