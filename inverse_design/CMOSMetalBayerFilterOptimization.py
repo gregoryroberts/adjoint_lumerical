@@ -204,7 +204,7 @@ for adj_src in range(0, num_adjoint_sources):
 
 e_forward_no_device = {}
 
-for xy_idx in range(0, 1):#2):
+for xy_idx in range(0, 2):
 	disable_all_sources()
 	(forward_sources[xy_idx]).enabled = 1
 	fdtd_hook.run()
@@ -213,12 +213,12 @@ for xy_idx in range(0, 1):#2):
 	for adj_src_idx in range(0, num_adjoint_sources):
 		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
-test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-extract_field_shape = test_e_fields[0, 0, :, :, :]
-extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
-test_change = np.zeros( extract_field_shape.shape )
-for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
-	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
+# test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+# extract_field_shape = test_e_fields[0, 0, :, :, :]
+# extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
+# test_change = np.zeros( extract_field_shape.shape )
+# for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
+# 	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
 
 fdtd_hook.switchtolayout()
 
@@ -363,7 +363,7 @@ for device_background_side_idx in range( 0, 4 ):
 	side_block['y'] = side_y * extra_lateral_space_offset_um * 1e-6
 	side_block['y span'] = (
 		np.abs( side_y ) * extra_lateral_space_per_side_um +
-		( 1 - np.abs( side_y ) ) * fdtd_region_size_lateral_um ) * 1e-6
+		( 1 - np.abs( side_y ) ) * ( fdtd_region_size_lateral_um - 2 * extra_lateral_space_per_side_um ) ) * 1e-6
 
 	side_block['index'] = device_background_index
 
@@ -430,8 +430,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 
 
 
-update_bayer_filters( -test_change, -test_change, 0.25 )
-import_bayer_filters()
+# update_bayer_filters( -test_change, -test_change, 0.25 )
+# import_bayer_filters()
 
 #
 # Run the optimization
