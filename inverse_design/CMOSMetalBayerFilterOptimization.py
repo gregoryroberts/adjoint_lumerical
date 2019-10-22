@@ -204,7 +204,7 @@ for adj_src in range(0, num_adjoint_sources):
 
 e_forward_no_device = {}
 
-for xy_idx in range(0, 1):#2):
+for xy_idx in range(0, 2):
 	disable_all_sources()
 	(forward_sources[xy_idx]).enabled = 1
 	fdtd_hook.run()
@@ -213,12 +213,12 @@ for xy_idx in range(0, 1):#2):
 	for adj_src_idx in range(0, num_adjoint_sources):
 		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
-test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-extract_field_shape = test_e_fields[0, 0, :, :, :]
-extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
-test_change = np.zeros( extract_field_shape.shape )
-for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
-	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
+# test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+# extract_field_shape = test_e_fields[0, 0, :, :, :]
+# extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
+# test_change = np.zeros( extract_field_shape.shape )
+# for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
+# 	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
 
 fdtd_hook.switchtolayout()
 
@@ -412,21 +412,16 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		layer_vertical_minimum_voxels = int( ( layer_vertical_minimum_um - designable_device_vertical_minimum_um ) / mesh_spacing_um )
 		layer_vertical_maximum_voxels = layer_vertical_minimum_voxels + len( bayer_filter_regions_z[ device_layer_idx ] )
 
-		# bayer_filter.step(
-		# 	device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
-		# 	device_step_imag[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
-		# 	step_size )
+		bayer_filter.step(
+			device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
+			device_step_imag[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
+			step_size )
 
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs( last_design_variable - cur_design_variable ) )
 		max_design_variable_change = np.max( np.abs( last_design_variable - cur_design_variable ) )
 
-		print(device_step_real.shape)
-		print(layer_vertical_minimum_um)
-		print(layer_vertical_maximum_um)
-		print(layer_vertical_minimum_voxels)
-		print(layer_vertical_maximum_voxels)
 		print( "This bayer filter is expecting something of size " + str( layer_bayer_filter.size ) + " and it has been fed something of size " +
 			str( device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ].shape ) )
 		print( "The gradient information is being taken between " + str( layer_vertical_minimum_voxels ) + " and " + str( layer_vertical_maximum_voxels )
@@ -440,8 +435,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 
 
 
-update_bayer_filters( -test_change, -test_change, 0.25 )
-import_bayer_filters()
+# update_bayer_filters( -test_change, -test_change, 0.25 )
+# import_bayer_filters()
 
 #
 # Run the optimization
