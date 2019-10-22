@@ -411,16 +411,21 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		layer_vertical_minimum_voxels = int( ( layer_vertical_minimum_um - designable_device_vertical_minimum_um ) / mesh_spacing_um )
 		layer_vertical_maximum_voxels = layer_vertical_minimum_voxels + len( bayer_filter_regions_z[ device_layer_idx ] )
 
-		bayer_filter.step(
-			device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
-			device_step_imag[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
-			step_size )
+		# bayer_filter.step(
+		# 	device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
+		# 	device_step_imag[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
+		# 	step_size )
 
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs( last_design_variable - cur_design_variable ) )
 		max_design_variable_change = np.max( np.abs( last_design_variable - cur_design_variable ) )
 
+		print(device_step_real.shape)
+		print(layer_vertical_minimum_voxels)
+		print(layer_vertical_maximum_voxels)
+		print( "This bayer filter is expecting something of size " + str( layer_bayer_filter.size ) + " and it has been fed something of size " +
+			str( device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ].shape ) )
 		print( "The gradient information is being taken between " + str( layer_vertical_minimum_voxels ) + " and " + str( layer_vertical_maximum_voxels )
 			+ "\nout of total number height of " + str( designable_device_voxels_vertical ) + " (voxels)")
 		print( "The max amount the density is changing for layer " + str( device_layer_idx ) + " is " + str( max_design_variable_change ) )
