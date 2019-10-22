@@ -423,6 +423,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		max_design_variable_change = np.max( np.abs( last_design_variable - cur_design_variable ) )
 
 		print(device_step_real.shape)
+		print(layer_vertical_minimum_um)
+		print(layer_vertical_maximum_um)
 		print(layer_vertical_minimum_voxels)
 		print(layer_vertical_maximum_voxels)
 		print( "This bayer filter is expecting something of size " + str( layer_bayer_filter.size ) + " and it has been fed something of size " +
