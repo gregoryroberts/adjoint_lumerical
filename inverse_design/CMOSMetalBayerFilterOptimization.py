@@ -570,7 +570,7 @@ for epoch in range(start_epoch, num_epochs):
 
 		np.save(projects_directory_location + '/device_gradient_real.npy', device_gradient_real)
 		np.save(projects_directory_location + '/device_gradient_imag.npy', device_gradient_imag)
-		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
+		# np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
 		# np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
 		# np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
