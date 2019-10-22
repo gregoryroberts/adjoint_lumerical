@@ -309,6 +309,7 @@ for device_layer_idx in range( 0, number_device_layers ):
 		layer_import['z min'] = layer_vertical_minimum_um * 1e-6
 		layer_import['z max'] = layer_vertical_maximum_um * 1e-6
 
+		print("For layer " + str( device_layer_idx ), " the min um spot is " + str( layer_vertical_minimum_um ) + " and max um spot is " + str( layer_vertical_maximum_um ) )
 
 		bayer_filters.append( layer_bayer_filter )
 		bayer_filter_regions_z.append( bayer_filter_region_z )
