@@ -421,8 +421,10 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		average_design_variable_change = np.mean( np.abs( last_design_variable - cur_design_variable ) )
 		max_design_variable_change = np.max( np.abs( last_design_variable - cur_design_variable ) )
 
-		print( "The max amount the density is changing for layer " + str( device_layer_idx ) + " is around " + str( max_design_variable_change ) )
-		print( "The mean amount the density is changing for layer " + str( device_layer_idx ) + " is around " + str( average_design_variable_change ) )
+		print( "The gradient information is being taken between " + str( layer_vertical_minimum_voxels ) + " and " + str( layer_vertical_maximum_voxels )
+			+ "\nout of total number height of " + str( designable_device_voxels_vertical ) + " (voxels)")
+		print( "The max amount the density is changing for layer " + str( device_layer_idx ) + " is " + str( max_design_variable_change ) )
+		print( "The mean amount the density is changing for layer " + str( device_layer_idx ) + " is " + str( average_design_variable_change ) )
 	
 		np.save(projects_directory_location + "/cur_design_variable_" + str( device_layer_idx ) + ".npy", cur_design_variable)
 
@@ -430,8 +432,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 
 
 
-# update_bayer_filters( -test_change, -test_change, 0.25 )
-# import_bayer_filters()
+update_bayer_filters( -test_change, -test_change, 0.25 )
+import_bayer_filters()
 
 #
 # Run the optimization
