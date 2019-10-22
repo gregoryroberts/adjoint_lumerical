@@ -204,7 +204,7 @@ for adj_src in range(0, num_adjoint_sources):
 
 e_forward_no_device = {}
 
-for xy_idx in range(0, 2):
+for xy_idx in range(0, 1):#2):
 	disable_all_sources()
 	(forward_sources[xy_idx]).enabled = 1
 	fdtd_hook.run()
@@ -213,12 +213,12 @@ for xy_idx in range(0, 2):
 	for adj_src_idx in range(0, num_adjoint_sources):
 		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
-# test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-# extract_field_shape = test_e_fields[0, 0, :, :, :]
-# extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
-# test_change = np.zeros( extract_field_shape.shape )
-# for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
-# 	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
+test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+extract_field_shape = test_e_fields[0, 0, :, :, :]
+extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
+test_change = np.zeros( extract_field_shape.shape )
+for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
+	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
 
 fdtd_hook.switchtolayout()
 
