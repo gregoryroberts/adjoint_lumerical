@@ -550,7 +550,7 @@ for epoch in range(start_epoch, num_epochs):
 		device_gradient_real = np.swapaxes(device_gradient_real, 0, 2)
 		device_gradient_imag = np.swapaxes(device_gradient_imag, 0, 2)
 
-		design_gradient = bayer_filter.backpropagate(device_gradient_real, device_gradient_imag)
+		# design_gradient = bayer_filter.backpropagate(device_gradient_real, device_gradient_imag)
 
 		step_size = step_size_start
 
@@ -561,19 +561,19 @@ for epoch in range(start_epoch, num_epochs):
 		# hit the wall even if they have a high desired change, but for now this is ok.  We
 		# will do that for each individual iteration
 		#
-		average_design_variable_change = np.mean( np.abs( step_size * design_gradient ) )
-		max_design_variable_change = np.max( np.abs( step_size * design_gradient ) )
+		# average_design_variable_change = np.mean( np.abs( step_size * design_gradient ) )
+		# max_design_variable_change = np.max( np.abs( step_size * design_gradient ) )
 
 		step_size_evolution[epoch][iteration] = step_size
-		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
-		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
+		# average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
+		# max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
 		np.save(projects_directory_location + '/device_gradient_real.npy', device_gradient_real)
 		np.save(projects_directory_location + '/device_gradient_imag.npy', device_gradient_imag)
 		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
-		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
-		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
+		# np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
+		# np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
 
 
 
