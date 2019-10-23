@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_increase_focal_etch_passivation_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
+project_name = 'cmos_metal_etch_passivation_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
 
 #
 # Optical
@@ -27,7 +27,7 @@ init_permittivity_0_1_scale = 0.0
 # todo(groberts): this a pretty short focal length.  Where is it with respect to?  Possibly, we should
 # push this out to around 1.5um like we have been doing in the past for visible splitters.
 #
-focal_length_um = 1.1
+focal_length_um = 0.8
 
 #
 # Device
@@ -196,7 +196,7 @@ num_iterations_per_epoch = 75
 start_epoch = 0
 
 use_fixed_step_size = True
-fixed_step_size = 2 * 0.01 * 3 / 2
+fixed_step_size = 0.01 * 3 / 2
 
 epoch_start_permittivity_change_max = 0.1
 epoch_end_permittivity_change_max = 0.02
