@@ -142,7 +142,7 @@ blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 #
 # FDTD
 #
-vertical_gap_size_um = 0.5
+vertical_gap_size_um = 1.0
 lateral_gap_size_um = 0.75
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
@@ -182,7 +182,7 @@ spectral_focal_plane_map = [
 #
 # Adjoint sources
 #
-adjoint_vertical_um = m8_stack_end_um + 0.5 * vertical_gap_size_um + focal_length_um
+adjoint_vertical_um = m8_stack_end_um + focal_length_um
 num_focal_spots = 4
 num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
