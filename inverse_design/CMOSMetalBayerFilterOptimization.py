@@ -388,16 +388,15 @@ def import_bayer_filters():
 	fdtd_hook.switchtolayout()
 
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
-		if is_layer_designable[ device_layer_idx ]:
-			bayer_filter = bayer_filters[ device_layer_idx ]
+		bayer_filter = bayer_filters[ device_layer_idx ]
 
-			cur_permittivity = bayer_filter.get_permittivity()
-			cur_index = permittivity_to_index( cur_permittivity )
+		cur_permittivity = bayer_filter.get_permittivity()
+		cur_index = permittivity_to_index( cur_permittivity )
 
-			design_import = design_imports[ device_layer_idx ]
+		design_import = design_imports[ device_layer_idx ]
 
-			fdtd_hook.select( design_import[ "name" ] )
-			fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_regions_z[ device_layer_idx ] )
+		fdtd_hook.select( design_import[ "name" ] )
+		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_regions_z[ device_layer_idx ] )
 
 def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
