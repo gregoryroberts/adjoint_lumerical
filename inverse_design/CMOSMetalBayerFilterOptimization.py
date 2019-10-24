@@ -254,6 +254,10 @@ metal_reflector_import['y span'] = fdtd_region_size_lateral_um * 1e-6
 metal_reflector_import['z min'] = bottom_metal_reflector_start_um * 1e-6
 metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
 
+# Note - why does it look like it follows one path after initial optimization.  The first move basically shows you the structure.
+# is there something physical here? how true is this? can you quantify it? PCA (kind of like Phil mentioned that one time, I think
+# it was an interesting point)
+
 metal_reflector_permittivity = (
 		# ( max_real_permittivity + 1j * max_imag_permittivity ) *
 		# lossy material instead of metal reflector
