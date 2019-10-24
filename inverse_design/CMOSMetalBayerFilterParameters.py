@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_etch_passivation_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
+project_name = 'cmos_metal_etch_passivation_lossy_bottom_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
 
 #
 # Optical
@@ -44,7 +44,8 @@ layer_thicknesses_um = [
 	0.08, 0.22, 0.095, # M4
 	0.08, 0.22, 0.095, # M3
 	0.08, 0.22, 0.095, # M2
-	0.08, # part of M1 until the copper reflecting layer on M1
+	0.24,
+	# 0.08, # part of M1 until the copper reflecting layer on M1
 ]
 
 layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_thicknesses_um ]
