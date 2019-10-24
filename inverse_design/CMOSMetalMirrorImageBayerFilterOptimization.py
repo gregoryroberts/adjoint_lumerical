@@ -245,32 +245,32 @@ for dielectric_layer_idx in range( 0, num_dielectric_layers ):
 # real and imaginary permittivity parts in for that we are using for the design.  Thus, it will reflect and account for
 # metallic loss
 #
-metal_reflector_import = fdtd_hook.addimport()
-metal_reflector_import['name'] = 'bottom_metal_reflector'
-# metal_reflector_import['name'] = 'bottom_absorber'
-metal_reflector_import['x span'] = fdtd_region_size_lateral_um * 1e-6
-metal_reflector_import['y span'] = fdtd_region_size_lateral_um * 1e-6
-metal_reflector_import['z min'] = bottom_metal_reflector_start_um * 1e-6
-metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
+# metal_reflector_import = fdtd_hook.addimport()
+# metal_reflector_import['name'] = 'bottom_metal_reflector'
+# # metal_reflector_import['name'] = 'bottom_absorber'
+# metal_reflector_import['x span'] = fdtd_region_size_lateral_um * 1e-6
+# metal_reflector_import['y span'] = fdtd_region_size_lateral_um * 1e-6
+# metal_reflector_import['z min'] = bottom_metal_reflector_start_um * 1e-6
+# metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
 
 # Note - why does it look like it follows one path after initial optimization.  The first move basically shows you the structure.
 # is there something physical here? how true is this? can you quantify it? PCA (kind of like Phil mentioned that one time, I think
 # it was an interesting point)
 
-metal_reflector_permittivity = (
-		( max_real_permittivity + 1j * max_imag_permittivity ) *
-		# lossy material instead of metal reflector
-		# ( 1.5 + 1j * max_imag_permittivity ) *
-		np.ones( ( fdtd_region_size_lateral_voxels, fdtd_region_size_lateral_voxels, bottom_metal_reflector_size_vertical_voxels ) )
-	)
-metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
+# metal_reflector_permittivity = (
+# 		( max_real_permittivity + 1j * max_imag_permittivity ) *
+# 		# lossy material instead of metal reflector
+# 		# ( 1.5 + 1j * max_imag_permittivity ) *
+# 		np.ones( ( fdtd_region_size_lateral_voxels, fdtd_region_size_lateral_voxels, bottom_metal_reflector_size_vertical_voxels ) )
+# 	)
+# metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
 
-metal_reflector_region_x = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
-metal_reflector_region_y = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
-metal_reflector_region_z = 1e-6 * np.linspace(bottom_metal_reflector_start_um, bottom_metal_reflector_end_um, bottom_metal_reflector_size_vertical_voxels)
+# metal_reflector_region_x = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
+# metal_reflector_region_y = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
+# metal_reflector_region_z = 1e-6 * np.linspace(bottom_metal_reflector_start_um, bottom_metal_reflector_end_um, bottom_metal_reflector_size_vertical_voxels)
 
-fdtd_hook.select('bottom_metal_reflector')
-fdtd_hook.importnk2(metal_reflector_index, metal_reflector_region_x, metal_reflector_region_y, metal_reflector_region_z)
+# fdtd_hook.select('bottom_metal_reflector')
+# fdtd_hook.importnk2(metal_reflector_index, metal_reflector_region_x, metal_reflector_region_y, metal_reflector_region_z)
 
 
 #
