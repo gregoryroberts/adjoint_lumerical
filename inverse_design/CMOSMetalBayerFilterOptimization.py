@@ -256,8 +256,8 @@ metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
 
 metal_reflector_permittivity = (
 		# ( max_real_permittivity + 1j * max_imag_permittivity ) *
-		# loss material instea
-		1.5 + 1j * max_imag_permittivity
+		# lossy material instead of metal reflector
+		( 1.5 + 1j * max_imag_permittivity ) *
 		np.ones( ( fdtd_region_size_lateral_voxels, fdtd_region_size_lateral_voxels, bottom_metal_reflector_size_vertical_voxels ) )
 	)
 metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
