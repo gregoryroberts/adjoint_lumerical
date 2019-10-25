@@ -7,7 +7,12 @@ import numpy as np
 #
 # Files
 #
-project_name = 'cmos_metal_etch_passivation_lossy_bottom_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
+project_name = 'cmos_metal_etch_passivation_import_mirrored_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
+
+#
+# Previous mirrored seed point import?
+#
+use_mirrored_seed_point = True
 
 #
 # Optical
@@ -199,7 +204,7 @@ num_iterations_per_epoch = 75
 start_epoch = 0
 
 use_fixed_step_size = True
-fixed_step_size = 50 * 0.01 * 3 / 2
+fixed_step_size = 5 * 0.01 * 3 / 2
 
 epoch_start_permittivity_change_max = 0.1
 epoch_end_permittivity_change_max = 0.02

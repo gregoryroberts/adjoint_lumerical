@@ -390,6 +390,22 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = fixed_step_size
 
+def import_mirrored_seed():
+	fdtd_hook.switchtolayout()
+
+	for device_layer_idx in range( 0, len( bayer_filters ) ):
+		bayer_filter = bayer_filters[ device_layer_idx ]
+
+		import_mirrored_data = np.load('cur_design_variable_mirrored_' + str( device_layer_idx ) + '.npy')
+		bayer_filter.set_design_variable( import_mirrored_data )
+
+		cur_permittivity = bayer_filter.get_permittivity()
+		cur_index = permittivity_to_index( cur_permittivity )
+
+		design_import = design_imports[ device_layer_idx ]
+
+		fdtd_hook.select( design_import[ "name" ] )
+		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_regions_z[ device_layer_idx ] )
 
 def import_bayer_filters():
 	fdtd_hook.switchtolayout()
@@ -439,7 +455,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 
 	print()
 
-
+if use_mirrored_seed_point:
+	import_mirrored_seed()
 
 # update_bayer_filters( -test_change, -test_change, 0.25 )
 # import_bayer_filters()
