@@ -45,7 +45,7 @@ if not os.path.isdir(projects_directory_location):
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/CMOSMetalBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSMetalBayerFilter.py")
+shutil.copy2(python_src_directory + "/CMOSMetalMirrorImageBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSMetalMirrorImageBayerFilter.py")
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
