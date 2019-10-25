@@ -397,7 +397,7 @@ def import_mirrored_seed():
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
 		bayer_filter = bayer_filters[ device_layer_idx ]
 
-		import_mirrored_data = np.load('cur_design_variable_mirrored_' + str( device_layer_idx ) + '.npy')
+		import_mirrored_data = np.load( projects_directory_location + '/cur_design_variable_mirrored_' + str( device_layer_idx ) + '.npy' )
 		bayer_filter.set_design_variable( import_mirrored_data )
 
 		cur_permittivity = bayer_filter.get_permittivity()
