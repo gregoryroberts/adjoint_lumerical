@@ -224,20 +224,20 @@ fdtd_hook.switchtolayout()
 #
 # Build the dielectric stack on top of the metal
 #
-num_dielectric_layers = len( top_dielectric_layer_thickness_um )
-for dielectric_layer_idx in range( 0, num_dielectric_layers ):
-	dielectric_layer = fdtd_hook.addrect()
-	dielectric_layer['name'] = 'dielectric_layer_' + str( dielectric_layer_idx )
-	dielectric_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
-	dielectric_layer['y span'] = fdtd_region_size_lateral_um * 1e-6
+# num_dielectric_layers = len( top_dielectric_layer_thickness_um )
+# for dielectric_layer_idx in range( 0, num_dielectric_layers ):
+# 	dielectric_layer = fdtd_hook.addrect()
+# 	dielectric_layer['name'] = 'dielectric_layer_' + str( dielectric_layer_idx )
+# 	dielectric_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
+# 	dielectric_layer['y span'] = fdtd_region_size_lateral_um * 1e-6
 
-	dielectric_layer_z_min_um = dielectric_stack_start_um + np.sum( top_dielectric_layer_thickness_um[ 0 : dielectric_layer_idx ] )
-	dielectric_layer_z_max_um = dielectric_layer_z_min_um + top_dielectric_layer_thickness_um[ dielectric_layer_idx ]
+# 	dielectric_layer_z_min_um = dielectric_stack_start_um + np.sum( top_dielectric_layer_thickness_um[ 0 : dielectric_layer_idx ] )
+# 	dielectric_layer_z_max_um = dielectric_layer_z_min_um + top_dielectric_layer_thickness_um[ dielectric_layer_idx ]
 
-	dielectric_layer['z min'] = dielectric_layer_z_min_um * 1e-6
-	dielectric_layer['z max'] = dielectric_layer_z_max_um * 1e-6
+# 	dielectric_layer['z min'] = dielectric_layer_z_min_um * 1e-6
+# 	dielectric_layer['z max'] = dielectric_layer_z_max_um * 1e-6
 
-	dielectric_layer['index'] = top_dielectric_layer_refractice_index[ dielectric_layer_idx ]
+# 	dielectric_layer['index'] = top_dielectric_layer_refractice_index[ dielectric_layer_idx ]
 
 
 #
@@ -343,6 +343,14 @@ for device_layer_idx in range( 0, number_device_layers ):
 		blank_layer['z min'] = layer_vertical_minimum_um * 1e-6
 		blank_layer['z max'] = layer_vertical_maximum_um * 1e-6
 		blank_layer['index'] = layer_background_index[ device_layer_idx ]
+
+		blank_layer_mirror = fdtd_hook.addrect()
+		blank_layer_mirror['name'] = 'device_layer_mirror_' + str(device_layer_idx)
+		blank_layer_mirror['x span'] = device_size_lateral_um * 1e-6
+		blank_layer_mirror['y span'] = device_size_lateral_um * 1e-6
+		blank_layer_mirror['z min'] = -layer_vertical_maximum_um * 1e-6
+		blank_layer_mirror['z max'] = -layer_vertical_minimum_um * 1e-6
+		blank_layer_mirror['index'] = layer_background_index[ device_layer_idx ]
 
 
 

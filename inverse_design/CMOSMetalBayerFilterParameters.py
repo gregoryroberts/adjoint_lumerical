@@ -38,7 +38,7 @@ mesh_spacing_um = 0.025
 
 
 layer_thicknesses_um = [
-	0.67, # leftover from M8
+	0.05, # leftover from M8
 	0.22, 0.095,       # M7
 	# here, we are combining the two capping layers from layer N to layer (N - 1) into one since they are very thin
 	0.08, 0.22, 0.095, # M6
