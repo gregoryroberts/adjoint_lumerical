@@ -217,7 +217,7 @@ test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 extract_field_shape = test_e_fields[0, 0, :, :, :]
 extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
 np.random.seed(4234234)
-test_change = 0.5 - np.random.random( extract_field_shape.shape )
+test_change = 0.5 - np.random.random( ( extract_field_shape.shape[ 0 ], extract_field_shape.shape[ 1 ], int( extract_field_shape.shape[ 2 ] / 2 ) ) )
 
 fdtd_hook.switchtolayout()
 
@@ -333,6 +333,8 @@ for device_layer_idx in range( 0, number_device_layers ):
 		bayer_filters.append( layer_bayer_filter )
 		bayer_filter_regions_z.append( bayer_filter_region_z )
 		design_imports.append( layer_import )
+		bayer_filter_regions_mirror_z.append( bayer_filter_region_mirror_z )
+		design_imports_mirror.append( layer_import_mirror )
 
 
 	else:
