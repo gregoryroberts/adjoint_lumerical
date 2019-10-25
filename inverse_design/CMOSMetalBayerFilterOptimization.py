@@ -247,8 +247,8 @@ for dielectric_layer_idx in range( 0, num_dielectric_layers ):
 # metallic loss
 #
 metal_reflector_import = fdtd_hook.addimport()
-# metal_reflector_import['name'] = 'bottom_metal_reflector'
-metal_reflector_import['name'] = 'bottom_absorber'
+metal_reflector_import['name'] = 'bottom_metal_reflector'
+# metal_reflector_import['name'] = 'bottom_absorber'
 metal_reflector_import['x span'] = fdtd_region_size_lateral_um * 1e-6
 metal_reflector_import['y span'] = fdtd_region_size_lateral_um * 1e-6
 metal_reflector_import['z min'] = bottom_metal_reflector_start_um * 1e-6
@@ -259,9 +259,9 @@ metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
 # it was an interesting point)
 
 metal_reflector_permittivity = (
-		# ( max_real_permittivity + 1j * max_imag_permittivity ) *
+		( max_real_permittivity + 1j * max_imag_permittivity ) *
 		# lossy material instead of metal reflector
-		( 1.5 + 1j * max_imag_permittivity ) *
+		# ( 1.5 + 1j * max_imag_permittivity ) *
 		np.ones( ( fdtd_region_size_lateral_voxels, fdtd_region_size_lateral_voxels, bottom_metal_reflector_size_vertical_voxels ) )
 	)
 metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
