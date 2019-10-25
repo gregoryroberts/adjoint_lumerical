@@ -202,24 +202,24 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitors.append(focal_monitor)
 
 
-e_forward_no_device = {}
+# e_forward_no_device = {}
 
-for xy_idx in range(0, 1):#2):
-	disable_all_sources()
-	(forward_sources[xy_idx]).enabled = 1
-	fdtd_hook.run()
+# for xy_idx in range(0, 1):#2):
+# 	disable_all_sources()
+# 	(forward_sources[xy_idx]).enabled = 1
+# 	fdtd_hook.run()
 
-	e_forward_no_device[xy_names[xy_idx]] = []
-	for adj_src_idx in range(0, num_adjoint_sources):
-		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+# 	e_forward_no_device[xy_names[xy_idx]] = []
+# 	for adj_src_idx in range(0, num_adjoint_sources):
+# 		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
-test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-extract_field_shape = test_e_fields[0, 0, :, :, :]
-extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
-np.random.seed(4234234)
-test_change = 0.5 - np.random.random( ( extract_field_shape.shape[ 0 ], extract_field_shape.shape[ 1 ], int( extract_field_shape.shape[ 2 ] / 2 ) ) )
+# test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+# extract_field_shape = test_e_fields[0, 0, :, :, :]
+# extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
+# np.random.seed(4234234)
+# test_change = 0.5 - np.random.random( ( extract_field_shape.shape[ 0 ], extract_field_shape.shape[ 1 ], int( extract_field_shape.shape[ 2 ] / 2 ) ) )
 
-fdtd_hook.switchtolayout()
+# fdtd_hook.switchtolayout()
 
 #
 # Build the dielectric stack on top of the metal
@@ -470,8 +470,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 
 
 
-update_bayer_filters( -test_change, -test_change, 0.25 )
-import_bayer_filters()
+# update_bayer_filters( -test_change, -test_change, 0.25 )
+# import_bayer_filters()
 
 #
 # Run the optimization
