@@ -603,12 +603,12 @@ for epoch in range(start_epoch, num_epochs):
 		average_real_mirror_gradient = np.zeros( ( gradient_shape[ 0 ], gradient_shape[ 1 ], device_vertical_halfway_point_voxels ) )
 		average_imag_mirror_gradient = np.zeros( ( gradient_shape[ 0 ], gradient_shape[ 1 ], device_vertical_halfway_point_voxels ) )
 		for z_idx in range( 0, device_vertical_halfway_point_voxels ):
-			average_real_mirror_gradient[ :, :, z_idx ] = (
+			average_real_mirror_gradient[ :, :, z_idx ] = 0.5 * (
 				device_gradient_real[ :, :, device_vertical_halfway_point_voxels + z_idx ] +
 				device_gradient_real[ :, :, device_vertical_halfway_point_voxels - z_idx ]
 			)
 
-			average_imag_mirror_gradient[ :, :, z_idx ] = (
+			average_imag_mirror_gradient[ :, :, z_idx ] = 0.5 * (
 				device_gradient_imag[ :, :, device_vertical_halfway_point_voxels + z_idx ] +
 				device_gradient_imag[ :, :, device_vertical_halfway_point_voxels - z_idx ]
 			)
