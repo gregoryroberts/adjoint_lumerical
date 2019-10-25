@@ -596,16 +596,6 @@ for epoch in range(start_epoch, num_epochs):
 		step_size = step_size_start
 
 
-
-	halfway_point = int( device_depth_voxels / 2 )
-	for layer_idx in range( 0, halfway_point ):
-		average_gradient = bulk_density_gradient[ :, halfway_point + layer_idx, 0 ] + bulk_density_gradient[ :, halfway_point - layer_idx, 0 ]
-		bulk_density_gradient[ :, halfway_point + layer_idx, 0 ] = average_gradient
-		bulk_density_gradient[ :, halfway_point - layer_idx, 0 ] = average_gradient
-		bulk_density_gradient[ :, halfway_point + layer_idx, 1 ] = average_gradient
-		bulk_density_gradient[ :, halfway_point - layer_idx, 1 ] = average_gradient
-
-
 		#
 		# Take care of the vertical mirroring
 		#
