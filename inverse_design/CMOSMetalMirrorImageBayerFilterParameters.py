@@ -160,7 +160,7 @@ fdtd_simulation_time_fs = 2000
 # Forward Source
 #
 lateral_aperture_um = 1.1 * device_size_lateral_um
-src_maximum_vertical_um = device_size_verical_um 0.5 * vertical_gap_size_um
+src_maximum_vertical_um = device_size_verical_um + 0.5 * vertical_gap_size_um
 src_minimum_vertical_um = -( device_size_verical_um + focal_length_um + 0.5 * vertical_gap_size_um )
 
 #
