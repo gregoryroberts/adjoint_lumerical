@@ -3,6 +3,7 @@
 #
 
 import numpy as np
+import sys
 
 #
 # Files
@@ -12,7 +13,12 @@ project_name = 'cmos_metal_etch_passivation_import_mirrored_reflective_no_featur
 #
 # Previous mirrored seed point import?
 #
-use_mirrored_seed_point = True
+use_mirrored_seed_point = False
+start_from_previous = True
+
+if use_mirrored_seed_point and start_from_previous:
+	print("Error, we can't load both of these seeds at the same time")
+	sys.exit(1)
 
 #
 # Optical
