@@ -392,7 +392,7 @@ step_size_start = fixed_step_size
 
 def import_previous_seed( filename_prefix ):
 	fdtd_hook.switchtolayout()
-	print("Importing from a mirror seed point!")
+	print( "Importing from a previous seed point with filename prefix " + filename_prefix )
 
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
 		bayer_filter = bayer_filters[ device_layer_idx ]
