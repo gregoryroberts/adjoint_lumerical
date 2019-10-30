@@ -389,10 +389,10 @@ for epoch in range(0, num_epochs):
 
 		last_design_variable = cur_design_variable.copy()
 		#
-		# todo: fix this and all other files! the step already does the backpropagation so you shouldn't
+		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
 		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
 		#
-		bayer_filter.step(-design_gradient, step_size)
+		bayer_filter.step(-device_gradient, step_size)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
