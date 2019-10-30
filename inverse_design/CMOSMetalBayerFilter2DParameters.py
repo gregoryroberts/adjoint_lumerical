@@ -9,6 +9,7 @@ import sys
 # Files
 #
 project_name = 'cmos_metal_etch_passivation_2d_reflective_no_feature_size_strict_layering_rgb_4p5xtsmc_um'
+# project_name = 'cmos_dielectric_etch_passivation_2d_reflective_no_feature_size_strict_layering_rgb_4p5xtsmc_um'
 
 #
 # Random Seed
@@ -20,10 +21,9 @@ np.random.seed( 123123 )
 #
 background_index = 1.0
 device_background_index = 1.4
+design_index_background = 1.4
 
-design_permittivity_background = 1.4
-
-min_real_permittivity =  design_permittivity_background**2
+min_real_permittivity = design_index_background**2
 max_real_permittivity = -10
 
 min_imag_permittivity = 0
@@ -59,12 +59,12 @@ layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_t
 
 layer_background_index = [
 	1.45, # leftover from M8
-	design_permittivity_background, design_permittivity_background,       # M7
-	1.45, design_permittivity_background, design_permittivity_background, # M6
-	1.45, design_permittivity_background, design_permittivity_background, # M5
-	1.45, design_permittivity_background, design_permittivity_background, # M4
-	1.45, design_permittivity_background, design_permittivity_background, # M3
-	1.45, design_permittivity_background, design_permittivity_background, # M2
+	design_index_background, design_index_background,       # M7
+	1.45, design_index_background, design_index_background, # M6
+	1.45, design_index_background, design_index_background, # M5
+	1.45, design_index_background, design_index_background, # M4
+	1.45, design_index_background, design_index_background, # M3
+	1.45, design_index_background, design_index_background, # M2
 	1.45, # part of M1 until the copper reflecting layer on M1
 ]
 
@@ -101,7 +101,7 @@ device_size_verical_um = top_dielectric_stack_size_vertcial_um + designable_size
 bottom_metal_reflector_size_vertical_voxels = 1 + int( bottom_metal_reflector_size_vertical_um / mesh_spacing_um )
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
-designable_device_voxels_vertical = 2 + int(designable_size_vertical_um / mesh_spacing_um)
+designable_device_voxels_vertical = 3 + int(designable_size_vertical_um / mesh_spacing_um)
 
 designable_device_vertical_maximum_um = designable_size_vertical_um
 designable_device_vertical_minimum_um = 0
@@ -184,7 +184,6 @@ spectral_focal_plane_map = [
 	[0, num_points_per_band],
 	[num_points_per_band, 2 * num_points_per_band],
 	[2 * num_points_per_band, 3 * num_points_per_band],
-	[num_points_per_band, 2 * num_points_per_band]
 ]
 
 #
@@ -196,17 +195,23 @@ num_adjoint_sources = num_focal_spots
 # adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 # adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
 
-adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_voxels_lateral / 3. ]
+adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_lateral_um / 3. ]
 
 #
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 50
+num_iterations_per_epoch = 500
 start_epoch = 0
 
-use_fixed_step_size = True
-fixed_step_size =  0.01 * 3 / 2
+use_fixed_step_size = False
+fixed_step_size =  20 * 0.01 * 3 / 2
+
+use_adaptive_step_size = True
+desired_max_max_design_change = 0.05
+desired_min_max_design_change = 0.001
+adaptive_step_size = 50 * 0.01 * 3 / 2
+
 
 epoch_start_permittivity_change_max = 0.1
 epoch_end_permittivity_change_max = 0.02
