@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_rgb_2x2x1p6um'
+project_name = 'layered_rgb_5layers_rebinned_2x2x2um'
 
 #
 # Optical
