@@ -80,7 +80,7 @@ class CMOSMetalBayerFilter2D(device.Device):
 		self.sigmoid_beta = 0.25 * (2**epoch)
 
 		z_voxel_layers = self.size[2]
-		self.layering_y_0 = layering.Layering(self.z_dimension_idx, self.num_z_layers)
+		self.layering_y_0 = layering.Layering(self.y_dimension_idx, self.num_y_layers)
 
 		self.sigmoid_1 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		# self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)

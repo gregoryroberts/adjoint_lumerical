@@ -67,7 +67,7 @@ def get_monitor_data(monitor_name, monitor_field):
 
 	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
 	monitor_data = {}
-	load_file = h5py.File(data_transfer_filename + ".mat")
+	load_file = h5py.File(data_transfer_filename + ".mat", 'r')
 
 	monitor_data = np.array(load_file[extracted_data_name])
 
@@ -87,16 +87,13 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 fdtd = fdtd_hook.addfdtd()
 fdtd['dimension'] = '2D'
 fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
-fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
-fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
+fdtd['y max'] = fdtd_region_maximum_vertical_um * 1e-6
+fdtd['y min'] = fdtd_region_minimum_vertical_um * 1e-6
 fdtd['mesh type'] = 'uniform'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
-fdtd['define z mesh by'] = 'number of mesh cells'
 fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
+fdtd['mesh cells y'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
@@ -112,8 +109,8 @@ xy_names = ['x', 'y']
 #
 
 forward_src = fdtd_hook.addtfsf()
-forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
-forward_src['polarization angle'] = 0
+forward_src['name'] = 'forward_src'
+forward_src['polarization angle'] = 90
 forward_src['direction'] = 'Backward'
 forward_src['x span'] = lateral_aperture_um * 1e-6
 forward_src['y max'] = src_maximum_vertical_um * 1e-6
@@ -130,8 +127,7 @@ def disable_all_sources():
 	forward_src.enabled = 0
 
 	for adj_src_idx in range(0, num_adjoint_sources):
-		for xy_idx in range(0, 2):
-			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
+		(adjoint_sources[adj_src_idx]).enabled = 0
 
 
 
@@ -143,7 +139,7 @@ adjoint_sources = []
 
 for adj_src_idx in range(0, num_adjoint_sources):
 	adj_src = fdtd_hook.adddipole()
-	adj_src['name'] = 'adj_src_' + str(adj_src_idx) + xy_names[xy_idx]
+	adj_src['name'] = 'adj_src_' + str(adj_src_idx)
 	adj_src['x'] = adjoint_x_positions_um[adj_src_idx] * 1e-6
 	adj_src['y'] = adjoint_vertical_um * 1e-6
 	adj_src['theta'] = 0
@@ -159,9 +155,10 @@ for adj_src_idx in range(0, num_adjoint_sources):
 #
 design_efield_monitor = fdtd_hook.addprofile()
 design_efield_monitor['name'] = 'design_efield_monitor'
-design_efield_monitor['monitor type'] = '2D'
+# design_efield_monitor['monitor type'] = '2D'
 design_efield_monitor['x span'] = device_size_lateral_um * 1e-6
-design_efield_monitor['y span'] = designable_device_vertical_minimum_um * 1e-6
+design_efield_monitor['y min'] = designable_device_vertical_minimum_um * 1e-6
+design_efield_monitor['y max'] = designable_device_vertical_maximum_um * 1e-6
 design_efield_monitor['override global monitor settings'] = 1
 design_efield_monitor['use linear wavelength spacing'] = 1
 design_efield_monitor['use source limits'] = 1
@@ -217,9 +214,8 @@ for dielectric_layer_idx in range( 0, num_dielectric_layers ):
 metal_reflector_import = fdtd_hook.addimport()
 metal_reflector_import['name'] = 'bottom_metal_reflector'
 metal_reflector_import['x span'] = fdtd_region_size_lateral_um * 1e-6
-metal_reflector_import['y span'] = fdtd_region_size_lateral_um * 1e-6
-metal_reflector_import['z min'] = bottom_metal_reflector_start_um * 1e-6
-metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
+metal_reflector_import['y min'] = bottom_metal_reflector_start_um * 1e-6
+metal_reflector_import['y max'] = bottom_metal_reflector_end_um * 1e-6
 
 # Note - why does it look like it follows one path after initial optimization.  The first move basically shows you the structure.
 # is there something physical here? how true is this? can you quantify it? PCA (kind of like Phil mentioned that one time, I think
@@ -266,7 +262,7 @@ for device_layer_idx in range( 0, number_device_layers ):
 	if is_layer_designable[ device_layer_idx ]:
 
 		one_vertical_layer = 1
-		layer_bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, layer_thicknesses_voxels[device_layer_idx]])
+		layer_bayer_filter_size_voxels = np.array([device_voxels_lateral, layer_thicknesses_voxels[device_layer_idx], 1])
 		layer_bayer_filter = CMOSMetalBayerFilter2D.CMOSMetalBayerFilter2D(
 			layer_bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, one_vertical_layer)
 
@@ -277,7 +273,8 @@ for device_layer_idx in range( 0, number_device_layers ):
 		layer_import = fdtd_hook.addimport()
 		layer_import['name'] = 'layer_import_' + str( device_layer_idx )
 		layer_import['x span'] = device_size_lateral_um * 1e-6
-		layer_import['y span'] = device_size_lateral_um * 1e-6
+		layer_import['y min'] = layer_vertical_minimum_um * 1e-6
+		layer_import['y max'] = layer_vertical_maximum_um * 1e-6
 		layer_import['z min'] = -0.51 * 1e-6
 		layer_import['z max'] = 0.51 * 1e-6
 
@@ -319,12 +316,12 @@ def side_to_string( side_number ):
 device_background_side_x = [ -1, 1 ]#, 0, 0 ]
 # device_background_side_y = [ 0, 0, -1, 1 ]
 
-for device_background_side_idx in range( 0, 4 ):
+for device_background_side_idx in range( 0, 2 ):
 	side_x = device_background_side_x[ device_background_side_idx ]
 
 	side_block = fdtd_hook.addrect()
 
-	side_block['name'] = 'device_background_' + side_to_string( side_x ) + "_" + side_to_string( side_y )
+	side_block['name'] = 'device_background_' + side_to_string( side_x )
 	side_block['y min'] = designable_device_vertical_minimum_um * 1e-6
 	side_block['y max'] = designable_device_vertical_maximum_um * 1e-6
 	side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6
@@ -376,17 +373,28 @@ def import_bayer_filters():
 		cur_permittivity = bayer_filter.get_permittivity()
 		cur_index = permittivity_to_index( cur_permittivity )
 
+		import_index = np.zeros( ( cur_index.shape[ 0 ], cur_index.shape[ 1 ], 2 ), dtype=np.complex )
+		import_index[ :, :, 0 ] = cur_index[ :, :, 0 ]
+		import_index[ :, :, 1 ] = cur_index[ :, :, 0 ]
+
 		design_import = design_imports[ device_layer_idx ]
 
 		fdtd_hook.select( design_import[ "name" ] )
-		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_regions_y[ device_layer_idx ], bayer_filter_region_z )
+		fdtd_hook.importnk2( import_index, bayer_filter_region_x, bayer_filter_regions_y[ device_layer_idx ], bayer_filter_region_z )
 
 def update_bayer_filters( device_step_real, device_step_imag, step_size ):
+	max_max_design_variable_change = 0
+	min_max_design_variable_change = 1.0
+
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
 		bayer_filter = bayer_filters[ device_layer_idx ]
 
 		cur_design_variable = bayer_filter.get_design_variable()
 		last_design_variable = cur_design_variable.copy()
+
+		# print(cur_design_variable.shape)
+		# print(device_step_real.shape)
+		# sys.exit(1)
 
 		layer_vertical_minimum_um = 1e6 * bayer_filter_regions_y[ device_layer_idx ][ 0 ]
 		layer_vertical_maximum_um = 1e6 * bayer_filter_regions_y[ device_layer_idx ][ -1 ]
@@ -404,6 +412,9 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		average_design_variable_change = np.mean( np.abs( last_design_variable - cur_design_variable ) )
 		max_design_variable_change = np.max( np.abs( last_design_variable - cur_design_variable ) )
 
+		max_max_design_variable_change = np.maximum( max_max_design_variable_change, max_design_variable_change )
+		min_max_design_variable_change = np.maximum( min_max_design_variable_change, max_design_variable_change )
+
 		print( "This bayer filter is expecting something of size " + str( layer_bayer_filter.size ) + " and it has been fed something of size " +
 			str( device_step_real[ :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels, : ].shape ) )
 		print( "The gradient information is being taken between " + str( layer_vertical_minimum_voxels ) + " and " + str( layer_vertical_maximum_voxels )
@@ -414,6 +425,12 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		np.save(projects_directory_location + "/cur_design_variable_" + str( device_layer_idx ) + ".npy", cur_design_variable)
 
 	print()
+	if max_max_design_variable_change > desired_max_max_design_change:
+		return 0.5
+	elif min_max_design_variable_change < desired_min_max_design_change:
+		return 2
+
+	return 1
 
 # if use_mirrored_seed_point:
 # 	import_previous_seed( 'cur_design_variable_mirrored_' )
@@ -439,9 +456,8 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
-		# for xy_idx in range(0, 2):
 		disable_all_sources()
-		(forward_sources[xy_idx]).enabled = 1
+		forward_src.enabled = 1
 		fdtd_hook.run()
 
 		forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
@@ -487,8 +503,8 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
 		# gradients for x- and y-polarized forward sources.
 		#
-		reversed_field_shape = [designable_device_voxels_vertical, device_voxels_lateral, device_voxels_lateral]
-		xy_polarized_gradients = [ np.zeros(reversed_field_shape, dtype=np.complex), np.zeros(reversed_field_shape, dtype=np.complex) ]
+		reversed_field_shape = [1, designable_device_voxels_vertical, device_voxels_lateral]
+		xy_polarized_gradients = np.zeros(reversed_field_shape, dtype=np.complex)
 
 		for adj_src_idx in range(0, num_adjoint_sources):
 			spectral_indices = spectral_focal_plane_map[adj_src_idx]
@@ -507,8 +523,11 @@ for epoch in range(start_epoch, num_epochs):
 			max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
 			total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
 
+			print(adjoint_e_fields.shape)
+			print(forward_e_fields.shape)
+			print(xy_polarized_gradients.shape)
 			for spectral_idx in range(0, source_weight.shape[0]):
-				xy_polarized_gradients[pol_name_to_idx] += np.sum(
+				xy_polarized_gradients += np.sum(
 					(source_weight[spectral_idx] * gradient_performance_weight / total_weighting[spectral_idx]) *
 					adjoint_e_fields[:, spectral_indices[0] + spectral_idx, :, :, :] *
 					forward_e_fields[:, spectral_indices[0] + spectral_idx, :, :, :],
@@ -517,8 +536,8 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# Step 4: Step the design variable.
 		#
-		device_gradient_real = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
-		device_gradient_imag = 2 * np.imag( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		device_gradient_real = 2 * np.real( xy_polarized_gradients )
+		device_gradient_imag = 2 * np.imag( xy_polarized_gradients )
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		device_gradient_real = np.swapaxes(device_gradient_real, 0, 2)
@@ -528,7 +547,10 @@ for epoch in range(start_epoch, num_epochs):
 
 		step_size = step_size_start
 
-		update_bayer_filters( -device_gradient_real, -device_gradient_imag, step_size )
+		if use_adaptive_step_size:
+			step_size = adaptive_step_size
+
+		adaptive_step_size *= update_bayer_filters( -device_gradient_real, -device_gradient_imag, step_size )
 
 		#
 		# Would be nice to see how much it actually changed because some things will just

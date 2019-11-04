@@ -26,9 +26,9 @@ if use_mirrored_seed_point and start_from_previous:
 background_index = 1.0
 device_background_index = 1.4
 
-design_permittivity_background = 1.4
+design_index_background = 1.4
 
-min_real_permittivity =  design_permittivity_background**2
+min_real_permittivity =  design_index_background**2
 max_real_permittivity = -10
 
 min_imag_permittivity = 0
@@ -65,12 +65,12 @@ layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_t
 
 layer_background_index = [
 	1.45, # leftover from M8
-	design_permittivity_background, design_permittivity_background,       # M7
-	1.45, design_permittivity_background, design_permittivity_background, # M6
-	1.45, design_permittivity_background, design_permittivity_background, # M5
-	1.45, design_permittivity_background, design_permittivity_background, # M4
-	1.45, design_permittivity_background, design_permittivity_background, # M3
-	1.45, design_permittivity_background, design_permittivity_background, # M2
+	design_index_background, design_index_background,       # M7
+	1.45, design_index_background, design_index_background, # M6
+	1.45, design_index_background, design_index_background, # M5
+	1.45, design_index_background, design_index_background, # M4
+	1.45, design_index_background, design_index_background, # M3
+	1.45, design_index_background, design_index_background, # M2
 	1.45, # part of M1 until the copper reflecting layer on M1
 ]
 
