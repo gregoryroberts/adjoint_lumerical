@@ -35,8 +35,8 @@ class CMOSMetalBayerFilter2D(device.Device):
 		var1 = self.layering_y_0.forward( var0 )
 		self.w[1] = var1
 
-		var2 = self.sigmoid_1.forward( var1 )
-		self.w[2] = var2
+		# var2 = self.sigmoid_1.forward( var1 )
+		# self.w[2] = var2
 
 		# var2 = self.layering_z_1.forward(var1)
 		# self.w[2] = var2
@@ -47,26 +47,26 @@ class CMOSMetalBayerFilter2D(device.Device):
 		# var4 = self.sigmoid_3.forward(var3)
 		# self.w[4] = var4
 
-		scale_real_2 = self.scale_2[ 0 ]
-		scale_imag_2 = self.scale_2[ 1 ]
+		scale_real_1 = self.scale_1[ 0 ]
+		scale_imag_1 = self.scale_1[ 1 ]
 
-		var3 = scale_real_2.forward( var2 ) + 1j * scale_imag_2.forward( var2 )
-		self.w[3] = var3
+		var2 = scale_real_1.forward( var1 ) + 1j * scale_imag_1.forward( var1 )
+		self.w[2] = var2
 
 
 	#
 	# Need to also override the backpropagation function
 	#
 	def backpropagate(self, gradient_real, gradient_imag):
-		scale_real_2 = self.scale_2[ 0 ]
-		scale_imag_2 = self.scale_2[ 1 ]
+		scale_real_1 = self.scale_1[ 0 ]
+		scale_imag_1 = self.scale_1[ 1 ]
 
 		gradient = (
-			scale_real_2.chain_rule( gradient_real, self.w[3], self.w[2] ) +
-			scale_imag_2.chain_rule( gradient_imag, self.w[3], self.w[2] )
+			scale_real_1.chain_rule( gradient_real, self.w[2], self.w[1] ) +
+			scale_imag_1.chain_rule( gradient_imag, self.w[2], self.w[1] )
 		)	
 
-		gradient = self.sigmoid_1.chain_rule( gradient, self.w[2], self.w[1] )
+		# gradient = self.sigmoid_1.chain_rule( gradient, self.w[2], self.w[1] )
 		gradient = self.layering_y_0.chain_rule( gradient, self.w[1], self.w[0] )
 
 		# gradient = self.sigmoid_3.chain_rule(gradient, self.w[4], self.w[3])
@@ -77,26 +77,29 @@ class CMOSMetalBayerFilter2D(device.Device):
 		return gradient
 
 	def update_filters(self, epoch):
-		self.sigmoid_beta = 0.25 * (2**epoch)
+		# This was 0.25 * (2**epoch) before we changed it back
+		# self.sigmoid_beta = 0.0625 * (2**epoch)
 
-		z_voxel_layers = self.size[2]
+		# z_voxel_layers = self.size[2]
 		self.layering_y_0 = layering.Layering(self.y_dimension_idx, self.num_y_layers)
 
-		self.sigmoid_1 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
+		# self.sigmoid_1 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		# self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
-		self.filters = [self.layering_y_0, self.sigmoid_1, self.scale_2]#[self.layering_y_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		# self.filters = [self.layering_y_0, self.sigmoid_1, self.scale_2]#[self.layering_y_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		self.filters = [self.layering_y_0, self.scale_1]#[self.layering_y_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		# self.filters = [self.scale_1]
 
 	def init_filters_and_variables(self):
-		self.num_filters = 3#5
+		self.num_filters = 2#5
 		self.num_variables = 1 + self.num_filters
 
-		z_voxel_layers = self.size[2]
+		# z_voxel_layers = self.size[2]
 		self.layering_y_0 = layering.Layering(self.y_dimension_idx, self.num_y_layers)
 
 		# Start the sigmoids at weak strengths
-		self.sigmoid_beta = 0.0625
-		self.sigmoid_eta = 0.5
-		self.sigmoid_1 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
+		# self.sigmoid_beta = 0.0625
+		# self.sigmoid_eta = 0.5
+		# self.sigmoid_1 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		# self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 
 
@@ -114,22 +117,51 @@ class CMOSMetalBayerFilter2D(device.Device):
 
 		scale_real_min = np.real( self.permittivity_bounds[0] )
 		scale_real_max = np.real( self.permittivity_bounds[1] )
-		scale_real_2 = scale.Scale([scale_real_min, scale_real_max])
+		scale_real_1 = scale.Scale([scale_real_min, scale_real_max])
 
 		scale_imag_min = np.imag( self.permittivity_bounds[0] )
 		scale_imag_max = np.imag( self.permittivity_bounds[1] )
-		scale_imag_2 = scale.Scale([scale_imag_min, scale_imag_max])
+		scale_imag_1 = scale.Scale([scale_imag_min, scale_imag_max])
 
-		self.scale_2 = [ scale_real_2, scale_imag_2 ]
+		self.scale_1 = [ scale_real_1, scale_imag_1 ]
 
 		# Initialize the filter chain
-		self.filters = [self.layering_y_0, self.sigmoid_1, self.scale_2]#[self.layering_y_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		# self.filters = [self.layering_y_0, self.sigmoid_1, self.scale_2]#[self.layering_y_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		self.filters = [self.layering_y_0, self.scale_1]#[self.layering_y_0, self.scale_1]# [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
+		# self.filters = [self.scale_1]
 
 		self.init_variables()
 
 
-	def proposed_design_step(self, gradient_real, gradient_imag, step_size):
+	def proposed_design_step(self, gradient_real, gradient_imag, step_size, do_simulated_annealing, current_temperature):
 		gradient = self.backpropagate(gradient_real, gradient_imag)
+		gradient_norm = np.sqrt( np.sum( np.abs( gradient )**2 ) )
+		normalized_direction = gradient / gradient_norm
+
+		if do_simulated_annealing:
+
+			normalized_direction = gradient / np.sqrt( np.sum( np.abs( gradient )**2 ) )
+
+			perturbation_success = False
+
+			random_direction = np.random.random( gradient.shape ) - 0.5
+			random_direction /= np.sqrt( np.sum( np.abs( random_direction )**2 ) )
+
+			flatten_perturbation = random_direction.flatten()
+			flatten_direction = normalized_direction.flatten()
+
+			difference_measure = np.sum( ( flatten_perturbation - flatten_direction ) * flatten_direction )
+
+			annealing_probability = np.exp( 0.5 * difference_measure / current_temperature )
+			flip_coin = np.random.random( 1 )
+
+			print("Current middle annealing probability = " + str( np.exp( -0.5 * 1 / current_temperature ) ))
+
+			perturbation_success = flip_coin[ 0 ] >= ( 1 - annealing_probability )
+
+			if perturbation_success:
+				print("Successful perturbation!")
+				gradient = gradient_norm * random_direction
 
 		proposed_design_variable = self.w[0] - np.multiply(step_size, gradient)
 		proposed_design_variable = np.maximum(
@@ -142,8 +174,8 @@ class CMOSMetalBayerFilter2D(device.Device):
 
 
 	# In the step function, we should update the permittivity with update_permittivity
-	def step(self, gradient_real, gradient_imag, step_size):
-		self.w[0] = self.proposed_design_step(gradient_real, gradient_imag, step_size)
+	def step(self, gradient_real, gradient_imag, step_size, do_simulated_annealing, current_temperature):
+		self.w[0] = self.proposed_design_step(gradient_real, gradient_imag, step_size, do_simulated_annealing, current_temperature)
 		# Update the variable stack including getting the permittivity at the w[-1] position
 		self.update_permittivity()
 

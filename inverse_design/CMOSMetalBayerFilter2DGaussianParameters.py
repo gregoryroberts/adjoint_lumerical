@@ -8,8 +8,7 @@ import sys
 #
 # Files
 #
-# project_name = 'cmos_metalmm_diff_2focal_m18p5m8_split_contrast_etch_passivation_2d_reflective_no_feature_size_strict_layering_rgb_4xtsmc_um'
-project_name = 'cmos_dielectric_diff_blue_green_2focal_split_contrast_etch_passivation_2d_no_feature_size_strict_layering_rgb_4xtsmc_um'
+project_name = 'cmos_metal_gaussian_single_band_etch_passivation_2d_reflective_no_feature_size_strict_layering_rgb_4xtsmc_um'
 # project_name = 'cmos_dielectric_2focal_8pts_focal1p5um_etch_passivation_2d_reflective_no_feature_size_strict_layering_rgb_4p5xtsmc_um'
 # project_name = 'cmos_dielectric_reflective_no_toplayers_3focal_30pts_focal1p5um_etch_passivation_2d_no_feature_size_strict_layering_rgb_3xtsmc_um'
 
@@ -22,10 +21,8 @@ project_name = 'cmos_dielectric_diff_blue_green_2focal_split_contrast_etch_passi
 # Optical
 #
 background_index = 1.0
-# device_background_index = 1.4
-# design_index_background = 1.4
-device_background_index = 1.35
-design_index_background = 1.35
+device_background_index = 1.4
+design_index_background = 1.4
 
 min_real_permittivity = design_index_background**2
 # max_real_permittivity = -10
@@ -44,11 +41,11 @@ max_imag_permittivity = 0
 reflector_real_permittivity = 2.5
 reflector_imag_permittivity = -12.5
 
-# init_permittivity_0_1_scale = 0
-init_max_random_0_1_scale = 0.02
 init_permittivity_0_1_scale = 0.5
+# init_max_random_0_1_scale = 0.02
+# init_permittivity_0_1_scale = 0.5
 
-init_from_old = True
+init_from_old = False
 init_from_random = False
 
 if init_from_random:
@@ -118,7 +115,7 @@ m8_stack_layer_thickness_um = [ 0 ]#[ 0.62 ]
 m8_stack_layer_refractive_index = [ 1.45 ]
 
 
-device_size_lateral_um = 4.0
+device_size_lateral_um = 2
 # device_size_lateral_um = 3.0
 # Metal layers from M7 down to M2 (and we will use M6 as a reflector)
 # ( 6 * ( 2200 + 950 + 300 + 500 ) - 300 + 300 + 500 ) / 10000 = 2.42
@@ -179,8 +176,8 @@ num_points_per_band = 10
 # lambda_min_high_um = 0.55
 # lambda_max_high_um = 0.65
 
-lambda_min_um = 0.4
-lambda_max_um = 0.55
+lambda_min_um = 0.5
+lambda_max_um = 0.6
 
 num_design_frequency_points = num_bands * num_points_per_band
 num_wavelengths = num_design_frequency_points
@@ -206,10 +203,10 @@ blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
 vertical_gap_size_um = 1.0
 lateral_gap_size_um = 1.0
 
-fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um + bottom_metal_absorber_size_vertical_um
+fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + 2 * focal_length_um + bottom_metal_absorber_size_vertical_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
 # fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um + focal_length_um - bottom_metal_reflector_size_vertical_um
-fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um# + focal_length_um# - bottom_metal_reflector_size_vertical_um
+fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um + focal_length_um# + focal_length_um# - bottom_metal_reflector_size_vertical_um
 # fdtd_region_minimum_vertical_um = bottom_metal_reflector_start_um - vertical_gap_size_um
 fdtd_region_minimum_vertical_um = -bottom_metal_absorber_size_vertical_um - vertical_gap_size_um - focal_length_um# - focal_length_um# bottom_metal_reflector_start_um - vertical_gap_size_um - focal_length_um
 
@@ -224,7 +221,7 @@ fdtd_simulation_time_fs = 2000
 #
 # Forward Source
 #
-lateral_aperture_um = 1.1 * device_size_lateral_um
+lateral_aperture_um = 1.5 * device_size_lateral_um
 # src_maximum_vertical_um = m8_stack_end_um + 0.5 * vertical_gap_size_um# + 0.5 * focal_length_um + 0.5 * vertical_gap_size_um
 # src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um# bottom_metal_reflector_start_um - 0.5 * vertical_gap_size_um
 src_maximum_vertical_um = m8_stack_end_um + 0.5 * vertical_gap_size_um# + 0.75 * focal_length_um# + 0.5 * vertical_gap_size_um# + 0.5 * focal_length_um + 0.5 * vertical_gap_size_um
@@ -260,13 +257,14 @@ num_adjoint_sources = num_focal_spots
 # adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
 
 # adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_lateral_um / 3. ]
-adjoint_x_positions_um = [ -device_size_lateral_um / 4., device_size_lateral_um / 4. ]
+adjoint_x_positions_um = [ 0, 0 ]
+adjoint_y_positions_um = [ -focal_length_um, designable_device_vertical_maximum_um + focal_length_um ]
 
 #
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 200
+num_iterations_per_epoch = 100
 start_epoch = 0
 
 #
@@ -287,14 +285,14 @@ if ( num_epochs is not 1 ) and use_simulated_annealing:
 	sys.exit(1)
 
 
-use_fixed_step_size = True
+use_fixed_step_size = False
 # fixed_step_size = 12
-fixed_step_size =  75 * 10 / 5
+fixed_step_size =  8
 
-use_adaptive_step_size = False
+use_adaptive_step_size = True
 desired_max_max_design_change = 0.05
-desired_min_max_design_change = 0.001
-adaptive_step_size = 0.3 * 0.01 * 3 / 5
+desired_min_max_design_change = 0.005
+adaptive_step_size = 5
 # adaptive_step_size = 50 * 0.01 * 3 / 2
 # adaptive_step_size = 15 * 0.01 * 3 / 2
 # adaptive_step_size = .25 * 7.5 * 15 * 0.01 * 3 / 2

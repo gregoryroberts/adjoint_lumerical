@@ -76,6 +76,10 @@ def bridges(density, restrictions, costs, topological_correction_value ):
 					if next_density_value:
 						cost_value = 0
 
+					#
+					# todo(groberts): this should be directed because as it stands you are just overwriting edges of adjacent
+					# nodes, so you aren't capturing that moving in one direction or another incurs a different cost!.
+					#
 					density_graph.add_edge( center_node_id, next_node_id, weight=cost_value )
 
 	label_to_representative_pt = {}
