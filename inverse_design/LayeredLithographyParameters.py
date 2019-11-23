@@ -113,6 +113,7 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
+start_epoch = 3
 num_epochs = 8
 num_iterations_per_epoch = 25
 

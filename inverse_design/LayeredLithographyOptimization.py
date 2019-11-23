@@ -154,6 +154,8 @@ design_import['z min'] = device_vertical_minimum_um * 1e-6
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
 bayer_filter = LayeredLithographyBayerFilter.LayeredLithographyBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers)
 
+bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
+
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
@@ -221,7 +223,7 @@ step_size_start = 0.001
 #
 # Run the optimization
 #
-for epoch in range(0, num_epochs):
+for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 
 	for iteration in range(0, num_iterations_per_epoch):
