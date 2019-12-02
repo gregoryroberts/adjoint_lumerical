@@ -684,9 +684,11 @@ for epoch in range(start_epoch, num_epochs):
 
         fom_by_task = {}
         figure_of_merit = {}
+        reflection_performance = {}
 
         for pol in ['x', 'y']:
-            fom_by_task[pol] = []
+            fom_by_task[ pol ] = []
+            reflection_performance[ pol ] = []
 
         # fom_by_task = []
         # reflection_performance = []
@@ -727,10 +729,10 @@ for epoch in range(start_epoch, num_epochs):
                 cur_reflection_overlap = mode_overlap_fom( reflected_e_field_band, reflected_h_field_band, select_mode_e_field_band, select_mode_h_field_band, 1, mode_overlap_norm )
 
                 if reflection_max[ reflection_band ]:
-                    reflection_performance.append( cur_reflection_overlap )
+                    reflection_performance[ pol ].append( cur_reflection_overlap )
                 else:
-                    reflection_performance.append( ( 1 / num_points_per_band ) - cur_reflection_overlap )
-                fom_by_task[ pol ].append( np.sum( reflection_performance[ reflection_band ] ) )
+                    reflection_performance[ pol ].append( ( 1 / num_points_per_band ) - cur_reflection_overlap )
+                fom_by_task[ pol ].append( np.sum( reflection_performance[ pol ][ reflection_band ] ) )
 
             fom_by_task[ pol ] = np.array( fom_by_task[ pol ] )
             figure_of_merit[ pol ] = np.mean( fom_by_task[ pol ] )
