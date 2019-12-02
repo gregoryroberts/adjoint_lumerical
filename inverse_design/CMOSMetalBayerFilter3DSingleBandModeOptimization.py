@@ -488,8 +488,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size, do_simu
         layer_vertical_maximum_voxels = layer_vertical_minimum_voxels + len( bayer_filter_regions_z[ device_layer_idx ] )
 
         bayer_filter.step(
-            device_step_real[ layer_vertical_minimum_voxels : layer_vertical_maximum_voxels, :, : ],
-            device_step_imag[ layer_vertical_minimum_voxels : layer_vertical_maximum_voxels, :, : ],
+            device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
+            device_step_imag[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ],
             step_size,
             do_simulated_annealing,
             current_temperature)
