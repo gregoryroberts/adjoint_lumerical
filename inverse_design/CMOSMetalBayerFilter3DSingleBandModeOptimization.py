@@ -820,7 +820,7 @@ for epoch in range(start_epoch, num_epochs):
                 mode_overlap_norm = mode_overlap_maxima_r[ reflection_band ]
 
                 cur_reflection_gradient = mode_overlap_gradient(
-                        reflection_performance[ reflection_band ],
+                        reflection_performance[ pol ][ reflection_band ],
                         reflected_e_field_band, reflected_h_field_band,
                         select_mode_e_field_band, select_mode_h_field_band,
                         forward_reflection_e_fields, adjoint_reflection_e_fields,
