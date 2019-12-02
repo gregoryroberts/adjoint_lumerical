@@ -812,7 +812,7 @@ for epoch in range(start_epoch, num_epochs):
                     adjoint_reflection_e_fields_backup = adjoint_e_fields[ :, wl_idx, :, :, : ].copy() * np.exp( 1j * phase_corrections_reflection[ pol ][ wl_idx ] )
 
                     adjoint_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = adjoint_reflection_e_fields_backup
-                    forward_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = forward_e_fields[ :, wl_idx, :, :, : ]
+                    forward_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = forward_e_fields[ pol ][ :, wl_idx, :, :, : ]
 
                 forward_reflection_e_fields = np.swapaxes( forward_reflection_e_fields, 0, 1 )
                 adjoint_reflection_e_fields = np.swapaxes( adjoint_reflection_e_fields, 0, 1 )
