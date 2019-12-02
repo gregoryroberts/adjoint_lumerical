@@ -773,6 +773,9 @@ for epoch in range(start_epoch, num_epochs):
 
             adjoint_e_fields = forward_e_fields[ pol ]
 
+            mode_e_field = mode_e_fields[ pol ]
+            mode_h_field = mode_h_fields[ pol ]
+
             for reflection_band in range( 0, len( reflection_fom_map) ):
                 wavelength_range = reflection_fom_map[ reflection_band ]
                 num_wavelengths = wavelength_range[ 1 ] - wavelength_range[ 0 ]
@@ -800,8 +803,8 @@ for epoch in range(start_epoch, num_epochs):
 
                 for wl_idx in range( wavelength_range[ 0 ], wavelength_range[ 1 ] ):
 
-                    reflected_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_e_field[ :, wl_idx, :, :, : ]
-                    reflected_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_h_field[ :, wl_idx, :, :, : ]
+                    reflected_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_e_fields[ pol ][ :, wl_idx, :, :, : ]
+                    reflected_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_h_fields[ pol ][ :, wl_idx, :, :, : ]
 
                     select_mode_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_e_field[ :, wl_idx, :, :, : ]
                     select_mode_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_h_field[ :, wl_idx, :, :, : ]
