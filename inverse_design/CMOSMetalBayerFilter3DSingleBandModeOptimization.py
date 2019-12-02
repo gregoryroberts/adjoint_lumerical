@@ -180,6 +180,7 @@ def disable_all_sources():
 #
 design_efield_monitor = fdtd_hook.addprofile()
 design_efield_monitor['name'] = 'design_efield_monitor'
+design_efield_monitor['monitor type'] = '3D'
 design_efield_monitor['x span'] = device_size_lateral_um * 1e-6
 design_efield_monitor['y span'] = device_size_lateral_um * 1e-6
 design_efield_monitor['z min'] = designable_device_vertical_minimum_um * 1e-6
@@ -199,7 +200,7 @@ design_efield_monitor['output Hz'] = 0
 # compute the figure of merit as well as weight the adjoint simulations properly in calculation of the
 # gradient.
 #
-mode_reflection_monitor_delta_um = 0.2 * vertical_gap_size_um
+mode_reflection_monitor_delta_um = 0.25 * vertical_gap_size_top_um
 mode_reflection_monitor = fdtd_hook.addpower()
 mode_reflection_monitor['name'] = 'mode_reflection_monitor'
 mode_reflection_monitor['monitor type'] = '2D Z-normal'
@@ -230,20 +231,20 @@ fdtd_hook.run()
 mode_e_fields['x'] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
 mode_h_fields['x'] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
 
-mode_midpt_x = int( mode_e_fields['x'].shape[ 5 ] / 2 )
-mode_midpt_y = int( mode_e_fields['x'].shape[ 4 ] / 2 )
+mode_midpt_x = int( mode_e_fields['x'].shape[ 4 ] / 2 )
+mode_midpt_y = int( mode_e_fields['x'].shape[ 3 ] / 2 )
 
 for wl_idx in range( 0, num_design_frequency_points ):
     wavelength_um = lambda_values_um[ wl_idx ]
     phase_shift = 2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
-    mode_phase = -np.angle( mode_e_fields['x'][ 2, wl_idx, 0, 0, midpt_y, midpt_x ] )
+    mode_phase = -np.angle( mode_e_fields['x'][ 2, wl_idx, 0, mode_midpt_y, mode_midpt_x ] )
     phase_corrections_reflection['x'].append( 2 * ( phase_shift + mode_phase ) )
 
 fdtd_hook.switchtolayout()
 
 plane_wave_sources['x']['direction'] = 'Backward'
-plane_wave_sources['x']['z min'] = src_minimum_vertical_um
-plane_wave_sources['x']['z max'] = src_maximum_vertical_um
+plane_wave_sources['x']['z min'] = src_minimum_vertical_um * 1e-6
+plane_wave_sources['x']['z max'] = src_maximum_vertical_um * 1e-6
 
 
 disable_all_sources()
@@ -257,15 +258,15 @@ phase_corrections_transmission = []
 
 for wl_idx in range( 0, num_design_frequency_points ):
     wavelength_um = lambda_values_um[ wl_idx ]
-    phase_shift = -2 * np.pi * mode_transmission_monitor_delta_um / wavelength_um
-    mode_phase = -np.angle( mode_e_fields['x'][ 2, wl_idx, 0, 0, midpt_y, midpt_x ] )
+    phase_shift = 2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
+    mode_phase = -np.angle( mode_e_fields['y'][ 2, wl_idx, 0, mode_midpt_y, mode_midpt_x ] )
     phase_corrections_reflection['y'].append( 2 * ( phase_shift + mode_phase ) )
 
 fdtd_hook.switchtolayout()
 
 plane_wave_sources['y']['direction'] = 'Backward'
-plane_wave_sources['y']['z min'] = src_minimum_vertical_um
-plane_wave_sources['y']['z max'] = src_maximum_vertical_um
+plane_wave_sources['y']['z min'] = src_minimum_vertical_um * 1e-6
+plane_wave_sources['y']['z max'] = src_maximum_vertical_um * 1e-6
 
 
 
@@ -277,6 +278,7 @@ silicon_absorbing_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
 silicon_absorbing_layer['y span'] = fdtd_region_size_lateral_um * 1e-6
 silicon_absorbing_layer['z min'] = bottom_metal_absorber_start_um * 1e-6
 silicon_absorbing_layer['z max'] = bottom_metal_absorber_end_um * 1e-6
+silicon_absorbing_layer['material'] = 'Si (Silicon) - Palik'
 
 # metal_absorber_index = (
 #         ( silicon_absober_index_real + 1j * silicon_absober_index_imag ) *
@@ -389,20 +391,30 @@ def side_to_string( side_number ):
     else:
         return str( side_integer )
 
-device_background_side_x = [ -1, 1 ]
+device_background_side_x = [ -1, 1, 0, 0 ]
+device_background_side_y = [ 0, 0, -1, 1 ]
 
-for device_background_side_idx in range( 0, 2 ):
+for device_background_side_idx in range( 0, 4 ):
     side_x = device_background_side_x[ device_background_side_idx ]
+    side_y = device_background_side_y[ device_background_side_idx ]
 
     side_block = fdtd_hook.addrect()
 
-    side_block['name'] = 'device_background_' + side_to_string( side_x )
-    side_block['y min'] = designable_device_vertical_minimum_um * 1e-6
-    side_block['y max'] = designable_device_vertical_maximum_um * 1e-6
+    side_block['name'] = 'device_background_' + side_to_string( side_x ) + "_" + side_to_string( side_y )
+
+    side_block['z min'] = designable_device_vertical_minimum_um * 1e-6
+    side_block['z max'] = designable_device_vertical_maximum_um * 1e-6
+
     side_block['x'] = side_x * extra_lateral_space_offset_um * 1e-6
     side_block['x span'] = (
         np.abs( side_x ) * extra_lateral_space_per_side_um +
         ( 1 - np.abs( side_x ) ) * fdtd_region_size_lateral_um ) * 1e-6
+
+    side_block['y'] = side_y * extra_lateral_space_offset_um * 1e-6
+    side_block['y span'] = (
+        np.abs( side_y ) * extra_lateral_space_per_side_um +
+        ( 1 - np.abs( side_y ) ) * fdtd_region_size_lateral_um ) * 1e-6
+
 
     side_block['index'] = device_background_index
 
@@ -706,8 +718,8 @@ for epoch in range(start_epoch, num_epochs):
 
                 for wl_idx in range( wavelength_range[ 0 ], wavelength_range[ 1 ] ):
 
-                    reflected_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_e_field[ :, wl_idx, :, :, : ]
-                    reflected_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_h_field[ :, wl_idx, :, :, : ]
+                    reflected_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_e_fields[ pol ][ :, wl_idx, :, :, : ]
+                    reflected_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = reflected_h_fields[ pol ][ :, wl_idx, :, :, : ]
 
                     select_mode_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_e_field[ :, wl_idx, :, :, : ]
                     select_mode_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_h_field[ :, wl_idx, :, :, : ]

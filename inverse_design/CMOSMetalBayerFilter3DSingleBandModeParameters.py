@@ -181,13 +181,14 @@ lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequenc
 #
 # FDTD
 #
-vertical_gap_size_um = 2.0#2.0
+vertical_gap_size_top_um = 2.0#2.0
+vertical_gap_size_bottom_um = 0.25#2.0
 lateral_gap_size_um = 1.0#2.0
 
-fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um
+fdtd_region_size_vertical_um = vertical_gap_size_top_um + vertical_gap_size_bottom_um + device_size_verical_um
 fdtd_region_size_lateral_um = device_size_lateral_um + 2 * lateral_gap_size_um
-fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um
-fdtd_region_minimum_vertical_um = -vertical_gap_size_um# -bottom_metal_absorber_size_vertical_um - vertical_gap_size_um
+fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_top_um
+fdtd_region_minimum_vertical_um = -( vertical_gap_size_bottom_um + bottom_metal_absorber_size_vertical_um )# -bottom_metal_absorber_size_vertical_um - vertical_gap_size_um
 
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
@@ -195,15 +196,16 @@ fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / 
 fdtd_region_size_lateral_voxels = int( np.ceil( fdtd_region_size_lateral_um / mesh_spacing_um ) )
 
 # todo: check if other simulation is timing out on simulation time
-fdtd_simulation_time_fs = 50000
+# fdtd_simulation_time_fs = 50000
+fdtd_simulation_time_fs = 10000
 # fdtd_dt_stability_factor = 0.5
 
 #
 # Forward Source
 #
 lateral_aperture_um = 1.1 * device_size_lateral_um
-src_maximum_vertical_um = fdtd_region_maximum_vertical_um - 0.5 * vertical_gap_size_um
-src_minimum_vertical_um = fdtd_region_minimum_vertical_um + 0.1 * vertical_gap_size_um
+src_maximum_vertical_um = fdtd_region_maximum_vertical_um - 0.5 * vertical_gap_size_top_um
+src_minimum_vertical_um = fdtd_region_minimum_vertical_um + 0.1 * vertical_gap_size_bottom_um
 
 #
 # Spectral and polarization selectivity information
@@ -232,8 +234,8 @@ transmission_fom_map = [ ]
 # reflection_adjoint_vertical_um = fdtd_region_maximum_vertical_um - 0.5 * vertical_gap_size_um
 # transmission_adjoint_vertical_um = src_minimum_vertical_um + 0.6 * vertical_gap_size_um
 
-reflection_adjoint_vertical_um = src_maximum_vertical_um
-transmission_adjoint_vertical_um = fdtd_region_minimum_vertical_um + 0.5 * vertical_gap_size_um
+# reflection_adjoint_vertical_um = src_maximum_vertical_um
+# transmission_adjoint_vertical_um = fdtd_region_minimum_vertical_um + 0.5 * vertical_gap_size_bottom_um
 
 num_focal_spots = 1
 num_focus_adjoint_sources = num_focal_spots
@@ -245,7 +247,7 @@ num_reflection_adjoint_sources = 1
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 2#1000
+num_iterations_per_epoch = 50#2#1000
 start_epoch = 0
 
 #
