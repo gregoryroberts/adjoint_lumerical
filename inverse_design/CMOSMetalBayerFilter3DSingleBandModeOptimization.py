@@ -796,10 +796,10 @@ for epoch in range(start_epoch, num_epochs):
                 select_mode_h_field_band = np.zeros( band_mode_h_field_shape, dtype=np.complex )
 
                 adjoint_reflection_e_fields = np.zeros(
-                    ( 3, num_wavelengths, 1, designable_device_voxels_vertical, device_voxels_lateral ), dtype=np.complex )
+                    ( 3, num_wavelengths, designable_device_voxels_vertical, device_voxels_lateral, device_voxels_lateral ), dtype=np.complex )
 
                 forward_reflection_e_fields = np.zeros(
-                    ( 3, num_wavelengths, 1, designable_device_voxels_vertical, device_voxels_lateral ), dtype=np.complex )
+                    ( 3, num_wavelengths, designable_device_voxels_vertical, device_voxels_lateral, device_voxels_lateral ), dtype=np.complex )
 
                 for wl_idx in range( wavelength_range[ 0 ], wavelength_range[ 1 ] ):
 

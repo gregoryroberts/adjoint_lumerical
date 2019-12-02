@@ -185,7 +185,7 @@ vertical_gap_size_top_um = 2.0#2.0
 vertical_gap_size_bottom_um = 0.25#2.0
 lateral_gap_size_um = 1.0#2.0
 
-fdtd_region_size_vertical_um = vertical_gap_size_top_um + vertical_gap_size_bottom_um + device_size_verical_um
+fdtd_region_size_vertical_um = vertical_gap_size_top_um + vertical_gap_size_bottom_um + bottom_metal_absorber_size_vertical_um + device_size_verical_um
 fdtd_region_size_lateral_um = device_size_lateral_um + 2 * lateral_gap_size_um
 fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_top_um
 fdtd_region_minimum_vertical_um = -( vertical_gap_size_bottom_um + bottom_metal_absorber_size_vertical_um )# -bottom_metal_absorber_size_vertical_um - vertical_gap_size_um
