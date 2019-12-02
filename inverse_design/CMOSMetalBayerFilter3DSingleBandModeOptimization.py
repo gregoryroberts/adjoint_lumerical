@@ -850,8 +850,8 @@ for epoch in range(start_epoch, num_epochs):
         #
         # Step 4: Step the design variable.
         #
-        device_gradient_real = 2 * np.real( xy_polarized_gradients )
-        device_gradient_imag = 2 * np.imag( xy_polarized_gradients )
+        device_gradient_real = 2 * np.real( final_gradient )
+        device_gradient_imag = 2 * np.imag( final_gradient )
         # Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
         # [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
         device_gradient_real = np.swapaxes(device_gradient_real, 0, 2)
