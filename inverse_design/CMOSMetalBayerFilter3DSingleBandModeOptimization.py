@@ -752,7 +752,7 @@ for epoch in range(start_epoch, num_epochs):
             figure_of_merit_evolution_reflect_low_band[ xy_index_idx[ pol ], epoch, iteration ] = fom_by_task[ pol ][ 0 ]
             figure_of_merit_evolution_reflect_high_band[ xy_index_idx[ pol ], epoch, iteration ] = fom_by_task[ pol ][ 1 ]
             figure_of_merit_evolution_transmission[ xy_index_idx[ pol ], epoch, iteration ] = fom_by_task[ pol ][ 2 ]
-            figure_of_merit_evolution[ xy_index_idx[ pol ], epoch, iteration ] = figure_of_merit
+            figure_of_merit_evolution[ xy_index_idx[ pol ], epoch, iteration ] = figure_of_merit[ pol ]
 
         np.save(projects_directory_location + "/figure_of_merit_reflect_low.npy", figure_of_merit_evolution_reflect_low_band)
         np.save(projects_directory_location + "/figure_of_merit_reflect_high.npy", figure_of_merit_evolution_reflect_high_band)

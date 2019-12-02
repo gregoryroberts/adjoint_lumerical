@@ -17,7 +17,10 @@ import numpy as np
 # project_name = 'cmos_dielectric_single_band_contrast_multi_freq_all_transmission_2d_no_feature_size_strict_layering_rgb_4xtsmc_um'
 # project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_4xtsmc_um'
 # project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_1xtsmc_um'
-project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
+# project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
+# project_name = 'cmos_metal_m10_m3_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
+# project_name = 'cmos_metal_m10_m3_explicit_reject_single_band_contrast_multi_freqx15_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
+project_name = 'cmos_metal_m10_m3_explicit_reject_single_band_blue_contrast_multi_freqx15_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
 
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
@@ -46,6 +49,7 @@ plt.plot(fom_transmission, color='r', linewidth=2)
 plt.plot(fom_ref_low, color='g', linewidth=2)
 plt.plot(fom_ref_high, color='b', linewidth=2)
 plt.plot(fom, color='k', linewidth=2, linestyle='--')
-plt.legend(['transmission', 'reflection low', 'reflection high', 'mean'])
+plt.legend(['reject high', 'reject low', 'reflect'])
+# plt.legend(['transmission', 'reflection low', 'reflection high', 'mean'])
 plt.show()
 
