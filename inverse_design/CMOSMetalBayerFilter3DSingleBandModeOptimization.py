@@ -655,7 +655,9 @@ for epoch in range(start_epoch, num_epochs):
     for device_layer_idx in range( 0, len( bayer_filters ) ):
         bayer_filters[ device_layer_idx ].update_filters( epoch )
 
+
     for iteration in range(0, num_iterations_per_epoch):
+        iter_start_time = time.time()
         print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
         # Import all the bayer filters
@@ -885,6 +887,12 @@ for epoch in range(start_epoch, num_epochs):
         np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
         # np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
         # np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
+        
+        iter_elapsed_time = time.time() - iter_start_time
+        log_file = open(projects_directory_location + "/log.txt", 'a+')
+        log_file.write( "The iteration took " + str( iter_elapsed_time ) + " seconds to complete which is " + str( iter_elapsed_time / 60. ) + " minutes!\n")
+        log_file.close()
+
     np.save(projects_directory_location + '/fom_focal_spot_evolution.npy', fom_focal_spot_evolution)
     np.save(projects_directory_location + '/integrated_transmission_evolution.npy', integrated_transmission_evolution)
 
