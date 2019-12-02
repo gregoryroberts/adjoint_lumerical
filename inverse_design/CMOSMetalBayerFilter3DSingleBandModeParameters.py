@@ -29,7 +29,7 @@ max_real_permittivity = -10
 
 min_imag_permittivity = 0
 max_imag_permittivity = -3
-max_imag_permittivity = 0
+# max_imag_permittivity = 0
 
 # silicon_index_real = 
 # silicon_index_imag
