@@ -125,6 +125,7 @@ fdtd['background index'] = background_index
 # General polarized source information
 #
 xy_phi_rotations = { 'x' : 0, 'y' : 90 }
+xy_index_idx = { 'x' : 0, 'y' : 1 }
 xy_names = ['x', 'y']
 
 
@@ -323,7 +324,7 @@ for device_layer_idx in range( 0, number_device_layers ):
     if is_layer_designable[ device_layer_idx ]:
 
         one_vertical_layer = 1
-        layer_bayer_filter_size_voxels = np.array([device_voxels_lateral, layer_thicknesses_voxels[device_layer_idx], 1])
+        layer_bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, layer_thicknesses_voxels[device_layer_idx]])
 
         init_design = init_permittivity_0_1_scale
         layer_bayer_filter = CMOSMetalBayerFilter3D.CMOSMetalBayerFilter3D(
@@ -332,7 +333,6 @@ for device_layer_idx in range( 0, number_device_layers ):
         if not restrict_layered_device:
             layer_bayer_filter = CMOSMetalBayerFilter3D.CMOSMetalBayerFilter3D(
                 layer_bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_design, layer_thicknesses_voxels[device_layer_idx])
-
 
         if fix_layer_permittivity_to_reflective[ device_layer_idx ]:
             init_design = 1.0
@@ -426,10 +426,10 @@ for device_background_side_idx in range( 0, 4 ):
 forward_e_fields = {}
 focal_data = {}
 
-figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-figure_of_merit_evolution_transmission = np.zeros((num_epochs, num_iterations_per_epoch))
-figure_of_merit_evolution_reflect_low_band = np.zeros((num_epochs, num_iterations_per_epoch))
-figure_of_merit_evolution_reflect_high_band = np.zeros((num_epochs, num_iterations_per_epoch))
+figure_of_merit_evolution = np.zeros((2, num_epochs, num_iterations_per_epoch))
+figure_of_merit_evolution_transmission = np.zeros((2, num_epochs, num_iterations_per_epoch))
+figure_of_merit_evolution_reflect_low_band = np.zeros((2, num_epochs, num_iterations_per_epoch))
+figure_of_merit_evolution_reflect_high_band = np.zeros((2, num_epochs, num_iterations_per_epoch))
 step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
@@ -749,15 +749,15 @@ for epoch in range(start_epoch, num_epochs):
 
             # task_weightings[ pol ] = [ 0, 0, 1 ]
 
-            figure_of_merit_evolution_reflect_low_band[ pol ][ epoch, iteration ] = fom_by_task[ pol ][ 0 ]
-            figure_of_merit_evolution_reflect_high_band[ pol ][ epoch, iteration ] = fom_by_task[ pol ][ 1 ]
-            figure_of_merit_evolution_transmission[ pol ][ epoch, iteration ] = fom_by_task[ pol ][ 2 ]
-            figure_of_merit_evolution[ pol ][ epoch, iteration ] = figure_of_merit
+            figure_of_merit_evolution_reflect_low_band[ xy_index_idx[ pol ], epoch, iteration ] = fom_by_task[ pol ][ 0 ]
+            figure_of_merit_evolution_reflect_high_band[ xy_index_idx[ pol ], epoch, iteration ] = fom_by_task[ pol ][ 1 ]
+            figure_of_merit_evolution_transmission[ xy_index_idx[ pol ], epoch, iteration ] = fom_by_task[ pol ][ 2 ]
+            figure_of_merit_evolution[ xy_index_idx[ pol ], epoch, iteration ] = figure_of_merit
 
-            np.save(projects_directory_location + "/figure_of_merit_reflect_low_" + pol + ".npy", figure_of_merit_evolution_reflect_low_band[ pol ])
-            np.save(projects_directory_location + "/figure_of_merit_reflect_high_" + pol + ".npy", figure_of_merit_evolution_reflect_high_band[ pol ])
-            np.save(projects_directory_location + "/figure_of_merit_transmission_" + pol + ".npy", figure_of_merit_evolution_transmission[ pol ])
-            np.save(projects_directory_location + "/figure_of_merit_" + pol + ".npy", figure_of_merit_evolution[ pol ])
+        np.save(projects_directory_location + "/figure_of_merit_reflect_low.npy", figure_of_merit_evolution_reflect_low_band)
+        np.save(projects_directory_location + "/figure_of_merit_reflect_high.npy", figure_of_merit_evolution_reflect_high_band)
+        np.save(projects_directory_location + "/figure_of_merit_transmission.npy", figure_of_merit_evolution_transmission)
+        np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
 
         #
         # Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the

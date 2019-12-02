@@ -42,7 +42,7 @@ max_imag_permittivity = 0
 
 init_permittivity_0_1_scale = 0
 init_max_random_0_1_scale = 0.1
-init_permittivity_0_1_scale = 0.0
+# init_permittivity_0_1_scale = 0.0
 
 init_from_old = False
 init_from_random = True
@@ -197,7 +197,7 @@ fdtd_region_size_lateral_voxels = int( np.ceil( fdtd_region_size_lateral_um / me
 
 # todo: check if other simulation is timing out on simulation time
 # fdtd_simulation_time_fs = 50000
-fdtd_simulation_time_fs = 10000
+fdtd_simulation_time_fs = 5000
 # fdtd_dt_stability_factor = 0.5
 
 #
