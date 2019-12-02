@@ -8,7 +8,7 @@ import sys
 #
 # Files
 #
-project_name = 'cmos_metal_m10_m3_explicit_reject_single_band_contrast_multi_freqx15_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5tsmc_um'
+project_name = 'cmos_metal_m10_m3_explicit_reject_single_band_contrast_multi_freqx9_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5tsmc_um'
 
 #
 # Random Seed
@@ -53,7 +53,7 @@ if init_from_random:
 #
 # Device
 #
-mesh_spacing_um = 0.015
+mesh_spacing_um = 0.02
 
 layer_thicknesses_um = [
 	0.05, # leftover from M8
@@ -124,7 +124,7 @@ device_size_verical_um = top_dielectric_stack_size_vertcial_um + designable_size
 
 bottom_metal_absorber_size_vertical_voxels = 1 + int( bottom_metal_absorber_size_vertical_um / mesh_spacing_um )
 
-device_voxels_lateral = 3 + int(device_size_lateral_um / mesh_spacing_um)
+device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 designable_device_voxels_vertical = 2 + int(designable_size_vertical_um / mesh_spacing_um)
 
 designable_device_vertical_maximum_um = designable_size_vertical_um
@@ -156,7 +156,7 @@ dielectric_stack_end_um = m8_stack_end_um
 num_bands = 3
 # We might want to space these points out differently to get them all in the middle of the bands and not try and
 # optimize near the band edges
-num_points_per_band = 5
+num_points_per_band = 3
 
 src_lambda_min_um = 0.45
 src_lambda_max_um = 0.65
