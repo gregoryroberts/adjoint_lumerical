@@ -286,7 +286,7 @@ if ( num_epochs is not 1 ) and use_simulated_annealing:
 # fixed_step_size = 0.5#25
 # fixed_step_size = 0.5
 # fixed_step_size = 0.09
-fixed_step_size = 20 * 0.05
+fixed_step_size = 75 * 0.05
 
 use_adaptive_step_size = True
 desired_max_max_design_change = 0.05
