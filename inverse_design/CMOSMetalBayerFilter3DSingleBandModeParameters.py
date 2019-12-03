@@ -157,7 +157,7 @@ dielectric_stack_end_um = m8_stack_end_um
 num_bands = 3
 # We might want to space these points out differently to get them all in the middle of the bands and not try and
 # optimize near the band edges
-num_points_per_band = 3
+num_points_per_band = 1#3
 
 src_lambda_min_um = 0.45
 src_lambda_max_um = 0.65
