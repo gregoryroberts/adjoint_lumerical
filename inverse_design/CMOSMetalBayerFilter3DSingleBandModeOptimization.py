@@ -588,7 +588,6 @@ def mode_overlap_gradient(
         choose_electric_forward = electric_fields_forward
         choose_magnetic_forward = magnetic_fields_forward
 
-
         numerator_term_1 = (
             np.sum( choose_electric_forward[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) +
             np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 1, wl_idx, 0, :, : ] ) )
@@ -831,7 +830,7 @@ for epoch in range(start_epoch, num_epochs):
                         forward_reflection_e_fields, adjoint_reflection_e_fields,
                         1,
                         mode_overlap_norm
-                    ) / 1j
+                    )# / 1j
 
                 if reflection_max[ reflection_band ]:
                     all_gradients.append(
