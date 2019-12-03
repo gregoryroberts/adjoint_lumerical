@@ -597,7 +597,7 @@ def mode_overlap_gradient(
             np.sum( choose_electric_forward[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) ) +
             np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, :, : ] * choose_magnetic_forward[ 0, wl_idx, 0, :, : ] ) ) )
 
-        numerator = np.conj( numerator_term_1 + numerator_term_2 )
+        numerator = numerator_term_1 + numerator_term_2
 
         denominator = 4.0 * np.real(
             np.sum( choose_electric_mode[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) -
