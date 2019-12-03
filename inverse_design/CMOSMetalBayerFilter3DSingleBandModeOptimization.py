@@ -543,11 +543,11 @@ def mode_overlap_fom(
 
         numerator_term_1 = (
             np.sum( choose_electric_forward[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, :, : ] * choose_magnetic_forward[ 1, wl_idx, 0, :, : ] ) ) )
+            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 1, wl_idx, 0, :, : ] ) )
 
         numerator_term_2 = -(
             np.sum( choose_electric_forward[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, :, : ] * choose_magnetic_forward[ 0, wl_idx, 0, :, : ] ) ) )
+            np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, :, : ] ) )
 
         numerator = numerator_term_1 + numerator_term_2
         numerator = np.abs( numerator )**2
@@ -591,11 +591,11 @@ def mode_overlap_gradient(
 
         numerator_term_1 = (
             np.sum( choose_electric_forward[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, :, : ] * choose_magnetic_forward[ 1, wl_idx, 0, :, : ] ) ) )
+            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 1, wl_idx, 0, :, : ] ) )
 
         numerator_term_2 = -(
             np.sum( choose_electric_forward[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, :, : ] * choose_magnetic_forward[ 0, wl_idx, 0, :, : ] ) ) )
+            np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, :, : ] ) )
 
         numerator = numerator_term_1 + numerator_term_2
 
