@@ -251,7 +251,7 @@ phase_corrections_reflection = np.zeros( num_design_frequency_points, dtype=np.c
 
 for wl_idx in range( 0, num_design_frequency_points ):
     wavelength_um = lambda_values_um[ wl_idx ]
-    phase_shift = -2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
+    phase_shift = 2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
     phase_corrections_reflection[ wl_idx ] = np.exp( 1j * phase_shift )
 
 plane_wave_sources['x']['direction'] = 'Backward'
@@ -820,7 +820,7 @@ for epoch in range(start_epoch, num_epochs):
                 #         mode_overlap_norm
                 #     )# / 1j
 
-                cur_reflection_gradient = -mode_overlap_gradient(
+                cur_reflection_gradient = mode_overlap_gradient(
                         reflection_performance[ pol ][ reflection_band ],
                         reflected_e_field_band, reflected_h_field_band,
                         select_mode_e_field_band, select_mode_h_field_band,
