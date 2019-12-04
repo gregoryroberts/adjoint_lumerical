@@ -157,7 +157,7 @@ dielectric_stack_end_um = m8_stack_end_um
 num_bands = 3
 # We might want to space these points out differently to get them all in the middle of the bands and not try and
 # optimize near the band edges
-num_points_per_band = 1#3
+num_points_per_band = 3
 
 src_lambda_min_um = 0.45
 src_lambda_max_um = 0.65
@@ -182,7 +182,7 @@ lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequenc
 #
 # FDTD
 #
-vertical_gap_size_top_um = 2.0#2.0
+vertical_gap_size_top_um = 5.0#2.0
 vertical_gap_size_bottom_um = 0.25#2.0
 lateral_gap_size_um = 1.0#2.0
 
