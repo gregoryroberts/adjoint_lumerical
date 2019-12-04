@@ -221,55 +221,39 @@ mode_reflection_monitor['frequency points'] = num_design_frequency_points
 mode_e_fields = {}
 mode_h_fields = {}
 
-phase_corrections_reflection = {}
-phase_corrections_reflection['x'] = []
-phase_corrections_reflection['y'] = []
+# == 377.1
+mu_nought_c = ( 1.257 * 1e-6 ) * ( 3.0 * 1e8 )
 
-disable_all_sources()
-plane_wave_sources['x'].enabled = 1
-fdtd_hook.run()
+monitor_lateral_voxels = 1 + int( mode_reflection_monitor[ 'x span' ] / mesh_spacing_um )
+# Organize these as freq, pol, z, y, x
 
-mode_e_fields['x'] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
-mode_h_fields['x'] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
+mode_e_field_xpol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
+mode_h_field_xpol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
 
-mode_midpt_x = int( mode_e_fields['x'].shape[ 4 ] / 2 )
-mode_midpt_y = int( mode_e_fields['x'].shape[ 3 ] / 2 )
+mode_e_field_xpol[ :, 0, :, :, : ] = 1
+mode_h_field_xpol[ :, 1, :, :, : ] = ( 1. / mu_nought_c )
+
+
+mode_e_field_ypol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
+mode_h_field_ypol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
+
+mode_e_field_ypol[ :, 1, :, :, : ] = 1
+mode_h_field_ypol[ :, 0, :, :, : ] = -( 1. / mu_nought_c )
+
+phase_corrections_reflection = np.zeros( num_design_frequency_points, dtype=np.complex )
 
 for wl_idx in range( 0, num_design_frequency_points ):
     wavelength_um = lambda_values_um[ wl_idx ]
-    phase_shift = 2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
-    mode_phase = -np.angle( mode_e_fields['x'][ 2, wl_idx, 0, mode_midpt_y, mode_midpt_x ] )
-    phase_corrections_reflection['x'].append( 2 * ( phase_shift + mode_phase ) )
-
-fdtd_hook.switchtolayout()
+    phase_shift = -2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
+    phase_corrections_reflection[ wl_idx ] = np.exp( 1j * phase_shift )
 
 plane_wave_sources['x']['direction'] = 'Backward'
 plane_wave_sources['x']['z min'] = src_minimum_vertical_um * 1e-6
 plane_wave_sources['x']['z max'] = src_maximum_vertical_um * 1e-6
 
-
-disable_all_sources()
-plane_wave_sources['y'].enabled = 1
-fdtd_hook.run()
-
-mode_e_fields['y'] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
-mode_h_fields['y'] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
-
-phase_corrections_transmission = []
-
-for wl_idx in range( 0, num_design_frequency_points ):
-    wavelength_um = lambda_values_um[ wl_idx ]
-    phase_shift = 2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
-    mode_phase = -np.angle( mode_e_fields['y'][ 2, wl_idx, 0, mode_midpt_y, mode_midpt_x ] )
-    phase_corrections_reflection['y'].append( 2 * ( phase_shift + mode_phase ) )
-
-fdtd_hook.switchtolayout()
-
 plane_wave_sources['y']['direction'] = 'Backward'
 plane_wave_sources['y']['z min'] = src_minimum_vertical_um * 1e-6
 plane_wave_sources['y']['z max'] = src_maximum_vertical_um * 1e-6
-
-
 
 
 # Add Si absorbing layer
@@ -740,12 +724,12 @@ for epoch in range(start_epoch, num_epochs):
 
         task_weightings = {}
 
-        # task_weightings['x'] = [ 1, 0, 0 ]
-        # task_weightings['y'] = [ 0, 0, 0 ]
+        task_weightings['x'] = [ 1, 0, 0 ]
+        task_weightings['y'] = [ 0, 0, 0 ]
 
         for pol in ['x', 'y']:
-            task_weightings[ pol ] = ( 2.0 / len( fom_by_task[ pol ] ) ) - fom_by_task[ pol ]**2 / np.sum( fom_by_task[ pol ]**2 )
-            task_weightings[ pol ] = np.maximum( task_weightings[ pol ], 0 )
+            # task_weightings[ pol ] = ( 2.0 / len( fom_by_task[ pol ] ) ) - fom_by_task[ pol ]**2 / np.sum( fom_by_task[ pol ]**2 )
+            # task_weightings[ pol ] = np.maximum( task_weightings[ pol ], 0 )
 
             print( "fom by task = " + str( fom_by_task[ pol ] ) + " for pol " + pol )
             print( "task weightings = " + str( task_weightings[ pol ] ) + " for pol " + pol )
@@ -811,7 +795,7 @@ for epoch in range(start_epoch, num_epochs):
                     select_mode_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_e_field[ :, wl_idx, :, :, : ]
                     select_mode_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_h_field[ :, wl_idx, :, :, : ]
 
-                    adjoint_reflection_e_fields_backup = adjoint_e_fields[ :, wl_idx, :, :, : ].copy() * np.exp( 1j * phase_corrections_reflection[ pol ][ wl_idx ] )
+                    adjoint_reflection_e_fields_backup = adjoint_e_fields[ :, wl_idx, :, :, : ].copy() * phase_corrections_reflection[ wl_idx ]#  np.exp( 1j * phase_corrections_reflection[ pol ][ wl_idx ] )
 
                     adjoint_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = adjoint_reflection_e_fields_backup
                     forward_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = forward_e_fields[ pol ][ :, wl_idx, :, :, : ]
@@ -821,14 +805,24 @@ for epoch in range(start_epoch, num_epochs):
 
                 mode_overlap_norm = mode_overlap_maxima_r[ reflection_band ]
 
-                cur_reflection_gradient = -mode_overlap_gradient(
+                # cur_reflection_gradient = -mode_overlap_gradient(
+                #         reflection_performance[ pol ][ reflection_band ],
+                #         reflected_e_field_band, reflected_h_field_band,
+                #         select_mode_e_field_band, select_mode_h_field_band,
+                #         forward_reflection_e_fields, adjoint_reflection_e_fields,
+                #         1,
+                #         mode_overlap_norm
+                #     )# / 1j
+
+                cur_reflection_gradient = mode_overlap_gradient(
                         reflection_performance[ pol ][ reflection_band ],
                         reflected_e_field_band, reflected_h_field_band,
                         select_mode_e_field_band, select_mode_h_field_band,
                         forward_reflection_e_fields, adjoint_reflection_e_fields,
                         1,
                         mode_overlap_norm
-                    )# / 1j
+                    )
+
 
                 if reflection_max[ reflection_band ]:
                     all_gradients.append(
