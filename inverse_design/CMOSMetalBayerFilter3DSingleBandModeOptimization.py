@@ -227,18 +227,18 @@ mu_nought_c = ( 1.257 * 1e-6 ) * ( 3.0 * 1e8 )
 monitor_lateral_voxels = 2 + int( 1e6 * mode_reflection_monitor[ 'x span' ] / mesh_spacing_um )
 # Organize these as freq, pol, z, y, x
 
-mode_e_field_xpol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
-mode_h_field_xpol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
+mode_e_field_xpol = np.zeros( ( 3, num_design_frequency_points, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
+mode_h_field_xpol = np.zeros( ( 3, num_design_frequency_points, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
 
-mode_e_field_xpol[ :, 0, :, :, : ] = 1
-mode_h_field_xpol[ :, 1, :, :, : ] = ( 1. / mu_nought_c )
+mode_e_field_xpol[ 0, :, :, :, : ] = 1
+mode_h_field_xpol[ 1, :, :, :, : ] = ( 1. / mu_nought_c )
 
 
-mode_e_field_ypol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
-mode_h_field_ypol = np.zeros( ( num_design_frequency_points, 3, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
+mode_e_field_ypol = np.zeros( ( 3, num_design_frequency_points, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
+mode_h_field_ypol = np.zeros( ( 3, num_design_frequency_points, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
 
-mode_e_field_ypol[ :, 1, :, :, : ] = 1
-mode_h_field_ypol[ :, 0, :, :, : ] = -( 1. / mu_nought_c )
+mode_e_field_ypol[ 1, :, :, :, : ] = 1
+mode_h_field_ypol[ 0, :, :, :, : ] = -( 1. / mu_nought_c )
 
 mode_e_fields[ 'x' ] = mode_e_field_xpol
 mode_h_fields[ 'x' ] = mode_h_field_xpol
@@ -633,7 +633,6 @@ for reflection_band in range( 0, len( reflection_fom_map) ):
         select_mode_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_h_field[ :, wl_idx, :, :, : ]
 
     mode_overlap_maxima_r.append(  num_wavelengths * mode_overlap_fom( select_mode_e_field_band, select_mode_h_field_band, select_mode_e_field_band, select_mode_h_field_band, 1 ) )
-
 
 #
 # Run the optimization
