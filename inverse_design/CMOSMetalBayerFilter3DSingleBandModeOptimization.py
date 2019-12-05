@@ -730,12 +730,12 @@ for epoch in range(start_epoch, num_epochs):
 
         task_weightings = {}
 
-        task_weightings['x'] = [ 0, 1, 0 ]
-        task_weightings['y'] = [ 0, 0, 0 ]
+        # task_weightings['x'] = [ 0, 1, 0 ]
+        # task_weightings['y'] = [ 0, 0, 0 ]
 
         for pol in ['x', 'y']:
-            # task_weightings[ pol ] = ( 2.0 / len( fom_by_task[ pol ] ) ) - fom_by_task[ pol ]**2 / np.sum( fom_by_task[ pol ]**2 )
-            # task_weightings[ pol ] = np.maximum( task_weightings[ pol ], 0 )
+            task_weightings[ pol ] = ( 2.0 / len( fom_by_task[ pol ] ) ) - fom_by_task[ pol ]**2 / np.sum( fom_by_task[ pol ]**2 )
+            task_weightings[ pol ] = np.maximum( task_weightings[ pol ], 0 )
 
             print( "fom by task = " + str( fom_by_task[ pol ] ) + " for pol " + pol )
             print( "task weightings = " + str( task_weightings[ pol ] ) + " for pol " + pol )
