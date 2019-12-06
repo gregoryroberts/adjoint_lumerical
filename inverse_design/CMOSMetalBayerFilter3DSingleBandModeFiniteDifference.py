@@ -305,40 +305,35 @@ def mode_overlap_fom(
     electric_mode_fields, magnetic_mode_fields, normal_weighting,
     mode_overlap_norm=None ):
 
-    num_wavelengths = electric_fields_forward.shape[ 1 ]
-    total_norm = 1.0 / num_wavelengths
-    fom_by_wavelength = np.zeros( num_wavelengths )
+    choose_electric_mode = electric_mode_fields
+    choose_magnetic_mode = magnetic_mode_fields
 
-    for wl_idx in range( 0, num_wavelengths ):
-        choose_electric_mode = electric_mode_fields
-        choose_magnetic_mode = magnetic_mode_fields
+    choose_electric_forward = electric_fields_forward
+    choose_magnetic_forward = magnetic_fields_forward
 
-        choose_electric_forward = electric_fields_forward
-        choose_magnetic_forward = magnetic_fields_forward
+    numerator_term_1 = (
+        np.sum( choose_electric_forward[ 0, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, 0, :, : ] ) ) +
+        np.sum( np.conj( choose_electric_mode[ 0, 0, :, : ] ) * choose_magnetic_forward[ 1, 0, :, : ] ) )
 
-        numerator_term_1 = (
-            np.sum( choose_electric_forward[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 1, wl_idx, 0, :, : ] ) )
+    numerator_term_2 = -(
+        np.sum( choose_electric_forward[ 1, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, 0, :, : ] ) ) +
+        np.sum( np.conj( choose_electric_mode[ 1, 0, :, : ] ) * choose_magnetic_forward[ 0, 0, :, : ] ) )
 
-        numerator_term_2 = -(
-            np.sum( choose_electric_forward[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, :, : ] ) )
+    numerator = numerator_term_1 + numerator_term_2
+    numerator = np.abs( numerator )**2
 
-        numerator = numerator_term_1 + numerator_term_2
-        numerator = np.abs( numerator )**2
+    denominator = 8.0 * np.real(
+        np.sum( choose_electric_mode[ 0, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, 0, :, : ] ) ) -
+        np.sum( choose_electric_mode[ 1, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, 0, :, : ] ) )
+    )
 
-        denominator = 8.0 * np.real(
-            np.sum( choose_electric_mode[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) -
-            np.sum( choose_electric_mode[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) )
-        )
+    fom = ( numerator / denominator )
+    if mode_overlap_norm is not None:
+        fom = ( numerator / ( mode_overlap_norm * denominator ) )
 
-        fom_by_wavelength[ wl_idx ] = ( numerator / denominator )
-        if mode_overlap_norm is not None:
-            fom_by_wavelength[ wl_idx ] = ( numerator / ( mode_overlap_norm[ wl_idx ] * denominator ) )
-    
-        fom_by_wavelength[ wl_idx ] *= normal_weighting
+    fom *= normal_weighting
 
-    return total_norm * fom_by_wavelength
+    return fom
 
 def mode_overlap_gradient(
     figure_of_merit,
@@ -455,6 +450,7 @@ h = 0.01
 fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
 
 for fd_x in range( 0, device_voxels_lateral ):
+    print("Working on finite diff = " + str( fd_x ))
     filter_permittivity[ fd_x, fd_y, fd_z ] += h
     fdtd_hook.select("filter_import")
     fdtd_hook.importnk2( filter_permittivity, filter_region_x, filter_region_y, filter_region_z )
