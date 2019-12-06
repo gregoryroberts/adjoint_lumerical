@@ -40,12 +40,12 @@ max_imag_permittivity = 0
 # silicon_absober_index_real = 4.32
 # silicon_absober_index_imag = 0.073
 
-init_permittivity_0_1_scale = 0
+init_permittivity_0_1_scale = 0.5
 init_max_random_0_1_scale = 0.25
 # init_permittivity_0_1_scale = 0.0
 
 init_from_old = False
-init_from_random = True
+init_from_random = False
 
 if init_from_random:
 	np.random.seed( 867886 )
