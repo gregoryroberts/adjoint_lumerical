@@ -21,15 +21,15 @@ project_name = 'cmos_metal_m10_m3_explicit_reject_single_band_contrast_multi_fre
 background_index = 1.0
 device_background_index = 1.4
 design_index_background = device_background_index
-# high_index_backfill = 2.5
+high_index_backfill = 2.5
 
 min_real_permittivity = design_index_background**2
-max_real_permittivity = -10
-# max_real_permittivity = high_index_backfill**2
+# max_real_permittivity = -10
+max_real_permittivity = high_index_backfill**2
 
 min_imag_permittivity = 0
-max_imag_permittivity = -3
-# max_imag_permittivity = 0
+# max_imag_permittivity = -3
+max_imag_permittivity = 0
 
 # silicon_index_real = 
 # silicon_index_imag
@@ -41,7 +41,7 @@ max_imag_permittivity = -3
 # silicon_absober_index_imag = 0.073
 
 init_permittivity_0_1_scale = 0
-init_max_random_0_1_scale = 0.1
+init_max_random_0_1_scale = 0.25
 # init_permittivity_0_1_scale = 0.0
 
 init_from_old = False
@@ -225,7 +225,7 @@ spectral_focal_plane_map = [
 # reflection_fom_map = [ [ 0, num_points_per_band ], [ 2 * num_points_per_band, 3 * num_points_per_band ] ]
 # transmission_fom_map = [ [ num_points_per_band, 2 * num_points_per_band ] ]
 reflection_fom_map = [ [ 0, num_points_per_band ], [ num_points_per_band, 2 * num_points_per_band ], [ 2 * num_points_per_band, 3 * num_points_per_band ] ]
-reflection_max = [ True, False, False ]
+reflection_max = [ False, True, False ]
 transmission_fom_map = [ ]
 
 #
