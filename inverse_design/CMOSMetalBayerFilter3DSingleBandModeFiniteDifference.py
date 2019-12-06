@@ -421,7 +421,11 @@ for reflection_band in range( 0, len( reflection_fom_map) ):
 pol = 'x'
 disable_all_sources()
 plane_wave_sources[pol].enabled = 1
+start_fdtd = time.time()
 fdtd_hook.run()
+elapsed_fdtd = time.time() - start_fdtd
+
+print("It took FDTD " + str(elapsed_fdtd) + " seconds to run which is " + str(elapsed_fdtd / 60) + " minutes")
 
 forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
