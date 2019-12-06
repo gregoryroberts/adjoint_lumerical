@@ -215,6 +215,20 @@ mode_reflection_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 mode_reflection_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 mode_reflection_monitor['frequency points'] = num_design_frequency_points
 
+focal_monitor = fdtd_hook.addpower()
+focal_monitor['name'] = 'focal_monitor'
+focal_monitor['monitor type'] = 'Point'
+focal_monitor['x'] = 0
+focal_monitor['y'] = 0
+focal_monitor['z'] = ( src_maximum_vertical_um + mode_reflection_monitor_delta_um ) * 1e-6
+focal_monitor['override global monitor settings'] = 1
+focal_monitor['use linear wavelength spacing'] = 1
+focal_monitor['use source limits'] = 0
+focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
+focal_monitor['frequency points'] = num_design_frequency_points
+
+
 #
 # Run a normalization run for the adjoint problem
 #
@@ -431,6 +445,10 @@ forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
 reflected_e_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
 reflected_h_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
+focal_data = get_complex_monitor_data( focal_monitor['name'], 'E' )
+
+focal_fom_0_by_wavelength = np.zeros( num_design_frequency_points )
+
 
 fom_0_by_wavelength = np.zeros( num_design_frequency_points )
 mode_e_field = mode_e_fields[ pol ]
@@ -445,6 +463,8 @@ for wl_idx in range( 0, num_design_frequency_points ):
         1, mode_overlap_maxima_r
     )
 
+    focal_fom_0_by_wavelength[ wl_idx ] = np.sum( np.abs( focal_data[ :, wl_idx, 0, 0, 0 ] )**2 )
+
 np.save( projects_directory_location + "/forward_e_fields.npy", forward_e_fields )
 
 fd_y = int( device_voxels_lateral / 2.0 )
@@ -452,6 +472,7 @@ fd_z = int( designable_device_voxels_vertical / 2.0 )
 h = 0.01
 
 fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
+focal_fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
 
 for fd_x in range( 0, device_voxels_lateral ):
     print("Working on finite diff = " + str( fd_x ))
@@ -463,11 +484,13 @@ for fd_x in range( 0, device_voxels_lateral ):
     fdtd_hook.run()
 
     fom_1_by_wavelength = np.zeros( num_design_frequency_points )
+    focal_fom_1_by_wavelength = np.zeros( num_design_frequency_points )
 
     forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
     reflected_e_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
     reflected_h_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
+    focal_data = get_complex_monitor_data( focal_monitor['name'], 'E' )
 
     for wl_idx in range( 0, num_design_frequency_points ):
         fom_1_by_wavelength[ wl_idx ] = mode_overlap_fom(
@@ -476,10 +499,15 @@ for fd_x in range( 0, device_voxels_lateral ):
             1, mode_overlap_maxima_r
         )
     
+        focal_fom_1_by_wavelength[ wl_idx ] = np.sum( np.abs( focal_data[ :, wl_idx, 0, 0, 0 ] )**2 )
+
+
     fd_by_wavelength[ fd_x, : ] = ( fom_1_by_wavelength - fom_0_by_wavelength ) / h
+    focal_fd_by_wavelength[ fd_x, : ] = ( focal_fom_1_by_wavelength - focal_fom_0_by_wavelength ) / h
 
     filter_permittivity[ fd_x, fd_y, fd_z ] -= h
 
     np.save( projects_directory_location + "/fd_by_wavelength.npy", fd_by_wavelength )
+    np.save( projects_directory_location + "/focal_fd_by_wavelength.npy", focal_fd_by_wavelength )
 
 
