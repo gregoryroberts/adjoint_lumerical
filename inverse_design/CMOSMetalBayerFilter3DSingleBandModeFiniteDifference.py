@@ -238,7 +238,7 @@ mode_h_fields = {}
 # == 377.1
 mu_nought_c = ( 1.257 * 1e-6 ) * ( 3.0 * 1e8 )
 
-monitor_lateral_voxels = 2 + int( 1e6 * mode_reflection_monitor[ 'x span' ] / mesh_spacing_um )
+monitor_lateral_voxels = 1 + int( 1e6 * mode_reflection_monitor[ 'x span' ] / mesh_spacing_um )
 # Organize these as freq, pol, z, y, x
 
 mode_e_field_xpol = np.zeros( ( 3, num_design_frequency_points, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
