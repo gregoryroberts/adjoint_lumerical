@@ -426,6 +426,7 @@ for reflection_band in range( 0, len( reflection_fom_map) ):
 pol = 'x'
 disable_all_sources()
 plane_wave_sources[pol].enabled = 1
+fdtd_hook.run()
 
 forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
@@ -457,6 +458,9 @@ for fd_x in range( 0, device_voxels_lateral ):
     filter_permittivity[ fd_x, fd_y, fd_z ] += h
     fdtd_hook.select("filter_import")
     fdtd_hook.importnk2( filter_permittivity, filter_region_x, filter_region_y, filter_region_z )
+    disable_all_sources()
+    plane_wave_sources[pol].enabled = 1
+    fdtd_hook.run()
 
     fom_1_by_wavelength = np.zeros( num_design_frequency_points )
 
