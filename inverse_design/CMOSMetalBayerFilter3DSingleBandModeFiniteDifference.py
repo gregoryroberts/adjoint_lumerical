@@ -480,6 +480,6 @@ for fd_x in range( 0, device_voxels_lateral ):
 
     filter_permittivity[ fd_x, fd_y, fd_z ] -= h
 
-np.save( projects_directory_location + "/fd_by_wavelength.npy", fd_by_wavelength )
+    np.save( projects_directory_location + "/fd_by_wavelength.npy", fd_by_wavelength )
 
 
