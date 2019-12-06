@@ -296,7 +296,7 @@ filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device
 filter_region_z = 1e-6 * np.linspace(designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, designable_device_voxels_vertical)
 
 fdtd_hook.select("filter_import")
-fdtd_hook.importnk2( filter_region_x, filter_region_y, filter_region_z )
+fdtd_hook.importnk2( filter_permittivity, filter_region_x, filter_region_y, filter_region_z )
 
 
 
@@ -456,7 +456,7 @@ fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_point
 for fd_x in range( 0, device_voxels_lateral ):
     filter_permittivity[ fd_x, fd_y, fd_z ] += h
     fdtd_hook.select("filter_import")
-    fdtd_hook.importnk2( filter_region_x, filter_region_y, filter_region_z )
+    fdtd_hook.importnk2( filter_permittivity, filter_region_x, filter_region_y, filter_region_z )
 
     fom_1_by_wavelength = np.zeros( num_design_frequency_points )
 
