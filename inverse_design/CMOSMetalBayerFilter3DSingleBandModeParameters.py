@@ -8,7 +8,7 @@ import sys
 #
 # Files
 #
-project_name = 'cmos_dielectric_1p4_2p5_explicit_reject_single_band_contrast_multi_freqx9_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5tsmc_um_testgrad'
+project_name = 'cmos_dielectric_1p4_2p5_explicit_reject_single_band_contrast_multi_freqx9_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5tsmc_um_fd'
 
 #
 # Random Seed
