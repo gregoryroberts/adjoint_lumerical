@@ -132,38 +132,34 @@ xy_names = ['x', 'y']
 #
 # Add a TFSF plane wave forward source at normal incidence
 #
-plane_wave_sources = {}
+tfsf_plane_wave_sources = {}
+diffracting_plane_wave_sources = {}
 
-forward_src_xpol = fdtd_hook.addtfsf()
-forward_src_xpol['name'] = 'forward_src_xpol'
-forward_src_xpol['angle phi'] = xy_phi_rotations['x']
-# forward_src_xpol['direction'] = 'Backward'
-forward_src_xpol['direction'] = 'Forward'
-forward_src_xpol['x span'] = 1.3 * device_size_lateral_um * 1e-6
-forward_src_xpol['y span'] = 1.3 * device_size_lateral_um * 1e-6
-# forward_src_xpol['z min'] = src_minimum_vertical_um * 1e-6
-# forward_src_xpol['z max'] = src_maximum_vertical_um * 1e-6
-forward_src_xpol['z min'] = src_maximum_vertical_um * 1e-6
-forward_src_xpol['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-forward_src_xpol['wavelength start'] = src_lambda_min_um * 1e-6
-forward_src_xpol['wavelength stop'] = src_lambda_max_um * 1e-6
+for pol in xy_names:
 
-forward_src_ypol = fdtd_hook.addtfsf()
-forward_src_ypol['name'] = 'forward_src_ypol'
-forward_src_ypol['angle phi'] = xy_phi_rotations['y']
-# forward_src_ypol['direction'] = 'Backward'
-forward_src_ypol['direction'] = 'Forward'
-forward_src_ypol['x span'] = 1.3 * device_size_lateral_um * 1e-6
-forward_src_ypol['y span'] = 1.3 * device_size_lateral_um * 1e-6
-# forward_src_ypol['z min'] = src_minimum_vertical_um * 1e-6
-# forward_src_ypol['z max'] = src_maximum_vertical_um * 1e-6
-forward_src_ypol['z min'] = src_maximum_vertical_um * 1e-6
-forward_src_ypol['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-forward_src_ypol['wavelength start'] = src_lambda_min_um * 1e-6
-forward_src_ypol['wavelength stop'] = src_lambda_max_um * 1e-6
+    forward_src = fdtd_hook.addtfsf()
+    forward_src['name'] = 'forward_src_' + pol + 'pol'
+    forward_src['angle phi'] = xy_phi_rotations[pol]
+    forward_src['direction'] = 'Backward'
+    forward_src['x span'] = 1.3 * device_size_lateral_um * 1e-6
+    forward_src['y span'] = 1.3 * device_size_lateral_um * 1e-6
+    forward_src['z min'] = src_minimum_vertical_um * 1e-6
+    forward_src['z max'] = src_maximum_vertical_um * 1e-6
+    forward_src['wavelength start'] = src_lambda_min_um * 1e-6
+    forward_src['wavelength stop'] = src_lambda_max_um * 1e-6
 
-plane_wave_sources['x'] = forward_src_xpol
-plane_wave_sources['y'] = forward_src_ypol
+    adjoint_src = fdtd_hook.addplane()
+    adjoint_src['name'] = 'adjoint_src_' + pol + 'pol'
+    adjoint_src['angle phi'] = xy_phi_rotations[pol]
+    adjoint_src['direction'] = 'Backward'
+    adjoint_src['x span'] = 1.3 * device_size_lateral_um * 1e-6
+    adjoint_src['y span'] = 1.3 * device_size_lateral_um * 1e-6
+    adjoint_src['z'] = ( src_maximum_vertical_um + mode_reflection_monitor_delta_um ) * 1e-6
+    adjoint_src['wavelength start'] = src_lambda_min_um * 1e-6
+    adjoint_src['wavelength stop'] = src_lambda_max_um * 1e-6
+
+    tfsf_plane_wave_sources[pol] = forward_src
+    diffracting_plane_wave_sources[pol] = adjoint_src
 
 #
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
@@ -171,8 +167,9 @@ plane_wave_sources['y'] = forward_src_ypol
 def disable_all_sources():
     fdtd_hook.switchtolayout()
 
-    plane_wave_sources['x'].enabled = 0
-    plane_wave_sources['y'].enabled = 0
+    for pol in xy_names:
+        tfsf_plane_wave_sources[pol].enabled = 0
+        diffracting_plane_wave_sources[pol].enabled = 0
 
 
 #
@@ -201,12 +198,11 @@ design_efield_monitor['output Hz'] = 0
 # compute the figure of merit as well as weight the adjoint simulations properly in calculation of the
 # gradient.
 #
-mode_reflection_monitor_delta_um = 0.25 * vertical_gap_size_top_um
 mode_reflection_monitor = fdtd_hook.addpower()
 mode_reflection_monitor['name'] = 'mode_reflection_monitor'
 mode_reflection_monitor['monitor type'] = '2D Z-normal'
-mode_reflection_monitor['x span'] = plane_wave_sources['x']['x span']
-mode_reflection_monitor['y span'] = plane_wave_sources['x']['y span']
+mode_reflection_monitor['x span'] = tfsf_plane_wave_sources['x']['x span']
+mode_reflection_monitor['y span'] = tfsf_plane_wave_sources['x']['y span']
 mode_reflection_monitor['z'] = ( src_maximum_vertical_um + mode_reflection_monitor_delta_um ) * 1e-6
 mode_reflection_monitor['override global monitor settings'] = 1
 mode_reflection_monitor['use linear wavelength spacing'] = 1
@@ -254,13 +250,13 @@ for wl_idx in range( 0, num_design_frequency_points ):
     phase_shift = 2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
     phase_corrections_reflection[ wl_idx ] = np.exp( 1j * phase_shift )
 
-plane_wave_sources['x']['direction'] = 'Backward'
-plane_wave_sources['x']['z min'] = src_minimum_vertical_um * 1e-6
-plane_wave_sources['x']['z max'] = src_maximum_vertical_um * 1e-6
+tfsf_plane_wave_sources['x']['direction'] = 'Backward'
+tfsf_plane_wave_sources['x']['z min'] = src_minimum_vertical_um * 1e-6
+tfsf_plane_wave_sources['x']['z max'] = src_maximum_vertical_um * 1e-6
 
-plane_wave_sources['y']['direction'] = 'Backward'
-plane_wave_sources['y']['z min'] = src_minimum_vertical_um * 1e-6
-plane_wave_sources['y']['z max'] = src_maximum_vertical_um * 1e-6
+tfsf_plane_wave_sources['y']['direction'] = 'Backward'
+tfsf_plane_wave_sources['y']['z min'] = src_minimum_vertical_um * 1e-6
+tfsf_plane_wave_sources['y']['z max'] = src_maximum_vertical_um * 1e-6
 
 
 # Add Si absorbing layer
@@ -656,18 +652,26 @@ for epoch in range(start_epoch, num_epochs):
         # Step 1: Run the forward optimization for both x- and y-polarized plane waves.  These are also the adjoint simulations! Woo!
         #
         forward_e_fields = {}
+        adjoint_e_fields = {}
         reflected_e_fields = {}
         reflected_h_fields = {}
 
         for pol in ['x', 'y']:
             disable_all_sources()
-            plane_wave_sources[pol].enabled = 1
+            tfsf_plane_wave_sources[pol].enabled = 1
             fdtd_hook.run()
 
             forward_e_fields[pol] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
             reflected_e_fields[pol] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
             reflected_h_fields[pol] = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
+
+        for pol in ['x', 'y']:
+            disable_all_sources()
+            diffracting_plane_wave_sources[pol].enabled = 1
+            fdtd_hook.run()
+
+            adjoint_e_fields[pol] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
         #
         # Step 2: Compute the figure of merit
@@ -680,10 +684,6 @@ for epoch in range(start_epoch, num_epochs):
         for pol in ['x', 'y']:
             fom_by_task[ pol ] = []
             reflection_performance[ pol ] = []
-
-        # fom_by_task = []
-        # reflection_performance = []
-        # transmission_performance = []
 
             mode_e_field = mode_e_fields[ pol ]
             mode_h_field = mode_h_fields[ pol ]
@@ -730,12 +730,12 @@ for epoch in range(start_epoch, num_epochs):
 
         task_weightings = {}
 
-        # task_weightings['x'] = [ 0, 1, 0 ]
-        # task_weightings['y'] = [ 0, 0, 0 ]
+        task_weightings['x'] = [ 0, 1, 0 ]
+        task_weightings['y'] = [ 0, 0, 0 ]
 
         for pol in ['x', 'y']:
-            task_weightings[ pol ] = ( 2.0 / len( fom_by_task[ pol ] ) ) - fom_by_task[ pol ]**2 / np.sum( fom_by_task[ pol ]**2 )
-            task_weightings[ pol ] = np.maximum( task_weightings[ pol ], 0 )
+            # task_weightings[ pol ] = ( 2.0 / len( fom_by_task[ pol ] ) ) - fom_by_task[ pol ]**2 / np.sum( fom_by_task[ pol ]**2 )
+            # task_weightings[ pol ] = np.maximum( task_weightings[ pol ], 0 )
 
             print( "fom by task = " + str( fom_by_task[ pol ] ) + " for pol " + pol )
             print( "task weightings = " + str( task_weightings[ pol ] ) + " for pol " + pol )
@@ -763,7 +763,7 @@ for epoch in range(start_epoch, num_epochs):
 
             all_gradients = []
 
-            adjoint_e_fields = forward_e_fields[ pol ]
+            # adjoint_e_fields = forward_e_fields[ pol ]
 
             mode_e_field = mode_e_fields[ pol ]
             mode_h_field = mode_h_fields[ pol ]
@@ -801,9 +801,9 @@ for epoch in range(start_epoch, num_epochs):
                     select_mode_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_e_field[ :, wl_idx, :, :, : ]
                     select_mode_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_h_field[ :, wl_idx, :, :, : ]
 
-                    adjoint_reflection_e_fields_backup = adjoint_e_fields[ :, wl_idx, :, :, : ].copy() * phase_corrections_reflection[ wl_idx ]#  np.exp( 1j * phase_corrections_reflection[ pol ][ wl_idx ] )
+                    # adjoint_reflection_e_fields_backup = adjoint_e_fields[pol][ :, wl_idx, :, :, : ].copy()# * phase_corrections_reflection[ wl_idx ]#  np.exp( 1j * phase_corrections_reflection[ pol ][ wl_idx ] )
 
-                    adjoint_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = adjoint_reflection_e_fields_backup
+                    adjoint_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = adjoint_e_fields[pol][ :, wl_idx, :, :, : ]
                     forward_reflection_e_fields[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = forward_e_fields[ pol ][ :, wl_idx, :, :, : ]
 
                 forward_reflection_e_fields = np.swapaxes( forward_reflection_e_fields, 0, 1 )
@@ -811,24 +811,14 @@ for epoch in range(start_epoch, num_epochs):
 
                 mode_overlap_norm = mode_overlap_maxima_r[ reflection_band ]
 
-                # cur_reflection_gradient = -mode_overlap_gradient(
-                #         reflection_performance[ pol ][ reflection_band ],
-                #         reflected_e_field_band, reflected_h_field_band,
-                #         select_mode_e_field_band, select_mode_h_field_band,
-                #         forward_reflection_e_fields, adjoint_reflection_e_fields,
-                #         1,
-                #         mode_overlap_norm
-                #     )# / 1j
-
-                cur_reflection_gradient = -mode_overlap_gradient(
+                cur_reflection_gradient = mode_overlap_gradient(
                         reflection_performance[ pol ][ reflection_band ],
                         reflected_e_field_band, reflected_h_field_band,
                         select_mode_e_field_band, select_mode_h_field_band,
                         forward_reflection_e_fields, adjoint_reflection_e_fields,
                         1,
                         mode_overlap_norm
-                    )
-
+                    ) / 1j
 
                 if reflection_max[ reflection_band ]:
                     all_gradients.append(
@@ -899,6 +889,6 @@ for epoch in range(start_epoch, num_epochs):
 
 
 # disable_all_sources()
-# plane_wave_sources['x'].enabled = 1
+# tfsf_plane_wave_sources['x'].enabled = 1
 # fdtd_hook.run()
 

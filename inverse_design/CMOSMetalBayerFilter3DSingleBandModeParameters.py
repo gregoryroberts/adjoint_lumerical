@@ -45,7 +45,7 @@ init_max_random_0_1_scale = 0.25
 # init_permittivity_0_1_scale = 0.0
 
 init_from_old = False
-init_from_random = False
+init_from_random = True
 
 if init_from_random:
 	np.random.seed( 867886 )
@@ -227,6 +227,8 @@ spectral_focal_plane_map = [
 reflection_fom_map = [ [ 0, num_points_per_band ], [ num_points_per_band, 2 * num_points_per_band ], [ 2 * num_points_per_band, 3 * num_points_per_band ] ]
 reflection_max = [ False, True, False ]
 transmission_fom_map = [ ]
+
+mode_reflection_monitor_delta_um = 0.25 * vertical_gap_size_top_um
 
 #
 # Adjoint sources
