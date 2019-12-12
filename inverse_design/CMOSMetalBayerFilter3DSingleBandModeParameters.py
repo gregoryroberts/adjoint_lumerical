@@ -8,7 +8,7 @@ import sys
 #
 # Files
 #
-project_name = 'cmos_dielectric_1p4_2p5_explicit_reject_single_band_contrast_multi_freqx9_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5tsmc_um_fd'
+project_name = 'cmos_dielectric_1p4_2p5_explicit_reject_single_band_contrast_multi_freqx6_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5xtsmc_um'
 
 #
 # Random Seed
@@ -106,7 +106,7 @@ m8_stack_layer_thickness_um = [ 0 ]
 m8_stack_layer_refractive_index = [ 1.45 ]
 
 # for now make the device smaller so that we can test the gradient more quickly...
-device_size_lateral_um = 3.0
+device_size_lateral_um = 2.5
 # device_size_lateral_um = 3.0
 # Metal layers from M7 down to M2 (and we will use M6 as a reflector)
 # ( 6 * ( 2200 + 950 + 300 + 500 ) - 300 + 300 + 500 ) / 10000 = 2.42
