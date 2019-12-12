@@ -106,7 +106,7 @@ m8_stack_layer_thickness_um = [ 0 ]
 m8_stack_layer_refractive_index = [ 1.45 ]
 
 # for now make the device smaller so that we can test the gradient more quickly...
-device_size_lateral_um = 1.5#2.5
+device_size_lateral_um = 3.0
 # device_size_lateral_um = 3.0
 # Metal layers from M7 down to M2 (and we will use M6 as a reflector)
 # ( 6 * ( 2200 + 950 + 300 + 500 ) - 300 + 300 + 500 ) / 10000 = 2.42
@@ -182,7 +182,7 @@ lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequenc
 #
 # FDTD
 #
-vertical_gap_size_top_um = 4.0#5.0#2.0
+vertical_gap_size_top_um = 5.0#2.0
 vertical_gap_size_bottom_um = 0.25#2.0
 lateral_gap_size_um = 1.0#2.0
 
@@ -204,7 +204,8 @@ fdtd_simulation_time_fs = 5000
 #
 # Forward Source
 #
-lateral_aperture_um = 1.1 * device_size_lateral_um
+# cover half the lateral gap size here
+lateral_aperture_um = device_size_lateral_um + lateral_gap_size_um
 src_maximum_vertical_um = fdtd_region_maximum_vertical_um - 0.5 * vertical_gap_size_top_um
 src_minimum_vertical_um = fdtd_region_minimum_vertical_um + 0.1 * vertical_gap_size_bottom_um
 
