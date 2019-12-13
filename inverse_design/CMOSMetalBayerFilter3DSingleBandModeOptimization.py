@@ -152,6 +152,7 @@ for pol in xy_names:
     adjoint_src['name'] = 'adjoint_src_' + pol + 'pol'
     adjoint_src['angle phi'] = xy_phi_rotations[pol]
     adjoint_src['direction'] = 'Backward'
+    adjoint_src['plane wave type'] = 'Diffracting'
     adjoint_src['x span'] = 1.3 * device_size_lateral_um * 1e-6
     adjoint_src['y span'] = 1.3 * device_size_lateral_um * 1e-6
     adjoint_src['z'] = ( src_maximum_vertical_um + mode_reflection_monitor_delta_um ) * 1e-6
