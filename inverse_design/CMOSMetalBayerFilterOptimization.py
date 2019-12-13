@@ -469,9 +469,10 @@ for epoch in range(start_epoch, num_epochs):
 		figure_of_merit_per_wavelength = np.array( figure_of_merit_per_wavelength )
 
 		fom_for_weighting = figure_of_merit_per_wavelength - np.min( figure_of_merit_per_wavelength )
-		performance_weighting = (2. / num_focal_spots) - fom_for_weighting**2 / np.sum(fom_for_weighting**2)
-		performance_weighting -= np.min(performance_weighting)
-		performance_weighting /= np.sum(performance_weighting)
+		performance_weighting = (2. / num_design_frequency_points) - fom_for_weighting**2 / np.sum(fom_for_weighting**2)
+		if np.min( performance_weighting ) < 0:
+			performance_weighting = np.maximum( performance_weighting, 0 )
+			performance_weighting /= np.sum( performance_weighting )
 
 		figure_of_merit = np.sum(figure_of_merit_per_wavelength)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
@@ -497,15 +498,12 @@ for epoch in range(start_epoch, num_epochs):
 				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 				fdtd_hook.run()
 
-				adjoint_e_fields.append(
-					get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+				adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-		for pol_idx in range( 0, 2 ):
-			for spectral_idx in range( 0, num_design_frequency_points ):
-				for focal_idx in range( 0, num_focal_spots ):
+				for spectral_idx in range( 0, num_design_frequency_points ):
 					xy_polarized_gradients[ pol_idx ] += np.sum(
-						( spectral_focal_plane_map[ focal_idx, spectral_idx ] * performance_weighting[ spectral_idx ] / max_intensity_by_wavelength[ spectral_idx ] ) *
-						adjoint_e_fields[ pol_idx ][ :, spectral_idx, :, :, : ] * forward_e_fields[ xy_names[ pol_idx ] ][ :, spectral_idx, :, :, : ],
+						( spectral_focal_plane_map[ adj_src_idx, spectral_idx ] * performance_weighting[ spectral_idx ] / max_intensity_by_wavelength[ spectral_idx ] ) *
+						adjoint_e_fields[ :, spectral_idx, :, :, : ] * forward_e_fields[ xy_names[ pol_idx ] ][ :, spectral_idx, :, :, : ],
 						axis=0
 					)
 
