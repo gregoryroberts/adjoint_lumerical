@@ -165,22 +165,6 @@ src_maximum_vertical_um = device_size_vertical_um + 0.5 * vertical_gap_size_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
 #
-# Spectral and polarization selectivity information
-#
-polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
-weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
-polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
-# We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
-spectral_focal_plane_map = -( 1 / ( 2 * num_points_per_band ) ) * np.ones( num_adjoint_sources, num_design_frequency_points )
-spectral_focal_plane_map[ 0, 0 : num_points_per_band ] = 1 / num_points_per_band
-spectral_focal_plane_map[ 1, num_points_per_band : 2 * num_points_per_band ] = 1 / num_points_per_band
-spectral_focal_plane_map[ 2, 2 * num_points_per_band : 3 * num_points_per_band ] = 1 / num_points_per_band
-spectral_focal_plane_map[ 3, num_points_per_band : 2 * num_points_per_band ] = 1 / num_points_per_band
-
-
-
-
-#
 # Adjoint sources
 #
 adjoint_vertical_um = designable_device_vertical_minimum_um - focal_length_um
@@ -188,6 +172,22 @@ num_focal_spots = 4
 num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
+
+
+#
+# Spectral and polarization selectivity information
+#
+polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
+weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
+polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
+# We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
+spectral_focal_plane_map = -( 1 / ( 2 * num_points_per_band ) ) * np.ones( num_focal_spots, num_design_frequency_points )
+spectral_focal_plane_map[ 0, 0 : num_points_per_band ] = 1 / num_points_per_band
+spectral_focal_plane_map[ 1, num_points_per_band : 2 * num_points_per_band ] = 1 / num_points_per_band
+spectral_focal_plane_map[ 2, 2 * num_points_per_band : 3 * num_points_per_band ] = 1 / num_points_per_band
+spectral_focal_plane_map[ 3, num_points_per_band : 2 * num_points_per_band ] = 1 / num_points_per_band
+
+
 
 #
 # Optimization
