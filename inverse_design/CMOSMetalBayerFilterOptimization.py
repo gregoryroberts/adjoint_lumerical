@@ -462,7 +462,7 @@ for epoch in range(start_epoch, num_epochs):
 					get_focal_data = focal_data[ pol ]
 					
 					for focal_idx in range( 0, num_focal_spots ):
-						compute_fom += spectral_focal_plane_map[ focal_idx, spectral_idx ] * np.abs( get_focal_data[ focal_idx ][ :, spectral_idx, 0, 0, 0 ] )**2 / max_intensity_by_wavelength[ spectral_idx ]
+						compute_fom += np.sum( spectral_focal_plane_map[ focal_idx, spectral_idx ] * np.abs( get_focal_data[ focal_idx ][ :, spectral_idx, 0, 0, 0 ] )**2 / max_intensity_by_wavelength[ spectral_idx ] )
 
 				figure_of_merit_per_wavelength.append( compute_fom )
 
@@ -505,8 +505,11 @@ for epoch in range(start_epoch, num_epochs):
 				print( forward_e_fields[ 'x' ].shape )
 
 				for spectral_idx in range( 0, num_design_frequency_points ):
+					source_weight = np.conj(
+						get_focal_data[adj_src_idx][xy_idx, spectral_idx, 0, 0, 0])
+
 					xy_polarized_gradients[ xy_idx ] += np.sum(
-						( spectral_focal_plane_map[ adj_src_idx, spectral_idx ] * performance_weighting[ spectral_idx ] / max_intensity_by_wavelength[ spectral_idx ] ) *
+						( source_weight * spectral_focal_plane_map[ adj_src_idx, spectral_idx ] * performance_weighting[ spectral_idx ] / max_intensity_by_wavelength[ spectral_idx ] ) *
 						adjoint_e_fields[ :, spectral_idx, :, :, : ] * forward_e_fields[ xy_names[ xy_idx ] ][ :, spectral_idx, :, :, : ],
 						axis=0
 					)
