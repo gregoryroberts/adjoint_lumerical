@@ -492,13 +492,17 @@ for epoch in range(start_epoch, num_epochs):
 
 			gradient_performance_weight = performance_weighting[adj_src_idx]
 
-			adjoint_e_fields = []
 			for xy_idx in range(0, 2):
 				disable_all_sources()
 				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 				fdtd_hook.run()
 
 				adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+				print( adjoint_e_fields.shape )
+				print( spectral_focal_plane_map.shape )
+				print( performance_weighting.shape )
+				print( forward_e_fields[ 'x' ].shape )
 
 				for spectral_idx in range( 0, num_design_frequency_points ):
 					xy_polarized_gradients[ pol_idx ] += np.sum(
