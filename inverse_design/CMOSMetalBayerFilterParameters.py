@@ -161,8 +161,8 @@ fdtd_simulation_time_fs = 5
 # Forward Source
 #
 lateral_aperture_um = 1.1 * device_size_lateral_um
-src_maximum_vertical_um = m8_stack_end_um + 0.5 * focal_length_um + 0.5 * vertical_gap_size_um
-src_minimum_vertical_um = bottom_metal_reflector_start_um - 0.5 * vertical_gap_size_um
+src_maximum_vertical_um = device_size_vertical_um + 0.5 * vertical_gap_size_um
+src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
 #
 # Spectral and polarization selectivity information
