@@ -103,7 +103,7 @@ designable_size_vertical_um = np.sum( layer_thicknesses_um )# 2.42
 # for now, just one of the M8 layers
 # top_dielectric_stack_size_vertcial_um = m8_stack_layer_thickness_um[ 0 ]
 
-device_size_vertical_um = top_dielectric_stack_size_vertcial_um + designable_size_vertical_um
+device_size_vertical_um = designable_size_vertical_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 designable_device_voxels_vertical = 2 + int(designable_size_vertical_um / mesh_spacing_um)
