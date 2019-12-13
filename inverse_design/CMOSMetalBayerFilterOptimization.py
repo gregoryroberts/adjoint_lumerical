@@ -120,8 +120,8 @@ for xy_idx in range(0, 2):
 	forward_src['y span'] = lateral_aperture_um * 1e-6
 	forward_src['z max'] = src_maximum_vertical_um * 1e-6
 	forward_src['z min'] = src_minimum_vertical_um * 1e-6
-	forward_src['wavelength start'] = lambda_min_um * 1e-6
-	forward_src['wavelength stop'] = lambda_max_um * 1e-6
+	forward_src['wavelength start'] = src_lambda_min_um * 1e-6
+	forward_src['wavelength stop'] = src_lambda_max_um * 1e-6
 
 	forward_sources.append(forward_src)
 
@@ -156,8 +156,8 @@ for adj_src_idx in range(0, num_adjoint_sources):
 		adj_src['z'] = adjoint_vertical_um * 1e-6
 		adj_src['theta'] = 90
 		adj_src['phi'] = xy_phi_rotations[xy_idx]
-		adj_src['wavelength start'] = lambda_min_um * 1e-6
-		adj_src['wavelength stop'] = lambda_max_um * 1e-6
+		adj_src['wavelength start'] = src_lambda_min_um * 1e-6
+		adj_src['wavelength stop'] = src_lambda_max_um * 1e-6
 
 		adjoint_sources[adj_src_idx].append(adj_src)
 
@@ -173,8 +173,10 @@ design_efield_monitor['y span'] = device_size_lateral_um * 1e-6
 design_efield_monitor['z min'] = designable_device_vertical_minimum_um * 1e-6
 design_efield_monitor['z max'] = designable_device_vertical_maximum_um * 1e-6
 design_efield_monitor['override global monitor settings'] = 1
-design_efield_monitor['use linear wavelength spacing'] = 1
-design_efield_monitor['use source limits'] = 1
+design_efield_monitor['use wavelength spacing'] = 1
+design_efield_monitor['use source limits'] = 0
+design_efield_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+design_efield_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 design_efield_monitor['frequency points'] = num_design_frequency_points
 design_efield_monitor['output Hx'] = 0
 design_efield_monitor['output Hy'] = 0
@@ -195,8 +197,10 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
 	focal_monitor['z'] = adjoint_vertical_um * 1e-6
 	focal_monitor['override global monitor settings'] = 1
-	focal_monitor['use linear wavelength spacing'] = 1
-	focal_monitor['use source limits'] = 1
+	focal_monitor['use wavelength spacing'] = 1
+	focal_monitor['use source limits'] = 0
+	focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+	focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 	focal_monitor['frequency points'] = num_design_frequency_points
 
 	focal_monitors.append(focal_monitor)
