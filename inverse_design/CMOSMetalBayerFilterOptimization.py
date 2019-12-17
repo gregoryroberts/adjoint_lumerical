@@ -45,7 +45,7 @@ if not os.path.isdir(projects_directory_location):
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/CMOSMetalBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSMetalBayerFilter.py")
+shutil.copy2(python_src_directory + "/CMOSMetalBayerFilterParameters.py", projects_directory_location + "/ArchiveCMOSMetalBayerFilterParameters.py")
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
@@ -120,8 +120,8 @@ for xy_idx in range(0, 2):
 	forward_src['y span'] = lateral_aperture_um * 1e-6
 	forward_src['z max'] = src_maximum_vertical_um * 1e-6
 	forward_src['z min'] = src_minimum_vertical_um * 1e-6
-	forward_src['wavelength start'] = lambda_min_um * 1e-6
-	forward_src['wavelength stop'] = lambda_max_um * 1e-6
+	forward_src['wavelength start'] = src_lambda_min_um * 1e-6
+	forward_src['wavelength stop'] = src_lambda_max_um * 1e-6
 
 	forward_sources.append(forward_src)
 
@@ -156,8 +156,8 @@ for adj_src_idx in range(0, num_adjoint_sources):
 		adj_src['z'] = adjoint_vertical_um * 1e-6
 		adj_src['theta'] = 90
 		adj_src['phi'] = xy_phi_rotations[xy_idx]
-		adj_src['wavelength start'] = lambda_min_um * 1e-6
-		adj_src['wavelength stop'] = lambda_max_um * 1e-6
+		adj_src['wavelength start'] = src_lambda_min_um * 1e-6
+		adj_src['wavelength stop'] = src_lambda_max_um * 1e-6
 
 		adjoint_sources[adj_src_idx].append(adj_src)
 
@@ -173,8 +173,10 @@ design_efield_monitor['y span'] = device_size_lateral_um * 1e-6
 design_efield_monitor['z min'] = designable_device_vertical_minimum_um * 1e-6
 design_efield_monitor['z max'] = designable_device_vertical_maximum_um * 1e-6
 design_efield_monitor['override global monitor settings'] = 1
-design_efield_monitor['use linear wavelength spacing'] = 1
-design_efield_monitor['use source limits'] = 1
+design_efield_monitor['use wavelength spacing'] = 1
+design_efield_monitor['use source limits'] = 0
+design_efield_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+design_efield_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 design_efield_monitor['frequency points'] = num_design_frequency_points
 design_efield_monitor['output Hx'] = 0
 design_efield_monitor['output Hy'] = 0
@@ -195,83 +197,39 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
 	focal_monitor['z'] = adjoint_vertical_um * 1e-6
 	focal_monitor['override global monitor settings'] = 1
-	focal_monitor['use linear wavelength spacing'] = 1
-	focal_monitor['use source limits'] = 1
+	focal_monitor['use wavelength spacing'] = 1
+	focal_monitor['use source limits'] = 0
+	focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+	focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 	focal_monitor['frequency points'] = num_design_frequency_points
 
 	focal_monitors.append(focal_monitor)
 
-
-# e_forward_no_device = {}
-
-# for xy_idx in range(0, 2):
-# 	disable_all_sources()
-# 	(forward_sources[xy_idx]).enabled = 1
-# 	fdtd_hook.run()
-
-# 	e_forward_no_device[xy_names[xy_idx]] = []
-# 	for adj_src_idx in range(0, num_adjoint_sources):
-# 		e_forward_no_device[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
-
-# test_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-# extract_field_shape = test_e_fields[0, 0, :, :, :]
-# extract_field_shape = np.swapaxes(extract_field_shape, 0, 2)
-# test_change = np.zeros( extract_field_shape.shape )
-# for z_idx in range( 0, extract_field_shape.shape[ 2 ] ):
-# 	test_change[ :, :, z_idx ] = z_idx / ( extract_field_shape.shape[ 2 ] - 1 )
 
 fdtd_hook.switchtolayout()
 
 #
 # Build the dielectric stack on top of the metal
 #
-num_dielectric_layers = len( top_dielectric_layer_thickness_um )
-for dielectric_layer_idx in range( 0, num_dielectric_layers ):
-	dielectric_layer = fdtd_hook.addrect()
-	dielectric_layer['name'] = 'dielectric_layer_' + str( dielectric_layer_idx )
-	dielectric_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
-	dielectric_layer['y span'] = fdtd_region_size_lateral_um * 1e-6
+# num_dielectric_layers = len( top_dielectric_layer_thickness_um )
+# for dielectric_layer_idx in range( 0, num_dielectric_layers ):
+# 	dielectric_layer = fdtd_hook.addrect()
+# 	dielectric_layer['name'] = 'dielectric_layer_' + str( dielectric_layer_idx )
+# 	dielectric_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
+# 	dielectric_layer['y span'] = fdtd_region_size_lateral_um * 1e-6
 
-	dielectric_layer_z_min_um = dielectric_stack_start_um + np.sum( top_dielectric_layer_thickness_um[ 0 : dielectric_layer_idx ] )
-	dielectric_layer_z_max_um = dielectric_layer_z_min_um + top_dielectric_layer_thickness_um[ dielectric_layer_idx ]
+# 	dielectric_layer_z_min_um = dielectric_stack_start_um + np.sum( top_dielectric_layer_thickness_um[ 0 : dielectric_layer_idx ] )
+# 	dielectric_layer_z_max_um = dielectric_layer_z_min_um + top_dielectric_layer_thickness_um[ dielectric_layer_idx ]
 
-	dielectric_layer['z min'] = dielectric_layer_z_min_um * 1e-6
-	dielectric_layer['z max'] = dielectric_layer_z_max_um * 1e-6
+# 	dielectric_layer['z min'] = dielectric_layer_z_min_um * 1e-6
+# 	dielectric_layer['z max'] = dielectric_layer_z_max_um * 1e-6
 
-	dielectric_layer['index'] = top_dielectric_layer_refractice_index[ dielectric_layer_idx ]
+# 	dielectric_layer['index'] = top_dielectric_layer_refractice_index[ dielectric_layer_idx ]
 
-
-#
-# Make bottom layer reflective for a reflective device.  We will do this with an nk2 material that we import the maximum
-# real and imaginary permittivity parts in for that we are using for the design.  Thus, it will reflect and account for
-# metallic loss
-#
-metal_reflector_import = fdtd_hook.addimport()
-metal_reflector_import['name'] = 'bottom_metal_reflector'
-# metal_reflector_import['name'] = 'bottom_absorber'
-metal_reflector_import['x span'] = fdtd_region_size_lateral_um * 1e-6
-metal_reflector_import['y span'] = fdtd_region_size_lateral_um * 1e-6
-metal_reflector_import['z min'] = bottom_metal_reflector_start_um * 1e-6
-metal_reflector_import['z max'] = bottom_metal_reflector_end_um * 1e-6
 
 # Note - why does it look like it follows one path after initial optimization.  The first move basically shows you the structure.
 # is there something physical here? how true is this? can you quantify it? PCA (kind of like Phil mentioned that one time, I think
 # it was an interesting point)
-
-metal_reflector_permittivity = (
-		( max_real_permittivity + 1j * max_imag_permittivity ) *
-		# lossy material instead of metal reflector
-		# ( 1.5 + 1j * max_imag_permittivity ) *
-		np.ones( ( fdtd_region_size_lateral_voxels, fdtd_region_size_lateral_voxels, bottom_metal_reflector_size_vertical_voxels ) )
-	)
-metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
-
-metal_reflector_region_x = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
-metal_reflector_region_y = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
-metal_reflector_region_z = 1e-6 * np.linspace(bottom_metal_reflector_start_um, bottom_metal_reflector_end_um, bottom_metal_reflector_size_vertical_voxels)
-
-fdtd_hook.select('bottom_metal_reflector')
-fdtd_hook.importnk2(metal_reflector_index, metal_reflector_region_x, metal_reflector_region_y, metal_reflector_region_z)
 
 
 #
@@ -491,42 +449,32 @@ for epoch in range(start_epoch, num_epochs):
 			for adj_src_idx in range(0, num_adjoint_sources):
 				focal_data[xy_names[xy_idx]].append(
 					get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E') )
-					# -
-					# e_forward_no_device[xy_names[xy_idx]][adj_src_idx] )
 
 
 		#
 		# Step 2: Compute the figure of merit
 		#
-		figure_of_merit_per_focal_spot = []
-		for focal_idx in range(0, num_focal_spots):
-			compute_fom = 0
+		figure_of_merit_per_wavelength = []
+		for pol_idx in range( 0, 2 ):
+			for spectral_idx in range( 0, num_design_frequency_points ):
+				compute_fom = 0
+				for pol in xy_names:
+					get_focal_data = focal_data[ pol ]
+					
+					for focal_idx in range( 0, num_focal_spots ):
+						compute_fom += np.sum( spectral_focal_plane_map[ focal_idx, spectral_idx ] * np.abs( get_focal_data[ focal_idx ][ :, spectral_idx, 0, 0, 0 ] )**2 / max_intensity_by_wavelength[ spectral_idx ] )
 
-			polarizations = polarizations_focal_plane_map[focal_idx]
+				figure_of_merit_per_wavelength.append( compute_fom )
 
-			for polarization_idx in range(0, len(polarizations)):
-				get_focal_data = focal_data[polarizations[polarization_idx]]
+		figure_of_merit_per_wavelength = np.array( figure_of_merit_per_wavelength )
 
-				max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
-				total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
+		fom_for_weighting = figure_of_merit_per_wavelength - np.min( figure_of_merit_per_wavelength )
+		performance_weighting = (2. / num_design_frequency_points) - fom_for_weighting**2 / np.sum(fom_for_weighting**2)
+		if np.min( performance_weighting ) < 0:
+			performance_weighting = np.maximum( performance_weighting, 0 )
+			performance_weighting /= np.sum( performance_weighting )
 
-				for spectral_idx in range(0, total_weighting.shape[0]):
-					compute_fom += np.sum(
-						(
-							np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] + spectral_idx, 0, 0, 0])**2 /
-							total_weighting[spectral_idx]
-						)
-					)
-
-			figure_of_merit_per_focal_spot.append(compute_fom)
-
-		figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
-
-		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
-		performance_weighting -= np.min(performance_weighting)
-		performance_weighting /= np.sum(performance_weighting)
-
-		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
+		figure_of_merit = np.sum(figure_of_merit_per_wavelength)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
 
 		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
@@ -544,33 +492,22 @@ for epoch in range(start_epoch, num_epochs):
 
 			gradient_performance_weight = performance_weighting[adj_src_idx]
 
-			adjoint_e_fields = []
 			for xy_idx in range(0, 2):
 				disable_all_sources()
 				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 				fdtd_hook.run()
 
-				adjoint_e_fields.append(
-					get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+				adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-			for pol_idx in range(0, len(polarizations)):
-				pol_name = polarizations[pol_idx]
-				get_focal_data = focal_data[pol_name]
-				pol_name_to_idx = polarization_name_to_idx[pol_name]
-
-				for xy_idx in range(0, 2):
+				for spectral_idx in range( 0, num_design_frequency_points ):
 					source_weight = np.conj(
-						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
+						get_focal_data[adj_src_idx][xy_idx, spectral_idx, 0, 0, 0])
 
-					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
-					total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
-
-					for spectral_idx in range(0, source_weight.shape[0]):
-						xy_polarized_gradients[pol_name_to_idx] += np.sum(
-							(source_weight[spectral_idx] * gradient_performance_weight / total_weighting[spectral_idx]) *
-							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
-							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
-							axis=0)
+					xy_polarized_gradients[ xy_idx ] += np.sum(
+						( source_weight * spectral_focal_plane_map[ adj_src_idx, spectral_idx ] * performance_weighting[ spectral_idx ] / max_intensity_by_wavelength[ spectral_idx ] ) *
+						adjoint_e_fields[ :, spectral_idx, :, :, : ] * forward_e_fields[ xy_names[ xy_idx ] ][ :, spectral_idx, :, :, : ],
+						axis=0
+					)
 
 		#
 		# Step 4: Step the design variable.
