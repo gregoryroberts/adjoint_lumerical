@@ -114,17 +114,14 @@ for design_idx in range( 0, number_designs ):
     lambda_high_um = lambda_plus_um + lambda_minus_um
 
     lambda_range_um = 2 * lambda_minus_um
-    src_lambda_min_um = lambda_low_um - 0.25 * lambda_range_um
-    src_lambda_max_um = lambda_high_um + 0.25 * lambda_range_um
+    src_lambda_min_um = lambda_low_um# - 0.25 * lambda_range_um
+    src_lambda_max_um = lambda_high_um# + 0.25 * lambda_range_um
 
-    aperture_size_lambda_plus = aperture_size_bounds_lambda_plus_units[ 0 ] + ( aperture_size_bounds_lambda_plus_units[ 1 ] - aperture_size_bounds_lambda_plus_units[ 0 ] ) * np.random.random( 1 )[ 0 ]
     device_depth_lambda_plus = device_depth_bounds_lambda_plus_units[ 0 ] + ( device_depth_bounds_lambda_plus_units[ 1 ] - device_depth_bounds_lambda_plus_units[ 0 ] ) * np.random.random( 1 )[ 0 ]
-    focal_length_lambda_plus = focal_length_bounds_lambda_plus_units[ 0 ] + ( focal_length_bounds_lambda_plus_units[ 1 ] - focal_length_bounds_lambda_plus_units[ 0 ] ) * np.random.random( 1 )[ 0 ]
+    numerical_aperture = numerical_aperture_bounds[ 0 ] + ( numerical_aperture_bounds[ 1 ] - numerical_aperture_bounds[ 0 ] ) * np.random.random( 1 )[ 0 ]
 
-    aperture_size_um = lambda_plus_um * aperture_size_lambda_plus
     device_depth_um = lambda_plus_um * device_depth_lambda_plus
-    focal_length_um = lambda_plus_um * focal_length_lambda_plus
-
+    focal_length_um = numerical_aperture * aperture_size_um / 2
 
     fdtd_region_size_lateral_um = aperture_size_um + 2 * lateral_gap_um
     fdtd_region_size_vertical_um = device_depth_um + focal_length_um + 2 * vertical_gap_um
@@ -149,7 +146,6 @@ for design_idx in range( 0, number_designs ):
     fdtd['mesh cells y'] = fdtd_region_size_vertical_voxels
     fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
     fdtd['background index'] = background_index
-
 
     src_maximum_vertical_um = device_depth_um + 0.5 * vertical_gap_um
     src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_um
@@ -259,6 +255,8 @@ for design_idx in range( 0, number_designs ):
     device_density -= np.min( device_density )
     device_density /= np.max( device_density )
 
+    np.save( projects_directory_location + "/init_density.npy", device_density )
+
     device_permittivity = min_device_permittivity + max_device_permittivity * device_density
     device_index = np.sqrt( device_permittivity )
     device_index_replicate = np.zeros( ( device_index.shape[ 0 ], device_index.shape[ 1 ], 2 ) )
@@ -281,10 +279,15 @@ for design_idx in range( 0, number_designs ):
     fdtd_hook.select( device_import[ 'name' ] )
     fdtd_hook.importnk2( device_index_replicate, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
 
-    figure_of_merit = np.zeros( num_iterations )
+    figure_of_merit = np.zeros( max_iterations )
 
     lambda_values_um = np.array( [ lambda_low_um, lambda_high_um ] )
-    max_intensity_by_wavelength = (aperture_size_um**2)**2 / (focal_length_um**2 * lambda_values_um**2)
+    # fixed simulation size in z in um is 1.02um (not sure how to interpret this)
+    fixed_z_size_um = 1.02
+    max_intensity_by_wavelength = (aperture_size_um * fixed_z_size_um)**2 / (focal_length_um**2 * lambda_values_um**2)
+
+    max_unnormalized_grad = -1
+    avg_step_size = 0
 
     for iteration in range( 0, num_iterations ):
         iter_start_time = time.time()
@@ -354,11 +357,8 @@ for design_idx in range( 0, number_designs ):
             log_file.write("To do an adjoint source took " + str( adj_src_runtime ) + " seconds.\n") 
             adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-            source_weight = np.conj(
-                conjugate_weighting_focal_point_wavelength[adj_src_idx])
-
             gradient += np.sum(
-                ( source_weight * fom_weighting[ adj_src_idx ] ) *
+                ( conjugate_weighting_focal_point_wavelength[adj_src_idx] * fom_weighting[ adj_src_idx ] ) *
                 adjoint_e_fields[ :, adj_src_idx, :, :, : ] * forward_e_fields[ :, adj_src_idx, :, :, : ],
                 axis=0
             )
@@ -366,12 +366,26 @@ for design_idx in range( 0, number_designs ):
         gradient = 2 * np.real( np.swapaxes( gradient, 0, 2 ) )
         density_gradient = ( max_device_permittivity - min_device_permittivity ) * gradient
 
-        current_step_density_max = start_design_change_max + iteration * ( end_design_change_max - start_design_change_max ) / ( num_iterations - 1 )
-        step_size = current_step_density_max / np.max( np.abs( density_gradient ) )
+        unnormalized_grad = np.sqrt( np.sum( np.abs( density_gradient )**2 ) )
+        max_unnormalized_grad = np.maximum( unnormalized_grad, max_unnormalized_grad )
+        step_size = avg_step_size
+
+        if iteration < num_collect_step_size_iterations:
+            step_size = start_design_change_max / np.max( np.abs( density_gradient ) )
+
+            avg_step_size += ( 1. / num_collect_step_size_iterations ) * step_size
+        else:
+            projected_max_density_change = step_size * np.max( np.abs( density_gradient ) )
+            if projected_max_density_change > step_design_change_max:
+                step_size = step_design_change_max / np.max( np.abs( density_gradient ) )
+        
+        # if iteration >= min_iterations:
+        #     if ( unnormalized_grad / max_unnormalized_grad ) < gradient_norm_dropoff:
+        #         break
 
         device_density_save = device_density.copy()
 
-        device_density -= step_size * density_gradient
+        device_density += step_size * density_gradient
         device_density = np.maximum( np.minimum( device_density, 1 ), 0 )
 
         rest_of_time = time.time()
@@ -405,4 +419,3 @@ for design_idx in range( 0, number_designs ):
 
     np.save( projects_directory_location + "/forward_e_fields.npy", forward_e_fields )
     np.save( projects_directory_location + "/forward_h_fields.npy", forward_h_fields )
-
