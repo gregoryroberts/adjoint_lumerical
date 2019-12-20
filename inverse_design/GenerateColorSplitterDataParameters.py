@@ -30,21 +30,21 @@ lambda_minus_bounds_um = [ 0.05, 0.2 ]
 #
 # Device Geometry
 #
-aperture_size_bounds_lambda_plus_units = [ 2, 8 ]
-device_depth_bounds_lambda_plus_units = [ 2, 8 ]
+aperture_size_bounds_lambda_plus_units = [ 2, 6 ]
+device_depth_bounds_lambda_plus_units = [ 2, 4 ]
 # we will measure focal length from the end of the device
-focal_length_bounds_lambda_plus_units = [ 1, 6 ]
+focal_length_bounds_lambda_plus_units = [ 1, 5 ]
 
 #
 # Simulation Region
 #
-lateral_gap_lambda_plus = 3
-vertical_gap_lambda_plus = 3
+lateral_gap_lambda_plus = 2
+vertical_gap_lambda_plus = 2
 
 lateral_gap_um = lambda_plus_um * lateral_gap_lambda_plus
 vertical_gap_um = lambda_plus_um * vertical_gap_lambda_plus
 
-mesh_spacing_lambda_plus = 1. / 15.
+mesh_spacing_lambda_plus = 1. / 12.
 mesh_spacing_um = lambda_plus_um * mesh_spacing_lambda_plus
 
 #
@@ -66,7 +66,7 @@ num_adjoint_sources = 2
 #
 # Optimization
 #
-num_iterations = 0
+num_iterations = 50
 
 start_design_change_max = 0.05
 end_design_change_max = 0.005

@@ -6,14 +6,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from GenerateColorSplitterDataParameters import *
 
+import imp
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
 import lumapi
 
 import functools
 import h5py
 import numpy as np
 import time
-
-# import matplotlib.pyplot as plt
 
 from scipy.ndimage import gaussian_filter
 
@@ -91,7 +91,7 @@ for design_idx in range( 0, number_designs ):
     # and then we will put its gradient-optimized version in the good queue
     #
 
-    projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/generated_data/' + data_prefix + "_id_" + str( design_idx ) + "/"))
+    projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/generated_data/' + data_prefix + str( pseudorandom_seed ) + "_id_" + str( design_idx ) + "/"))
 
     if not os.path.isdir(projects_directory_location):
         os.mkdir(projects_directory_location)
@@ -211,7 +211,7 @@ for design_idx in range( 0, number_designs ):
     design_efield_monitor['y min'] = 0 * 1e-6
     design_efield_monitor['y max'] = device_depth_um * 1e-6
     design_efield_monitor['override global monitor settings'] = 1
-    design_efield_monitor['use linear wavelength spacing'] = 1
+    design_efield_monitor['use wavelength spacing'] = 1
     design_efield_monitor['use source limits'] = 0
     design_efield_monitor['minimum wavelength'] = lambda_low_um * 1e-6
     design_efield_monitor['maximum wavelength'] = lambda_high_um * 1e-6
@@ -234,7 +234,7 @@ for design_idx in range( 0, number_designs ):
         focal_monitor['x'] = adjoint_x_positions_um[adj_src_idx] * 1e-6
         focal_monitor['y'] = -focal_length_um * 1e-6
         focal_monitor['override global monitor settings'] = 1
-        focal_monitor['use linear wavelength spacing'] = 1
+        focal_monitor['use wavelength spacing'] = 1
         focal_monitor['use source limits'] = 0
         focal_monitor['minimum wavelength'] = lambda_low_um * 1e-6
         focal_monitor['maximum wavelength'] = lambda_high_um * 1e-6
@@ -287,14 +287,20 @@ for design_idx in range( 0, number_designs ):
     max_intensity_by_wavelength = (aperture_size_um**2)**2 / (focal_length_um**2 * lambda_values_um**2)
 
     for iteration in range( 0, num_iterations ):
+        iter_start_time = time.time()
 
-        device_permittivity = min_device_permittivity + max_device_permittivity * device_density
+        log_file = open(projects_directory_location + "/log.txt", 'a+')
+
+       	device_permittivity = min_device_permittivity + max_device_permittivity * device_density
         device_index = np.sqrt( device_permittivity )
         fdtd_hook.switchtolayout()
         fdtd_hook.select( device_import[ 'name' ] )
         device_index_replicate[ :, :, 0 ] = device_index[ :, :, 0 ]
         device_index_replicate[ :, :, 1 ] = device_index[ :, :, 0 ]
         fdtd_hook.importnk2( device_index_replicate, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
+
+        post_import_time = time.time()
+        log_file.write("To do the device import took " + str( post_import_time - iter_start_time) + " seconds.\n")
 
         #
         # Step 1: Run the forward optimization for both x- and y-polarized plane waves.
@@ -303,7 +309,14 @@ for design_idx in range( 0, number_designs ):
         forward_src.enabled = 1
         fdtd_hook.run()
 
+        run_fdtd_time = time.time()
+        log_file.write("To run FDTD took " + str( run_fdtd_time - post_import_time) + " seconds.\n")
+
         forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+        collect_fields_time = time.time()
+
+        log_file.write("To collect fields took " + str( collect_fields_time - run_fdtd_time) + " seconds.\n")
 
         focal_data = []
         for adj_src_idx in range(0, num_adjoint_sources):
@@ -333,10 +346,12 @@ for design_idx in range( 0, number_designs ):
         gradient = np.zeros(reversed_field_shape, dtype=np.complex)
 
         for adj_src_idx in range(0, num_adjoint_sources):
+            pre_adj_src_time = time.time()
             disable_all_sources()
             (adjoint_sources[adj_src_idx]).enabled = 1
             fdtd_hook.run()
-
+            adj_src_runtime = time.time() - pre_adj_src_time
+            log_file.write("To do an adjoint source took " + str( adj_src_runtime ) + " seconds.\n") 
             adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
             source_weight = np.conj(
@@ -359,6 +374,10 @@ for design_idx in range( 0, number_designs ):
         device_density -= step_size * density_gradient
         device_density = np.maximum( np.minimum( device_density, 1 ), 0 )
 
+        rest_of_time = time.time()
+        log_file.write("To do one iteration took " + str( rest_of_time - iter_start_time) + " seconds.\n")
+        log_file.close()
+ 
 
     device_permittivity = min_device_permittivity + max_device_permittivity * device_density
     device_index = np.sqrt( device_permittivity )
@@ -367,11 +386,11 @@ for design_idx in range( 0, number_designs ):
     np.save( projects_directory_location + "/permittivity.npy", device_permittivity )
     np.save( projects_directory_location + "/index.npy", device_index )
     np.save( projects_directory_location + "/aperture_size_um.npy", aperture_size_um )
-    np.save( projects_directory_location + "/aperture_size_um.npy", aperture_size_um )
+    np.save( projects_directory_location + "/device_depth_um.npy", device_depth_um )
     np.save( projects_directory_location + "/lambda_low_um.npy", lambda_low_um )
-    np.save( projects_directory_location + "/lambda_low_um.npy", lambda_low_um )
+    np.save( projects_directory_location + "/lambda_high_um.npy", lambda_high_um )
     np.save( projects_directory_location + "/index_low.npy", index_low )
-    np.save( projects_directory_location + "/index_low.npy", index_low )
+    np.save( projects_directory_location + "/index_high.npy", index_high )
     np.save( projects_directory_location + "/focal_length_um.npy", focal_length_um )
 
     disable_all_sources()
