@@ -25,7 +25,16 @@ index_contrast_ratio_bounds = [ 0.3, 1.5 ]
 # two wavelength average
 lambda_plus_um = 0.6
 # two wavelength half splitting
-lambda_minus_bounds_um = [ 0.05, 0.2 ]
+bandwidth_fraction = 0.1
+num_bandwidth_spacings_min = 3
+
+lambda_minus_bounds_um = [ num_bandwidth_spacings_min * 0.5 * bandwidth_fraction, 0.2 ]
+
+num_colors = 2
+bandwidth_um = 0.1 * lambda_plus_um
+num_half_bandwidth_points = 5
+num_freq_points_per_color = 2 * num_half_bandwidth_points + 1
+num_eval_points = 55
 
 #
 # Device Geometry
@@ -65,8 +74,8 @@ num_adjoint_sources = 2
 # Optimization
 #
 min_iterations = 40
-max_iterations = 50
-gradient_norm_dropoff = 0.05
+max_iterations = 100
+fom_empirical_gradient_dropoff = 0.05
 
 num_collect_step_size_iterations = 5
 
