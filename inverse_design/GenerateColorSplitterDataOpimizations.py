@@ -289,7 +289,7 @@ for design_idx in range( 0, number_designs ):
     max_unnormalized_grad = -1
     avg_step_size = 0
 
-    for iteration in range( 0, num_iterations ):
+    for iteration in range( 0, max_iterations ):
         iter_start_time = time.time()
 
         log_file = open(projects_directory_location + "/log.txt", 'a+')

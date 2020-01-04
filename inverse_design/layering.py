@@ -1,7 +1,7 @@
 import filter as filter
 
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 #
 # dim: dimension to layer on
