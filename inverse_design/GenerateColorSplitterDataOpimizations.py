@@ -76,7 +76,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 #
 if not( len(sys.argv) == 3 ):
     print( "Error: Expected the following command line.." )
-    print( "python " + str( sys.argv[ 0 ] ) + " { seed for pseudorandom generator } { folder to put the data } )
+    print( "python " + str( sys.argv[ 0 ] ) + " { seed for pseudorandom generator } { folder to put the data }" )
     sys.exit( 1 )
 
 pseudorandom_seed = int( sys.argv[ 1 ] )
@@ -240,7 +240,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
     focal_monitor['x'] = adjoint_x_positions_um[adj_src_idx] * 1e-6
     focal_monitor['y'] = -focal_length_um * 1e-6
     focal_monitor['override global monitor settings'] = 1
-    focal_monitor['use linear wavelength spacing'] = 1
+    focal_monitor['use wavelength spacing'] = 1
     focal_monitor['use source limits'] = 0
 
     minimum_wavelength_um = color_centers_um[ adj_src_idx ] - bandwidth_um
@@ -259,7 +259,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
     transmission_monitor['x span'] = 0.5 * aperture_size_um * 1e-6
     transmission_monitor['y'] = -focal_length_um * 1e-6
     transmission_monitor['override global monitor settings'] = 1
-    transmission_monitor['use linear wavelength spacing'] = 1
+    transmission_monitor['use wavelength spacing'] = 1
     transmission_monitor['use source limits'] = 0
     transmission_monitor['minimum wavelength'] = ( lambda_low_um - 2 * bandwidth_um ) * 1e-6
     transmission_monitor['maximum wavelength'] = ( lambda_high_um + 2 * bandwidth_um ) * 1e-6
