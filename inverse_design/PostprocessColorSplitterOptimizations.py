@@ -67,6 +67,14 @@ stream = os.popen( 'ls /central/groups/Faraon_Computing/cnn_010320/data*/figure_
 completed_optimizations = stream.readlines()
 number_completed = len( completed_optimizations )
 
+performance_low_all = np.zeros( number_completed )
+performance_high_all = np.zeros( number_completed )
+device_depth_um_all = np.zeros( number_completed )
+aperture_size_um_all = np.zeros( number_completed )
+focal_length_um_all = np.zeros( number_completed )
+lambda_low_um_all = np.zeros( number_completed )
+lambda_high_um_all = np.zeros( number_completed )
+
 for opt_idx in range( 0, number_completed ):
     base_folder = completed_optimizations[ 0 ][ 0 : -21 ] + '/'
     
@@ -74,7 +82,51 @@ for opt_idx in range( 0, number_completed ):
     fdtd_hook.load( base_folder + 'optimization.fsp' )
 
     fdtd_hook.select('transmission_monitor0')
-    print( fdtd_hook.get('frequency points') )
+    num_frequency_points = int( fdtd_hook.get('frequency points') )
+    wl_min_um = float( fdtd_hook.get( 'minimum wavelength' ) )
+    wl_max_um = float( fdtd_hook.get( 'maximum wavelength' ) )
+
+    wl_range_um = np.linspace( wl_min_um, wl_max_um, num_frequency_points )
+
+    opt_wl_low_um = float( np.load( base_folder + "/lambda_low_um.npy " ) )
+    opt_wl_high_um = float( np.load( base_folder + "/lambda_high_um.npy " ) )
+
+    transmission_low = get_monitor_data( 'transmission_monitor0', 'T' )
+    transmission_high = get_monitor_data( 'transmission_monitor1', 'T' )
+
+    num_performance_low = 0
+    num_performance_high = 0
+    performance_low = 0
+    performance_high = 0
+
+    for wl_idx in range( 0, num_frequency_points ):
+        wl_value_um = wl_range_um[ wl_idx ]
+
+        if np.abs( wl_value_um - opt_wl_low_um ) <= bandwidth_um:
+            performance_low += transmission_low[ wl_idx ]
+            num_performance_low += 1
+        if np.abs( wl_value_um - opt_wl_high_um ) <= bandwidth_um:
+            performance_high += transmission_high[ wl_idx ]
+            num_performance_high += 1
+
+    average_performance_low = performance_low / num_performance_low
+    average_performance_high = performance_high / num_performance_high
+
+    performance_low_all[ opt_idx ] = average_performance_low
+    performance_high_all[ opt_idx ] = average_performance_high
+    device_depth_um_all[ opt_idx ] = float( np.load( base_folder + "/device_depth_um.npy" ) )
+    aperture_size_um_all[ opt_idx ] = float( np.load( base_folder + "/aperture_size_um.npy" ) )
+    focal_length_um_all[ opt_idx ] = float( np.load( base_folder + "/focal_length_um.npy" ) )
+    lambda_low_um_all[ opt_idx ] = opt_wl_low_um
+    lambda_high_um_all[ opt_idx ] = opt_wl_high_um
+
+np.save( "performance_low_all.npy", performance_low_all )
+np.save( "performance_high_all.npy", performance_high_all )
+np.save( "device_depth_um_all.npy", device_depth_um_all )
+np.save( "aperture_size_um_all.npy", aperture_size_um_all )
+np.save( "focal_length_um_all.npy", focal_length_um_all )
+np.save( "lambda_low_um_all.npy", lambda_low_um_all )
+np.save( "lambda_high_um_all.npy", lambda_high_um_all )
 
 sys.exit(0)
 
