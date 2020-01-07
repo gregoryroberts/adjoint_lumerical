@@ -63,15 +63,20 @@ def get_complex_monitor_data(monitor_name, monitor_field):
     return (data['real'] + np.complex(0, 1) * data['imag'])
 
 
-stream = os.popoen( 'ls /central/groups/Faraon_Computing/cnn_010320/data*/figure_of_merit.npy' )
+stream = os.popen( 'ls /central/groups/Faraon_Computing/cnn_010320/data*/figure_of_merit.npy' )
 completed_optimizations = stream.readlines()
 number_completed = len( completed_optimizations )
 
 for opt_idx in range( 0, number_completed ):
-    base_folder = completed_optimizations[ 0 : -21 ] + '/'
-    print(base_folder)
-sys.exit(0)
+    base_folder = completed_optimizations[ 0 ][ 0 : -21 ] + '/'
+    
+    fdtd_hook = lumapi.FDTD()
+    fdtd_hook.load( base_folder + 'optimization.fsp' )
 
+    fdtd_hook.select('transmission_monitor0')
+    print( fdtd_hook.get('frequency points') )
+
+sys.exit(0)
 
 
 #
