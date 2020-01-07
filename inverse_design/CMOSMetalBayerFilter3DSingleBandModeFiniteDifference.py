@@ -187,7 +187,7 @@ design_efield_monitor['y span'] = device_size_lateral_um * 1e-6
 design_efield_monitor['z min'] = designable_device_vertical_minimum_um * 1e-6
 design_efield_monitor['z max'] = designable_device_vertical_maximum_um * 1e-6
 design_efield_monitor['override global monitor settings'] = 1
-design_efield_monitor['use linear wavelength spacing'] = 1
+design_efield_monitor['linear wavelength spacing'] = 1
 design_efield_monitor['use source limits'] = 0
 design_efield_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 design_efield_monitor['maximum wavelength'] = lambda_max_um * 1e-6
@@ -209,7 +209,7 @@ mode_reflection_monitor['x span'] = plane_wave_sources['x']['x span']
 mode_reflection_monitor['y span'] = plane_wave_sources['x']['y span']
 mode_reflection_monitor['z'] = ( src_maximum_vertical_um + mode_reflection_monitor_delta_um ) * 1e-6
 mode_reflection_monitor['override global monitor settings'] = 1
-mode_reflection_monitor['use linear wavelength spacing'] = 1
+mode_reflection_monitor['linear wavelength spacing'] = 1
 mode_reflection_monitor['use source limits'] = 0
 mode_reflection_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 mode_reflection_monitor['maximum wavelength'] = lambda_max_um * 1e-6
@@ -222,7 +222,7 @@ focal_monitor['x'] = 0
 focal_monitor['y'] = 0
 focal_monitor['z'] = ( src_maximum_vertical_um + mode_reflection_monitor_delta_um ) * 1e-6
 focal_monitor['override global monitor settings'] = 1
-focal_monitor['use linear wavelength spacing'] = 1
+focal_monitor['linear wavelength spacing'] = 1
 focal_monitor['use source limits'] = 0
 focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
@@ -265,8 +265,9 @@ phase_corrections_reflection = np.zeros( num_design_frequency_points, dtype=np.c
 
 for wl_idx in range( 0, num_design_frequency_points ):
     wavelength_um = lambda_values_um[ wl_idx ]
-    phase_shift = 2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
-    phase_corrections_reflection[ wl_idx ] = np.exp( 1j * phase_shift )
+    phase_shift = -2 * np.pi * mode_reflection_monitor_delta_um / wavelength_um
+    phase_corrections_reflection[ wl_idx ] = 1#np.exp( 1j * phase_shift )
+    #print(phase_shift / (2*np.pi))
 
 plane_wave_sources['x']['direction'] = 'Backward'
 plane_wave_sources['x']['z min'] = src_minimum_vertical_um * 1e-6
@@ -357,42 +358,35 @@ def mode_overlap_gradient(
     normal_weighting,
     mode_overlap_norm ):
 
-    num_wavelengths = electric_fields_forward.shape[ 1 ]
-
-    fom_weighting = ( 2.0 / num_wavelengths ) - figure_of_merit**2 / np.sum( figure_of_merit**2 )
-    fom_weighting = np.maximum( fom_weighting, 0 )
-    fom_weighting /= np.sum( fom_weighting )
-
     gradient = np.zeros( electric_fields_gradient_forward.shape[ 2 : ], dtype=np.complex )
 
-    for wl_idx in range( 0, num_wavelengths ):
-        choose_electric_mode = electric_mode_fields
-        choose_magnetic_mode = magnetic_mode_fields
+    choose_electric_mode = electric_mode_fields
+    choose_magnetic_mode = magnetic_mode_fields
 
-        choose_electric_forward = electric_fields_forward
-        choose_magnetic_forward = magnetic_fields_forward
+    choose_electric_forward = electric_fields_forward
+    choose_magnetic_forward = magnetic_fields_forward
 
-        numerator_term_1 = (
-            np.sum( choose_electric_forward[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 1, wl_idx, 0, :, : ] ) )
+    numerator_term_1 = (
+        np.sum( choose_electric_forward[ 0, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, 0, :, : ] ) ) +
+        np.sum( np.conj( choose_electric_mode[ 0, 0, :, : ] ) * choose_magnetic_forward[ 1, 0, :, : ] ) )
 
-        numerator_term_2 = -(
-            np.sum( choose_electric_forward[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) ) +
-            np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, :, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, :, : ] ) )
+    numerator_term_2 = -(
+        np.sum( choose_electric_forward[ 1, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, 0, :, : ] ) ) +
+        np.sum( np.conj( choose_electric_mode[ 1, 0, :, : ] ) * choose_magnetic_forward[ 0, 0, :, : ] ) )
 
-        numerator = numerator_term_1 + numerator_term_2
+    numerator = numerator_term_1 + numerator_term_2
 
-        denominator = 4.0 * np.real(
-            np.sum( choose_electric_mode[ 0, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, :, : ] ) ) -
-            np.sum( choose_electric_mode[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) )
-        )
+    denominator = 4.0 * np.real(
+        np.sum( choose_electric_mode[ 0, 0, :, : ] * np.conj( choose_magnetic_mode[ 1, 0, :, : ] ) ) -
+        np.sum( choose_electric_mode[ 1, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, 0, :, : ] ) )
+    )
 
-        adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm[ wl_idx ] )
-        gradient += normal_weighting * ( 
-            fom_weighting[ wl_idx ] * adjoint_phase *
-            np.sum( electric_fields_gradient_forward[ wl_idx, :, :, :, : ] * electric_fields_gradient_adjoint[ wl_idx, :, :, :, : ], axis=0 ) )
+    adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm )
+    gradient = normal_weighting * ( 
+        adjoint_phase *
+        np.sum( electric_fields_gradient_forward * electric_fields_gradient_adjoint, axis=0 ) )
 
-    return -gradient / num_wavelengths
+    return -gradient
 
 
 mode_overlap_maxima_r = []
@@ -433,21 +427,25 @@ for reflection_band in range( 0, len( reflection_fom_map) ):
 # Run forward source
 #
 pol = 'x'
-disable_all_sources()
-plane_wave_sources[pol].enabled = 1
-start_fdtd = time.time()
-fdtd_hook.run()
-elapsed_fdtd = time.time() - start_fdtd
+# disable_all_sources()
+# plane_wave_sources[pol].enabled = 1
+# start_fdtd = time.time()
+# fdtd_hook.run()
+# elapsed_fdtd = time.time() - start_fdtd
 
-print("It took FDTD " + str(elapsed_fdtd) + " seconds to run which is " + str(elapsed_fdtd / 60) + " minutes")
+# print("It took FDTD " + str(elapsed_fdtd) + " seconds to run which is " + str(elapsed_fdtd / 60) + " minutes")
 
-forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+# forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-reflected_e_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
-reflected_h_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
-focal_data = get_complex_monitor_data( focal_monitor['name'], 'E' )
+# reflected_e_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
+# reflected_h_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
+# focal_data = get_complex_monitor_data( focal_monitor['name'], 'E' )
 
-focal_fom_0_by_wavelength = np.zeros( num_design_frequency_points )
+reflected_e_fields = np.load( projects_directory_location + "/reflected_e_fields.npy" )
+reflected_h_fields = np.load( projects_directory_location + "/reflected_h_fields.npy" )
+
+
+# focal_fom_0_by_wavelength = np.zeros( num_design_frequency_points )
 
 
 fom_0_by_wavelength = np.zeros( num_design_frequency_points )
@@ -462,52 +460,84 @@ for wl_idx in range( 0, num_design_frequency_points ):
         mode_e_field[ :, wl_idx, :, :, : ], mode_h_field[ :, wl_idx, :, :, : ],
         1, mode_overlap_maxima_r
     )
+print( fom_0_by_wavelength )
 
-    focal_fom_0_by_wavelength[ wl_idx ] = np.sum( np.abs( focal_data[ :, wl_idx, 0, 0, 0 ] )**2 )
+#     focal_fom_0_by_wavelength[ wl_idx ] = np.sum( np.abs( focal_data[ :, wl_idx, 0, 0, 0 ] )**2 )
 
-np.save( projects_directory_location + "/forward_e_fields.npy", forward_e_fields )
+forward_e_fields = np.load( projects_directory_location + "/forward_e_fields.npy" )
+fd_by_wavelength = np.load( projects_directory_location + "/fd_by_wavelength.npy" )
+focal_fd_by_wavelength = np.load( projects_directory_location + "/focal_fd_by_wavelength.npy" )
 
 fd_y = int( device_voxels_lateral / 2.0 )
 fd_z = int( designable_device_voxels_vertical / 2.0 )
 h = 0.01
 
-fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
-focal_fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
+# fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
+# focal_fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
 
-for fd_x in range( 0, device_voxels_lateral ):
-    print("Working on finite diff = " + str( fd_x ))
-    filter_permittivity[ fd_x, fd_y, fd_z ] += h
-    fdtd_hook.select("filter_import")
-    fdtd_hook.importnk2( filter_permittivity, filter_region_x, filter_region_y, filter_region_z )
-    disable_all_sources()
-    plane_wave_sources[pol].enabled = 1
-    fdtd_hook.run()
+adj_refl = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
 
-    fom_1_by_wavelength = np.zeros( num_design_frequency_points )
-    focal_fom_1_by_wavelength = np.zeros( num_design_frequency_points )
+adjoint_e_fields = np.load( projects_directory_location + "/adjoint_e_fields_diffracting.npy" )
+forward_e_fields
 
-    forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+for reflection_band in range( 0, len( reflection_fom_map) ):
+    wavelength_range = reflection_fom_map[ reflection_band ]
+    num_wavelengths = wavelength_range[ 1 ] - wavelength_range[ 0 ]
 
-    reflected_e_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
-    reflected_h_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
-    focal_data = get_complex_monitor_data( focal_monitor['name'], 'E' )
+    mode_e_field_shape = mode_e_field.shape
+    mode_h_field_shape = mode_h_field.shape
 
-    for wl_idx in range( 0, num_design_frequency_points ):
-        fom_1_by_wavelength[ wl_idx ] = mode_overlap_fom(
-            reflected_e_fields[ :, wl_idx, :, :, :], reflected_h_fields[ :, wl_idx, :, :, : ],
-            mode_e_field[ :, wl_idx, :, :, : ], mode_h_field[ :, wl_idx, :, :, : ],
-            1, mode_overlap_maxima_r
-        )
-    
-        focal_fom_1_by_wavelength[ wl_idx ] = np.sum( np.abs( focal_data[ :, wl_idx, 0, 0, 0 ] )**2 )
+    band_mode_e_field_shape = np.array( mode_e_field_shape )
+    band_mode_h_field_shape = np.array( mode_h_field_shape )
 
+    band_mode_e_field_shape[ 1 ] = num_wavelengths
+    band_mode_h_field_shape[ 1 ] = num_wavelengths
 
-    fd_by_wavelength[ fd_x, : ] = ( fom_1_by_wavelength - fom_0_by_wavelength ) / h
-    focal_fd_by_wavelength[ fd_x, : ] = ( focal_fom_1_by_wavelength - focal_fom_0_by_wavelength ) / h
+    reflected_e_field_band = np.zeros( band_mode_e_field_shape, dtype=np.complex )
+    reflected_h_field_band = np.zeros( band_mode_h_field_shape, dtype=np.complex )
 
-    filter_permittivity[ fd_x, fd_y, fd_z ] -= h
+    select_mode_e_field_band = np.zeros( band_mode_e_field_shape, dtype=np.complex )
+    select_mode_h_field_band = np.zeros( band_mode_h_field_shape, dtype=np.complex )
 
-    np.save( projects_directory_location + "/fd_by_wavelength.npy", fd_by_wavelength )
-    np.save( projects_directory_location + "/focal_fd_by_wavelength.npy", focal_fd_by_wavelength )
+    adjoint_reflection_e_fields = np.zeros(
+        ( 3, num_wavelengths, designable_device_voxels_vertical, device_voxels_lateral, device_voxels_lateral ), dtype=np.complex )
 
+    forward_reflection_e_fields = np.zeros(
+        ( 3, num_wavelengths, designable_device_voxels_vertical, device_voxels_lateral, device_voxels_lateral ), dtype=np.complex )
+
+    for wl_idx in range( wavelength_range[ 0 ], wavelength_range[ 1 ] ):
+        mode_overlap_norm = 1
+
+        cur_reflection_gradient = mode_overlap_gradient(
+                1,
+                reflected_e_fields[ :, wl_idx, :, :, : ], reflected_h_fields[ :, wl_idx, :, :, : ],
+                mode_e_field[ :, wl_idx, :, :, : ], mode_h_field[ :, wl_idx, :, :, : ],
+                forward_e_fields[ :, wl_idx, :, :, : ], adjoint_e_fields[ :, wl_idx, :, :, : ],
+                1,
+                mode_overlap_norm
+            ) / 1j
+
+        get_gradient = 2 * np.real( cur_reflection_gradient )
+        get_gradient = np.swapaxes( get_gradient, 0, 2 )
+        adj_refl[ :, wl_idx ] = get_gradient[ :, fd_y, fd_z ]
+
+colors = [ 'r', 'g', 'b', 'm', 'c', 'k' ]
+legend = []
+
+# print( num_design_frequency_points )
+for plot_wl_idx in range( 0, num_design_frequency_points ):
+
+    # plot_wl_idx = 0
+    # print(fd_by_wavelength[:, plot_wl_idx])
+    # print(focal_fd_by_wavelength[:, plot_wl_idx])
+    # print(adj_refl[:, plot_wl_idx])
+
+    wl_nm = int( 1e3 * lambda_values_um[ plot_wl_idx ] )
+    legend.append( str( wl_nm ) + " nm (ADJ)" )
+    legend.append( str( wl_nm ) + " nm (FD)" )
+
+    plt.plot( adj_refl[ :, plot_wl_idx ] / np.max( np.abs( adj_refl[ :, plot_wl_idx ] ) ), color=colors[ plot_wl_idx % len( colors ) ], linewidth=2 )
+    plt.plot( fd_by_wavelength[ :, plot_wl_idx ] / np.max( np.abs( fd_by_wavelength[ :, plot_wl_idx ] ) ), color=colors[ plot_wl_idx % len( colors ) ], linewidth=2, linestyle='--' )
+plt.legend( legend )
+plt.show()
 
