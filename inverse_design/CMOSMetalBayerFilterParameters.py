@@ -206,7 +206,7 @@ use_fixed_step_size = True
 fixed_step_size =  0.5
 
 biggest_max_max_change = 0.08
-smallest_max_max_change = 0.005
+smallest_max_max_change = 0.02
 
 epoch_start_permittivity_change_max = 0.1
 epoch_end_permittivity_change_max = 0.02
