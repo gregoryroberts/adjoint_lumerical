@@ -9,7 +9,7 @@ import sys
 # Files
 #
 # project_name = 'cmos_metal_etch_passivation_import_mirrored_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
-project_name = 'cmos_2p51p4_etch_passivation_transmissive_nofeature_nobin_nolayer_3freq_rgb_3x3xtsmcx2_um'
+project_name = 'cmos_2p51p4_etch_passivation_transmissive_nofeature_nobin_nolayer_3freq_rgb_no_top_layer_3x3xtsmcx2_um'
 
 #
 # Previous mirrored seed point import?
@@ -54,7 +54,7 @@ focal_length_um = 2
 mesh_spacing_um = 0.025
 
 layer_thicknesses_um = [
-	0.05, # leftover from M8
+	# 0.05, # leftover from M8
 	0.22, 0.095,       # M7
 	# here, we are combining the two capping layers from layer N to layer (N - 1) into one since they are very thin
 	0.08, 0.22, 0.095, # M6
@@ -68,7 +68,7 @@ layer_thicknesses_um = [
 layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_thicknesses_um ]
 
 layer_background_index = [
-	1.45, # leftover from M8
+	# 1.45, # leftover from M8
 	design_index_background, design_index_background,       # M7
 	1.45, design_index_background, design_index_background, # M6
 	1.45, design_index_background, design_index_background, # M5
@@ -79,7 +79,7 @@ layer_background_index = [
 ]
 
 is_layer_designable = [
-	False,
+	# False,
 	True, False,        # M7
 	False, True, False, # M6
 	False, True, False, # M5

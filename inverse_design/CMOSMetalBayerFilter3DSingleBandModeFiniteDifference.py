@@ -148,6 +148,22 @@ forward_src_xpol['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 forward_src_xpol['wavelength start'] = src_lambda_min_um * 1e-6
 forward_src_xpol['wavelength stop'] = src_lambda_max_um * 1e-6
 
+mode_reflection_monitor_delta_um = 0.25 * vertical_gap_size_top_um
+
+
+plane_src_xpol = fdtd_hook.addplane()
+plane_src_xpol['name'] = 'plane_src_xpol'
+plane_src_xpol['angle phi'] = 0
+plane_src_xpol['plane wave type'] = 'Diffracting'
+plane_src_xpol['direction'] = 'Backward'
+plane_src_xpol['x span'] = 1.3 * device_size_lateral_um * 1e-6
+plane_src_xpol['y span'] = 1.3 * device_size_lateral_um * 1e-6
+plane_src_xpol['z'] = (src_maximum_vertical_um + mode_reflection_monitor_delta_um) * 1e-6
+plane_src_xpol['wavelength start'] = src_lambda_min_um * 1e-6
+plane_src_xpol['wavelength stop'] = src_lambda_max_um * 1e-6
+plane_src_xpol.enabled = 0
+
+
 forward_src_ypol = fdtd_hook.addtfsf()
 forward_src_ypol['name'] = 'forward_src_ypol'
 forward_src_ypol['angle phi'] = xy_phi_rotations['y']
@@ -201,7 +217,6 @@ design_efield_monitor['output Hz'] = 0
 # compute the figure of merit as well as weight the adjoint simulations properly in calculation of the
 # gradient.
 #
-mode_reflection_monitor_delta_um = 0.25 * vertical_gap_size_top_um
 mode_reflection_monitor = fdtd_hook.addpower()
 mode_reflection_monitor['name'] = 'mode_reflection_monitor'
 mode_reflection_monitor['monitor type'] = '2D Z-normal'
@@ -304,13 +319,16 @@ filter_import['y span'] = device_size_lateral_um * 1e-6
 filter_import['z min'] = designable_device_vertical_minimum_um * 1e-6
 filter_import['z max'] = designable_device_vertical_maximum_um * 1e-6
 
-filter_permittivity = 1.5 * np.ones( ( device_voxels_lateral, device_voxels_lateral, designable_device_voxels_vertical ))
+np.random.seed( 234234 )
+filter_permittivity = 1 + np.random.random( ( device_voxels_lateral, device_voxels_lateral, designable_device_voxels_vertical ))
 filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 filter_region_z = 1e-6 * np.linspace(designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, designable_device_voxels_vertical)
 
+fdtd_hook.switchtolayout()
 fdtd_hook.select("filter_import")
-fdtd_hook.importnk2( filter_permittivity, filter_region_x, filter_region_y, filter_region_z )
+filter_index = np.sqrt( filter_permittivity )
+fdtd_hook.importnk2( filter_index, filter_region_x, filter_region_y, filter_region_z )
 
 
 
@@ -429,6 +447,22 @@ for reflection_band in range( 0, len( reflection_fom_map) ):
 
 
 
+disable_all_sources()
+plane_src_xpol.enabled = 1
+start_fdtd = time.time()
+fdtd_hook.run()
+elapsed_fdtd = time.time() - start_fdtd
+
+print("It took FDTD " + str(elapsed_fdtd) + " seconds to run which is " + str(elapsed_fdtd / 60) + " minutes")
+
+forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+np.save( projects_directory_location + "/adjoint_e_fields_diffracting.npy", forward_e_fields );
+
+disable_all_sources()
+plane_src_xpol.enabled = 0
+
+
 #
 # Run forward source
 #
@@ -446,6 +480,10 @@ forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 reflected_e_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'E' )
 reflected_h_fields = get_complex_monitor_data( mode_reflection_monitor[ 'name' ], 'H' )
 focal_data = get_complex_monitor_data( focal_monitor['name'], 'E' )
+
+np.save( projects_directory_location + "/reflected_e_fields.npy", reflected_e_fields );
+np.save( projects_directory_location + "/reflected_h_fields.npy", reflected_h_fields );
+#sys.exit(1)
 
 focal_fom_0_by_wavelength = np.zeros( num_design_frequency_points )
 
@@ -468,7 +506,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 np.save( projects_directory_location + "/forward_e_fields.npy", forward_e_fields )
 
 fd_y = int( device_voxels_lateral / 2.0 )
-fd_z = int( designable_device_voxels_vertical / 2.0 )
+fd_z =  int( designable_device_voxels_vertical / 2.0 )
 h = 0.01
 
 fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency_points ) )
@@ -477,8 +515,10 @@ focal_fd_by_wavelength = np.zeros( ( device_voxels_lateral, num_design_frequency
 for fd_x in range( 0, device_voxels_lateral ):
     print("Working on finite diff = " + str( fd_x ))
     filter_permittivity[ fd_x, fd_y, fd_z ] += h
+    fdtd_hook.switchtolayout()    
     fdtd_hook.select("filter_import")
-    fdtd_hook.importnk2( filter_permittivity, filter_region_x, filter_region_y, filter_region_z )
+    filter_index = np.sqrt( filter_permittivity )
+    fdtd_hook.importnk2( filter_index, filter_region_x, filter_region_y, filter_region_z )
     disable_all_sources()
     plane_wave_sources[pol].enabled = 1
     fdtd_hook.run()
@@ -501,6 +541,9 @@ for fd_x in range( 0, device_voxels_lateral ):
     
         focal_fom_1_by_wavelength[ wl_idx ] = np.sum( np.abs( focal_data[ :, wl_idx, 0, 0, 0 ] )**2 )
 
+    print( fom_1_by_wavelength )
+    print( fom_0_by_wavelength )
+    print( ( fom_1_by_wavelength - fom_0_by_wavelength ) / h )
 
     fd_by_wavelength[ fd_x, : ] = ( fom_1_by_wavelength - fom_0_by_wavelength ) / h
     focal_fd_by_wavelength[ fd_x, : ] = ( focal_fom_1_by_wavelength - focal_fom_0_by_wavelength ) / h
