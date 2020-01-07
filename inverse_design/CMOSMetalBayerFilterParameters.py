@@ -9,7 +9,7 @@ import sys
 # Files
 #
 # project_name = 'cmos_metal_etch_passivation_import_mirrored_reflective_no_feature_size_strict_layering_rgb_2x2xtsmc_um'
-project_name = 'cmos_2p51p4_etch_passivation_transmissive_nofeature_nobin_nolayer_3freq_rgb_no_top_layer_3x3xtsmcx2_um'
+project_name = 'cmos_2p51p4_etch_passivation_transmissive_nofeature_nobin_nolayer_3freq_rgb_extra_top_layer_3x3xtsmcx2_um'
 
 #
 # Previous mirrored seed point import?
@@ -55,6 +55,8 @@ mesh_spacing_um = 0.025
 
 layer_thicknesses_um = [
 	# 0.05, # leftover from M8
+	# Let there be an extra layer to design that we put on top in postprocessing (we will make it 400nm)
+	0.4,
 	0.22, 0.095,       # M7
 	# here, we are combining the two capping layers from layer N to layer (N - 1) into one since they are very thin
 	0.08, 0.22, 0.095, # M6
@@ -69,6 +71,7 @@ layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_t
 
 layer_background_index = [
 	# 1.45, # leftover from M8
+	design_index_background,
 	design_index_background, design_index_background,       # M7
 	1.45, design_index_background, design_index_background, # M6
 	1.45, design_index_background, design_index_background, # M5
@@ -80,6 +83,7 @@ layer_background_index = [
 
 is_layer_designable = [
 	# False,
+	True,               # Extra layer in postprocessing
 	True, False,        # M7
 	False, True, False, # M6
 	False, True, False, # M5
@@ -181,7 +185,9 @@ polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y']
 weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
-spectral_focal_plane_map = -( 1 / ( 2 * num_points_per_band ) ) * np.ones( ( num_focal_spots, num_design_frequency_points ) )
+# spectral_focal_plane_map = -( 1 / ( 2 * num_points_per_band ) ) * np.ones( ( num_focal_spots, num_design_frequency_points ) )
+# Try it by not attempting reject off bands and just increase each band separately
+spectral_focal_plane_map = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
 spectral_focal_plane_map[ 0, 0 : num_points_per_band ] = 1 / num_points_per_band
 spectral_focal_plane_map[ 1, num_points_per_band : 2 * num_points_per_band ] = 1 / num_points_per_band
 spectral_focal_plane_map[ 2, 2 * num_points_per_band : 3 * num_points_per_band ] = 1 / num_points_per_band
@@ -193,7 +199,7 @@ spectral_focal_plane_map[ 3, num_points_per_band : 2 * num_points_per_band ] = 1
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 100
+num_iterations_per_epoch = 250
 start_epoch = 0
 
 use_fixed_step_size = True

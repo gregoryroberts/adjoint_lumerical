@@ -470,9 +470,9 @@ for epoch in range(start_epoch, num_epochs):
 
 		fom_for_weighting = figure_of_merit_per_wavelength - np.min( figure_of_merit_per_wavelength )
 		performance_weighting = (2. / num_design_frequency_points) - fom_for_weighting**2 / np.sum(fom_for_weighting**2)
-		if np.min( performance_weighting ) < 0:
-			performance_weighting = np.maximum( performance_weighting, 0 )
-			performance_weighting /= np.sum( performance_weighting )
+
+		performance_weighting = np.maximum( performance_weighting, 0 )
+		performance_weighting /= np.sum( performance_weighting )
 
 		figure_of_merit = np.sum(figure_of_merit_per_wavelength)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
