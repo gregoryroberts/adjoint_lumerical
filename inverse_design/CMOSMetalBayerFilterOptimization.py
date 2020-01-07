@@ -381,6 +381,8 @@ def import_bayer_filters():
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_regions_z[ device_layer_idx ] )
 
 def update_bayer_filters( device_step_real, device_step_imag, step_size ):
+
+	max_max_change = -1
 	for device_layer_idx in range( 0, len( bayer_filters ) ):
 		bayer_filter = bayer_filters[ device_layer_idx ]
 
@@ -403,6 +405,8 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 		average_design_variable_change = np.mean( np.abs( last_design_variable - cur_design_variable ) )
 		max_design_variable_change = np.max( np.abs( last_design_variable - cur_design_variable ) )
 
+		max_max_change = np.maximum( max_design_variable_change, max_max_change )
+
 		print( "This bayer filter is expecting something of size " + str( layer_bayer_filter.size ) + " and it has been fed something of size " +
 			str( device_step_real[ :, :, layer_vertical_minimum_voxels : layer_vertical_maximum_voxels ].shape ) )
 		print( "The gradient information is being taken between " + str( layer_vertical_minimum_voxels ) + " and " + str( layer_vertical_maximum_voxels )
@@ -412,7 +416,15 @@ def update_bayer_filters( device_step_real, device_step_imag, step_size ):
 	
 		np.save(projects_directory_location + "/cur_design_variable_" + str( device_layer_idx ) + ".npy", cur_design_variable)
 
+	print( "Max Max change = " + str( max_max_change ) )
 	print()
+
+	adjustment = 1
+	if max_max_change > biggest_max_max_change:
+		adjustment = 0.5
+	elif max_max_change < smallest_max_max_change:
+		adjustment = 2.0
+	return adjustment
 
 if use_mirrored_seed_point:
 	import_previous_seed( 'cur_design_variable_mirrored_' )
@@ -523,7 +535,7 @@ for epoch in range(start_epoch, num_epochs):
 
 		step_size = step_size_start
 
-		update_bayer_filters( -device_gradient_real, -device_gradient_imag, step_size )
+		step_size_start *= update_bayer_filters( -device_gradient_real, -device_gradient_imag, step_size )
 
 		#
 		# Would be nice to see how much it actually changed because some things will just
