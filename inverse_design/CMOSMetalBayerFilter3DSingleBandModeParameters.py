@@ -8,7 +8,9 @@ import sys
 #
 # Files
 #
-project_name = 'cmos_dielectric_1p4_2p5_explicit_reject_single_band_contrast_multi_freqx6_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5xtsmc_um'
+# project_name = 'cmos_dielectric_1p4_2p5_explicit_reject_single_band_contrast_multi_freqx9_reflective_3d_no_feature_size_strict_layering_rgb_2p5x2p5xtsmc_um'
+project_name = 'cmos_dielectric_1p4_2p5_explicit_reject_single_band_contrast_multi_freqx12_reflective_3d_no_feature_size_strict_layering_plane_src_rgb_2p5x2p5xtsmc_um_testgrad'
+
 
 #
 # Random Seed
@@ -24,12 +26,12 @@ design_index_background = device_background_index
 high_index_backfill = 2.5
 
 min_real_permittivity = design_index_background**2
-# max_real_permittivity = -10
-max_real_permittivity = high_index_backfill**2
+max_real_permittivity = -10
+# max_real_permittivity = high_index_backfill**2
 
 min_imag_permittivity = 0
-# max_imag_permittivity = -3
-max_imag_permittivity = 0
+max_imag_permittivity = -3
+# max_imag_permittivity = 0
 
 # silicon_index_real = 
 # silicon_index_imag
@@ -40,8 +42,8 @@ max_imag_permittivity = 0
 # silicon_absober_index_real = 4.32
 # silicon_absober_index_imag = 0.073
 
-init_permittivity_0_1_scale = 0.5
-init_max_random_0_1_scale = 0.25
+init_permittivity_0_1_scale = 0.0
+init_max_random_0_1_scale = 0.05
 # init_permittivity_0_1_scale = 0.0
 
 init_from_old = False
@@ -157,7 +159,7 @@ dielectric_stack_end_um = m8_stack_end_um
 num_bands = 3
 # We might want to space these points out differently to get them all in the middle of the bands and not try and
 # optimize near the band edges
-num_points_per_band = 2
+num_points_per_band = 4
 
 src_lambda_min_um = 0.45
 src_lambda_max_um = 0.65
@@ -184,7 +186,7 @@ lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequenc
 #
 vertical_gap_size_top_um = 5.0#2.0
 vertical_gap_size_bottom_um = 0.25#2.0
-lateral_gap_size_um = 1.0#2.0
+lateral_gap_size_um = 3.0#2.0
 
 fdtd_region_size_vertical_um = vertical_gap_size_top_um + vertical_gap_size_bottom_um + bottom_metal_absorber_size_vertical_um + device_size_verical_um
 fdtd_region_size_lateral_um = device_size_lateral_um + 2 * lateral_gap_size_um
@@ -251,7 +253,7 @@ num_reflection_adjoint_sources = 1
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 250#2#1000
+num_iterations_per_epoch = 50#250#2#1000
 start_epoch = 0
 
 #

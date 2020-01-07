@@ -45,7 +45,7 @@ def bridges(density, restrictions, costs, topological_correction_value ):
 	if num_solid_labels <= 1:
 		return density
 
-	density_graph = nx.Graph()
+	density_graph = nx.MultiDiGraph()
 	for x_idx in range( 0, width ):
 		for y_idx in range( 0, height ):
 
@@ -172,14 +172,19 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		self.num_free_iterations_between_patches = num_free_iterations_between_patches
 		self.current_iteration = 0
 		self.init_filters_and_variables()
+		# set to the 0th epoch value
+		self.update_filters( 0 )
 
 		self.update_permittivity()
 
 		self.restrictions = np.ones( self.w[0].shape )
-		self.restrictions[ 0, :, : ] = 0
-		self.restrictions[ :, 0, : ] = 0
-		self.restrictions[ self.restrictions.shape[ 0 ] - 1, :, : ] = 0
-		self.restrictions[ :, self.restrictions.shape[ 1 ] - 1, : ] = 0
+
+		self.restrictions[ 0 : blur_half_width_voxels, :, : ] = 0
+		self.restrictions[ :, 0 : blur_half_width_voxels, : ] = 0
+		self.restrictions[ ( self.restrictions.shape[ 0 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 0 ] - 1 ), :, : ] = 0
+		self.restrictions[ :, ( self.restrictions.shape[ 1 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 1 ] - 1 ), : ] = 0
+
+
 
 
 	#
@@ -232,7 +237,7 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		return gradient
 
 	def update_filters(self, epoch):
-		self.sigmoid_beta = 0.25 * (2**epoch)
+		self.sigmoid_beta = 0.0625 * (2**epoch)
 
 		self.sigmoid_0 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
 		self.sigmoid_3 = sigmoid.Sigmoid(self.sigmoid_beta, self.sigmoid_eta)
@@ -241,10 +246,13 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 	def init_variables(self):
 		super(LayeredMWIRBridgesBayerFilter, self).init_variables()
 
-		self.w[0][ 0, :, : ] = 1
-		self.w[0][ :, 0, : ] = 1
-		self.w[0][ self.w[0].shape[ 0 ] - 1, :, : ] = 1
-		self.w[0][ :, self.w[0].shape[ 1 ] - 1, : ] = 1
+		self.w[0] = np.multiply(self.init_permittivity, np.ones(self.size, dtype=np.complex))
+
+		self.w[0][ 0 : blur_half_width_voxels, :, : ] = 1
+		self.w[0][ :, 0 : blur_half_width_voxels, : ] = 1
+		self.w[0][ ( self.w[0].shape[ 0 ] - 1 - blur_half_width_voxels ) : ( self.w[0].shape[ 0 ] - 1 ), :, : ] = 1
+		self.w[0][ :, ( self.w[0].shape[ 1 ] - 1 - blur_half_width_voxels ): ( self.w[0].shape[ 1 ] - 1 ), : ] = 1
+
 
 	def init_filters_and_variables(self):
 		self.num_filters = 5
@@ -283,6 +291,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		self.filters = [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
 		self.init_variables()
+	
+
 
 	# In the step function, we should update the permittivity with update_permittivity
 	def step(self, gradient, step_size):
@@ -355,10 +365,10 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 			print("The current number of void components on layer " + str( layer ) + " is " + str( num_void_labels ) )
 		print("\n\n")
 
-		self.restrictions[ 0, :, : ] = 0
-		self.restrictions[ :, 0, : ] = 0
-		self.restrictions[ self.restrictions.shape[ 0 ] - 1, :, : ] = 0
-		self.restrictions[ :, self.restrictions.shape[ 1 ] - 1, : ] = 0
+		self.restrictions[ 0 : blur_half_width_voxels, :, : ] = 0
+		self.restrictions[ :, 0 : blur_half_width_voxels, : ] = 0
+		self.restrictions[ ( self.restrictions.shape[ 0 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 0 ] - 1 ), :, : ] = 0
+		self.restrictions[ :, ( self.restrictions.shape[ 1 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 1 ] - 1 ), : ] = 0
 
 
 
