@@ -23,7 +23,7 @@ import h5py
 import numpy as np
 import time
 
-import generic_blur_2d
+# import generic_blur_2d
 
 from scipy.ndimage import gaussian_filter
 
@@ -281,10 +281,10 @@ for adj_src_idx in range(0, num_adjoint_sources):
 #
 # Blurring filter so the designs don't come out with very small features
 #
-blur_alpha = 9
-blur_size = 1
-variable_bounds = [0, 1]
-feature_blur = generic_blur_2d.make_square_blur( blur_alpha, blur_size, variable_bounds )
+# blur_alpha = 9
+# blur_size = 1
+# variable_bounds = [0, 1]
+# feature_blur = generic_blur_2d.make_square_blur( blur_alpha, blur_size, variable_bounds )
 
 # todo(gdroberts): this should pull from one of the efield monitors.. right now just takes likely last
 # one in the for loop.  
