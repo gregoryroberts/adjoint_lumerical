@@ -60,7 +60,7 @@ vertical_gap_lambda_plus = 2
 lateral_gap_um = lambda_plus_um * lateral_gap_lambda_plus
 vertical_gap_um = lambda_plus_um * vertical_gap_lambda_plus
 
-mesh_spacing_lambda_plus = 1. / 20.
+mesh_spacing_lambda_plus = 1. / 18.
 mesh_spacing_um = lambda_plus_um * mesh_spacing_lambda_plus
 
 fdtd_simulation_time_fs = 10000
