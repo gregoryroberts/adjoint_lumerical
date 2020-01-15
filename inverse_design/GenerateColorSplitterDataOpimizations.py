@@ -6,14 +6,24 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from GenerateColorSplitterDataParameters import *
 
-import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+#
+# Check to see if we are on a Windows machine.  Otherwise, we will assume we are on the cluster and that
+# we need to load the lumapi module using imp before being able to import it
+#
+wavelength_spacing_key = 'use linear wavelength spacing'
+if not os.name is 'nt':
+    wavelength_spacing_key = 'use wavelength spacing'
+
+    import imp
+    imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
 import lumapi
 
 import functools
 import h5py
 import numpy as np
 import time
+
+import generic_blur_2d
 
 from scipy.ndimage import gaussian_filter
 
@@ -121,7 +131,7 @@ device_depth_lambda_plus = device_depth_bounds_lambda_plus_units[ 0 ] + ( device
 numerical_aperture = numerical_aperture_bounds[ 0 ] + ( numerical_aperture_bounds[ 1 ] - numerical_aperture_bounds[ 0 ] ) * np.random.random( 1 )[ 0 ]
 
 device_depth_um = lambda_plus_um * device_depth_lambda_plus
-focal_length_um = numerical_aperture * aperture_size_um / 2
+focal_length_um = aperture_size_um / ( 2 * numerical_aperture )
 
 fdtd_region_size_lateral_um = aperture_size_um + 2 * lateral_gap_um
 fdtd_region_size_vertical_um = device_depth_um + focal_length_um + 2 * vertical_gap_um
@@ -210,7 +220,7 @@ for color_idx in range( 0, num_colors ):
     design_efield_monitor['y min'] = 0 * 1e-6
     design_efield_monitor['y max'] = device_depth_um * 1e-6
     design_efield_monitor['override global monitor settings'] = 1
-    design_efield_monitor['use wavelength spacing'] = 1
+    design_efield_monitor[ wavelength_spacing_key ] = 1
     design_efield_monitor['use source limits'] = 0
 
     minimum_wavelength_um = color_centers_um[ color_idx ] - bandwidth_um
@@ -219,9 +229,9 @@ for color_idx in range( 0, num_colors ):
     design_efield_monitor['minimum wavelength'] = minimum_wavelength_um * 1e-6
     design_efield_monitor['maximum wavelength'] = maximum_wavelength_um * 1e-6
     design_efield_monitor['frequency points'] = num_freq_points_per_color
-    design_efield_monitor['output Hx'] = 0
-    design_efield_monitor['output Hy'] = 0
-    design_efield_monitor['output Hz'] = 0
+    design_efield_monitor['output Hx'] = 1
+    design_efield_monitor['output Hy'] = 1
+    design_efield_monitor['output Hz'] = 1
 
     design_efield_monitors.append( design_efield_monitor )
 
@@ -240,7 +250,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
     focal_monitor['x'] = adjoint_x_positions_um[adj_src_idx] * 1e-6
     focal_monitor['y'] = -focal_length_um * 1e-6
     focal_monitor['override global monitor settings'] = 1
-    focal_monitor['use wavelength spacing'] = 1
+    focal_monitor[ wavelength_spacing_key ] = 1
     focal_monitor['use source limits'] = 0
 
     minimum_wavelength_um = color_centers_um[ adj_src_idx ] - bandwidth_um
@@ -259,16 +269,28 @@ for adj_src_idx in range(0, num_adjoint_sources):
     transmission_monitor['x span'] = 0.5 * aperture_size_um * 1e-6
     transmission_monitor['y'] = -focal_length_um * 1e-6
     transmission_monitor['override global monitor settings'] = 1
-    transmission_monitor['use wavelength spacing'] = 1
+    transmission_monitor[ wavelength_spacing_key ] = 1
     transmission_monitor['use source limits'] = 0
-    transmission_monitor['minimum wavelength'] = ( lambda_low_um - 2 * bandwidth_um ) * 1e-6
-    transmission_monitor['maximum wavelength'] = ( lambda_high_um + 2 * bandwidth_um ) * 1e-6
+    transmission_monitor['minimum wavelength'] = minimum_wavelength_um * 1e-6
+    transmission_monitor['maximum wavelength'] = maximum_wavelength_um * 1e-6
     transmission_monitor['frequency points'] = num_eval_points
 
+    transmission_monitors.append( transmission_monitor )
 
+
+#
+# Blurring filter so the designs don't come out with very small features
+#
+blur_alpha = 9
+blur_size = 1
+variable_bounds = [0, 1]
+feature_blur = generic_blur_2d.make_square_blur( blur_alpha, blur_size, variable_bounds )
+
+# todo(gdroberts): this should pull from one of the efield monitors.. right now just takes likely last
+# one in the for loop.  
 disable_all_sources()
 fdtd_hook.run()
-efield_data = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
+efield_data = get_complex_monitor_data( design_efield_monitors[ 0 ][ 'name' ], 'E' )
 design_shape_voxels = np.flip( efield_data.shape[ 2 : ] )
 device_voxels_lateral = design_shape_voxels[ 0 ]
 device_voxels_vertical = design_shape_voxels[ 1 ]
@@ -278,12 +300,13 @@ min_device_permittivity = index_low**2
 max_device_permittivity = index_high**2
 
 device_density = np.random.random( design_shape_voxels )
-device_density = gaussian_filter( device_density, sigma=2 )
+device_density = gaussian_filter( device_density, sigma=3 )
 device_density -= np.min( device_density )
 device_density /= np.max( device_density )
 
 np.save( projects_directory_location + "/init_density.npy", device_density )
 
+# blurred_density = feature_blur.forward( np.squeeze( device_density ) )
 device_permittivity = min_device_permittivity + max_device_permittivity * device_density
 device_index = np.sqrt( device_permittivity )
 device_index_replicate = np.zeros( ( device_index.shape[ 0 ], device_index.shape[ 1 ], 2 ) )
@@ -319,15 +342,27 @@ max_intensity_by_wavelength = [
 
 max_unnormalized_fom_grad = -1
 avg_step_size = 0
+optimization_complete = 0
 
 for iteration in range( 0, max_iterations ):
 
     device_permittivity = min_device_permittivity + max_device_permittivity * device_density
+    # if iteration >= num_free_iterations:
+    #     blurred_density = feature_blur.forward( np.squeeze( device_density ) )
+    #     device_permittivity = min_device_permittivity + max_device_permittivity * blurred_density
+
     device_index = np.sqrt( device_permittivity )
     fdtd_hook.switchtolayout()
     fdtd_hook.select( device_import[ 'name' ] )
+
+    # if iteration >= num_free_iterations:
+    #     device_index_replicate[ :, :, 0 ] = device_index[ :, : ]
+    #     device_index_replicate[ :, :, 1 ] = device_index[ :, : ]
+    # else:
     device_index_replicate[ :, :, 0 ] = device_index[ :, :, 0 ]
     device_index_replicate[ :, :, 1 ] = device_index[ :, :, 0 ]
+
+
     fdtd_hook.importnk2( device_index_replicate, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
 
     #
@@ -338,6 +373,13 @@ for iteration in range( 0, max_iterations ):
     fdtd_hook.run()
 
     forward_e_fields = [ get_complex_monitor_data(design_efield_monitors[idx]['name'], 'E') for idx in range( 0, num_colors ) ]
+    forward_h_fields = [ get_complex_monitor_data(design_efield_monitors[idx]['name'], 'H') for idx in range( 0, num_colors ) ]
+
+    transmission_by_color_center = np.zeros( ( num_colors, num_eval_points ) )
+
+    for color_idx in range( 0, num_colors ):
+        transmission_color = np.squeeze( get_monitor_data( transmission_monitors[ color_idx ][ 'name' ], 'T' ) )
+        transmission_by_color_center[ color_idx, : ] = transmission_color
 
     focal_data = []
     for adj_src_idx in range(0, num_adjoint_sources):
@@ -399,6 +441,14 @@ for iteration in range( 0, max_iterations ):
     gradient = 2 * np.real( np.swapaxes( gradient, 0, 2 ) )
     density_gradient = ( max_device_permittivity - min_device_permittivity ) * gradient
 
+    # if iteration >= num_free_iterations:
+    #     blurred_density_gradient = ( max_device_permittivity - min_device_permittivity ) * gradient
+    #     density_gradient = feature_blur.chain_rule( np.squeeze( blurred_density_gradient ), np.squeeze( blurred_density ), np.squeeze( device_density ) )
+
+    #     recast_gradient = np.zeros( gradient.shape, dtype=gradient.dtype )
+    #     recast_gradient[ :, :, 0 ] = density_gradient
+    #     density_gradient = recast_gradient
+
     step_size = avg_step_size
 
     if iteration < num_collect_step_size_iterations:
@@ -416,6 +466,30 @@ for iteration in range( 0, max_iterations ):
     device_density += step_size * density_gradient
     device_density = np.maximum( np.minimum( device_density, 1 ), 0 )
 
+    device_permittivity = min_device_permittivity + max_device_permittivity * device_density
+    device_index = np.sqrt( device_permittivity )
+    np.save( projects_directory_location + "/figure_of_merit.npy", figure_of_merit )
+    np.save( projects_directory_location + "/density.npy", device_density )
+    np.save( projects_directory_location + "/permittivity.npy", device_permittivity )
+    np.save( projects_directory_location + "/index.npy", device_index )
+    np.save( projects_directory_location + "/aperture_size_um.npy", aperture_size_um )
+    np.save( projects_directory_location + "/device_depth_um.npy", device_depth_um )
+    np.save( projects_directory_location + "/lambda_low_um.npy", lambda_low_um )
+    np.save( projects_directory_location + "/lambda_high_um.npy", lambda_high_um )
+    np.save( projects_directory_location + "/index_low.npy", index_low )
+    np.save( projects_directory_location + "/index_high.npy", index_high )
+    np.save( projects_directory_location + "/focal_length_um.npy", focal_length_um )
+    np.save( projects_directory_location + "/pseudorandom_seed.npy", pseudorandom_seed )
+    np.save( projects_directory_location + "/bandwidth_fraction.npy", bandwidth_fraction )
+    np.save( projects_directory_location + "/num_bandwidth_spacings_min.npy", num_bandwidth_spacings_min )
+    np.save( projects_directory_location + "/transmission_by_color_center.npy", transmission_by_color_center )
+    np.save( projects_directory_location + "/optimization_complete.npy", optimization_complete )
+
+    for color_idx in range(0, num_colors):
+        np.save( projects_directory_location + "/forward_e_fields_" + str(color_idx) + ".npy", forward_e_fields[ color_idx ] )
+        np.save( projects_directory_location + "/forward_h_fields_" + str(color_idx) + ".npy", forward_h_fields[ color_idx ] )
+
+
     fom_empirircal_gradient_relative_size = fom_empirical_gradient_dropoff    
     if iteration > 0:
         unnormalized_fom_grad = figure_of_merit[ iteration ] - figure_of_merit[ iteration - 1 ]
@@ -425,35 +499,7 @@ for iteration in range( 0, max_iterations ):
 
     if iteration > min_iterations:
         if fom_empirircal_gradient_relative_size < fom_empirical_gradient_dropoff:
+            optimization_complete = 1
             break
 
-device_permittivity = min_device_permittivity + max_device_permittivity * device_density
-device_index = np.sqrt( device_permittivity )
-np.save( projects_directory_location + "/figure_of_merit.npy", figure_of_merit )
-np.save( projects_directory_location + "/density.npy", device_density )
-np.save( projects_directory_location + "/permittivity.npy", device_permittivity )
-np.save( projects_directory_location + "/index.npy", device_index )
-np.save( projects_directory_location + "/aperture_size_um.npy", aperture_size_um )
-np.save( projects_directory_location + "/device_depth_um.npy", device_depth_um )
-np.save( projects_directory_location + "/lambda_low_um.npy", lambda_low_um )
-np.save( projects_directory_location + "/lambda_high_um.npy", lambda_high_um )
-np.save( projects_directory_location + "/index_low.npy", index_low )
-np.save( projects_directory_location + "/index_high.npy", index_high )
-np.save( projects_directory_location + "/focal_length_um.npy", focal_length_um )
-np.save( projects_directory_location + "/pseudorandom_seed.npy", pseudorandom_seed )
-np.save( projects_directory_location + "/bandwidth_fraction.npy", bandwidth_fraction )
-np.save( projects_directory_location + "/num_bandwidth_spacings_min.npy", num_bandwidth_spacings_min )
-
-disable_all_sources()
-design_efield_monitor['output Hx'] = 1
-design_efield_monitor['output Hy'] = 1
-design_efield_monitor['output Hz'] = 1
-forward_src.enabled = 1
-fdtd_hook.run()
-
-for color_idx in range(0, num_colors):
-    forward_e_fields = get_complex_monitor_data(design_efield_monitors[color_idx]['name'], 'E')
-    forward_h_fields = get_complex_monitor_data(design_efield_monitors[color_idx]['name'], 'E')
-
-    np.save( projects_directory_location + "/forward_e_fields_" + str(color_idx) + ".npy", forward_e_fields )
-    np.save( projects_directory_location + "/forward_h_fields_" + str(color_idx) + ".npy", forward_h_fields )
+np.save( projects_directory_location + "/optimization_complete.npy", optimization_complete )

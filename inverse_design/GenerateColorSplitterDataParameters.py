@@ -46,7 +46,7 @@ focal_length_bounds_lambda_plus_units = [ 1, 6 ]
 # we will use rough formula of:
 # NA ~ n * W / ( 2 * f ), where n = 1.0 (imaging in air), W is the aperture size, f is the focal distance (which we will take to be from the end of the device)
 # so in order to pick focal length, we compute it via:
-# f = NA * W / 2
+# f = W / ( 2 * NA )
 numerical_aperture_bounds = [ 0.25, 1.5 ]
 
 aperture_size_um = lambda_plus_um * aperture_size_lambda_plus_units
@@ -60,7 +60,7 @@ vertical_gap_lambda_plus = 2
 lateral_gap_um = lambda_plus_um * lateral_gap_lambda_plus
 vertical_gap_um = lambda_plus_um * vertical_gap_lambda_plus
 
-mesh_spacing_lambda_plus = 1. / 12.
+mesh_spacing_lambda_plus = 1. / 20.
 mesh_spacing_um = lambda_plus_um * mesh_spacing_lambda_plus
 
 fdtd_simulation_time_fs = 10000
@@ -73,8 +73,9 @@ num_adjoint_sources = 2
 #
 # Optimization
 #
-min_iterations = 40
-max_iterations = 100
+min_iterations = 60
+# num_free_iterations = int( 0.5 * min_iterations )
+max_iterations = 130
 fom_empirical_gradient_dropoff = 0.05
 
 num_collect_step_size_iterations = 5
