@@ -26,7 +26,7 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 1.5
+focal_length_um = 3.0
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
