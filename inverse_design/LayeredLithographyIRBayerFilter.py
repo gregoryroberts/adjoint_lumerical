@@ -16,7 +16,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.num_z_layers = num_z_layers
 		self.flip_threshold = 0.5
 		self.minimum_design_value = 0
-		self.maximum_design_value = 1
+        self.maximum_design_value = 1
         self.spacer_height_voxels = spacer_height_voxels
 		self.init_filters_and_variables()
 
