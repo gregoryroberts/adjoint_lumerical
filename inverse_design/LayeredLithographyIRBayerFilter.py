@@ -16,8 +16,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.num_z_layers = num_z_layers
 		self.flip_threshold = 0.5
 		self.minimum_design_value = 0
-        self.maximum_design_value = 1
-        self.spacer_height_voxels = spacer_height_voxels
+		self.maximum_design_value = 1
+		self.spacer_height_voxels = spacer_height_voxels
 		self.init_filters_and_variables()
 
 		self.update_permittivity()
@@ -104,8 +104,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 	# In the step function, we should update the permittivity with update_permittivity
 	def step(self, gradient, step_size):
-        # We are not rebinning the gradient here, but we can do this again if we want to guarantee feature
-        # and hole size minimums
+		# We are not rebinning the gradient here, but we can do this again if we want to guarantee feature
+		# and hole size minimums
 		self.w[0] = self.proposed_design_step(gradient, step_size)
 		# Update the variable stack including getting the permittivity at the w[-1] position
 		self.update_permittivity()
