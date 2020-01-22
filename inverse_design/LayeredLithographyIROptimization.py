@@ -154,7 +154,7 @@ design_import['z min'] = device_vertical_minimum_um * 1e-6
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
 bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers, spacer_size_voxels)
 
-bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
+# bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
@@ -410,6 +410,7 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
 		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
+		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
 
 
 
