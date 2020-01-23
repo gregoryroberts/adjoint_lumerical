@@ -43,15 +43,26 @@ fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
-fdtd['mesh type'] = 'uniform'
-fdtd['define x mesh by'] = 'number of mesh cells'
-fdtd['define y mesh by'] = 'number of mesh cells'
-fdtd['define z mesh by'] = 'number of mesh cells'
-fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
+# fdtd['mesh type'] = 'uniform'
+# fdtd['define x mesh by'] = 'number of mesh cells'
+# fdtd['define y mesh by'] = 'number of mesh cells'
+# fdtd['define z mesh by'] = 'number of mesh cells'
+# fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
+# fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
+# fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
+
+design_mesh = fdtd_hook.addmesh()
+design_mesh['name'] = 'design_override_mesh'
+design_mesh['x span'] = device_size_lateral_um * 1e-6
+design_mesh['y span'] = device_size_lateral_um * 1e-6
+design_mesh['z max'] = device_vertical_maximum_um * 1e-6
+design_mesh['z min'] = device_vertical_minimum_um * 1e-6
+design_mesh['dx'] = mesh_spacing_um * 1e-6
+design_mesh['dy'] = mesh_spacing_um * 1e-6
+design_mesh['dz'] = mesh_spacing_um * 1e-6
+
 
 #
 # General polarized source information
