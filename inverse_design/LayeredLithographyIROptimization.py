@@ -265,6 +265,8 @@ for epoch in range(start_epoch, num_epochs):
 				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
 
 
+		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
+
 		#
 		# Step 2: Compute the figure of merit
 		#
@@ -427,6 +429,6 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
 
-
+	shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_end_epoch_" + str( epoch ) + ".fsp" )
 
 

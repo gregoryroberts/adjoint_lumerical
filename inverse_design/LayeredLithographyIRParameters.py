@@ -124,13 +124,13 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 start_epoch = 0
 num_epochs = 8
-num_iterations_per_epoch = 25
+num_iterations_per_epoch = 50#25
 
-epoch_start_permittivity_change_max = 0.1
-epoch_end_permittivity_change_max = 0.02
+epoch_start_permittivity_change_max = 0.05#0.1
+epoch_end_permittivity_change_max = 0.01#0.02
 epoch_range_permittivity_change_max = epoch_start_permittivity_change_max - epoch_end_permittivity_change_max
 
-epoch_start_permittivity_change_min = 0.05
+epoch_start_permittivity_change_min = 0.025#0.05
 epoch_end_permittivity_change_min = 0
 epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
 
