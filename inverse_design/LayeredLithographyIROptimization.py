@@ -197,10 +197,6 @@ def get_monitor_data(monitor_name, monitor_field):
 	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
 	command_save_data_to_file = "matlabsave(\'" + data_transfer_filename + "\', " + extracted_data_name + ");"
 
-	print(command_read_monitor)
-	print(command_extract_data)
-	print(command_save_data_to_file)
-
 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
 
