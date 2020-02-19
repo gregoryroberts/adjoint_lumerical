@@ -174,7 +174,7 @@ design_import['z max'] = device_vertical_maximum_um * 1e-6
 design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers, spacer_size_voxels)
+bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers, spacer_size_voxels, [index_air**2, index_silicon**2])
 
 # bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
 
