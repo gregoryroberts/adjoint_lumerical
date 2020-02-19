@@ -153,6 +153,17 @@ for adj_src in range(0, num_adjoint_sources):
 
 
 #
+# Add SiO2 at the top
+#
+sio2_top = fdtd_hook.addrect()
+sio2_top['name'] = 'sio2_top'
+sio2_top['x span'] = fdtd_region_size_lateral_um * 1e-6
+sio2_top['y span'] = fdtd_region_size_lateral_um * 1e-6
+sio2_top['z min'] = device_vertical_maximum_um * 1e-6
+sio2_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+sio2_top['index'] = index_sio2
+
+#
 # Add device region and create device permittivity
 #
 design_import = fdtd_hook.addimport()
@@ -241,7 +252,7 @@ for epoch in range(start_epoch, num_epochs):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
 		fdtd_hook.switchtolayout()
-		cur_permittivity = bayer_filter.get_permittivity()
+		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 		fdtd_hook.select("design_import")
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
@@ -407,6 +418,7 @@ for epoch in range(start_epoch, num_epochs):
 		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
 		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
 		#
+		device_gradient = np.flip( device_gradient, axis=2 )
 		bayer_filter.step(-device_gradient, step_size)
 		cur_design_variable = bayer_filter.get_design_variable()
 

@@ -17,7 +17,9 @@ project_name = 'layered_infrared_3layers_2x2x2um'
 #
 index_silicon = 0.5 * ( 3.47 + 3.86 )
 index_su8 = 1.575
-background_index = index_silicon
+index_air = 1.0
+index_sio2 = 1.45
+background_index = index_air
 min_device_index = index_su8
 max_device_index = index_silicon
 
