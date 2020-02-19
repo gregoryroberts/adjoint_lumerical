@@ -10,7 +10,7 @@ from LayeredLithographyIRParameters import *
 
 class LayeredLithographyIRBayerFilter(device.Device):
 
-	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers, spacer_height_voxels):
+	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers, spacer_height_voxels, last_layer_permittivity):
 		super(LayeredLithographyIRBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
 
 		self.num_z_layers = num_z_layers
@@ -19,6 +19,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.maximum_design_value = 1
 		self.spacer_height_voxels = spacer_height_voxels
 		self.init_filters_and_variables()
+		self.last_layer_permittivity = last_layer_permittivity
 
 		self.update_permittivity()
 
@@ -39,9 +40,12 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.w[3] = var3
 
 		var4 = self.sigmoid_3.forward(var3)
-		self.w[3] = var4
+		self.w[4] = var4
 
 		var5 = self.scale_4.forward(var4)
+		get_last_layer_var4 = var4[ :, :, self.layering_z_1.last_layer_start : self.layering_z_1.last_layer_end ]
+		var5[ :, :, self.layering_z_1.last_layer_start : self.layering_z_1.last_layer_end ] = self.last_layer_permittivity[ 0 ] + ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_var4
+
 		self.w[5] = var5
 
 
@@ -49,7 +53,11 @@ class LayeredLithographyIRBayerFilter(device.Device):
 	# Need to also override the backpropagation function
 	#
 	def backpropagate(self, gradient):
+		get_last_layer_gradient = gradient[ :, :, self.layering_z_1.last_layer_start : self.layering_z_1.last_layer_end ]
+
 		gradient = self.scale_4.chain_rule(gradient, self.w[5], self.w[4])
+		gradient[ :, :, self.layering_z_1.last_layer_start : self.layering_z_1.last_layer_end ] = ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_gradient
+
 		gradient = self.sigmoid_3.chain_rule(gradient, self.w[4], self.w[3])
 		gradient = self.max_blur_xy_2.chain_rule(gradient, self.w[3], self.w[2])
 		gradient = self.layering_z_1.chain_rule(gradient, self.w[2], self.w[1])
