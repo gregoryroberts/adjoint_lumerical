@@ -45,6 +45,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		var5 = self.scale_4.forward(var4)
 		get_last_layer_var4 = var4[ :, :, self.layering_z_1.last_layer_start : self.layering_z_1.last_layer_end ]
 		var5[ :, :, self.layering_z_1.last_layer_start : self.layering_z_1.last_layer_end ] = self.last_layer_permittivity[ 0 ] + ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_var4
+		var5[ :, :, self.layering_z_1.last_layer_end : var5.shape[ 2 ] ] = self.last_layer_permittivity[ 0 ]
 
 		self.w[5] = var5
 

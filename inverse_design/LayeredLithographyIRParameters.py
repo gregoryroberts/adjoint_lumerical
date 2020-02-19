@@ -19,7 +19,7 @@ index_silicon = 0.5 * ( 3.47 + 3.86 )
 index_su8 = 1.575
 index_air = 1.0
 index_sio2 = 1.45
-background_index = index_air
+background_index = index_su8
 min_device_index = index_su8
 max_device_index = index_silicon
 

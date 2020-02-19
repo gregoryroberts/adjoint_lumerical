@@ -163,6 +163,15 @@ sio2_top['z min'] = device_vertical_maximum_um * 1e-6
 sio2_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 sio2_top['index'] = index_sio2
 
+air_bottom = fdtd_hook.addrect()
+air_bottom['name'] = 'air_bottom'
+air_bottom['x span'] = fdtd_region_size_lateral_um * 1e-6
+air_bottom['y span'] = fdtd_region_size_lateral_um * 1e-6
+air_bottom['z min'] = fdtd_region_minimum_vertical_um * 1e-6
+air_bottom['z max'] = device_vertical_minimum_um * 1e-6
+air_bottom['index'] = index_air
+
+
 #
 # Add device region and create device permittivity
 #
