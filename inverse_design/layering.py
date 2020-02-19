@@ -36,7 +36,7 @@ class Layering(filter.Filter):
 
 	def do_layering(self, data, dim, output):
 		data_shape = data.shape
-		
+
 		average = np.take(data, 0, axis=dim)
 
 		for idx in range(1, data_shape[dim]):
@@ -72,10 +72,12 @@ class Layering(filter.Filter):
 			variable_out[tuple(idx_bunch)] = self.do_layering(variable[tuple(idx_bunch)], self.dim, variable_out[tuple(idx_bunch)])
 			variable_out[tuple(idx_bunch_spacer)] = spacer_value
 
-
 		last_layer_start = (self.num_layers - 1) * num_voxels_per_layer
 		idx_bunch = [slice(None)] * variable.ndim
 		idx_bunch[self.dim] = np.arange(last_layer_start, num_voxels_total - self.spacer_height_voxels)
+
+		self.last_layer_start = last_layer_start
+		self.last_layer_end = num_voxels_total - self.spacer_height_voxels
 
 		idx_bunch_spacer = [slice(None)] * variable.ndim
 		idx_bunch_spacer[self.dim] = np.arange(num_voxels_total - self.spacer_height_voxels, num_voxels_total)
