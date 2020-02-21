@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_3x3x3um'
+project_name = 'layered_infrared_3layers_3p6x3p6x3p6um_f2p7'
 
 #
 # Optical
@@ -28,7 +28,7 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 2.5
+focal_length_um = 2.6
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
@@ -42,7 +42,7 @@ mesh_spacing_um = 0.03
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 3
+device_size_lateral_um = 3.6
 device_size_verical_um = num_vertical_layers * ( 3.0 / num_vertical_layers )
 amorphous_silicon_height_per_layer_um = 0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
@@ -58,7 +58,7 @@ device_vertical_minimum_um = 0
 # Spectral
 #
 lambda_min_um = 0.9
-lambda_max_um = 1.55
+lambda_max_um = 1.6
 
 num_bands = 3
 num_points_per_band = 10
