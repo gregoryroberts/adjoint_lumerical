@@ -62,7 +62,6 @@ class GenericBlur2D(Filter):
 		self.mask = mask
 
 		self.number_to_blur = sum((self.mask).flatten())
-		print("number to blur = " + str(self.number_to_blur))
 
 
 	def forward(self, variable_in):
