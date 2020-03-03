@@ -76,23 +76,39 @@ lambda_low_um_all = np.zeros( number_completed )
 lambda_high_um_all = np.zeros( number_completed )
 
 for opt_idx in range( 0, number_completed ):
-    base_folder = completed_optimizations[ 0 ][ 0 : -21 ] + '/'
-    
+    print( "Working on optimization " + str( opt_idx ) )
+    base_folder = completed_optimizations[ opt_idx ][ 0 : -21 ] + '/'
+    print(base_folder)
+    projects_directory_location = base_folder    
+
     fdtd_hook = lumapi.FDTD()
     fdtd_hook.load( base_folder + 'optimization.fsp' )
 
+    if fdtd_hook.layoutmode():
+        continue
+        # print("in layout")
+        # fdtd_hook.select("adj_src_0")
+        # fdtd_hook.set('enabled', 0)
+        # fdtd_hook.select('adj_src_1')
+        # fdtd_hook.set('enabled', 0)
+        # fdtd_hook.select('forward_src')
+        # fdtd_hook.set('enabled', 1)
+        # print("right before run")
+        # fdtd_hook.run()
+        # print("right after run")
+
     fdtd_hook.select('transmission_monitor0')
     num_frequency_points = int( fdtd_hook.get('frequency points') )
-    wl_min_um = float( fdtd_hook.get( 'minimum wavelength' ) )
-    wl_max_um = float( fdtd_hook.get( 'maximum wavelength' ) )
+    wl_min_um = 1e6 * float( fdtd_hook.get( 'minimum wavelength' ) )
+    wl_max_um = 1e6 * float( fdtd_hook.get( 'maximum wavelength' ) )
 
     wl_range_um = np.linspace( wl_min_um, wl_max_um, num_frequency_points )
 
-    opt_wl_low_um = float( np.load( base_folder + "/lambda_low_um.npy " ) )
-    opt_wl_high_um = float( np.load( base_folder + "/lambda_high_um.npy " ) )
+    opt_wl_low_um = float( np.load( base_folder + "/lambda_low_um.npy" ) )
+    opt_wl_high_um = float( np.load( base_folder + "/lambda_high_um.npy" ) )
 
-    transmission_low = get_monitor_data( 'transmission_monitor0', 'T' )
-    transmission_high = get_monitor_data( 'transmission_monitor1', 'T' )
+    transmission_low = np.squeeze( get_monitor_data( 'transmission_monitor0', 'T' ) )
+    transmission_high = np.squeeze( get_monitor_data( 'transmission_monitor1', 'T' ) )
 
     num_performance_low = 0
     num_performance_high = 0
