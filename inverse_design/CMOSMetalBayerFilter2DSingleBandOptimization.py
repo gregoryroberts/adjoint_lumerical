@@ -1005,8 +1005,7 @@ for epoch in range(start_epoch, num_epochs):
                 select_mode_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_e_field[ :, wl_idx, :, :, : ]
                 select_mode_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_h_field[ :, wl_idx, :, :, : ]
 
-            reflection_performance.append(  mode_overlap_fom( reflected_e_field_band, reflected_h_field_band, select_mode_e_field_band, select_mode_h_field_band, mode_overlap_norm ) )
-            # reflection_performance.append(  mode_overlap_fom( select_mode_e_field_band, select_mode_h_field_band, select_mode_e_field_band, select_mode_h_field_band ) )
+            reflection_performance.append(  mode_overlap_fom( select_mode_e_field_band, select_mode_h_field_band, select_mode_e_field_band, select_mode_h_field_band ) )
             fom_by_task.append( np.sum( reflection_performance[ reflection_band ] ) )
 
         fom_by_task = np.array( fom_by_task )
@@ -1137,10 +1136,11 @@ for epoch in range(start_epoch, num_epochs):
 
             all_gradients.append(
                 mode_overlap_gradient(
-                    reflection_performance[ reflection_band ],
-                    reflected_e_field_band, reflected_h_field_band,
+                    transmission_performance[ transmission_band ],
+                    transmitted_e_field_band, transmitted_h_field_band,
                     select_mode_e_field_band, select_mode_h_field_band,
-                    forward_reflection_e_fields, adjoint_reflection_e_fields,
+                    forward_transmission_e_fields, adjoint_transmission_e_fields,
+                    1,
                     mode_overlap_norm
                 ) / 1j
             )

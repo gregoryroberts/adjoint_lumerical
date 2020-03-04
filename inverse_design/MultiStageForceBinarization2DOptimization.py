@@ -394,7 +394,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					# normalize = 1. / num_design_frequency_points                    
 
 					for wl_idx in range( 0, num_design_frequency_points ):
-						weighting = -0.5
+						weighting = 0#-0.5
 						if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
 							weighting = 1.0
 

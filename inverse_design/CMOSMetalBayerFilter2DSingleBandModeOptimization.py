@@ -184,6 +184,8 @@ transmission_adjoint_source['wavelength stop'] = src_lambda_max_um * 1e-6
 transmission_adjoint_source['direction'] = 'Backward'
 
 
+
+
 #
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
 # the adjoint gradient
@@ -293,6 +295,27 @@ input_aperture_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 input_aperture_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 input_aperture_monitor['frequency points'] = num_eval_frequency_points
 
+
+# Add Si absorbing layer
+silicon_absorbing_layer = fdtd_hook.addrect()
+silicon_absorbing_layer['name'] = 'bottom_metal_absorber'
+silicon_absorbing_layer['x span'] = fdtd_region_size_lateral_um * 1e-6
+silicon_absorbing_layer['y min'] = bottom_metal_absorber_start_um * 1e-6
+silicon_absorbing_layer['y max'] = bottom_metal_absorber_end_um * 1e-6
+
+# metal_absorber_index = (
+#         ( silicon_absober_index_real + 1j * silicon_absober_index_imag ) *
+# 		# ( 4.32 + 1j * 0.073 ) *
+# 		np.ones( ( fdtd_region_size_lateral_voxels, bottom_metal_absorber_size_vertical_voxels, 2 ) )
+# 	)
+# metal_reflector_index = permittivity_to_index( metal_reflector_permittivity )
+
+# metal_absorber_region_x = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, fdtd_region_size_lateral_voxels)
+# metal_absorber_region_y = 1e-6 * np.linspace(bottom_metal_absorber_start_um, bottom_metal_absorber_end_um, bottom_metal_absorber_size_vertical_voxels)
+# metal_absorber_region_z = 1e-6 * np.linspace(-0.51, 0.51, 2)
+
+# fdtd_hook.select('bottom_metal_absorber')
+# fdtd_hook.importnk2(metal_absorber_index, metal_absorber_region_x, metal_absorber_region_y, metal_absorber_region_z)
 
 #
 # Add device region and create device permittivity
@@ -444,6 +467,8 @@ def import_bayer_filters():
         fdtd_hook.importnk2( import_index, bayer_filter_region_x, bayer_filter_regions_y[ device_layer_idx ], bayer_filter_region_z )
 
 def import_previous():
+    device_idx_to_metal_layer = [ "M7", "M6", "M5", "M4", "M3", "M2", "M1"]
+
     for device_layer_idx in range( 0, len( bayer_filters ) ):
         if lock_design_to_reflective[ device_layer_idx ]:
             continue
@@ -451,6 +476,40 @@ def import_previous():
         bayer_filter = bayer_filters[ device_layer_idx ]
 
         cur_design_variable = np.load(projects_directory_location + "/cur_design_variable_" + str( device_layer_idx ) + ".npy")
+        cur_design_variable = 1.0 * np.greater( cur_design_variable, 0.25 )
+        # print(np.mean(np.abs(cur_design_variable - 0.5)))
+
+        # print("Device layer is " + str(device_layer_idx))
+
+        x_pt = 0
+        while x_pt < device_voxels_lateral:
+            rect_number = 0
+            if cur_design_variable[ x_pt, 0, 0 ] == 1:
+                # start a bar
+                start_x = -0.5 * device_size_lateral_um + x_pt * mesh_spacing_um
+                
+                x_next = x_pt
+
+                while ( x_next < device_voxels_lateral ) and ( cur_design_variable[ x_next, 0, 0 ] == 1 ):
+                    x_next += 1
+                end_x = -0.5 * device_size_lateral_um + ( x_next - 1 ) * mesh_spacing_um
+
+                if (end_x - start_x) > 0.090:
+                    print("dbCreateRect(cv list(\"" + device_idx_to_metal_layer[device_layer_idx] + "\" \"drawing\") list(" + str(start_x) + ":0 " + str(end_x) + ":inf_size_um) )")
+                elif (end_x - start_x) > 0.075:
+                    # pre_end_x = end_x
+                    end_x = start_x + 0.090
+                    # print('EXXXXTENDING ' + str(end_x - pre_end_x))
+                    print("dbCreateRect(cv list(\"" + device_idx_to_metal_layer[device_layer_idx] + "\" \"drawing\") list(" + str(start_x) + ":0 " + str(end_x) + ":inf_size_um) )")
+
+                # print("X rectangle number " + str(rect_number) + " is " + str( start_x ) + " , " + str( end_x ) )
+                rect_number += 1
+                x_pt = x_next - 1
+            x_pt += 1
+
+        print("\n")
+
+
         bayer_filter.set_design_variable( cur_design_variable )
 
     import_bayer_filters()
@@ -737,7 +796,12 @@ for epoch in range(start_epoch, num_epochs):
                 select_mode_e_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_e_field[ :, wl_idx, :, :, : ]
                 select_mode_h_field_band[ :, wl_idx - wavelength_range[ 0 ], :, :, : ] = mode_h_field[ :, wl_idx, :, :, : ]
 
-            reflection_performance.append(  mode_overlap_fom( reflected_e_field_band, reflected_h_field_band, select_mode_e_field_band, select_mode_h_field_band, 1, mode_overlap_norm ) )
+            cur_reflection_overlap = mode_overlap_fom( reflected_e_field_band, reflected_h_field_band, select_mode_e_field_band, select_mode_h_field_band, 1, mode_overlap_norm )
+
+            if reflection_max[ reflection_band ]:
+                reflection_performance.append( cur_reflection_overlap )
+            else:
+                reflection_performance.append( ( 1 / num_points_per_band ) - cur_reflection_overlap )
             fom_by_task.append( np.sum( reflection_performance[ reflection_band ] ) )
 
 
@@ -859,8 +923,7 @@ for epoch in range(start_epoch, num_epochs):
 
             mode_overlap_norm = mode_overlap_maxima_r[ reflection_band ]
 
-            all_gradients.append(
-                mode_overlap_gradient(
+            cur_reflection_gradient = mode_overlap_gradient(
                     reflection_performance[ reflection_band ],
                     reflected_e_field_band, reflected_h_field_band,
                     select_mode_e_field_band, select_mode_h_field_band,
@@ -868,7 +931,15 @@ for epoch in range(start_epoch, num_epochs):
                     1,
                     mode_overlap_norm
                 ) / 1j
-            )
+
+            if reflection_max[ reflection_band ]:
+                all_gradients.append(
+                    cur_reflection_gradient
+                )
+            else:
+                all_gradients.append(
+                    -cur_reflection_gradient
+                )
 
 
         disable_all_sources()
@@ -978,9 +1049,9 @@ for epoch in range(start_epoch, num_epochs):
 
 
 
-# disable_all_sources()
-# forward_src.enabled = 1
-# fdtd_hook.run()
+disable_all_sources()
+forward_src.enabled = 1
+fdtd_hook.run()
 
 # transmisison_low = -get_monitor_data( 'transmission_monitor_0', 'T' )
 # transmisison_high = -get_monitor_data( 'transmission_monitor_1', 'T' )

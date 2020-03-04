@@ -14,7 +14,7 @@ import FreeBayerFilter2D
 #
 # Files
 #
-project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_expl_reject_dual_pol_multistage_force_bin_design_mesh_longer_focal_4xtsmc_um'
+project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_force_bin_design_mesh_longer_focal_4xtsmc_um'
 
 #
 # Optical
@@ -190,7 +190,7 @@ free_in_layers = OptimizationLayersSpacers.OptimizationLayersSpacers(
     free_in_layers_file_prefix )
 
 
-num_density_layered_iterations = 50
+num_density_layered_iterations = 100
 num_density_layered_epochs = 1
 max_change_per_iter_in_density_layered = 0.01
 density_layered_file_prefix = "density_layered_"
@@ -221,8 +221,8 @@ iteration_erode_dilate_gap = 30#40
 control_feature = 0.08 / lsf_mesh_spacing_um
 num_iterations_of_erosion_dilation = int( np.floor( ( control_feature - ( 1 - ( control_feature % 2 ) ) ) / 2. ) )
 print( "num iterations erosion dilation = " + str( num_iterations_of_erosion_dilation ) )
-binarize_max_movement = 0.005 * 4
-binarize_desired_change = 0.0025 * 3
+binarize_max_movement = 0.005 * 3
+binarize_desired_change = 0.0025 * 4
 binarization_cutoff = 0.98
 density_layered_binarize_file_prefix = "density_layered_binarize_"
 

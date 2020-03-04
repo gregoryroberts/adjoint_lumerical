@@ -15,7 +15,9 @@ import sys
 # project_name = 'cmos_dielectric_reflective_no_toplayers_3focal_30pts_focal1p5um_etch_passivation_2d_no_feature_size_strict_layering_rgb_3xtsmc_um'
 # project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_4xtsmc_um'
 # project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_1xtsmc_um'
-project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
+# project_name = 'cmos_dielectric_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
+# project_name = 'cmos_metal_m10_m3_single_band_contrast_multi_freqx30_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
+project_name = 'cmos_metal_m10_m3_explicit_reject_single_band_contrast_multi_freqx15_all_transmission_2d_no_feature_size_strict_layering_rgb_2p5xtsmc_um'
 
 #
 # Random Seed
@@ -30,28 +32,28 @@ device_background_index = 1.4
 design_index_background = 1.4
 # device_background_index = 1.35
 # design_index_background = 1.35
-high_index_backfill = 2.5
+# high_index_backfill = 2.5
 
 min_real_permittivity = design_index_background**2
-# max_real_permittivity = -10
+max_real_permittivity = -10
 # max_real_permittivity = -10
 # max_real_permittivity = 2.5
 # max_real_permittivity = -18.5
-max_real_permittivity = high_index_backfill**2
+# max_real_permittivity = high_index_backfill**2
 # max_real_permittivity = 1
 
 min_imag_permittivity = 0
-# max_imag_permittivity = -3
+max_imag_permittivity = -3
 # max_imag_permittivity = -12
 # max_imag_permittivity = -12.5
 # max_imag_permittivity = -8
-max_imag_permittivity = 0
+#max_imag_permittivity = 0
 
 reflector_real_permittivity = 2.5
 reflector_imag_permittivity = -12.5
 
 init_permittivity_0_1_scale = 0
-init_max_random_0_1_scale = 0.5
+init_max_random_0_1_scale = 0.1
 init_permittivity_0_1_scale = 0.0
 
 init_from_old = True
@@ -141,7 +143,7 @@ transmission_monitor_width_um = 1.0
 designable_size_vertical_um = np.sum( layer_thicknesses_um )# 2.42
 # We will assume just air below this
 # bottom_metal_absorber_size_vertical_um = 1.0
-bottom_metal_absorber_size_vertical_um = 0
+bottom_metal_absorber_size_vertical_um = 1.0
 # Top dielectric stack size we will not be designing for now because feature
 # size is pretty large
 # ( 6000 + 4000 + 2500 + 750 + 4000 + 750 + 32300 + 1100 + 7250 + 750 + 7750 + 500 + 6200 + 500 ) / 10000 = 7.435
@@ -183,10 +185,12 @@ dielectric_stack_end_um = m8_stack_end_um
 #
 
 num_bands = 3
-num_points_per_band = 10
+# We might want to space these points out differently to get them all in the middle of the bands and not try and
+# optimize near the band edges
+num_points_per_band = 5
 
-src_lambda_min_um = 0.4
-src_lambda_max_um = 0.7
+src_lambda_min_um = 0.45
+src_lambda_max_um = 0.65
 
 band_offset_um = ( ( 1.0 / ( 1 + num_points_per_band ) ) * ( src_lambda_max_um - src_lambda_min_um ) / num_bands )
 lambda_min_um = src_lambda_min_um + band_offset_um
@@ -214,7 +218,7 @@ lateral_gap_size_um = 1.0#2.0
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um
 fdtd_region_size_lateral_um = device_size_lateral_um + 2 * lateral_gap_size_um
 fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um
-fdtd_region_minimum_vertical_um = -bottom_metal_absorber_size_vertical_um - vertical_gap_size_um
+fdtd_region_minimum_vertical_um = -vertical_gap_size_um# -bottom_metal_absorber_size_vertical_um - vertical_gap_size_um
 
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
@@ -245,9 +249,12 @@ spectral_focal_plane_map = [
 	[2 * num_points_per_band, 3 * num_points_per_band]
 ]
 
-focus_fom_map = [ [ num_points_per_band, 2 * num_points_per_band ] ]
-reflection_fom_map = [ [ 0, num_points_per_band ], [ 2 * num_points_per_band, 3 * num_points_per_band ] ]
-transmission_fom_map = [ [ num_points_per_band, 2 * num_points_per_band ] ]
+# focus_fom_map = [ [ num_points_per_band, 2 * num_points_per_band ] ]
+# reflection_fom_map = [ [ 0, num_points_per_band ], [ 2 * num_points_per_band, 3 * num_points_per_band ] ]
+# transmission_fom_map = [ [ num_points_per_band, 2 * num_points_per_band ] ]
+reflection_fom_map = [ [ 0, num_points_per_band ], [ num_points_per_band, 2 * num_points_per_band ], [ 2 * num_points_per_band, 3 * num_points_per_band ] ]
+reflection_max = [ True, False, False ]
+transmission_fom_map = [ ]
 
 #
 # Adjoint sources
@@ -269,7 +276,7 @@ num_reflection_adjoint_sources = 1
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 300
+num_iterations_per_epoch = 0#1000
 start_epoch = 0
 
 #
@@ -306,7 +313,9 @@ if ( num_epochs is not 1 ) and use_simulated_annealing:
 # fixed_step_size = 0.5
 # fixed_step_size = 0.015#25
 # fixed_step_size = 0.5#25
-fixed_step_size = 0.2
+# fixed_step_size = 0.5
+# fixed_step_size = 0.09
+fixed_step_size = 0.05
 
 use_adaptive_step_size = True
 desired_max_max_design_change = 0.05
