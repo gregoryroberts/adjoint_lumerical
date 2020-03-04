@@ -152,7 +152,8 @@ permittivity_layer_substrate['x span'] = ( fdtd_region_size_lateral_um + 2 * lat
 permittivity_layer_substrate['y'] = 0
 permittivity_layer_substrate['y span'] = ( fdtd_region_size_lateral_um + 2 * lateral_gap_size_um ) * 1e-6
 permittivity_layer_substrate['z min'] = ( device_vertical_maximum_um ) * 1e-6
-permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + 0.7 * vertical_gap_size_um ) * 1e-6
+# Send this outside the region FDTD and let the source sit inside of it
+permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + 1.5 * vertical_gap_size_um ) * 1e-6
 permittivity_layer_substrate['index'] = max_device_index
 
 

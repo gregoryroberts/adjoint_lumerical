@@ -181,8 +181,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		self.restrictions[ 0 : blur_half_width_voxels, :, : ] = 0
 		self.restrictions[ :, 0 : blur_half_width_voxels, : ] = 0
-		self.restrictions[ ( self.restrictions.shape[ 0 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 0 ] - 1 ), :, : ] = 0
-		self.restrictions[ :, ( self.restrictions.shape[ 1 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 1 ] - 1 ), : ] = 0
+		self.restrictions[ ( self.restrictions.shape[ 0 ]- blur_half_width_voxels ) : ( self.restrictions.shape[ 0 ] ), :, : ] = 0
+		self.restrictions[ :, ( self.restrictions.shape[ 1 ] - blur_half_width_voxels ) : ( self.restrictions.shape[ 1 ] ), : ] = 0
 
 
 
@@ -250,8 +250,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		self.w[0][ 0 : blur_half_width_voxels, :, : ] = 1
 		self.w[0][ :, 0 : blur_half_width_voxels, : ] = 1
-		self.w[0][ ( self.w[0].shape[ 0 ] - 1 - blur_half_width_voxels ) : ( self.w[0].shape[ 0 ] - 1 ), :, : ] = 1
-		self.w[0][ :, ( self.w[0].shape[ 1 ] - 1 - blur_half_width_voxels ): ( self.w[0].shape[ 1 ] - 1 ), : ] = 1
+		self.w[0][ ( self.w[0].shape[ 0 ] - blur_half_width_voxels ) : ( self.w[0].shape[ 0 ] ), :, : ] = 1
+		self.w[0][ :, ( self.w[0].shape[ 1 ] - blur_half_width_voxels ): ( self.w[0].shape[ 1 ] ), : ] = 1
 
 
 	def init_filters_and_variables(self):
@@ -367,8 +367,8 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 
 		self.restrictions[ 0 : blur_half_width_voxels, :, : ] = 0
 		self.restrictions[ :, 0 : blur_half_width_voxels, : ] = 0
-		self.restrictions[ ( self.restrictions.shape[ 0 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 0 ] - 1 ), :, : ] = 0
-		self.restrictions[ :, ( self.restrictions.shape[ 1 ] - 1 - blur_half_width_voxels ) : ( self.restrictions.shape[ 1 ] - 1 ), : ] = 0
+		self.restrictions[ ( self.restrictions.shape[ 0 ] - blur_half_width_voxels ) : ( self.restrictions.shape[ 0 ] ), :, : ] = 0
+		self.restrictions[ :, ( self.restrictions.shape[ 1 ] - blur_half_width_voxels ) : ( self.restrictions.shape[ 1 ] ), : ] = 0
 
 
 
