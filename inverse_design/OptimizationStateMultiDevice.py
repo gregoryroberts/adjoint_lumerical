@@ -3,15 +3,20 @@ import CMOSMetalBayerFilter2D
 
 import scipy.signal
 
-class OptimizationState():
+class OptimizationStateMultiDevice():
 
-    def __init__( self, num_iterations, num_epochs, filename_prefix ):
+    def __init__( self, num_iterations, num_epochs, filename_prefix, num_devices ):
         self.num_iterations = num_iterations
         self.num_epochs = num_epochs
         self.filename_prefix = filename_prefix
 
-        self.figure_of_merit = np.zeros( ( num_epochs, num_iterations ) )
+        self.num_devices = num_devices
 
+        self.figure_of_merit = np.zeros( ( num_epochs, num_iterations, self.num_devices ) )
+
+    #
+    # In the multi-device case, we should have multiple pieces of data here to submit
+    #
     def submit_figure_of_merit( self, data, iteration, epoch ):
         self.figure_of_merit[ epoch, iteration ] = data
 
