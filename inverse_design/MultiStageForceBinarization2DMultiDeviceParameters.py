@@ -14,7 +14,7 @@ import FreeBayerFilterWithBlur2D
 #
 # Files
 #
-project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_force_bin_feature_size_design_mesh_4xtsmc_um_focal_3um'
+project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_force_bin_feature_sensitivity_design_mesh_4xtsmc_um_focal_3um'
 
 #
 # Optical
