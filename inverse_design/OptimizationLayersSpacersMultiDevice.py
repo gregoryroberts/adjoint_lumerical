@@ -70,7 +70,6 @@ class OptimizationLayersSpacersMultiDevice( OptimizationStateMultiDevice.Optimiz
 				self.bayer_filters.append( device_bayer_filters )
 				bayer_idx += 1
 
-
 	def assemble_index( self, device_idx ):
 		bayer_idx = 0
 		for layer_idx in range( 0, self.num_total_layers ):

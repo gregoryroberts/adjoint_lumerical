@@ -77,15 +77,13 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 				bayer_idx += 1
 
 	def assemble_index( self, device_idx ):
-		select_bayer_filters = self.bayer_filters[ device_idx ]
-
 		bayer_idx = 0
 		for layer_idx in range( 0, self.num_total_layers ):
 			layer_bottom_voxel = int( self.layer_start_coordinates_um[ layer_idx ] / self.optimization_mesh_step_um )
 			layer_top_voxel = int( ( self.layer_start_coordinates_um[ layer_idx ] + self.layer_thicknesses_um[ layer_idx ] ) / self.optimization_mesh_step_um )
 
 			if self.layer_designability[ layer_idx ]:
-				self.index[ :, layer_bottom_voxel : layer_top_voxel ] = permittivity_to_index( select_bayer_filters[ bayer_idx ].get_permittivity() )
+				self.index[ :, layer_bottom_voxel : layer_top_voxel ] = permittivity_to_index( self.bayer_filters[ bayer_idx ][ device_idx ].get_permittivity() )
 				bayer_idx += 1
 			else:
 				self.index[ :, layer_bottom_voxel : layer_top_voxel ] = self.layer_background_index[ layer_idx ]

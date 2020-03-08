@@ -303,7 +303,7 @@ optimization_conversion_functions = [
 #
 # Optimization Starting/Restarting Point
 #
-init_optimization_state = 0
+init_optimization_state = 3#0
 init_optimization_epoch = 0
 num_optimization_states = len( optimization_stages )
 
