@@ -489,43 +489,40 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 									axis=0)
 
 
-				xy_polarized_gradients_by_pol[ pol_idx ] = polarized_gradient
-				xy_polarized_gradients_by_pol_lsf[ pol_idx ] = polarized_gradient
+					xy_polarized_gradients_by_pol[ pol_idx ] = polarized_gradient
+					xy_polarized_gradients_by_pol_lsf[ pol_idx ] = polarized_gradient
 
-			weight_grad_by_pol = ( 2. / num_polarizations ) - figure_of_merit_by_pol**2 / np.sum( figure_of_merit_by_pol**2 )
-			weight_grad_by_pol = np.maximum( weight_grad_by_pol, 0 )
-			weight_grad_by_pol /= np.sum( weight_grad_by_pol )
+				weight_grad_by_pol = ( 2. / num_polarizations ) - figure_of_merit_by_pol**2 / np.sum( figure_of_merit_by_pol**2 )
+				weight_grad_by_pol = np.maximum( weight_grad_by_pol, 0 )
+				weight_grad_by_pol /= np.sum( weight_grad_by_pol )
 
-			print(figure_of_merit_by_pol)
-			print(weight_grad_by_pol)
-			print()
+				for pol_idx in range( 0, num_polarizations ):
+					xy_polarized_gradients += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol[ pol_idx ]
+					xy_polarized_gradients_lsf += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol_lsf[ pol_idx ]
 
-			for pol_idx in range( 0, num_polarizations ):
-				xy_polarized_gradients += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol[ pol_idx ]
-				xy_polarized_gradients_lsf += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol_lsf[ pol_idx ]
+				#
+				# Step 4: Step the design variable.
+				#
+				device_gradient_real = 2 * np.real( xy_polarized_gradients )
+				device_gradient_imag = 2 * np.imag( xy_polarized_gradients )
+				# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
+				# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
+				device_gradient_real = np.swapaxes(device_gradient_real, 0, 2)
+				device_gradient_imag = np.swapaxes(device_gradient_imag, 0, 2)
 
-			#
-			# Step 4: Step the design variable.
-			#
-			device_gradient_real = 2 * np.real( xy_polarized_gradients )
-			device_gradient_imag = 2 * np.imag( xy_polarized_gradients )
-			# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
-			# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
-			device_gradient_real = np.swapaxes(device_gradient_real, 0, 2)
-			device_gradient_imag = np.swapaxes(device_gradient_imag, 0, 2)
+				device_gradient_real_lsf = 2 * np.real( xy_polarized_gradients_lsf )
+				device_gradient_imag_lsf = 2 * np.imag( xy_polarized_gradients_lsf )
+				# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
+				# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
+				device_gradient_real_lsf = np.swapaxes(device_gradient_real_lsf, 0, 2)
+				device_gradient_imag_lsf = np.swapaxes(device_gradient_imag_lsf, 0, 2)
 
-			device_gradient_real_lsf = 2 * np.real( xy_polarized_gradients_lsf )
-			device_gradient_imag_lsf = 2 * np.imag( xy_polarized_gradients_lsf )
-			# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
-			# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
-			device_gradient_real_lsf = np.swapaxes(device_gradient_real_lsf, 0, 2)
-			device_gradient_imag_lsf = np.swapaxes(device_gradient_imag_lsf, 0, 2)
+				gradients_real[ device, : ] = device_gradient_real
+				gradients_imag[ device, : ] = device_gradient_imag
+				gradients_real_lsf[ device, : ] = device_gradient_real_lsf
+				gradients_imag_lsf[ device, : ] = device_gradient_imag_lsf
 
-			gradients_real[ device, : ] = device_gradient_real
-			gradients_imag[ device, : ] = device_gradient_imag
-			gradients_real_lsf[ device, : ] = device_gradient_real_lsf
-			gradients_imag_lsf[ device, : ] = device_gradient_imag_lsf
-
+			print( 'Figure of merit by device = ' + str( figure_of_merit_by_device ) )
 			my_optimization_state.submit_figure_of_merit( figure_of_merit_by_device, iteration, epoch )
 			my_optimization_state.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, epoch, iteration )
 

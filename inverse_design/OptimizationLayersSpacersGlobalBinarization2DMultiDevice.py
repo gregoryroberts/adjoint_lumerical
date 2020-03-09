@@ -248,7 +248,7 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 
 			if self.layer_designability[ layer_idx ]:
 				backprop = combined_density_layer_gradients[ bayer_idx ]
-				get_design_variable = self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].w[ 0 ]
+				get_design_variable = self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].get_design_variable()
 
 				assert len( get_design_variable.shape ) == 2, "Not 2-dimensional design space!"
 				collect_fom_gradients.append( backprop[ :, 0 ] )
@@ -284,7 +284,7 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 		# For now, ignore the beta specified because we are going to ensure
 		# that we get the requested binarization improvement
 		beta_low = 0
-		beta_high = self.max_binarize_movement#2 * self.max_binarize_movement
+		beta_high = self.max_binarize_movement
 		projected_binarization_increase = 0
 
 		c = flatten_fom_gradients
@@ -354,9 +354,17 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 
 		ending_binarization = compute_binarization( proposed_design_variable )
 
-		# import matplotlib.pyplot as plt
-		# plt.plot( cur_x, color='b', linewidth=2 )
-		# plt.show()
+		expected_binarization_change = np.dot( x_star, b )
+		actual_binarization_change = ending_binarization - starting_binarization
+
+		if expected_binarization_change < 0:
+			np.save( 'fom_gradients_debug.npy', c )
+			np.save( 'binarization_gradients_debug.npy', b )
+			np.save( 'upper_bounds_debug.npy', upper_bounds )
+			np.save( 'lower_bounds_debug.npy', lower_bounds )
+			np.save( 'beta_debug.npy', beta )
+		
+
 		expected_fom_change = np.dot( x_star, -c )
 		print( "Expected delta = " + str( np.dot( x_star, b ) ) )
 		print( "Desired delta = " + str( self.desired_binarize_change ) )
@@ -379,7 +387,9 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 			
 			cur_reshape_idx += gradient_lengths[ bayer_idx ]
 
-			for design_idx in range( 0, self.num_devices ):
+			# todo: how to eliminate leftover names that I would expect to be out of scope coming in with typos
+			# and causing bugs (design_idx versus device_idx)
+			for device_idx in range( 0, self.num_devices ):
 				self.bayer_filters[ bayer_idx ][ device_idx ].set_design_variable( new_design_variable )
 
 

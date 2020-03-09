@@ -256,7 +256,8 @@ num_density_layered_binarize_iterations = 400#2#200#400
 num_density_layered_binarize_epochs = 1#2#3
 binarize_max_movement = 0.005 * 3
 binarize_desired_change = 0.0025 * 4
-binarization_cutoff = 0.98
+# I don't think this does anything right now
+# binarization_cutoff = 0.98
 density_layered_binarize_file_prefix = "density_layered_binarize_"
 
 binarize_middle_device = 1
@@ -303,7 +304,7 @@ optimization_conversion_functions = [
 #
 # Optimization Starting/Restarting Point
 #
-init_optimization_state = 3#0
+init_optimization_state = 0
 init_optimization_epoch = 0
 num_optimization_states = len( optimization_stages )
 
