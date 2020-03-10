@@ -110,7 +110,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				total_shape = np.product( input_variable.shape )
 				return ( 2 / total_shape ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
 			def compute_binarization_gradient( input_variable ):
-				total_shape = np.produce( input_variable.shape )
+				total_shape = np.product( input_variable.shape )
 				return ( 4 / total_shape ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
 
