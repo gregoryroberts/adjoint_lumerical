@@ -229,8 +229,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			bin_after = compute_binarization(proposed_design_variable)
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 			bin_after_after = compute_binarization(proposed_design_variable)
-			print('bin change 0 ' + str(bin_after))
-			print('bin change 1 ' + str(bin_after_after))
+			print('bin change 0 ' + str(bin_after - bin_before))
+			print('bin change 1 ' + str(bin_after_after - bin_before))
 			print("\n")
 
 
