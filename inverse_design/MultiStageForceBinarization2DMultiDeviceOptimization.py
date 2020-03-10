@@ -346,6 +346,8 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 	device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
 
 	for epoch in range( start_epoch, num_epochs ):
+		# Make sure you start at epoch 0 on the next otimization stage
+		start_epoch = 0
 
 		my_optimization_state.update_epoch( epoch )
 

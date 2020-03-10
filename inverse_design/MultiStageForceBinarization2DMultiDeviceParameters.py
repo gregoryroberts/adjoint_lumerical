@@ -165,7 +165,7 @@ device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
 
 num_free_iterations = 25
 num_free_epochs = 1
-max_change_per_iter_free = 0.025 / lsf_step_size_factor
+max_change_per_iter_free = 4 * 0.025 / lsf_step_size_factor
 free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
 free_optimization_file_prefix = "free_"
 
@@ -197,7 +197,7 @@ free_optimization = FreeOptimizationMultiDevice.FreeOptimizationMultiDevice(
 
 num_free_in_layers_iterations = 25
 num_free_in_layers_epochs = 1
-max_change_per_iter_free_in_layers = 0.015 / lsf_step_size_factor
+max_change_per_iter_free_in_layers = 4 * 0.015 / lsf_step_size_factor
 free_in_layers_file_prefix = "free_in_layers_"
 
 
@@ -232,7 +232,7 @@ free_in_layers = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacersM
 
 num_density_layered_iterations = 100
 num_density_layered_epochs = 1
-max_change_per_iter_in_density_layered = 0.01 / lsf_step_size_factor
+max_change_per_iter_in_density_layered = 4 * 0.01 / lsf_step_size_factor
 density_layered_file_prefix = "density_layered_"
 
 def generate_layered_bayer_with_blurs( dilation_size_voxels ):

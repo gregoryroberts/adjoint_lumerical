@@ -116,18 +116,17 @@ class OptimizationLayersSpacersMultiDevice( OptimizationStateMultiDevice.Optimiz
 		for device_idx in range( 0, self.num_devices ):
 			bayer_idx = 0
 			for layer_idx in range( 0, self.num_total_layers ):
-				layer_bottom_voxel = int( self.layer_start_coordinates_um[ layer_idx ] / self.optimization_mesh_step_um )
-				layer_top_voxel = int( ( self.layer_start_coordinates_um[ layer_idx ] + self.layer_thicknesses_um[ layer_idx ] ) / self.optimization_mesh_step_um )
-
-				layer_thickness_voxels = layer_top_voxel - layer_bottom_voxel
-				average_layer_density = np.zeros( ( reinterpolate_density.shape[ 0 ], layer_thickness_voxels ) )
-				
-				get_average = np.squeeze( np.mean( reinterpolate_density[ :, layer_bottom_voxel : layer_top_voxel ], axis=1 ) )
-
-				for sublayer in range( layer_thickness_voxels ):
-					average_layer_density[ :, sublayer ] = get_average
-
 				if self.layer_designability[ layer_idx ]:
+					layer_bottom_voxel = int( self.layer_start_coordinates_um[ layer_idx ] / self.optimization_mesh_step_um )
+					layer_top_voxel = int( ( self.layer_start_coordinates_um[ layer_idx ] + self.layer_thicknesses_um[ layer_idx ] ) / self.optimization_mesh_step_um )
+
+					layer_thickness_voxels = layer_top_voxel - layer_bottom_voxel
+					average_layer_density = np.zeros( ( reinterpolate_density.shape[ 0 ], layer_thickness_voxels ) )
+					
+					get_average = np.squeeze( np.mean( reinterpolate_density[ :, layer_bottom_voxel : layer_top_voxel ], axis=1 ) )
+					for sublayer in range( layer_thickness_voxels ):
+						average_layer_density[ :, sublayer ] = get_average
+
 					self.bayer_filters[ bayer_idx ][ device_idx ].set_design_variable(
 						average_layer_density
 					)
