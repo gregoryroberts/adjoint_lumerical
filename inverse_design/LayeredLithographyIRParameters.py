@@ -42,9 +42,9 @@ mesh_spacing_um = 0.03
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 3.6
+device_size_lateral_um = 3.0#3.6
 device_size_verical_um = num_vertical_layers * ( 3.0 / num_vertical_layers )
-amorphous_silicon_height_per_layer_um = 0.8
+amorphous_silicon_height_per_layer_um = 0.5#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
@@ -89,7 +89,7 @@ fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
 
-fdtd_simulation_time_fs = 4 * 700
+fdtd_simulation_time_fs = 20#4 * 700
 
 #
 # Forward Source
@@ -125,8 +125,11 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 # Optimization
 #
 start_epoch = 0
-num_epochs = 8
-num_iterations_per_epoch = 35#50#25
+num_epochs = 2#8
+num_iterations_per_epoch = 100#35#50#25
+binarization_start_epoch = 0#1
+binarization_beta = 0.012
+binarization_desired_cange = 0.0025
 
 epoch_start_permittivity_change_max = 0.05#0.1
 epoch_end_permittivity_change_max = 0.01#0.02
