@@ -263,9 +263,9 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			print( "Expected scaled FOM change = " + str( expected_fom_change ) )
 			print( "Achieved binarization delta = " + str( actual_binarization_change ) )
 
-			proposed_design_variable = self.w[0] + x_star.reshape( original_shape )
-			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
-			self.w[0] = proposed_design_variable
+			# proposed_design_variable = self.w[0] + x_star.reshape( original_shape )
+			# proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
+			# self.w[0] = proposed_design_variable
 
 		else:
 			self.w[0] = self.proposed_design_step(gradient, step_size)
