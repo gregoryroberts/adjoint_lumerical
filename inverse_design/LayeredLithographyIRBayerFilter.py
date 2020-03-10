@@ -205,7 +205,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			proposed_design_variable = flatten_design_cuts + x_star
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
-			var1 = self.layering_z_0.forward(proposed_design_variable.reshape( original_shape ) )
+			# var1 = self.layering_z_0.forward(proposed_design_variable.reshape( original_shape ) )
+			var1 = proposed_design_variable.reshape( original_shape )
 			var2 = self.max_blur_xy_1.forward(var1)
 			final_binarization = compute_binarization( var2 )
 
