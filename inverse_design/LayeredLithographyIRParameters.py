@@ -89,7 +89,7 @@ fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
 
-fdtd_simulation_time_fs = 20#4 * 700
+fdtd_simulation_time_fs = 4 * 700
 
 #
 # Forward Source
