@@ -196,7 +196,7 @@ free_optimization = FreeOptimizationMultiDevice.FreeOptimizationMultiDevice(
 
 num_free_in_layers_iterations = 25
 num_free_in_layers_epochs = 1
-max_change_per_iter_free_in_layers = 0.015
+max_change_per_iter_free_in_layers = 0.01#0.015
 free_in_layers_file_prefix = "free_in_layers_"
 
 
@@ -319,7 +319,7 @@ optimization_conversion_functions = [
 #
 # Optimization Starting/Restarting Point
 #
-init_optimization_state = 1#0
+init_optimization_state = 0
 init_optimization_epoch = 0
 num_optimization_states = len( optimization_stages )
 
