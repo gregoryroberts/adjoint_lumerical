@@ -128,8 +128,8 @@ start_epoch = 0
 num_epochs = 2#8
 num_iterations_per_epoch = 100#35#50#25
 binarization_start_epoch = 0#1
-binarization_beta = 0.012
-binarization_desired_cange = 0.0025
+max_binarize_movement = 0.012
+desired_binarize_change = 0.0025
 
 epoch_start_permittivity_change_max = 0.05#0.1
 epoch_end_permittivity_change_max = 0.01#0.02
