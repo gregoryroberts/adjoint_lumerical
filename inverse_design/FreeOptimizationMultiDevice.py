@@ -35,7 +35,7 @@ class FreeOptimizationMultiDevice( OptimizationStateMultiDevice.OptimizationStat
             self.bayer_filters.append( self.bayer_filter_creator_fns[ device_idx ]( self.opt_device_size_voxels, self.opt_device_size_voxels[ 1 ] ) )
             self.bayer_filters[ device_idx ].set_design_variable( self.opt_seed )
 
-        self.step_size = 0.025
+        self.step_size = step_size#0.025
 
     def load_design( self, filebase, epoch ):
         load_design_variable = np.load( filebase + "/" + self.filename_prefix + str( epoch ) + ".npy" )
