@@ -164,7 +164,7 @@ device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
 
 num_free_iterations = 25
 num_free_epochs = 1
-max_change_per_iter_free = 0.015
+max_change_per_iter_free = 0.01#0.015
 free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
 free_optimization_file_prefix = "free_"
 
