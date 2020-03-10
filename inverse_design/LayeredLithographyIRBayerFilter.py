@@ -136,7 +136,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			extract_layers = []
 			extract_photonic_gradient = []
-			extract_binarziation_gradient = []
+			extract_binarization_gradient = []
 			extract_spacer = []
 			layer_lengths = []
 			original_shapes = []
@@ -149,7 +149,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				original_shapes.append( self.w[0][ :, :, layer_start ].shape )
 
 				extract_photonic_gradient.extend( backprop_photonic_gradient[ :, :, layer_start ].flatten() )
-				extract_binarziation_gradient.extend( backprop_binarization_gradient[ :, :, layer_start ].flatten() )
+				extract_binarization_gradient.extend( backprop_binarization_gradient[ :, :, layer_start ].flatten() )
 
 			# flatten_spacer_mask = spacer_mask.flatten()
 
@@ -172,7 +172,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			print( "Starting binarization = " + str( initial_binarization ) )
 
 			# b = np.real( backprop_binarization_gradient.flatten() )
-			b = np.real( extract_binarziation_gradient )
+			b = np.real( extract_binarization_gradient )
 			cur_x = np.zeros( dim )
 
 			lower_bounds = np.zeros( len( c ) )
@@ -246,7 +246,10 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				for internal in range( layer_start, layer_end ):
 					reassemble[ :, :, internal ] = pull_design.reshape( original_shapes[ layer_start_idx ] )
 
+			start_bin_full = compute_binarization(self.w[0])
 			self.w[0] = reassemble
+			end_bin_full = compute_binarization(reassemble)
+			print('delta full = ' + str(end_bin_full - start_bin_full))
 
 
 
