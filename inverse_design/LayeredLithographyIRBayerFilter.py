@@ -20,6 +20,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.minimum_design_value = 0
 		self.maximum_design_value = 1
 		self.spacer_height_voxels = spacer_height_voxels
+		self.layer_height_voxels = int( ( self.size[ 2 ] / self.num_z_layers ) - self.spacer_height_voxels )
 		self.init_filters_and_variables()
 		self.last_layer_permittivity = last_layer_permittivity
 
@@ -118,14 +119,21 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			# This is after the feature size blurring
 			#
 			density_for_binarizing = np.real( self.w[2] )
-			print(np.max(density_for_binarizing))
-			print(np.min(density_for_binarizing))
 
 			initial_binarization = compute_binarization( density_for_binarizing )
 
 			get_binarization_gradient = compute_binarization_gradient( density_for_binarizing )
 			backprop_binarization_gradient = self.max_blur_xy_1.chain_rule(get_binarization_gradient, self.w[2], self.w[1])
 			backprop_binarization_gradient = self.layering_z_0.chain_rule(backprop_binarization_gradient, self.w[1], self.w[0])
+
+			spacer_mask = np.ones( self.w[0].shape )
+			layer_start_idxs = layering_z_0.get_layer_idxs( self.w[0].shape )
+			layer_start_idxs.append( self.w[0].shape[ 2 ] )
+			for layer_start in range( 1, len( layer_start_idxs ) ):
+				spacer_mask[ :, :, ( layer_start_idxs[ layer_start ] - self.layering_z_0.spacer_height_voxels ) : layer_start_idxs[ layer_start ] ] = 0
+
+			flatten_spacer_mask = spacer_mask.flatten()
+
 
 			backprop_photonic_gradient = self.backpropagate( gradient )
 
@@ -154,8 +162,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			np.save( save_location + '/b.npy', b )
 
 			for idx in range( 0, len( c ) ):
-				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
-				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+				upper_bounds[ idx ] = flatten_spacer_mask[ idx ] * np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+				lower_bounds[ idx ] = flatten_spacer_mask[ idx ] * np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
 
 			np.save( save_location + '/lower_bounds.npy', lower_bounds )
 			np.save( save_location + '/upper_bounds.npy', upper_bounds )
