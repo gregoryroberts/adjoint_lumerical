@@ -14,7 +14,8 @@ import FreeBayerFilterWithBlur2D
 #
 # Files
 #
-project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_force_bin_feature_sensitivity_design_mesh_4xtsmc_um_focal_3um'
+# project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_force_bin_feature_sensitivity_design_mesh_4xtsmc_um_focal_3um'
+project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_coarse_mesh_80nm_4xtsmc_um_focal_3um'
 
 #
 # Optical
@@ -47,7 +48,8 @@ focal_length_um = 2 * 1.5
 # Device
 #
 mesh_spacing_um = 0.025
-lsf_mesh_spacing_um = 0.005
+# lsf_mesh_spacing_um = 0.005
+lsf_mesh_spacing_um = 0.08
 
 design_layer_thickness_um = 0.22
 
@@ -173,11 +175,16 @@ def generate_full_bayer_with_blurs( dilation_size_voxels ):
 
     return bayer_filter_create
 
+# free_optimization_creator_fns = [
+#     generate_full_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
+#     generate_full_bayer_with_blurs( 0 ),
+#     generate_full_bayer_with_blurs( dilation_erosion_half_width_voxels )
+# ]
+
 free_optimization_creator_fns = [
-    generate_full_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
     generate_full_bayer_with_blurs( 0 ),
-    generate_full_bayer_with_blurs( dilation_erosion_half_width_voxels )
 ]
+
 
 free_optimization = FreeOptimizationMultiDevice.FreeOptimizationMultiDevice(
     num_free_iterations, num_free_epochs, max_change_per_iter_free,
@@ -200,10 +207,14 @@ def generate_free_layers_bayer_with_blurs( dilation_size_voxels ):
 
     return bayer_filter_create
 
+# free_in_layers_creator_fns = [
+#     generate_free_layers_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
+#     generate_free_layers_bayer_with_blurs( 0 ),
+#     generate_free_layers_bayer_with_blurs( dilation_erosion_half_width_voxels )
+# ]
+
 free_in_layers_creator_fns = [
-    generate_free_layers_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
     generate_free_layers_bayer_with_blurs( 0 ),
-    generate_free_layers_bayer_with_blurs( dilation_erosion_half_width_voxels )
 ]
 
 def density_filter_update( bayer_filter, gradient_real, gradient_imag, lsf_gradient_real, lsf_gradient_imag, epoch, iteration, max_abs_gradient_step, max_abs_lsf_gradient_step, step_size ):
@@ -231,10 +242,14 @@ def generate_layered_bayer_with_blurs( dilation_size_voxels ):
 
     return bayer_filter_create
 
+# layered_creator_fns = [
+#     generate_layered_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
+#     generate_layered_bayer_with_blurs( 0 ),
+#     generate_layered_bayer_with_blurs( dilation_erosion_half_width_voxels )
+# ]
+
 layered_creator_fns = [
-    generate_layered_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
     generate_layered_bayer_with_blurs( 0 ),
-    generate_layered_bayer_with_blurs( dilation_erosion_half_width_voxels )
 ]
 
 density_layered = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacersMultiDevice(

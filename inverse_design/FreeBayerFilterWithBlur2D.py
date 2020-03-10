@@ -6,6 +6,12 @@ import generic_blur_2d as generic_blur_2d
 
 import numpy as np
 
+#
+# todo: Maybe we should add an epoch-based sigmoid filtering run after the blurring.  This would
+# ensure that the co-designed dilated and eroded designs would also have to start looking binary
+# by the end of the optimization as well.
+#
+
 class FreeBayerFilterWithBlur2D(device.Device):
 
 	def __init__(self, size, permittivity_bounds, init_permittivity, num_y_layers, dilate_size_voxels):

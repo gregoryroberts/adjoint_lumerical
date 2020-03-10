@@ -308,6 +308,13 @@ reversed_field_shape = [1, designable_device_voxels_vertical, device_voxels_late
 reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_vertical, device_voxels_lateral]
 
 
+#
+# todo(gdroberts): You should update the device again once you have changed optimization states and/or epochs.  This is because the gradient information
+# is not correct for that first iteration in a new epoch or optimization stage because it is for a different device so it will take the first step
+# incorrectly.  Steps are small so this is probably not a big deal, but still this should be fixed.  This is why all of this stuff needs to get
+# put under one umbrella.  Because there are so many versions where this needs to be changed, but there is so much code re-use not getting used.
+#
+
 start_epoch = init_optimization_epoch
 
 for optimization_state_idx in range( init_optimization_state, num_optimization_states ):
@@ -525,14 +532,11 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 			print( 'Figure of merit by device = ' + str( figure_of_merit_by_device ) )
 			my_optimization_state.submit_figure_of_merit( figure_of_merit_by_device, iteration, epoch )
 			my_optimization_state.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, epoch, iteration )
-
-
-		#
-		# At the end of every epoch, we need to save everything we have
-		#
-		my_optimization_state.save( projects_directory_location, epoch )
-
-		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_" + str( epoch ) + ".fsp" )
+			#
+			# Save out the devices and the current Lumerical project file
+			#
+			my_optimization_state.save( projects_directory_location, epoch )
+			shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_" + str( epoch ) + ".fsp" )
 
 	#
 	# We must start from the 0th epoch on every stage past the initial stage
