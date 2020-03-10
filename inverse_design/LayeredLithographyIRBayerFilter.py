@@ -114,6 +114,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				total_shape = np.product( input_variable.shape )
 				return ( 4 / total_shape ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
+			self.max_binarize_movement /= 5
 
 			#
 			# This is after the feature size blurring
