@@ -99,8 +99,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.init_variables()
 
 	# In the step function, we should update the permittivity with update_permittivity
-	def step(self, gradient, step_size, enforce_binarization=False):
-		print("in step function")
+	def step(self, gradient, step_size, enforce_binarization=False, save_location=None):
+		print("in step function and bin force = " + str(enforce_binarization))
 		if enforce_binarization:
 			print('enforcing binarization')
 
@@ -144,15 +144,15 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			lower_bounds = np.zeros( len( c ) )
 			upper_bounds = np.zeros( len( c ) )
 
-			np.save( 'c.npy', c )
-			np.save( 'b.npy', b )
+			np.save( save_location + '/c.npy', c )
+			np.save( save_location + '/b.npy', b )
 
 			for idx in range( 0, len( c ) ):
 				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
 				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
 
-			np.save( 'lower_bounds.npy', lower_bounds )
-			np.save( 'upper_bounds.npy', upper_bounds )
+			np.save( save_location + '/lower_bounds.npy', lower_bounds )
+			np.save( save_location + '/upper_bounds.npy', upper_bounds )
 
 
 			max_possible_binarization_change = 0
@@ -200,11 +200,11 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			actual_binarization_change = final_binarization - initial_binarization
 
 			if expected_binarization_change < 0:
-				np.save( 'fom_gradients_debug.npy', c )
-				np.save( 'binarization_gradients_debug.npy', b )
-				np.save( 'upper_bounds_debug.npy', upper_bounds )
-				np.save( 'lower_bounds_debug.npy', lower_bounds )
-				np.save( 'beta_debug.npy', beta )
+				np.save( save_location + '/fom_gradients_debug.npy', c )
+				np.save( save_location + '/binarization_gradients_debug.npy', b )
+				np.save( save_location + '/upper_bounds_debug.npy', upper_bounds )
+				np.save( save_location + '/lower_bounds_debug.npy', lower_bounds )
+				np.save( save_location + '/beta_debug.npy', beta )
 
 			expected_fom_change = np.dot( x_star, -c )
 			print( "Expected delta = " + str( np.dot( x_star, b ) ) )
