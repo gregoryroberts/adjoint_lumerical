@@ -223,8 +223,16 @@ class LayeredLithographyIRBayerFilter(device.Device):
 					x_star[ idx ] = lower_bounds[ idx ]
 
 
+			bin_before = compute_binarization(flatten_design_cuts)
+			print('bin bfore = ' + str(bin_before))
 			proposed_design_variable = flatten_design_cuts + x_star
+			bin_after = compute_binarization(proposed_design_variable)
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
+			bin_after_after = compute_binarization(proposed_design_variable)
+			print('bin change 0 ' + str(bin_after))
+			print('bin change 1 ' + str(bin_after_after))
+			print("\n")
+
 
 			reassemble = self.w[0].copy()
 			layer_start_idxs.append( self.w[0].shape[2] )
@@ -240,9 +248,11 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			self.w[0] = reassemble
 
+
+
 			var1 = self.layering_z_0.forward(reassemble)
 			var2 = self.max_blur_xy_1.forward(var1)
-			final_binarization = compute_binarization( var2 )
+			final_binarization = compute_binarization(var2)
 
 			print( "Ending binarization = " + str( final_binarization ) )
 
