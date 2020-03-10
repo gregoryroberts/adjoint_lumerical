@@ -240,7 +240,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			self.w[0] = reassemble
 
-			var1 = self.layering_z_0.forward(reassemble.reshape( original_shape ) )
+			var1 = self.layering_z_0.forward(reassemble)
 			var2 = self.max_blur_xy_1.forward(var1)
 			final_binarization = compute_binarization( var2 )
 
