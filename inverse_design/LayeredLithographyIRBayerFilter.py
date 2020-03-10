@@ -100,7 +100,9 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 	# In the step function, we should update the permittivity with update_permittivity
 	def step(self, gradient, step_size, enforce_binarization=False):
+		print("in step function")
 		if enforce_binarization:
+			print('enforcing binarization')
 
 			def compute_binarization( input_variable ):
 				return ( 2 / np.sqrt( len( input_variable ) ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
