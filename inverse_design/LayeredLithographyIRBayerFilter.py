@@ -227,11 +227,11 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
 			reassemble = self.w[0].copy()
-			get_layer_idxs.append( self.w[0].shape[2] )
+			layer_start_idxs.append( self.w[0].shape[2] )
 			cur_location = 0
-			for layer_start_idx in range( 0, len( get_layer_idxs ) - 1 ):
-				layer_start = get_layer_idxs[ layer_start_idx ]
-				layer_end = get_layer_idxs[ layer_start_idx + 1 ] - self.layering_z_0.spacer_height_voxels
+			for layer_start_idx in range( 0, len( layer_start_idxs ) - 1 ):
+				layer_start = layer_start_idxs[ layer_start_idx ]
+				layer_end = layer_start_idxs[ layer_start_idx + 1 ] - self.layering_z_0.spacer_height_voxels
 				
 				pull_design = proposed_design_variable[ cur_location : ( cur_location + layer_lengths[ layer_start_idx ] ) ]
 				cur_location += layer_lengths[ layer_start_idx ]
