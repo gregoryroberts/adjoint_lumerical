@@ -275,7 +275,7 @@ binarize_desired_change = 0.0025 * 4
 # binarization_cutoff = 0.98
 density_layered_binarize_file_prefix = "density_layered_binarize_"
 
-binarize_middle_device = 1
+binarize_middle_device = 0#1
 
 density_layered_binarize = OptimizationLayersSpacersGlobalBinarization2DMultiDevice.OptimizationLayersSpacersGlobalBinarization2DMultiDevice(
     num_density_layered_binarize_iterations, num_density_layered_binarize_epochs, binarize_max_movement, binarize_desired_change,
@@ -319,7 +319,7 @@ optimization_conversion_functions = [
 #
 # Optimization Starting/Restarting Point
 #
-init_optimization_state = 0
+init_optimization_state = 1#0
 init_optimization_epoch = 0
 num_optimization_states = len( optimization_stages )
 
