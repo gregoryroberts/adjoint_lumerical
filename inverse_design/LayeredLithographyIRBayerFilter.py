@@ -143,13 +143,13 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			for layer_start in range( 0, len( layer_start_idxs ) ):
 				extract = self.w[0][ :, :, layer_start ].flatten()
-				extract_layers.append( extract )
+				extract_layers.extend( extract )
 				layer_lengths.append( len( extract ) )
 
 				original_shapes.append( self.w[0][ :, :, layer_start ].shape )
 
-				extract_photonic_gradient.append( backprop_photonic_gradient[ :, :, layer_start ].flatten() )
-				extract_binarziation_gradient.append( backprop_binarization_gradient[ :, :, layer_start ].flatten() )
+				extract_photonic_gradient.extend( backprop_photonic_gradient[ :, :, layer_start ].flatten() )
+				extract_binarziation_gradient.extend( backprop_binarization_gradient[ :, :, layer_start ].flatten() )
 
 			# flatten_spacer_mask = spacer_mask.flatten()
 
