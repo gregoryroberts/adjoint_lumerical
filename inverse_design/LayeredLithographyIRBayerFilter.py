@@ -115,7 +115,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			#
 			# This is after the feature size blurring
 			#
-			density_for_binarizing = self.w[2]
+			density_for_binarizing = np.real( self.w[2] )
 			print(np.max(density_for_binarizing))
 			print(np.min(density_for_binarizing))
 
@@ -129,8 +129,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			original_shape = density_for_binarizing.shape
 
-			flatten_design_cuts = self.w[0].flatten()
-			flatten_fom_gradients = backprop_photonic_gradient.flatten()
+			flatten_design_cuts = np.real( self.w[0].flatten() )
+			flatten_fom_gradients = np.real( backprop_photonic_gradient.flatten() )
 
 			beta = self.max_binarize_movement
 			beta_low = 0
@@ -142,7 +142,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			print( "Starting binarization = " + str( initial_binarization ) )
 
-			b = backprop_binarization_gradient.flatten()
+			b = np.real( backprop_binarization_gradient.flatten() )
 			cur_x = np.zeros( dim )
 
 			lower_bounds = np.zeros( len( c ) )
