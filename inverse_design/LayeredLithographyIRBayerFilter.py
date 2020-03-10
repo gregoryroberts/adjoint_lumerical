@@ -134,7 +134,6 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			flatten_spacer_mask = spacer_mask.flatten()
 
-
 			backprop_photonic_gradient = self.backpropagate( gradient )
 
 			original_shape = density_for_binarizing.shape
