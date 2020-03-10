@@ -193,6 +193,13 @@ bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
 	max_binarize_movement,
 	desired_binarize_change)
 
+
+bayer_filter.step(
+	np.random.random( bayer_filter.get_design_variable().shape ),
+	True
+)
+sys.exit(0)
+
 # bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
