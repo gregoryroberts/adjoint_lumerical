@@ -127,7 +127,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			backprop_binarization_gradient = self.layering_z_0.chain_rule(backprop_binarization_gradient, self.w[1], self.w[0])
 
 			spacer_mask = np.ones( self.w[0].shape )
-			layer_start_idxs = layering_z_0.get_layer_idxs( self.w[0].shape )
+			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
 			layer_start_idxs.append( self.w[0].shape[ 2 ] )
 			for layer_start in range( 1, len( layer_start_idxs ) ):
 				spacer_mask[ :, :, ( layer_start_idxs[ layer_start ] - self.layering_z_0.spacer_height_voxels ) : layer_start_idxs[ layer_start ] ] = 0
