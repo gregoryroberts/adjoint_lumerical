@@ -4,6 +4,8 @@ import scale as scale
 import sigmoid as sigmoid
 import square_blur as square_blur
 
+import scipy.optimize
+
 import numpy as np
 
 from LayeredLithographyIRParameters import *
@@ -114,6 +116,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			# This is after the feature size blurring
 			#
 			density_for_binarizing = self.w[2]
+			print(np.max(density_for_binarizing))
+			print(np.min(density_for_binarizing))
 
 			initial_binarization = compute_binarization( density_for_binarizing )
 
