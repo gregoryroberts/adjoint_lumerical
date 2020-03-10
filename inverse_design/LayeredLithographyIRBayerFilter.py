@@ -107,9 +107,11 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			print('enforcing binarization')
 
 			def compute_binarization( input_variable ):
-				return ( 2 / np.sqrt( len( input_variable ) ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
+				total_shape = np.product( input_variable.shape )
+				return ( 2 / total_shape ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
 			def compute_binarization_gradient( input_variable ):
-				return ( 4 / len( input_variable ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
+				total_shape = np.produce( input_variable.shape )
+				return ( 4 / total_shape ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
 
 			#
@@ -197,11 +199,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
 			var1 = self.layering_z_0.forward(proposed_design_variable)
-			self.w[1] = var1
-
 			var2 = self.max_blur_xy_1.forward(var1)
-			self.w[2] = var2
-
 			final_binarization = compute_binarization( var2 )
 
 			print( "Ending binarization = " + str( final_binarization ) )
