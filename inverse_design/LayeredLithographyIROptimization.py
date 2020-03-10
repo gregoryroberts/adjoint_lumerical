@@ -196,7 +196,7 @@ bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
 
 bayer_filter.step(
 	np.random.random( bayer_filter.get_design_variable().shape ),
-	True
+	enforce_binarization=True
 )
 sys.exit(0)
 
@@ -446,7 +446,7 @@ for epoch in range(start_epoch, num_epochs):
 		if epoch >= binarization_start_epoch:
 			enforce_binarization = True
 		device_gradient = np.flip( device_gradient, axis=2 )
-		bayer_filter.step(-device_gradient, step_size, enforce_binarization)
+		bayer_filter.step(-device_gradient, step_size, enforce_binarization=enforce_binarization)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
