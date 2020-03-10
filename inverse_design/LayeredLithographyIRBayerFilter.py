@@ -103,9 +103,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 	# In the step function, we should update the permittivity with update_permittivity
 	def step(self, gradient, step_size, enforce_binarization=False, save_location=None):
-		print("in step function and bin force = " + str(enforce_binarization))
 		if enforce_binarization:
-			print('enforcing binarization')
 
 			def compute_binarization( input_variable ):
 				total_shape = np.product( input_variable.shape )
@@ -113,8 +111,6 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			def compute_binarization_gradient( input_variable ):
 				total_shape = np.product( input_variable.shape )
 				return ( 4 / total_shape ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
-
-			self.max_binarize_movement /= 5
 
 			#
 			# This is after the feature size blurring
