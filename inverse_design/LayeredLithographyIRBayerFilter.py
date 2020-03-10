@@ -126,20 +126,40 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			backprop_binarization_gradient = self.max_blur_xy_1.chain_rule(get_binarization_gradient, self.w[2], self.w[1])
 			backprop_binarization_gradient = self.layering_z_0.chain_rule(backprop_binarization_gradient, self.w[1], self.w[0])
 
-			spacer_mask = np.ones( self.w[0].shape )
+			# spacer_mask = np.ones( self.w[0].shape )
 			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
-			layer_start_idxs.append( self.w[0].shape[ 2 ] )
-			for layer_start in range( 1, len( layer_start_idxs ) ):
-				spacer_mask[ :, :, ( layer_start_idxs[ layer_start ] - self.layering_z_0.spacer_height_voxels ) : layer_start_idxs[ layer_start ] ] = 0
-
-			flatten_spacer_mask = spacer_mask.flatten()
+			# layer_start_idxs.append( self.w[0].shape[ 2 ] )
+			# for layer_start in range( 1, len( layer_start_idxs ) ):
+			# 	spacer_mask[ :, :, ( layer_start_idxs[ layer_start ] - self.layering_z_0.spacer_height_voxels ) : layer_start_idxs[ layer_start ] ] = 0
 
 			backprop_photonic_gradient = self.backpropagate( gradient )
 
-			original_shape = density_for_binarizing.shape
+			extract_layers = []
+			extract_photonic_gradient = []
+			extract_binarziation_gradient = []
+			extract_spacer = []
+			layer_lengths = []
+			original_shapes = []
 
-			flatten_design_cuts = np.real( self.w[0].flatten() )
-			flatten_fom_gradients = np.real( backprop_photonic_gradient.flatten() )
+			for layer_start in range( 0, len( layer_start_idxs ) ):
+				extract = self.w[0][ :, :, layer_start ].flatten()
+				extract_layers.append( extract )
+				layer_lengths.append( len( extract ) )
+
+				original_shapes.append( self.w[0][ :, :, layer_start ].shape )
+
+				extract_photonic_gradient.append( backprop_photonic_gradient[ :, :, layer_start ].flatten() )
+				extract_binarziation_gradient.append( backprop_binarization_gradient[ :, :, layer_start ].flatten() )
+
+			# flatten_spacer_mask = spacer_mask.flatten()
+
+			# original_shape = density_for_binarizing.shape
+
+			# flatten_design_cuts = np.real( self.w[0].flatten() )
+			# flatten_fom_gradients = np.real( backprop_photonic_gradient.flatten() )
+
+			flatten_design_cuts = np.real( extract_layers )
+			flatten_fom_gradients = np.real( extract_photonic_gradient )
 
 			beta = self.max_binarize_movement
 			beta_low = 0
@@ -151,7 +171,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			print( "Starting binarization = " + str( initial_binarization ) )
 
-			b = np.real( backprop_binarization_gradient.flatten() )
+			# b = np.real( backprop_binarization_gradient.flatten() )
+			b = np.real( extract_binarziation_gradient )
 			cur_x = np.zeros( dim )
 
 			lower_bounds = np.zeros( len( c ) )
@@ -161,8 +182,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			np.save( save_location + '/b.npy', b )
 
 			for idx in range( 0, len( c ) ):
-				upper_bounds[ idx ] = flatten_spacer_mask[ idx ] * np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
-				lower_bounds[ idx ] = flatten_spacer_mask[ idx ] * np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
 
 			np.save( save_location + '/lower_bounds.npy', lower_bounds )
 			np.save( save_location + '/upper_bounds.npy', upper_bounds )
@@ -205,8 +226,21 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			proposed_design_variable = flatten_design_cuts + x_star
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
-			# var1 = self.layering_z_0.forward(proposed_design_variable.reshape( original_shape ) )
-			var1 = proposed_design_variable.reshape( original_shape )
+			reassemble = self.w[0].copy()
+			get_layer_idxs.append( self.w[0].shape[2] )
+			cur_location = 0
+			for layer_start_idx in range( 0, len( get_layer_idxs ) - 1 ):
+				layer_start = get_layer_idxs[ layer_start_idx ]
+				layer_end = get_layer_idxs[ layer_start_idx + 1 ] - self.layering_z_0.spacer_height_voxels
+				
+				pull_design = proposed_design_variable[ cur_location : ( cur_location + layer_lengths[ layer_start_idx ] ) ]
+				cur_location += layer_lengths[ layer_start_idx ]
+				for internal in range( layer_start, layer_end ):
+					reassemble[ :, :, internal ] = pull_design.reshape( original_shapes[ layer_start_idx ] )
+
+			self.w[0] = reassemble
+
+			var1 = self.layering_z_0.forward(reassemble.reshape( original_shape ) )
 			var2 = self.max_blur_xy_1.forward(var1)
 			final_binarization = compute_binarization( var2 )
 
