@@ -117,23 +117,19 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			#
 			density_for_binarizing = np.real( self.w[2] )
 
-			initial_binarization = compute_binarization( density_for_binarizing )
 
 			get_binarization_gradient = compute_binarization_gradient( density_for_binarizing )
 			backprop_binarization_gradient = self.max_blur_xy_1.chain_rule(get_binarization_gradient, self.w[2], self.w[1])
 			backprop_binarization_gradient = self.layering_z_0.chain_rule(backprop_binarization_gradient, self.w[1], self.w[0])
 
-			# spacer_mask = np.ones( self.w[0].shape )
 			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
-			# layer_start_idxs.append( self.w[0].shape[ 2 ] )
-			# for layer_start in range( 1, len( layer_start_idxs ) ):
-			# 	spacer_mask[ :, :, ( layer_start_idxs[ layer_start ] - self.layering_z_0.spacer_height_voxels ) : layer_start_idxs[ layer_start ] ] = 0
 
 			backprop_photonic_gradient = self.backpropagate( gradient )
 
 			extract_layers = []
 			extract_photonic_gradient = []
 			extract_binarization_gradient = []
+			extract_w2_init = []
 			extract_spacer = []
 			layer_lengths = []
 			original_shapes = []
@@ -148,12 +144,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				extract_photonic_gradient.extend( np.real( backprop_photonic_gradient[ :, :, layer_start ].flatten() ) )
 				extract_binarization_gradient.extend( np.real( backprop_binarization_gradient[ :, :, layer_start ].flatten() ) )
 
-			# flatten_spacer_mask = spacer_mask.flatten()
-
-			# original_shape = density_for_binarizing.shape
-
-			# flatten_design_cuts = np.real( self.w[0].flatten() )
-			# flatten_fom_gradients = np.real( backprop_photonic_gradient.flatten() )
+				extract_w2_init.extend( np.real( self.w[2][ :, :, layer_start ].flatten() ) )
 
 			flatten_design_cuts = np.real( extract_layers )
 			flatten_fom_gradients = np.real( extract_photonic_gradient )
@@ -166,9 +157,9 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			c = flatten_fom_gradients
 			dim = len(c)
 
+			initial_binarization = compute_binarization( np.array( extract_w2_init ) )
 			print( "Starting binarization = " + str( initial_binarization ) )
 
-			# b = np.real( backprop_binarization_gradient.flatten() )
 			b = np.real( extract_binarization_gradient )
 			cur_x = np.zeros( dim )
 
@@ -219,17 +210,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				else:
 					x_star[ idx ] = lower_bounds[ idx ]
 
-
-			bin_before = compute_binarization(flatten_design_cuts)
-			print('bin bfore = ' + str(bin_before))
 			proposed_design_variable = flatten_design_cuts + x_star
-			bin_after = compute_binarization(proposed_design_variable)
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
-			bin_after_after = compute_binarization(proposed_design_variable)
-			print('bin change 0 ' + str(bin_after - bin_before))
-			print('bin change 1 ' + str(bin_after_after - bin_before))
-			print("\n")
-
 
 			reassemble = self.w[0].copy()
 			layer_start_idxs.append( self.w[0].shape[2] )
@@ -243,16 +225,15 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				for internal in range( layer_start, layer_end ):
 					reassemble[ :, :, internal ] = pull_design.reshape( original_shapes[ layer_start_idx ] )
 
-			start_bin_full = compute_binarization(self.w[0])
 			self.w[0] = reassemble
-			end_bin_full = compute_binarization(reassemble)
-			print('delta full = ' + str(end_bin_full - start_bin_full))
+			self.update_permittivity()
 
+			extract_w2_final = []
 
+			for layer_start in range( 0, len( layer_start_idxs ) ):
+				extract_w2_final.extend( np.real( self.w[2][ :, :, layer_start ].flatten() ) )
 
-			var1 = self.layering_z_0.forward(reassemble)
-			var2 = self.max_blur_xy_1.forward(var1)
-			final_binarization = compute_binarization(var2)
+			final_binarization = compute_binarization( np.array( extract_w2_final ) )
 
 			print( "Ending binarization = " + str( final_binarization ) )
 
@@ -273,14 +254,10 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			print( "Expected scaled FOM change = " + str( expected_fom_change ) )
 			print( "Achieved binarization delta = " + str( actual_binarization_change ) )
 
-			# proposed_design_variable = self.w[0] + x_star.reshape( original_shape )
-			# proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
-			# self.w[0] = proposed_design_variable
-
 		else:
 			self.w[0] = self.proposed_design_step(gradient, step_size)
 			# Update the variable stack including getting the permittivity at the w[-1] position
-		self.update_permittivity()
+			self.update_permittivity()
 
 	def convert_to_binary_map(self, variable):
 		return np.greater(variable, self.mid_permittivity)

@@ -194,6 +194,7 @@ bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
 	desired_binarize_change)
 
 
+bayer_filter.set_design_variable( np.random.random( bayer_filter.get_design_variable().shape ) )
 bayer_filter.step(
 	np.random.random( bayer_filter.get_design_variable().shape ),
 	0.01,
