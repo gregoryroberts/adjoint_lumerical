@@ -122,6 +122,9 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			backprop_binarization_gradient = self.max_blur_xy_1.chain_rule(get_binarization_gradient, self.w[2], self.w[1])
 			backprop_binarization_gradient = self.layering_z_0.chain_rule(backprop_binarization_gradient, self.w[1], self.w[0])
 
+			backprop_beta = self.max_blur_xy_1.chain_rule( self.max_binarize_movement * np.ones( self.w[0].shape ), self.w[2], self.w[1] )
+			backprop_beta = self.layering_z_0.chain_rule( backprop_beta, self.w[1], self.w[0] )
+
 			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
 
 			backprop_photonic_gradient = self.backpropagate( gradient )
@@ -130,11 +133,15 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			extract_photonic_gradient = []
 			extract_binarization_gradient = []
 			extract_w2_init = []
-			extract_spacer = []
+			extract_beta = []
 			layer_lengths = []
 			original_shapes = []
 
-			for layer_start in range( 0, len( layer_start_idxs ) ):
+			import matplotlib.pyplot as plt
+
+			for layer_start_idx in range( 0, len( layer_start_idxs ) ):
+				layer_start = layer_start_idxs[ layer_start_idx ]
+
 				extract = np.real( self.w[0][ :, :, layer_start ].flatten() )
 				extract_layers.extend( extract )
 				layer_lengths.append( len( extract ) )
@@ -146,12 +153,15 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 				extract_w2_init.extend( np.real( self.w[2][ :, :, layer_start ].flatten() ) )
 
+				extract_beta.extend( np.real( backprop_beta[ :, :, layer_start ].flatten() ) )
+
+			beta_factor = np.mean( np.abs( extract_beta ) )
+
 			flatten_design_cuts = np.real( extract_layers )
 			flatten_fom_gradients = np.real( extract_photonic_gradient )
 
-			beta = self.max_binarize_movement
-			beta_low = 0
-			beta_high = self.max_binarize_movement
+			beta = self.max_binarize_movement / beta_factor
+			print( 'beta factor = ' + str( beta ) )
 			projected_binarization_increase = 0
 
 			c = flatten_fom_gradients
@@ -172,6 +182,16 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			for idx in range( 0, len( c ) ):
 				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
 				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+
+			# plt.plot( extract_beta, color='r' )
+			# plt.plot( upper_bounds, color='g', linestyle='--' )
+			# plt.plot( lower_bounds, color='b', linestyle='--' )
+			# plt.show()
+
+			# import matplotlib.pyplot as plt
+			# plt.plot( extract_beta, color='g', linewidth=2 )
+			# plt.plot( beta * np.ones( len( extract_beta ) ), color='b', linewidth=2, linestyle='--' )
+			# plt.show()
 
 			np.save( save_location + '/lower_bounds.npy', lower_bounds )
 			np.save( save_location + '/upper_bounds.npy', upper_bounds )
@@ -214,6 +234,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
 			reassemble = self.w[0].copy()
+			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
 			layer_start_idxs.append( self.w[0].shape[2] )
 			cur_location = 0
 			for layer_start_idx in range( 0, len( layer_start_idxs ) - 1 ):
@@ -230,7 +251,9 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 			extract_w2_final = []
 
-			for layer_start in range( 0, len( layer_start_idxs ) ):
+			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
+			for layer_start_idx in range( 0, len( layer_start_idxs ) ):
+				layer_start = layer_start_idxs[ layer_start_idx ]
 				extract_w2_final.extend( np.real( self.w[2][ :, :, layer_start ].flatten() ) )
 
 			final_binarization = compute_binarization( np.array( extract_w2_final ) )
@@ -240,7 +263,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			expected_binarization_change = np.dot( x_star, b )
 			actual_binarization_change = final_binarization - initial_binarization
 
-			if expected_binarization_change < 0:
+			if actual_binarization_change < 0:
 				np.save( save_location + '/fom_gradients_debug.npy', c )
 				np.save( save_location + '/binarization_gradients_debug.npy', b )
 				np.save( save_location + '/upper_bounds_debug.npy', upper_bounds )

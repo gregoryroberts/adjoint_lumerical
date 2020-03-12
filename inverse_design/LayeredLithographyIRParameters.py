@@ -72,8 +72,8 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 #
 min_feature_size_um = 3 * mesh_spacing_um
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
-blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
-blur_half_width_voxels = 0
+blur_half_width_voxels = int( np.ceil( ( min_feature_size_voxels - 1 ) / 2. ) )
+# blur_half_width_voxels = 0
 
 #
 # FDTD
