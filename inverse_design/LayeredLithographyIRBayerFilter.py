@@ -155,7 +155,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 
 				extract_beta.extend( np.real( backprop_beta[ :, :, layer_start ].flatten() ) )
 
-			beta_factor = np.mean( np.abs( extract_beta ) )
+			beta_factor = 1#np.mean( np.abs( extract_beta ) )
 
 			flatten_design_cuts = np.real( extract_layers )
 			flatten_fom_gradients = np.real( extract_photonic_gradient )
