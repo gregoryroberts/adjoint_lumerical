@@ -269,6 +269,10 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 0.001
 
+if start_epoch > 0:
+	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
+	bayer_filter.set_design_variable( design_variable_reload )
+
 #
 # Run the optimization
 #
