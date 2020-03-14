@@ -9,20 +9,25 @@ import FreeOptimizationMultiDevice
 import OptimizationLayersSpacersMultiDevice
 import OptimizationLayersSpacersGlobalBinarization2DMultiDevice
 
-import FreeBayerFilterWithBlur2D
+# import FreeBayerFilterWithBlur2D
+import FreeBayerFilterDualPhaseBlur2D
 
 #
 # Files
 #
 # project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_force_bin_feature_sensitivity_design_mesh_4xtsmc_um_focal_3um'
-project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_coarse_mesh_80nm_4xtsmc_um_focal_3um'
+# project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_coarse_mesh_80nm_4xtsmc_um_focal_3um'
+project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_dual_phase_blur_4xtsmc_um_focal_3um'
 
 #
 # Optical
 #
+# todo: the side background index shouldn't be TiO2 because that part will not be etched away!  Go back to oxide!
+# Maybe force binarize more slowly.  Consider just optimizing for Strell ratio if we aren't going to get high transmisison anyway.
+# Check binarized device and look at feature sizes!
 background_index = 1.0
 design_index_background = 1.35
-device_background_index = 2.5
+device_background_index = 1.35# 2.5
 high_index_backfill = 2.5
 
 min_real_permittivity = design_index_background**2
@@ -48,8 +53,8 @@ focal_length_um = 2 * 1.5
 # Device
 #
 mesh_spacing_um = 0.025
-# lsf_mesh_spacing_um = 0.005
-lsf_mesh_spacing_um = 0.08
+lsf_mesh_spacing_um = 0.005
+# lsf_mesh_spacing_um = 0.08
 lsf_step_size_factor = lsf_mesh_spacing_um / 0.005
 
 design_layer_thickness_um = 0.22
@@ -156,6 +161,13 @@ metal_layer_gap_sizes = [
 dilation_erosion_half_width_um = 0.025
 dilation_erosion_half_width_voxels = int( dilation_erosion_half_width_um / lsf_mesh_spacing_um )
 
+solid_phase_half_width_um = 0.045
+solid_phase_half_width_voxels = int( solid_phase_half_width_um / lsf_mesh_spacing_um )
+
+void_phase_half_width_um = 0.045
+void_phase_half_width_voxels = int( void_phase_half_width_um / lsf_mesh_spacing_um )
+
+no_blur_half_width_voxels = 0
 
 #
 # Optimization Stages
@@ -165,14 +177,14 @@ device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
 
 num_free_iterations = 25
 num_free_epochs = 1
-max_change_per_iter_free = 4 * 0.025 / lsf_step_size_factor
+max_change_per_iter_free = 0.025# 4 * 0.025 / lsf_step_size_factor
 free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
 free_optimization_file_prefix = "free_"
 
 def generate_full_bayer_with_blurs( dilation_size_voxels ):
     def bayer_filter_create( size_voxels, num_layers ):
-        return FreeBayerFilterWithBlur2D.FreeBayerFilterWithBlur2D(
-            size_voxels, permittivity_bounds, 0.0, num_layers, dilation_size_voxels )
+        return FreeBayerFilterDualPhaseBlur2D.FreeBayerFilterDualPhaseBlur2D(
+            size_voxels, permittivity_bounds, 0.0, num_layers, no_blur_half_width_voxels, no_blur_half_width_voxels )
 
     return bayer_filter_create
 
@@ -197,14 +209,14 @@ free_optimization = FreeOptimizationMultiDevice.FreeOptimizationMultiDevice(
 
 num_free_in_layers_iterations = 25
 num_free_in_layers_epochs = 1
-max_change_per_iter_free_in_layers = 4 * 0.015 / lsf_step_size_factor
+max_change_per_iter_free_in_layers = 0.015# 4 * 0.015 / lsf_step_size_factor
 free_in_layers_file_prefix = "free_in_layers_"
 
 
 def generate_free_layers_bayer_with_blurs( dilation_size_voxels ):
     def bayer_filter_create( layer_size_voxels, num_internal_layers, bayer_idx ):
-        return FreeBayerFilterWithBlur2D.FreeBayerFilterWithBlur2D(
-            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, num_internal_layers, dilation_size_voxels )
+        return FreeBayerFilterDualPhaseBlur2D.FreeBayerFilterDualPhaseBlur2D(
+            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, num_internal_layers, no_blur_half_width_voxels, no_blur_half_width_voxels )
 
     return bayer_filter_create
 
@@ -232,14 +244,14 @@ free_in_layers = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacersM
 
 num_density_layered_iterations = 100
 num_density_layered_epochs = 1
-max_change_per_iter_in_density_layered = 4 * 0.01 / lsf_step_size_factor
+max_change_per_iter_in_density_layered = 0.01# 4 * 0.01 / lsf_step_size_factor
 density_layered_file_prefix = "density_layered_"
 
 def generate_layered_bayer_with_blurs( dilation_size_voxels ):
     def bayer_filter_create( layer_size_voxels, num_internal_layers, bayer_idx ):
         single_layer = 1
-        return FreeBayerFilterWithBlur2D.FreeBayerFilterWithBlur2D(
-            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, single_layer, dilation_size_voxels )
+        return FreeBayerFilterDualPhaseBlur2D.FreeBayerFilterDualPhaseBlur2D(
+            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, single_layer, solid_phase_half_width_voxels, void_phase_half_width_voxels )
 
     return bayer_filter_create
 
@@ -268,9 +280,9 @@ density_layered = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacers
 # Change lower index to air for the backfilled design where we etch oxide out first
 #
 
-num_density_layered_binarize_iterations = 400#2#200#400
-num_density_layered_binarize_epochs = 1#2#3
-binarize_max_movement = 0.005 * 3 / lsf_step_size_factor
+num_density_layered_binarize_iterations = 50#2#200#400
+num_density_layered_binarize_epochs = 12#8#6#1#2#3
+binarize_max_movement = 3 * 0.005 * 3# / lsf_step_size_factor
 binarize_desired_change = 0.0025 * 4
 # I don't think this does anything right now
 # binarization_cutoff = 0.98
@@ -320,9 +332,13 @@ optimization_conversion_functions = [
 #
 # Optimization Starting/Restarting Point
 #
-init_optimization_state = 0
-init_optimization_epoch = 0
+init_optimization_state = 3#0#3#0
+init_optimization_epoch = 9#0#1
 num_optimization_states = len( optimization_stages )
+
+eval_optimization_state = 3
+eval_optimization_epoch = 8#7#5
+eval_device_idx = 0
 
 #
 # Spectral

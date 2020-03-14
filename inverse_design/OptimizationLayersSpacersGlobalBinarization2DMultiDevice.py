@@ -90,6 +90,37 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 
 		return self.index
 
+	def assemble_index_binary( self, device_idx ):
+		bayer_idx = 0
+		for layer_idx in range( 0, self.num_total_layers ):
+			layer_bottom_voxel = int( self.layer_start_coordinates_um[ layer_idx ] / self.optimization_mesh_step_um )
+			layer_top_voxel = int( ( self.layer_start_coordinates_um[ layer_idx ] + self.layer_thicknesses_um[ layer_idx ] ) / self.optimization_mesh_step_um )
+
+			if self.layer_designability[ layer_idx ]:
+				select_permittivity = self.bayer_filters[ bayer_idx ][ device_idx ].get_permittivity()
+				mid_permittivity = 0.5 * (
+					self.bayer_filters[ bayer_idx ][ device_idx ].permittivity_bounds[ 0 ] +
+					self.bayer_filters[ bayer_idx ][ device_idx ].permittivity_bounds[ 1 ] )
+				permittivity_range = (
+					self.bayer_filters[ bayer_idx ][ device_idx ].permittivity_bounds[ 1 ] -
+					self.bayer_filters[ bayer_idx ][ device_idx ].permittivity_bounds[ 0 ]
+				)
+				binarize_mask = 1.0 * np.greater( select_permittivity, mid_permittivity )
+				binarize_permittivity = (
+					self.bayer_filters[ bayer_idx ][ device_idx ].permittivity_bounds[ 0 ] +
+					binarize_mask * permittivity_range
+				)
+
+				self.index[ :, layer_bottom_voxel : layer_top_voxel ] = permittivity_to_index(
+					binarize_permittivity
+				)
+				bayer_idx += 1
+			else:
+				self.index[ :, layer_bottom_voxel : layer_top_voxel ] = self.layer_background_index[ layer_idx ]
+
+		return self.index
+
+
 	def convert_permittivity_to_density( self, index, min_real_index, max_real_index ):
 		permittivity =  ( np.real( index ) )**2
 		min_real_permittivity = ( min_real_index )**2
@@ -267,14 +298,56 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 
 		flatten_fom_gradients = np.array( flatten_fom_gradients )
 		flatten_design_cuts = np.array( flatten_design_cuts )
-		
+	
 		def compute_binarization( input_variable ):
 			return ( 2 / np.sqrt( len( input_variable ) ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
 		def compute_binarization_gradient( input_variable ):
 			return ( 4 / len( input_variable ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
 
-		starting_binarization = compute_binarization( flatten_design_cuts )
+		def compute_binarization_permittivity( input_variable, min_p, max_p ):
+			density = ( input_variable - min_p ) / ( max_p - min_p )
+			return compute_binarization( density )
+		def compute_binarization_gradient_permittivity( input_variable, min_p, max_p ):
+			density = ( input_variable - min_p ) / ( max_p - min_p )
+			return ( max_p - min_p ) * compute_binarization_gradient( density )
+
+
+		starting_binarization = 0
+		starting_binarization_divisor = 0
+
+		bayer_idx = 0
+		collect_binarization_density_gradients = []
+		for layer_idx in range( 0, self.num_total_layers ):
+			layer_bottom_voxel = int( self.layer_start_coordinates_um[ layer_idx ] / self.optimization_mesh_step_um )
+			layer_top_voxel = int( ( self.layer_start_coordinates_um[ layer_idx ] + self.layer_thicknesses_um[ layer_idx ] ) / self.optimization_mesh_step_um )
+
+			if self.layer_designability[ layer_idx ]:
+				get_permittivity = self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].get_permittivity()
+
+				get_permittivity_gradient = compute_binarization_gradient_permittivity(
+					np.real( get_permittivity ),
+					np.real( self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].permittivity_bounds[ 0 ] ),
+					np.real( self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].permittivity_bounds[ 1 ] )
+				)
+
+				backprop_permittivity_grad = self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].backpropagate(
+					get_permittivity_gradient, np.zeros( get_permittivity_gradient.shape )
+				)
+
+				starting_binarization += compute_binarization_permittivity(
+					np.real( get_permittivity[ :, 0 ] ),
+					np.real( self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].permittivity_bounds[ 0 ] ),
+					np.real( self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].permittivity_bounds[ 1 ] )
+				)
+				starting_binarization_divisor += 1
+
+				assert len( get_permittivity.shape ) == 2, "Not 2-dimensional design space!"
+				collect_binarization_density_gradients.extend( np.real( backprop_permittivity_grad[ :, 0 ] ) )
+
+				bayer_idx += 1
+
+		starting_binarization /= starting_binarization_divisor
 
 		# Desired binarization increase
 		# alpha = np.minimum( self.desired_binarize_change, 1 - starting_binarization )
@@ -292,7 +365,8 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 
 		print( "Starting binarization = " + str( starting_binarization ) )
 
-		b = compute_binarization_gradient( flatten_design_cuts )
+		# b = compute_binarization_gradient( flatten_design_cuts )
+		b = collect_binarization_density_gradients
 		cur_x = np.zeros( dim )
 
 		lower_bounds = np.zeros( len( c ) )
@@ -352,10 +426,7 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 		proposed_design_variable = flatten_design_cuts + x_star
 		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
-		ending_binarization = compute_binarization( proposed_design_variable )
-
 		expected_binarization_change = np.dot( x_star, b )
-		actual_binarization_change = ending_binarization - starting_binarization
 
 		if expected_binarization_change < 0:
 			np.save( 'fom_gradients_debug.npy', c )
@@ -364,14 +435,6 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 			np.save( 'lower_bounds_debug.npy', lower_bounds )
 			np.save( 'beta_debug.npy', beta )
 		
-
-		expected_fom_change = np.dot( x_star, -c )
-		print( "Expected delta = " + str( np.dot( x_star, b ) ) )
-		print( "Desired delta = " + str( self.desired_binarize_change ) )
-		print( "Limit on delta = " + str( max_possible_binarization_change ) )
-		print( "Expected scaled FOM change = " + str( expected_fom_change ) )
-		print( "Ending binarization = " + str( ending_binarization ) )
-		print( "Achieved delta = " + str( ending_binarization - starting_binarization ) )
 
 		# this should be taken out here!
 		cur_reshape_idx = 0
@@ -392,6 +455,36 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 			for device_idx in range( 0, self.num_devices ):
 				self.bayer_filters[ bayer_idx ][ device_idx ].set_design_variable( new_design_variable )
 
+		ending_binarization = 0
+		ending_binarization_divisor = 0
+
+		bayer_idx = 0
+		collect_output_permittivity_final = []
+		for layer_idx in range( 0, self.num_total_layers ):
+			layer_bottom_voxel = int( self.layer_start_coordinates_um[ layer_idx ] / self.optimization_mesh_step_um )
+			layer_top_voxel = int( ( self.layer_start_coordinates_um[ layer_idx ] + self.layer_thicknesses_um[ layer_idx ] ) / self.optimization_mesh_step_um )
+
+			if self.layer_designability[ layer_idx ]:
+				get_permittivity = self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].get_permittivity()
+
+				ending_binarization += compute_binarization_permittivity(
+					np.real( get_permittivity[ :, 0 ] ),
+					np.real( self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].permittivity_bounds[ 0 ] ),
+					np.real( self.bayer_filters[ bayer_idx ][ self.device_idx_to_binarize ].permittivity_bounds[ 1 ] )
+				)
+				ending_binarization_divisor += 1
+
+				bayer_idx += 1
+
+		ending_binarization /= ending_binarization_divisor
+		actual_binarization_change = ending_binarization - starting_binarization
+		expected_fom_change = np.dot( x_star, -c )
+		print( "Expected delta = " + str( np.dot( x_star, b ) ) )
+		print( "Desired delta = " + str( self.desired_binarize_change ) )
+		print( "Limit on delta = " + str( max_possible_binarization_change ) )
+		print( "Expected scaled FOM change = " + str( expected_fom_change ) )
+		print( "Ending binarization = " + str( ending_binarization ) )
+		print( "Achieved delta = " + str( ending_binarization - starting_binarization ) )
 
 
 
