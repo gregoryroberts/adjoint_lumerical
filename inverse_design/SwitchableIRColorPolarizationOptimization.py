@@ -606,13 +606,13 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				my_optimization_state.save( projects_directory_location, epoch )
 				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_" + str( epoch ) + "_gsst_" + str( gsst_state ) + ".fsp" )
 
-			combine_device_fom = np.zeros( num_devices )
+			combine_device_fom = np.zeros( my_optimization_state.num_devices )
 			combine_real_gradients = np.zeros( field_shape_with_devices )
 			combine_imag_gradients = np.zeros( field_shape_with_devices )
 			combine_real_lsf_gradients = np.zeros( field_shape_with_devices )
 			combine_imag_lsf_gradients = np.zeros( field_shape_with_devices )
 
-			for device_idx in range( 0, num_devices ):
+			for device_idx in range( 0, my_optimization_state.num_devices ):
 				figure_of_merit_device_gsst = np.zeros( gsst_num_states )
 				for gsst_state in range( 0, gsst_num_states ):
 					figure_of_merit_by_gsst_state[ gsst_state ] = figure_of_merit_by_gsst_state[ gsst_state ][ device_idx ]
