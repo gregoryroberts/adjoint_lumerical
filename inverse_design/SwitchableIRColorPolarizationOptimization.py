@@ -586,11 +586,11 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					gradients_real_lsf[ device, : ] = device_gradient_real_lsf
 					gradients_imag_lsf[ device, : ] = device_gradient_imag_lsf
 
-				real_gradients_by_gsst_state[ gsst_state ] = device_gradient_real
-				imag_gradients_by_gsst_state[ gsst_state ] = device_gradient_imag
-				real_lsf_gradients_by_gsst_state[ gsst_state ] = device_gradient_real_lsf
-				imag_lsf_gradients_by_gsst_state[ gsst_state ] = device_gradient_imag_lsf
-				figure_of_merit_by_gsst_state[ gsst_state ] = figure_of_merit_by_device
+				real_gradients_by_gsst_state.append( device_gradient_real )
+				imag_gradients_by_gsst_state.append( device_gradient_imag )
+				real_lsf_gradients_by_gsst_state.append( device_gradient_real_lsf )
+				imag_lsf_gradients_by_gsst_state.append( device_gradient_imag_lsf )
+				figure_of_merit_by_gsst_state.append( figure_of_merit_by_device )
 
 				my_optimization_state.save( projects_directory_location, epoch )
 				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_" + str( epoch ) + "_gsst_" + str( gsst_state ) + ".fsp" )
