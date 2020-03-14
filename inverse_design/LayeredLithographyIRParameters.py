@@ -42,9 +42,9 @@ mesh_spacing_um = 0.03
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 3.6
+device_size_lateral_um = 3.06#3.6
 device_size_verical_um = num_vertical_layers * ( 3.0 / num_vertical_layers )
-amorphous_silicon_height_per_layer_um = 0.8
+amorphous_silicon_height_per_layer_um = 0.51#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
@@ -72,8 +72,8 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 #
 min_feature_size_um = 3 * mesh_spacing_um
 min_feature_size_voxels = min_feature_size_um / mesh_spacing_um
-blur_half_width_voxels = int( np.ceil( (min_feature_size_voxels - 1) / 2. ) )
-
+blur_half_width_voxels = int( np.ceil( ( min_feature_size_voxels - 1 ) / 2. ) )
+# blur_half_width_voxels = 0
 
 #
 # FDTD
@@ -124,9 +124,12 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 0
-num_epochs = 8
-num_iterations_per_epoch = 35#50#25
+start_epoch = 1#0
+num_epochs = 3#8
+num_iterations_per_epoch = 60#35#50#25
+binarization_start_epoch = 1
+max_binarize_movement = 0.012
+desired_binarize_change = 0.0025
 
 epoch_start_permittivity_change_max = 0.05#0.1
 epoch_end_permittivity_change_max = 0.01#0.02

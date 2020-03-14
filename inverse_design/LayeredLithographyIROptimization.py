@@ -183,7 +183,25 @@ design_import['z max'] = device_vertical_maximum_um * 1e-6
 design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(bayer_filter_size_voxels, [min_device_permittivity, max_device_permittivity], init_permittivity_0_1_scale, num_vertical_layers, spacer_size_voxels, [index_air**2, index_silicon**2])
+bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
+	bayer_filter_size_voxels,
+	[min_device_permittivity, max_device_permittivity],
+	init_permittivity_0_1_scale,
+	num_vertical_layers,
+	spacer_size_voxels,
+	[index_air**2, index_silicon**2],
+	max_binarize_movement,
+	desired_binarize_change)
+
+
+# bayer_filter.set_design_variable( np.random.random( bayer_filter.get_design_variable().shape ) )
+# bayer_filter.step(
+# 	np.random.random( bayer_filter.get_design_variable().shape ),
+# 	0.01,
+# 	True,
+# 	projects_directory_location
+# )
+# sys.exit(0)
 
 # bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
 
@@ -250,6 +268,10 @@ average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
 step_size_start = 0.001
+
+if start_epoch > 0:
+	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
+	bayer_filter.set_design_variable( design_variable_reload )
 
 #
 # Run the optimization
@@ -427,8 +449,11 @@ for epoch in range(start_epoch, num_epochs):
 		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
 		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
 		#
+		enforce_binarization = False
+		if epoch >= binarization_start_epoch:
+			enforce_binarization = True
 		device_gradient = np.flip( device_gradient, axis=2 )
-		bayer_filter.step(-device_gradient, step_size)
+		bayer_filter.step(-device_gradient, step_size, enforce_binarization, projects_directory_location)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
