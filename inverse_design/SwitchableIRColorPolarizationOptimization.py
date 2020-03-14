@@ -546,6 +546,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 								# 				current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
 								# 			)
 
+								print(polarized_gradient.shape)
+								print(conjugate_weighting_wavelength.shape)
+								print(adjoint_e_fields.shape)
+								print()
 								for spectral_idx in range(0, num_design_frequency_points):
 									polarized_gradient += np.sum(
 										gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
