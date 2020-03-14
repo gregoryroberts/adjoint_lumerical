@@ -628,6 +628,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				grad_by_shape = np.array(real_gradients_by_gsst_state)
 				print('shape:')
 				print(grad_by_shape.shape)
+				print(field_shape_with_devices)
 				for gsst_state in range( 0, gsst_num_states ):
 					combine_real_gradients[ device_idx ] += compute_weightings * real_gradients_by_gsst_state[ gsst_state ][ device_idx ]
 					combine_imag_gradients[ device_idx ] += compute_weightings * imag_gradients_by_gsst_state[ gsst_state ][ device_idx ]
