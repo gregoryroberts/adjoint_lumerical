@@ -615,7 +615,9 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 			for device_idx in range( 0, my_optimization_state.num_devices ):
 				figure_of_merit_device_gsst = np.zeros( gsst_num_states )
 				for gsst_state in range( 0, gsst_num_states ):
-					figure_of_merit_by_gsst_state[ gsst_state ] = figure_of_merit_by_gsst_state[ gsst_state ][ device_idx ]
+					figure_of_merit_device_gsst[ gsst_state ] = figure_of_merit_by_gsst_state[ gsst_state ][ device_idx ]
+
+				print(figure_of_merit_by_gsst_state)
 
 				compute_weightings = ( 2. / gsst_num_states ) - figure_of_merit_device_gsst**2 / np.sum( figure_of_merit_device_gsst**2 )
 				compute_weightings = np.maximum( compute_weightings, 0 )
@@ -630,10 +632,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				print(grad_by_shape.shape)
 				print(field_shape_with_devices)
 				for gsst_state in range( 0, gsst_num_states ):
-					combine_real_gradients[ device_idx ] += compute_weightings * real_gradients_by_gsst_state[ gsst_state ][ device_idx ]
-					combine_imag_gradients[ device_idx ] += compute_weightings * imag_gradients_by_gsst_state[ gsst_state ][ device_idx ]
-					combine_real_lsf_gradients[ device_idx ] += compute_weightings * real_lsf_gradients_by_gsst_state[ gsst_state ][ device_idx ]
-					combine_imag_lsf_gradients[ device_idx ] += compute_weightings * imag_lsf_gradients_by_gsst_state[ gsst_state ][ device_idx ]
+					combine_real_gradients[ device_idx ] += compute_weightings[ gsst_state ] * real_gradients_by_gsst_state[ gsst_state ][ device_idx ]
+					combine_imag_gradients[ device_idx ] += compute_weightings[ gsst_state ] * imag_gradients_by_gsst_state[ gsst_state ][ device_idx ]
+					combine_real_lsf_gradients[ device_idx ] += compute_weightings[ gsst_state ] * real_lsf_gradients_by_gsst_state[ gsst_state ][ device_idx ]
+					combine_imag_lsf_gradients[ device_idx ] += compute_weightings[ gsst_state ] * imag_lsf_gradients_by_gsst_state[ gsst_state ][ device_idx ]
 
 			print( 'Figures of merit = ' + str( figure_of_merit_by_gsst_state ) )
 
