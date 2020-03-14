@@ -116,7 +116,7 @@ for layer_idx in range( 1, len( layer_thicknesses_um ) ):
 gsst_min_n = 3.5
 gsst_min_k = 0.05
 
-gsst_max_n = 7
+gsst_max_n = 5
 gsst_max_k = 0.4
 
 gsst_num_states = 2
