@@ -513,6 +513,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 						current_index = np.real( get_non_struct_data( design_index_monitor[ 'name' ], 'index_x' ) )
 						current_permittivity = np.sqrt( np.squeeze( current_index ) )
+						# for now, we will turn off lsf gradients
 
 						for coord_idx in range( 0, len( affected_coords ) ):
 							current_coord = affected_coords[ coord_idx ]
@@ -527,23 +528,23 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 								num_points = spectral_indices[ 1 ] - spectral_indices[ 0 ]
 
 								# for spectral_idx in range(0, num_points ):
-								for spectral_idx in range(0, num_design_frequency_points ):
-									for polarization_idx in range( 0, 3 ):
-										# x-coordinate is the perpendicular coorinate to the level set boundary that can be actually changed
-										if polarization_idx == 0:
-											# todo: the gaussian norm is weird here, the normalization all alredy stacks up all the bands and the spectral indices are counting from 0 to something
-											# feels like you want to access at spectral_indices[0] + spectral_idx - effectively I think this is just what is happening
-											polarized_gradient_lsf += ( ( ( 1. / min_real_permittivity ) - ( 1. / max_real_permittivity ) ) *
-												gaussian_normalization_all[ spectral_idx ] * ( conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx] ) *
-												current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
-												current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
-											)
-										else:
-											polarized_gradient_lsf += ( ( max_real_permittivity - min_real_permittivity ) *
-												gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
-												current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
-												current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
-											)
+								# for spectral_idx in range(0, num_design_frequency_points ):
+								# 	for polarization_idx in range( 0, 3 ):
+								# 		# x-coordinate is the perpendicular coorinate to the level set boundary that can be actually changed
+								# 		if polarization_idx == 0:
+								# 			# todo: the gaussian norm is weird here, the normalization all alredy stacks up all the bands and the spectral indices are counting from 0 to something
+								# 			# feels like you want to access at spectral_indices[0] + spectral_idx - effectively I think this is just what is happening
+								# 			polarized_gradient_lsf += ( ( ( 1. / min_real_permittivity ) - ( 1. / max_real_permittivity ) ) *
+								# 				gaussian_normalization_all[ spectral_idx ] * ( conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx] ) *
+								# 				current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
+								# 				current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
+								# 			)
+								# 		else:
+								# 			polarized_gradient_lsf += ( ( max_real_permittivity - min_real_permittivity ) *
+								# 				gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+								# 				current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
+								# 				current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
+								# 			)
 
 								for spectral_idx in range(0, num_design_frequency_points):
 									polarized_gradient += np.sum(
