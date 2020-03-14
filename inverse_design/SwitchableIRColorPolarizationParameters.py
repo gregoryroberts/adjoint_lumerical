@@ -202,7 +202,7 @@ density_layered_file_prefix = "density_layered_"
 def generate_layered_bayer_with_blurs():
     def bayer_filter_create( layer_size_voxels, num_internal_layers, bayer_idx ):
         single_layer = 1
-        return FreeBayerFilterDualPhaseBlur2D.FreeBayerFilterDualPhaseBlur2D(
+        return FreeBayerFilter2D.FreeBayerFilter2D(
             layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, single_layer )
 
     return bayer_filter_create
