@@ -9,15 +9,12 @@ import FreeOptimizationMultiDevice
 import OptimizationLayersSpacersMultiDevice
 import OptimizationLayersSpacersGlobalBinarization2DMultiDevice
 
-# import FreeBayerFilterWithBlur2D
-import FreeBayerFilterDualPhaseBlur2D
+import FreeBayerFilter2D
 
 #
 # Files
 #
-# project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_force_bin_feature_sensitivity_design_mesh_4xtsmc_um_focal_3um'
-# project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_coarse_mesh_80nm_4xtsmc_um_focal_3um'
-project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual_pol_multistage_dual_phase_blur_4xtsmc_um_focal_3um'
+project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 
 #
 # Optical
@@ -25,9 +22,10 @@ project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_dual
 # todo: the side background index shouldn't be TiO2 because that part will not be etched away!  Go back to oxide!
 # Maybe force binarize more slowly.  Consider just optimizing for Strell ratio if we aren't going to get high transmisison anyway.
 # Check binarized device and look at feature sizes!
+# For now, let's let the high index be TiO2.  It looks like it is transparent out into the infrared
 background_index = 1.0
 design_index_background = 1.35
-device_background_index = 1.35# 2.5
+device_background_index = 1.35
 high_index_backfill = 2.5
 
 min_real_permittivity = design_index_background**2
@@ -43,22 +41,16 @@ permittivity_bounds = np.array( [ min_real_permittivity + 1j * min_imag_permitti
 
 init_permittivity_0_1_scale = 0.5
 
-lsf_start_step_size = 0.1
-lsf_end_step_size = 0.05
-
-# For the focal length, should we put these things in a near field regime.  In the nature photonics, with very
-# simple scatterers made of SiN, they can get fairly impressive splitting.  The "focal length" seems to be smaller
-# there (not sure if it would be considered near field or not, but it would be right on the edge).
-focal_length_um = 2 * 1.5
-
+focal_length_um = 6.75
 
 #
 # Device
 #
-mesh_spacing_um = 0.025
-lsf_mesh_spacing_um = 0.005
-# lsf_mesh_spacing_um = 0.08
-lsf_step_size_factor = lsf_mesh_spacing_um / 0.005
+# We should override the mesh in the GSST though because that has very high index.  Or, potentially,
+# let's just override the mesh in our device region that we can control.
+mesh_spacing_um = 0.1
+# Set the design mesh spacing to that of the design rules
+lsf_mesh_spacing_um = 0.1
 
 design_layer_thickness_um = 0.22
 
@@ -95,7 +87,7 @@ is_layer_designable = [
 	False, True, False  # M1
 ]
 
-device_size_lateral_um = 4.0
+device_size_lateral_um = 8
 designable_size_vertical_um = np.sum( layer_thicknesses_um )
 bottom_metal_absorber_size_vertical_um = 0
 
@@ -118,59 +110,28 @@ for layer_idx in range( 1, len( layer_thicknesses_um ) ):
 
 
 #
+# GSST Information
+#
+# Shouuld we explicitly re-mesh this part?
+gsst_min_n = 3.5
+gsst_min_k = 0.05
+
+gsst_max_n = 7
+gsst_max_k = 0.4
+
+gsst_num_states = 2
+gsst_n_states =[ gsst_min_n, gsst_max_n ]
+gsst_k_states = [ gsst_min_k, gsst_max_k ]
+
+gsst_thickness_um = 0.15
+gsst_min_y_um = designable_device_vertical_maximum_um
+gsst_max_y_um = gsst_min_y_um + gsst_thickness_um
+
+#
 # Fabrication Constraints
 #
-
-# Set at feature size requirement and use for gap now (we can hopefully touch-up with level set at the end)
-control_size_k_vectors_um = 0.10
-control_size_k_vectors_voxels = int( control_size_k_vectors_um / lsf_mesh_spacing_um )
-
-control_feature_size_m1_um = 1.2 * 0.09
-control_feature_size_m1_voxels = int( control_feature_size_m1_um / lsf_mesh_spacing_um )
-
-control_fetaure_size_um = 1.2 * 0.10
-control_fetaure_size_voxels = int( control_fetaure_size_um / lsf_mesh_spacing_um )
-
-control_gap_size_m1_um = 1.2 * 0.09
-control_gap_size_m1_voxels = int( control_gap_size_m1_um / lsf_mesh_spacing_um )
-
-control_gap_size_um = 1.2 * 0.10
-control_gap_size_voxels = int( control_gap_size_um / lsf_mesh_spacing_um )
-
-# from top to bottom
-metal_layer_feature_sizes = [
-	control_fetaure_size_voxels,   # M7
-	control_fetaure_size_voxels,   # M6
-	control_fetaure_size_voxels,   # M5
-	control_fetaure_size_voxels,   # M4
-	control_fetaure_size_voxels,   # M3
-	control_fetaure_size_voxels,   # M2
-	control_feature_size_m1_voxels # M1
-]
-
-metal_layer_gap_sizes = [
-	control_gap_size_voxels,   # M7
-	control_gap_size_voxels,   # M6
-	control_gap_size_voxels,   # M5
-	control_gap_size_voxels,   # M4
-	control_gap_size_voxels,   # M3
-	control_gap_size_voxels,   # M2
-	control_gap_size_m1_voxels # M1	
-]
-
-#
-# How much to dilate and erode in the horizontal for the multi-devices
-#
-dilation_erosion_half_width_um = 0.025
-dilation_erosion_half_width_voxels = int( dilation_erosion_half_width_um / lsf_mesh_spacing_um )
-
-solid_phase_half_width_um = 0.045
-solid_phase_half_width_voxels = int( solid_phase_half_width_um / lsf_mesh_spacing_um )
-
-void_phase_half_width_um = 0.045
-void_phase_half_width_voxels = int( void_phase_half_width_um / lsf_mesh_spacing_um )
-
-no_blur_half_width_voxels = 0
+# We have set the design (and simulation) mesh to be at the feature size requirement so for now, we don't need to
+# explicitly add any additional feature size requirements.
 
 #
 # Optimization Stages
@@ -180,25 +141,19 @@ device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
 
 num_free_iterations = 25
 num_free_epochs = 1
-max_change_per_iter_free = 0.025# 4 * 0.025 / lsf_step_size_factor
+max_change_per_iter_free = 0.025
 free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
 free_optimization_file_prefix = "free_"
 
-def generate_full_bayer_with_blurs( dilation_size_voxels ):
+def generate_full_bayer_with_blurs():
     def bayer_filter_create( size_voxels, num_layers ):
-        return FreeBayerFilterDualPhaseBlur2D.FreeBayerFilterDualPhaseBlur2D(
-            size_voxels, permittivity_bounds, 0.0, num_layers, no_blur_half_width_voxels, no_blur_half_width_voxels )
+        return FreeBayerFilter2D.FreeBayerFilter2D(
+            size_voxels, permittivity_bounds, 0.0, num_layers )
 
     return bayer_filter_create
 
-# free_optimization_creator_fns = [
-#     generate_full_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
-#     generate_full_bayer_with_blurs( 0 ),
-#     generate_full_bayer_with_blurs( dilation_erosion_half_width_voxels )
-# ]
-
 free_optimization_creator_fns = [
-    generate_full_bayer_with_blurs( 0 ),
+    generate_full_bayer_with_blurs()
 ]
 
 
@@ -212,25 +167,19 @@ free_optimization = FreeOptimizationMultiDevice.FreeOptimizationMultiDevice(
 
 num_free_in_layers_iterations = 25
 num_free_in_layers_epochs = 1
-max_change_per_iter_free_in_layers = 0.015# 4 * 0.015 / lsf_step_size_factor
+max_change_per_iter_free_in_layers = 0.015
 free_in_layers_file_prefix = "free_in_layers_"
 
 
-def generate_free_layers_bayer_with_blurs( dilation_size_voxels ):
+def generate_free_layers_bayer_with_blurs():
     def bayer_filter_create( layer_size_voxels, num_internal_layers, bayer_idx ):
-        return FreeBayerFilterDualPhaseBlur2D.FreeBayerFilterDualPhaseBlur2D(
-            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, num_internal_layers, no_blur_half_width_voxels, no_blur_half_width_voxels )
+        return FreeBayerFilter2D.FreeBayerFilter2D(
+            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, num_internal_layers )
 
     return bayer_filter_create
 
-# free_in_layers_creator_fns = [
-#     generate_free_layers_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
-#     generate_free_layers_bayer_with_blurs( 0 ),
-#     generate_free_layers_bayer_with_blurs( dilation_erosion_half_width_voxels )
-# ]
-
 free_in_layers_creator_fns = [
-    generate_free_layers_bayer_with_blurs( 0 ),
+    generate_free_layers_bayer_with_blurs()
 ]
 
 def density_filter_update( bayer_filter, gradient_real, gradient_imag, lsf_gradient_real, lsf_gradient_imag, epoch, iteration, max_abs_gradient_step, max_abs_lsf_gradient_step, step_size ):
@@ -247,25 +196,20 @@ free_in_layers = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacersM
 
 num_density_layered_iterations = 100
 num_density_layered_epochs = 1
-max_change_per_iter_in_density_layered = 0.01# 4 * 0.01 / lsf_step_size_factor
+max_change_per_iter_in_density_layered = 0.01
 density_layered_file_prefix = "density_layered_"
 
-def generate_layered_bayer_with_blurs( dilation_size_voxels ):
+def generate_layered_bayer_with_blurs():
     def bayer_filter_create( layer_size_voxels, num_internal_layers, bayer_idx ):
         single_layer = 1
         return FreeBayerFilterDualPhaseBlur2D.FreeBayerFilterDualPhaseBlur2D(
-            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, single_layer, solid_phase_half_width_voxels, void_phase_half_width_voxels )
+            layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, single_layer )
 
     return bayer_filter_create
 
-# layered_creator_fns = [
-#     generate_layered_bayer_with_blurs( -dilation_erosion_half_width_voxels ),
-#     generate_layered_bayer_with_blurs( 0 ),
-#     generate_layered_bayer_with_blurs( dilation_erosion_half_width_voxels )
-# ]
 
 layered_creator_fns = [
-    generate_layered_bayer_with_blurs( 0 ),
+    generate_layered_bayer_with_blurs()
 ]
 
 density_layered = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacersMultiDevice(
@@ -283,9 +227,9 @@ density_layered = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacers
 # Change lower index to air for the backfilled design where we etch oxide out first
 #
 
-num_density_layered_binarize_iterations = 50#2#200#400
-num_density_layered_binarize_epochs = 12#8#6#1#2#3
-binarize_max_movement = 3 * 0.005 * 3# / lsf_step_size_factor
+num_density_layered_binarize_iterations = 1
+num_density_layered_binarize_epochs = 100
+binarize_max_movement = 3 * 0.005 * 3
 binarize_desired_change = 0.0025 * 4
 # I don't think this does anything right now
 # binarization_cutoff = 0.98
@@ -309,8 +253,6 @@ optimization_stages = [
     density_layered_binarize
 ]
 
-# todo: For the cases of a blurred density, it is probably best to transfer the density variable.  Transferring a density version of the permittivity
-# won't necessarily be a smooth transition.
 def convert_free_to_free_in_layers( filebase ):
     free_in_layers.convert_permittivity_to_density(
         free_optimization.assemble_index( binarize_middle_device ),
@@ -337,8 +279,8 @@ optimization_conversion_functions = [
 #
 # Optimization Starting/Restarting Point
 #
-init_optimization_state = 3#0#3#0
-init_optimization_epoch = 9#0#1
+init_optimization_state = 0
+init_optimization_epoch = 0
 num_optimization_states = len( optimization_stages )
 
 eval_optimization_state = 3
@@ -348,11 +290,11 @@ eval_device_idx = 0
 #
 # Spectral
 #
-num_bands = 3
-num_points_per_band = 15
+num_bands = 2
+num_points_per_band = 5
 
-lambda_min_um = 0.45
-lambda_max_um = 0.65
+lambda_min_um = 1.4
+lambda_max_um = 1.7
 
 num_design_frequency_points = num_bands * num_points_per_band
 num_wavelengths = num_design_frequency_points
@@ -397,28 +339,21 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
 weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
-# We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
+# We are assuming that the data is organized in order of increasing wavelength (i.e. - 'blue' first, 'red' last)
 spectral_focal_plane_map = [
-	[2 * num_points_per_band, 3 * num_points_per_band],
-	[0, num_points_per_band],
-	[num_points_per_band, 2 * num_points_per_band],
+    [ 0, num_points_per_band ],
+    [ num_points_per_band, 2 * num_points_per_band ]
 ]
 
-# spectral_focal_plane_map = [
-# 	[0 * num_points_per_band, 2 * num_points_per_band],
-# 	[0, 3 * num_points_per_band],
-# 	[num_points_per_band, 3 * num_points_per_band],
-# ]
 #
 # Adjoint sources
 #
 # This seems like a long focal length
 adjoint_vertical_um = -focal_length_um
-num_focal_spots = 3
+num_focal_spots = 2
 num_adjoint_sources = num_focal_spots
 
-# adjoint_x_positions_um = [ -3 * device_size_lateral_um / 8., -device_size_lateral_um / 8., device_size_lateral_um / 8., 3 * device_size_lateral_um / 8. ]
-adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_lateral_um / 3. ]
+adjoint_x_positions_um = [ -device_size_lateral_um / 4., device_size_lateral_um / 4. ]
 
 #
 # Optimization
