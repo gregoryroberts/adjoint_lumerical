@@ -11,11 +11,18 @@ import OptimizationLayersSpacersGlobalBinarization2DMultiDevice
 
 import FreeBayerFilter2D
 
+# 1. Shorten focal length?
+# 2. Strehl ratio? Or at least divide by the transmission total on the focal plane to normalize?
+# 3. Antireflection coating on top of GSST?
+# 4. Illuminate from the bottom so that the GSST is on the bottom of the structure?
+# 5. Check the optimization to make sure the computed gradient is correct!
+
 #
 # Files
 #
-project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
+# project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
+project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_just_spectral_8xtsmc_um_focal_6p75um'
 
 #
 # Optical
@@ -141,9 +148,9 @@ gsst_max_y_um = gsst_min_y_um + gsst_thickness_um
 
 device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
 
-num_free_iterations = 100#25
+num_free_iterations = 150#25
 num_free_epochs = 1
-max_change_per_iter_free = 0.025
+max_change_per_iter_free = 0.015
 free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
 free_optimization_file_prefix = "free_"
 
