@@ -14,7 +14,8 @@ import FreeBayerFilter2D
 #
 # Files
 #
-project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
+project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
+# project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 
 #
 # Optical
@@ -114,16 +115,17 @@ for layer_idx in range( 1, len( layer_thicknesses_um ) ):
 #
 # Shouuld we explicitly re-mesh this part?
 gsst_min_n = 3.5
-gsst_min_k = 0.05
+gsst_min_k = 0#0.05
 
 gsst_max_n = 5
-gsst_max_k = 0.4
+gsst_max_k = 0#0.4
 
 gsst_num_states = 2
 gsst_n_states =[ gsst_min_n, gsst_max_n ]
 gsst_k_states = [ gsst_min_k, gsst_max_k ]
 
-gsst_thickness_um = 0.15
+# gsst_thickness_um = 0.15
+gsst_thickness_um = 0.4
 gsst_min_y_um = designable_device_vertical_maximum_um
 gsst_max_y_um = gsst_min_y_um + gsst_thickness_um
 
@@ -227,8 +229,8 @@ density_layered = OptimizationLayersSpacersMultiDevice.OptimizationLayersSpacers
 # Change lower index to air for the backfilled design where we etch oxide out first
 #
 
-num_density_layered_binarize_iterations = 1
-num_density_layered_binarize_epochs = 100
+num_density_layered_binarize_iterations = 100
+num_density_layered_binarize_epochs = 1
 binarize_max_movement = 3 * 0.005 * 3
 binarize_desired_change = 0.0025 * 4
 # I don't think this does anything right now
@@ -308,8 +310,8 @@ max_intensity_by_wavelength = (device_size_lateral_um * 1.02)**2 / (focal_length
 #
 # FDTD
 #
-vertical_gap_size_um = 1.0
-lateral_gap_size_um = 1.0
+vertical_gap_size_um = 3.0
+lateral_gap_size_um = 2.0
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um + bottom_metal_absorber_size_vertical_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
