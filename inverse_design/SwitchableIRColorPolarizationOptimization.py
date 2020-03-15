@@ -331,6 +331,8 @@ for wl_idx in range( 0, num_points_per_band ):
 gaussian_normalization /= np.sum( gaussian_normalization )
 gaussian_normalization_all = np.array( [ gaussian_normalization for i in range( 0, num_bands ) ] ).flatten()
 
+plt.plot( np.linspace( lambda_min_um, lambda_max_um, 2 * num_points_per_band ), gaussian_normalization_all )
+plt.show()
 
 reversed_field_shape = [1, designable_device_voxels_vertical, device_voxels_lateral]
 reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_vertical, device_voxels_lateral]
