@@ -300,9 +300,9 @@ eval_device_idx = 0
 # Spectral
 #
 num_bands = 2
-num_points_per_band = 5
+num_points_per_band = 10
 
-lambda_min_um = 1.4
+lambda_min_um = 1.2
 lambda_max_um = 1.7
 
 num_design_frequency_points = num_bands * num_points_per_band
