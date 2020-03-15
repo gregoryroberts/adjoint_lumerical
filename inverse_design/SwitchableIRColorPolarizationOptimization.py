@@ -560,10 +560,14 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 											adjoint_e_fields[sum_idx, spectral_idx, :, :, :],
 											polarized_gradient.shape )
 
-										plt.subplot( 1, 2, 1 )
+										plt.subplot( 2, 2, 1 )
 										plt.imshow( np.real( np.squeeze( forward_e_fields[ sum_idx, spectral_idx, :, :, : ] ) ) )
-										plt.subplot( 1, 2, 2 )
+										plt.subplot( 2, 2, 2 )
 										plt.imshow( np.real( np.squeeze( reinterpolate_forward_e_fields ) ) )
+										plt.subplot( 2, 2, 3 )
+										plt.imshow( np.imag( np.squeeze( forward_e_fields[ sum_idx, spectral_idx, :, :, : ] ) ) )
+										plt.subplot( 2, 2, 4 )
+										plt.imshow( np.imag( np.squeeze( reinterpolate_forward_e_fields ) ) )
 										plt.show()
 
 										polarized_gradient += (
