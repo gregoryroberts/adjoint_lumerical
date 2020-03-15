@@ -331,8 +331,8 @@ for wl_idx in range( 0, num_points_per_band ):
 gaussian_normalization /= np.sum( gaussian_normalization )
 gaussian_normalization_all = np.array( [ gaussian_normalization for i in range( 0, num_bands ) ] ).flatten()
 
-plt.plot( np.linspace( lambda_min_um, lambda_max_um, 2 * num_points_per_band ), gaussian_normalization_all )
-plt.show()
+# plt.plot( np.linspace( lambda_min_um, lambda_max_um, 2 * num_points_per_band ), gaussian_normalization_all )
+# plt.show()
 
 reversed_field_shape = [1, designable_device_voxels_vertical, device_voxels_lateral]
 reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_vertical, device_voxels_lateral]
@@ -526,8 +526,8 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 								adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-								spectral_indices = spectral_focal_plane_map[ adj_src_idx ]
-								num_points = spectral_indices[ 1 ] - spectral_indices[ 0 ]
+								# spectral_indices = spectral_focal_plane_map[ adj_src_idx ]
+								# num_points = spectral_indices[ 1 ] - spectral_indices[ 0 ]
 
 								# for spectral_idx in range(0, num_points ):
 								# for spectral_idx in range(0, num_design_frequency_points ):
@@ -559,16 +559,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 										reinterpolate_adjoint_e_fields = my_optimization_state.reinterpolate(
 											adjoint_e_fields[sum_idx, spectral_idx, :, :, :],
 											polarized_gradient.shape )
-
-										plt.subplot( 2, 2, 1 )
-										plt.imshow( np.real( np.squeeze( forward_e_fields[ sum_idx, spectral_idx, :, :, : ] ) ) )
-										plt.subplot( 2, 2, 2 )
-										plt.imshow( np.real( np.squeeze( reinterpolate_forward_e_fields ) ) )
-										plt.subplot( 2, 2, 3 )
-										plt.imshow( np.imag( np.squeeze( forward_e_fields[ sum_idx, spectral_idx, :, :, : ] ) ) )
-										plt.subplot( 2, 2, 4 )
-										plt.imshow( np.imag( np.squeeze( reinterpolate_forward_e_fields ) ) )
-										plt.show()
 
 										polarized_gradient += (
 											gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
