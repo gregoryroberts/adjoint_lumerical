@@ -510,10 +510,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						fom_weighting = np.maximum( fom_weighting, 0 )
 						fom_weighting /= np.sum( fom_weighting )
 
-						print( figure_of_merit_total )
-						print( figure_of_merit_total_for_weighting )
-						print( fom_weighting )
-						print()
+						# print( figure_of_merit_total )
+						# print( figure_of_merit_total_for_weighting )
+						# print( fom_weighting )
+						# print()
 
 						figure_of_merit_by_pol[ pol_idx ] = np.sum( choose_normalization * figure_of_merit_total )
 						figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
@@ -574,9 +574,13 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 											polarized_gradient.shape )
 
 										polarized_gradient += (
-											choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+											choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx]) *
 											reinterpolate_adjoint_e_fields *
 											reinterpolate_forward_e_fields )
+										# polarized_gradient += (
+										# 	choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+										# 	reinterpolate_adjoint_e_fields *
+										# 	reinterpolate_forward_e_fields )
 										# polarized_gradient += (
 										# 	(conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
 										# 	reinterpolate_adjoint_e_fields *
