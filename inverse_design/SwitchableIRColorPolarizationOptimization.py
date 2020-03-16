@@ -331,6 +331,8 @@ for wl_idx in range( 0, num_points_per_band ):
 gaussian_normalization /= np.sum( gaussian_normalization )
 gaussian_normalization_all = np.array( [ gaussian_normalization for i in range( 0, num_bands ) ] ).flatten()
 
+no_normalization_all = np.ones( gaussian_normalization_all.shape )
+
 # plt.plot( np.linspace( lambda_min_um, lambda_max_um, 2 * num_points_per_band ), gaussian_normalization_all )
 # plt.show()
 
@@ -403,6 +405,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 				gradients_real_lsf = np.zeros( field_shape_with_devices )
 				gradients_imag_lsf = np.zeros( field_shape_with_devices )
+
+				choose_normalization = gaussian_normalization_all
+				if gsst_state == 1:
+					choose_normalization = no_normalization_all
 
 				for device in range( 0, my_optimization_state.num_devices ):
 					#
@@ -502,7 +508,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						fom_weighting = np.maximum( fom_weighting, 0 )
 						fom_weighting /= np.sum( fom_weighting )
 
-						figure_of_merit_by_pol[ pol_idx ] = np.sum( gaussian_normalization_all * figure_of_merit_total )
+						figure_of_merit_by_pol[ pol_idx ] = np.sum( choose_normalization * figure_of_merit_total )
 						figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
 						figure_of_merit_by_device[ device ] = figure_of_merit
 
@@ -537,13 +543,13 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 								# 			# todo: the gaussian norm is weird here, the normalization all alredy stacks up all the bands and the spectral indices are counting from 0 to something
 								# 			# feels like you want to access at spectral_indices[0] + spectral_idx - effectively I think this is just what is happening
 								# 			polarized_gradient_lsf += ( ( ( 1. / min_real_permittivity ) - ( 1. / max_real_permittivity ) ) *
-								# 				gaussian_normalization_all[ spectral_idx ] * ( conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx] ) *
+								# 				choose_normalization[ spectral_idx ] * ( conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx] ) *
 								# 				current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
 								# 				current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
 								# 			)
 								# 		else:
 								# 			polarized_gradient_lsf += ( ( max_real_permittivity - min_real_permittivity ) *
-								# 				gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+								# 				choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
 								# 				current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
 								# 				current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
 								# 			)
@@ -561,7 +567,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 											polarized_gradient.shape )
 
 										polarized_gradient += (
-											gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+											choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
 											reinterpolate_adjoint_e_fields *
 											reinterpolate_forward_e_fields )
 
@@ -625,7 +631,8 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				compute_weightings = np.maximum( compute_weightings, 0 )
 				compute_weightings /= np.sum( compute_weightings )
 
-				compute_weightings = np.array( [ 1, 0 ] )
+				# compute_weightings = np.array( [ 1, 0 ] )
+				compute_weightings = np.array( [ 0, 1 ] )
 
 				print('compute_weightings = ' + str(compute_weightings))
 
