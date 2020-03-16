@@ -126,7 +126,7 @@ gsst_min_n = 3.5
 gsst_min_k = 0#0.05
 
 # gsst_max_n = 5
-gsst_max_n = 2.5
+gsst_max_n = 3.5#2.5
 gsst_max_k = 0#0.4
 
 gsst_num_states = 2
