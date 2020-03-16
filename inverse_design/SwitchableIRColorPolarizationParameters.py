@@ -22,7 +22,7 @@ import FreeBayerFilter2D
 #
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
-project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_just_polarization_8xtsmc_um_focal_6p75um_test'
+project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_spec_pol_8xtsmc_um_focal_6p75um_test'
 
 #
 # Optical
