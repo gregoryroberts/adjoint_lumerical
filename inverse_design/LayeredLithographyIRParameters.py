@@ -124,8 +124,8 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 1#0
-num_epochs = 3#8
+start_epoch = 3#0
+num_epochs = 4#8
 num_iterations_per_epoch = 60#35#50#25
 binarization_start_epoch = 1
 max_binarize_movement = 0.07
