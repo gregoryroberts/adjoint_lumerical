@@ -331,7 +331,7 @@ for wl_idx in range( 0, num_points_per_band ):
 gaussian_normalization /= np.sum( gaussian_normalization )
 gaussian_normalization_all = np.array( [ gaussian_normalization for i in range( 0, num_bands ) ] ).flatten()
 
-no_normalization_all = np.ones( gaussian_normalization_all.shape )
+no_normalization_all = np.mean( gaussian_normalization_all ) * np.ones( gaussian_normalization_all.shape )
 
 # plt.plot( np.linspace( lambda_min_um, lambda_max_um, 2 * num_points_per_band ), gaussian_normalization_all )
 # plt.show()
