@@ -510,6 +510,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						fom_weighting /= np.sum( fom_weighting )
 
 						print( figure_of_merit_total )
+						print( figure_of_merit_total_for_weighting )
 						print( fom_weighting )
 						print()
 
