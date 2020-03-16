@@ -642,6 +642,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				print('compute_weightings = ' + str(compute_weightings))
 
 				combine_device_fom[ device_idx ] = np.sum( compute_weightings * figure_of_merit_by_gsst_state )
+				print('combined fom = ' + str( combine_device_fom[ device_idx ] ) )
 
 				grad_by_shape = np.array(real_gradients_by_gsst_state)
 				for gsst_state in range( 0, gsst_num_states ):
@@ -652,7 +653,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 			print( 'Figures of merit = ' + str( figure_of_merit_by_gsst_state ) )
 
-			# print( 'Figure of merit by device = ' + str( figure_of_merit_by_device ) )
+			print( 'Figure of merit by device = ' + str( combine_device_fom ) )
 			my_optimization_state.submit_figure_of_merit( combine_device_fom, iteration, epoch )
 			my_optimization_state.update( -combine_real_gradients, -combine_imag_gradients, -combine_real_lsf_gradients, -combine_imag_lsf_gradients, epoch, iteration )
 			#
