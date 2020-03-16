@@ -128,7 +128,7 @@ start_epoch = 3#0
 num_epochs = 4#8
 num_iterations_per_epoch = 60#35#50#25
 binarization_start_epoch = 1
-max_binarize_movement = 0.07
+max_binarize_movement = 0.008
 desired_binarize_change = 0.005
 
 epoch_start_permittivity_change_max = 0.05#0.1
