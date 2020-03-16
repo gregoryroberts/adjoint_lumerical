@@ -486,6 +486,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 										conjugate_weighting_wavelength[ focal_idx, current_coord, wl_idx ] = weighting * np.conj(
 											focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx ] )
+							print()
 						else:
 							focal_idx = pol_idx
 							for wl_idx in range( 0, num_design_frequency_points ):
