@@ -475,6 +475,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 									weighting = 0#-0.5
 									if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
 										weighting = 1.0
+										print( "Optimizing for lambda = " + str( lambda_values_um[ wl_idx ] ) + " um" )
 
 									for coord_idx in range( 0, len( affected_coords ) ):
 										current_coord = affected_coords[ coord_idx ]
