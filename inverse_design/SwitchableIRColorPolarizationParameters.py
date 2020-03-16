@@ -22,7 +22,7 @@ import FreeBayerFilter2D
 #
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
-project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_spec_pol_8xtsmc_um_focal_6p75um_test'
+project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
 
 #
 # Optical
@@ -122,11 +122,11 @@ for layer_idx in range( 1, len( layer_thicknesses_um ) ):
 #
 # Shouuld we explicitly re-mesh this part?
 # gsst_min_n = 3.5
-gsst_min_n = 1.0
+gsst_min_n = 3.5
 gsst_min_k = 0#0.05
 
 # gsst_max_n = 5
-gsst_max_n = 1.0
+gsst_max_n = 2.5
 gsst_max_k = 0#0.4
 
 gsst_num_states = 2
