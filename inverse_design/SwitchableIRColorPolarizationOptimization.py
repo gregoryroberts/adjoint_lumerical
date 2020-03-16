@@ -475,7 +475,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 									weighting = 0#-0.5
 									if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
 										weighting = 1.0
-										print( "Optimizing for lambda = " + str( lambda_values_um[ wl_idx ] ) + " um" )
 
 									for coord_idx in range( 0, len( affected_coords ) ):
 										current_coord = affected_coords[ coord_idx ]
@@ -486,7 +485,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 										conjugate_weighting_wavelength[ focal_idx, current_coord, wl_idx ] = weighting * np.conj(
 											focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx ] )
-								print()
 						else:
 							focal_idx = pol_idx
 							for wl_idx in range( 0, num_design_frequency_points ):
@@ -510,6 +508,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						fom_weighting = ( 2. / len( figure_of_merit_total_for_weighting ) ) - figure_of_merit_total_for_weighting**2 / np.sum( figure_of_merit_total_for_weighting**2 )
 						fom_weighting = np.maximum( fom_weighting, 0 )
 						fom_weighting /= np.sum( fom_weighting )
+
+						print( figure_of_merit_total )
+						print( fom_weighting )
+						print()
 
 						figure_of_merit_by_pol[ pol_idx ] = np.sum( choose_normalization * figure_of_merit_total )
 						figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
