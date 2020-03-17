@@ -116,6 +116,9 @@ fdtd['mesh cells y'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
+# If the override mesh is not working well here, you may want to change it as well in the layered lithography design for IR
+# because it is being used there as well
+
 # design_mesh = fdtd_hook.addmesh()
 # design_mesh['name'] = 'design_override_mesh'
 # design_mesh['x span'] = device_size_lateral_um * 1e-6
@@ -503,7 +506,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 
 						# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
-						figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )#np.min( figure_of_merit_total )
+						figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )
 						# figure_of_merit_total_for_weighting = figure_of_merit_total / np.maximum( choose_normalization, 0.01 )
 						figure_of_merit_total_for_weighting = figure_of_merit_total
 						fom_weighting = ( 2. / len( figure_of_merit_total_for_weighting ) ) - figure_of_merit_total_for_weighting**2 / np.sum( figure_of_merit_total_for_weighting**2 )
@@ -573,14 +576,14 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 											adjoint_e_fields[sum_idx, spectral_idx, :, :, :],
 											polarized_gradient.shape )
 
-										polarized_gradient += (
-											choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx]) *
-											reinterpolate_adjoint_e_fields *
-											reinterpolate_forward_e_fields )
 										# polarized_gradient += (
-										# 	choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+										# 	choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx]) *
 										# 	reinterpolate_adjoint_e_fields *
 										# 	reinterpolate_forward_e_fields )
+										polarized_gradient += (
+											choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+											reinterpolate_adjoint_e_fields *
+											reinterpolate_forward_e_fields )
 										# polarized_gradient += (
 										# 	(conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
 										# 	reinterpolate_adjoint_e_fields *
