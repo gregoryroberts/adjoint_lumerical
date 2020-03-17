@@ -101,7 +101,6 @@ class FreeOptimizationMultiDevice( OptimizationStateMultiDevice.OptimizationStat
         max_abs_gradient_step = np.max( np.abs( gradient_step ) )
         max_abs_lsf_gradient_step = np.max( np.abs( lsf_gradient_step ) )
 
-
         proposed_design_variable = self.bayer_filters[ 0 ].get_design_variable() - self.step_size * gradient_step / max_abs_gradient_step
         proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
