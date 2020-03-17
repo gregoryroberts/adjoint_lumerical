@@ -137,7 +137,10 @@ gsst_k_states = [ gsst_min_k, gsst_max_k ]
 gsst_thickness_um = 0.4
 # gsst_min_y_um = designable_device_vertical_maximum_um
 # gsst_max_y_um = gsst_min_y_um + gsst_thickness_um
-gsst_max_y_um = designable_device_vertical_minimum_um
+#
+# Put small spacer here
+#
+gsst_max_y_um = designable_device_vertical_minimum_um - 0.2
 gsst_min_y_um = gsst_max_y_um - gsst_thickness_um
 
 #
