@@ -134,7 +134,7 @@ def find_orthogonal( v ):
 	return np.array( [ c, d ] )
 
 jones_orthogonal_vectors = []
-jones_idx in range( 0, len( jones_sorting_vectors ) ):
+for jones_idx in range( 0, len( jones_sorting_vectors ) ):
 	jones_orthogonal_vectors.append( find_orthogonal( jones_sorting_vectors[ jones_idx ] ) )
 	
 
