@@ -115,7 +115,7 @@ polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 jones_sorting_vectors = [
 	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] ),
 	np.array( [ 0.514, 0.794 + 0.324j ] ),
-	np.array( [ 0.986, 0.169j ] )
+	np.array( [ 0.986, 0.169j ] ),
 	np.array( [ 0.514, -0.794 + 0.324j ] )
 ]
 
