@@ -22,7 +22,8 @@ import FreeBayerFilter2D
 #
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
-project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
+# project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
+project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_both_8xtsmc_um_focal_6p75um_test'
 
 #
 # Optical
@@ -56,9 +57,9 @@ focal_length_um = 6.75
 #
 # We should override the mesh in the GSST though because that has very high index.  Or, potentially,
 # let's just override the mesh in our device region that we can control.
-mesh_spacing_um = 0.1
+mesh_spacing_um = 0.05#0.1
 # Set the design mesh spacing to that of the design rules
-lsf_mesh_spacing_um = 0.1
+lsf_mesh_spacing_um = 0.05#0.1
 
 design_layer_thickness_um = 0.22
 
@@ -122,11 +123,11 @@ for layer_idx in range( 1, len( layer_thicknesses_um ) ):
 #
 # Shouuld we explicitly re-mesh this part?
 # gsst_min_n = 3.5
-gsst_min_n = 3.5
+gsst_min_n = 1.5#3.5
 gsst_min_k = 0#0.05
 
 # gsst_max_n = 5
-gsst_max_n = 3.5#2.5
+gsst_max_n = 2.5#3.5#2.5
 gsst_max_k = 0#0.4
 
 gsst_num_states = 2
@@ -134,10 +135,20 @@ gsst_n_states =[ gsst_min_n, gsst_max_n ]
 gsst_k_states = [ gsst_min_k, gsst_max_k ]
 
 # gsst_thickness_um = 0.15
-gsst_thickness_um = 0.4
+gsst_thickness_um = 0.2#0.4
 # gsst_min_y_um = designable_device_vertical_maximum_um
 # gsst_max_y_um = gsst_min_y_um + gsst_thickness_um
-gsst_max_y_um = designable_device_vertical_minimum_um
+#
+# Put small spacer here
+#
+# putting the cavity there really enhanced the output (at least for one frequency)
+# decently broadband too.. interesting, wonder if we can use/understand this effect!
+# also, investigate why the higher index with the mesh override region seemed to be
+# giving inaccurate gradients or simulations?  Need to investigate if this was related
+# to an interpolation or some weird simulation thing
+# also, why did it only split one color and then reject the other ones when you had the
+# small cavity
+gsst_max_y_um = designable_device_vertical_minimum_um# - 0.2
 gsst_min_y_um = gsst_max_y_um - gsst_thickness_um
 
 #
@@ -154,7 +165,7 @@ device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
 
 num_free_iterations = 150#25
 num_free_epochs = 1
-max_change_per_iter_free = 0.015
+max_change_per_iter_free = 0.015 * 2 / 3
 free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
 free_optimization_file_prefix = "free_"
 
@@ -306,8 +317,8 @@ eval_device_idx = 0
 num_bands = 2
 num_points_per_band = 10
 
-lambda_min_um = 1.2
-lambda_max_um = 1.7
+lambda_min_um = 0.9#1.2
+lambda_max_um = 1.4#1.7
 
 num_design_frequency_points = num_bands * num_points_per_band
 num_wavelengths = num_design_frequency_points

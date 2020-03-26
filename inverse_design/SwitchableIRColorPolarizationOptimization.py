@@ -108,21 +108,24 @@ fdtd['dimension'] = '2D'
 fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['y max'] = fdtd_region_maximum_vertical_um * 1e-6
 fdtd['y min'] = fdtd_region_minimum_vertical_um * 1e-6
-# fdtd['mesh type'] = 'uniform'
-# fdtd['define x mesh by'] = 'number of mesh cells'
-# fdtd['define y mesh by'] = 'number of mesh cells'
-# fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
-# fdtd['mesh cells y'] = fdtd_region_minimum_vertical_voxels
+fdtd['mesh type'] = 'uniform'
+fdtd['define x mesh by'] = 'number of mesh cells'
+fdtd['define y mesh by'] = 'number of mesh cells'
+fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
+fdtd['mesh cells y'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
-design_mesh = fdtd_hook.addmesh()
-design_mesh['name'] = 'design_override_mesh'
-design_mesh['x span'] = device_size_lateral_um * 1e-6
-design_mesh['y max'] = designable_device_vertical_maximum_um * 1e-6
-design_mesh['y min'] = designable_device_vertical_minimum_um * 1e-6
-design_mesh['dx'] = mesh_spacing_um * 1e-6
-design_mesh['dy'] = mesh_spacing_um * 1e-6
+# If the override mesh is not working well here, you may want to change it as well in the layered lithography design for IR
+# because it is being used there as well
+
+# design_mesh = fdtd_hook.addmesh()
+# design_mesh['name'] = 'design_override_mesh'
+# design_mesh['x span'] = device_size_lateral_um * 1e-6
+# design_mesh['y max'] = designable_device_vertical_maximum_um * 1e-6
+# design_mesh['y min'] = designable_device_vertical_minimum_um * 1e-6
+# design_mesh['dx'] = mesh_spacing_um * 1e-6
+# design_mesh['dy'] = mesh_spacing_um * 1e-6
 # design_mesh['dz'] = mesh_spacing_um * 1e-6
 
 
@@ -503,17 +506,17 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 
 						# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
-						figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )#np.min( figure_of_merit_total )
+						figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )
 						# figure_of_merit_total_for_weighting = figure_of_merit_total / np.maximum( choose_normalization, 0.01 )
 						figure_of_merit_total_for_weighting = figure_of_merit_total
 						fom_weighting = ( 2. / len( figure_of_merit_total_for_weighting ) ) - figure_of_merit_total_for_weighting**2 / np.sum( figure_of_merit_total_for_weighting**2 )
 						fom_weighting = np.maximum( fom_weighting, 0 )
 						fom_weighting /= np.sum( fom_weighting )
 
-						print( figure_of_merit_total )
-						print( figure_of_merit_total_for_weighting )
-						print( fom_weighting )
-						print()
+						# print( figure_of_merit_total )
+						# print( figure_of_merit_total_for_weighting )
+						# print( fom_weighting )
+						# print()
 
 						figure_of_merit_by_pol[ pol_idx ] = np.sum( choose_normalization * figure_of_merit_total )
 						figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
@@ -573,6 +576,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 											adjoint_e_fields[sum_idx, spectral_idx, :, :, :],
 											polarized_gradient.shape )
 
+										# polarized_gradient += (
+										# 	choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx]) *
+										# 	reinterpolate_adjoint_e_fields *
+										# 	reinterpolate_forward_e_fields )
 										polarized_gradient += (
 											choose_normalization[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
 											reinterpolate_adjoint_e_fields *
@@ -642,7 +649,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				compute_weightings = np.maximum( compute_weightings, 0 )
 				compute_weightings /= np.sum( compute_weightings )
 
-				compute_weightings = np.array( [ 1, 0 ] )
+				# compute_weightings = np.array( [ 1, 0 ] )
 				# compute_weightings = np.array( [ 0, 1 ] )
 
 				print('compute_weightings = ' + str(compute_weightings))
