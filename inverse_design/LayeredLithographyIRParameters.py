@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_3p6x3p6x3p6um_f2p6'
+project_name = 'layered_infrared_3layers_pol_insensitive_3p6x3p6x3p6um_f2p6'
 
 #
 # Optical
@@ -47,8 +47,8 @@ device_size_verical_um = num_vertical_layers * ( 3.0 / num_vertical_layers )
 amorphous_silicon_height_per_layer_um = 0.51#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
-device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
-device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
+device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
+device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
 spacer_size_voxels = 1 + int(spacer_size_um / mesh_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um
@@ -101,7 +101,7 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 #
 # Spectral and polarization selectivity information
 #
-polarizations_focal_plane_map = [ ['x', 'y'], ['x'], ['x', 'y'], ['y'] ]
+polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
 weight_focal_plane_map = [ 1.0, 0.5, 1.0, 0.5 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
@@ -124,12 +124,12 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 3#0
-num_epochs = 4#8
+start_epoch = 6
+num_epochs = 8#8
 num_iterations_per_epoch = 60#35#50#25
 binarization_start_epoch = 1
-max_binarize_movement = 0.008
-desired_binarize_change = 0.005
+max_binarize_movement = 0.01
+desired_binarize_change = 0.005 / 2
 
 epoch_start_permittivity_change_max = 0.05#0.1
 epoch_end_permittivity_change_max = 0.01#0.02
