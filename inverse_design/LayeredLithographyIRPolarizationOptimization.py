@@ -409,7 +409,6 @@ for epoch in range(start_epoch, num_epochs):
 
 		for adj_src_idx in range(0, num_adjoint_sources):
 			polarizations = polarizations_focal_plane_map[adj_src_idx]
-			spectral_indices = spectral_focal_plane_map[adj_src_idx]
 
 			analyzer_vector = jones_sorting_vectors[ adj_src_idx ]
 			orthogonal_vector = jones_orthogonal_vectors[ adj_src_idx ]
