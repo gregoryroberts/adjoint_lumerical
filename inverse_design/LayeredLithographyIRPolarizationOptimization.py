@@ -48,13 +48,13 @@ def dipole_weightings( E_out_parallel, E_out_orthogonal ):
 		difference = I_parallel - I_orthogonal
 		total = I_parallel + I_orthogonal
 
-		x_parallel_weighting[ wl_idx ] = ( total * np.conj( E_out_parallel[ 0, wl_idx ] ) - difference * np.conj( E_out_parallel[ 0, wl_idx ] ) ) / total**2
+		x_parallel_weighting[ wl_idx ] = ( total[ wl_idx ] * np.conj( E_out_parallel[ 0, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_parallel[ 0, wl_idx ] ) ) / total[ wl_idx ]**2
 		# can also write as:
-		# x_parallel_weighting = np.conj( E_out_parallel[ 0 ] ) * ( total - difference ) / total**2
-		y_parallel_weighting[ wl_idx ] = ( total * np.conj( E_out_parallel[ 1, wl_idx ] ) - difference * np.conj( E_out_parallel[ 1, wl_idx ] ) ) / total**2
+		# x_parallel_weighting = np.conj( E_out_parallel[ 0 ] ) * ( total[ wl_idx ] - difference[ wl_idx ] ) / total[ wl_idx ]**2
+		y_parallel_weighting[ wl_idx ] = ( total[ wl_idx ] * np.conj( E_out_parallel[ 1, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_parallel[ 1, wl_idx ] ) ) / total[ wl_idx ]**2
 
-		x_orthogonal_weighting[ wl_idx ] = ( -total * np.conj( E_out_orthogonal[ 0, wl_idx ] ) - difference * np.conj( E_out_orthogonal[ 0, wl_idx ] ) ) / total**2
-		y_orthogonal_weighting[ wl_idx ] = ( -total * np.conj( E_out_orthogonal[ 1, wl_idx ] ) - difference * np.conj( E_out_orthogonal[ 1, wl_idx ] ) ) / total**2
+		x_orthogonal_weighting[ wl_idx ] = ( -total[ wl_idx ] * np.conj( E_out_orthogonal[ 0, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_orthogonal[ 0, wl_idx ] ) ) / total[ wl_idx ]**2
+		y_orthogonal_weighting[ wl_idx ] = ( -total[ wl_idx ] * np.conj( E_out_orthogonal[ 1, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_orthogonal[ 1, wl_idx ] ) ) / total[ wl_idx ]**2
 
 
 	return [ np.array( [ x_parallel_weighting, y_parallel_weighting ] ), np.array( [ x_orthogonal_weighting, y_orthogonal_weighting ] ) ]
