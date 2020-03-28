@@ -32,19 +32,29 @@ def contrast_fom( E_out_parallel, E_out_orthogonal ):
 	return contrast
 
 def dipole_weightings( E_out_parallel, E_out_orthogonal ):
-	I_parallel = intensity_from_field( E_out_parallel )
-	I_orthogonal = intensity_from_field( E_out_orthogonal )
+	field_shape = E_out_parallel.shape
+	num_wavelengths = field_shape[ 1 ]
 
-	difference = I_parallel - I_orthogonal
-	total = I_parallel + I_orthogonal
+	x_parallel_weighting = np.zeros( num_wavelengths, dtype=np.complex )
+	y_parallel_weighting = np.zeros( num_wavelengths, dtype=np.complex )
+	x_orthogonal_weighting = np.zeros( num_wavelengths, dtype=np.complex )
+	y_orthogonal_weighting = np.zeros( num_wavelengths, dtype=np.complex )
 
-	x_parallel_weighting = ( total * np.conj( E_out_parallel[ 0 ] ) - difference * np.conj( E_out_parallel[ 0 ] ) ) / total**2
-	# can also write as:
-	# x_parallel_weighting = np.conj( E_out_parallel[ 0 ] ) * ( total - difference ) / total**2
-	y_parallel_weighting = ( total * np.conj( E_out_parallel[ 1 ] ) - difference * np.conj( E_out_parallel[ 1 ] ) ) / total**2
+	for wl_idx in range( 0, num_wavelengths ):
 
-	x_orthogonal_weighting = ( -total * np.conj( E_out_orthogonal[ 0 ] ) - difference * np.conj( E_out_orthogonal[ 0 ] ) ) / total**2
-	y_orthogonal_weighting = ( -total * np.conj( E_out_orthogonal[ 1 ] ) - difference * np.conj( E_out_orthogonal[ 1 ] ) ) / total**2
+		I_parallel = intensity_from_field( E_out_parallel )
+		I_orthogonal = intensity_from_field( E_out_orthogonal )
+
+		difference = I_parallel - I_orthogonal
+		total = I_parallel + I_orthogonal
+
+		x_parallel_weighting[ wl_idx ] = ( total * np.conj( E_out_parallel[ 0, wl_idx ] ) - difference * np.conj( E_out_parallel[ 0, wl_idx ] ) ) / total**2
+		# can also write as:
+		# x_parallel_weighting = np.conj( E_out_parallel[ 0 ] ) * ( total - difference ) / total**2
+		y_parallel_weighting[ wl_idx ] = ( total * np.conj( E_out_parallel[ 1, wl_idx ] ) - difference * np.conj( E_out_parallel[ 1, wl_idx ] ) ) / total**2
+
+		x_orthogonal_weighting[ wl_idx ] = ( -total * np.conj( E_out_orthogonal[ 0, wl_idx ] ) - difference * np.conj( E_out_orthogonal[ 0, wl_idx ] ) ) / total**2
+		y_orthogonal_weighting[ wl_idx ] = ( -total * np.conj( E_out_orthogonal[ 1, wl_idx ] ) - difference * np.conj( E_out_orthogonal[ 1, wl_idx ] ) ) / total**2
 
 
 	return [ np.array( [ x_parallel_weighting, y_parallel_weighting ] ), np.array( [ x_orthogonal_weighting, y_orthogonal_weighting ] ) ]
@@ -435,14 +445,14 @@ for epoch in range(start_epoch, num_epochs):
 			# For now, just try and increase the contrast.  We will want to make sure overall transmission is high too, which can
 			# be added in as another fiugre of merit.
 			#
-			adjoint_phase_weightings = dipole_weightings( create_forward_parallel_response, create_forward_orthogonal_response )
+			adjoint_phase_weightings = dipole_weightings( np.squeeze( create_forward_parallel_response ), np.squeeze( create_forward_orthogonal_response ) )
 
 			for spectral_idx in range( 0, num_design_frequency_points ):
 				for xy_idx in range( 0, 2 ):
 
 					accumulate_gradient += np.sum(
 						gradient_performance_weight *
-						dipole_weightings[ 0 ][ xy_idx ] *
+						dipole_weightings[ 0 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_parallel_fields[ :, spectral_idx, :, :, : ],
 						axis=0
@@ -450,7 +460,7 @@ for epoch in range(start_epoch, num_epochs):
 
 					accumulate_gradient += np.sum(
 						gradient_performance_weight *
-						dipole_weightings[ 1 ][ xy_idx ] *
+						dipole_weightings[ 1 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_orthogonal_fields[ :, spectral_idx, :, :, : ],
 						axis=0
