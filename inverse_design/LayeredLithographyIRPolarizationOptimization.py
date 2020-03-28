@@ -452,7 +452,7 @@ for epoch in range(start_epoch, num_epochs):
 
 					accumulate_gradient += np.sum(
 						gradient_performance_weight *
-						dipole_weightings[ 0 ][ xy_idx, spectral_idx ] *
+						adjoint_phase_weightings[ 0 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_parallel_fields[ :, spectral_idx, :, :, : ],
 						axis=0
@@ -460,7 +460,7 @@ for epoch in range(start_epoch, num_epochs):
 
 					accumulate_gradient += np.sum(
 						gradient_performance_weight *
-						dipole_weightings[ 1 ][ xy_idx, spectral_idx ] *
+						adjoint_phase_weightings[ 1 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_orthogonal_fields[ :, spectral_idx, :, :, : ],
 						axis=0
