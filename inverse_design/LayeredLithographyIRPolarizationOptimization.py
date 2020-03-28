@@ -20,7 +20,7 @@ import time
 
 
 def intensity_from_field( E ):
-	intensity = np.abs( np.dot( np.conj( E ), E ) )
+	intensity = np.sum( np.conj( E ) * E, axis=0 )
 	return intensity
 
 def contrast_fom( E_out_parallel, E_out_orthogonal ):
