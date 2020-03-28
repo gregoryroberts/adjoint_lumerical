@@ -385,7 +385,7 @@ for epoch in range(start_epoch, num_epochs):
 					intensity_from_field( paraxial_orthogonal_forward )
 				)
 
-				compute_fom += contrast_fom(
+				compute_fom += 1 + contrast_fom(
 					paraxial_parallel_forward,
 					paraxial_orthogonal_forward )
 
@@ -396,6 +396,8 @@ for epoch in range(start_epoch, num_epochs):
 
 		# So we are currently weighting by focal spot but not by individual frequency
 		# This might be why you are getting three peaks in the color splitting version
+		#
+		# Figure of merit per focal spot, these contrasts can be negative.  The most negative can be -1.  We will add one to each one above 
 		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
 		performance_weighting -= np.min(performance_weighting)
 		performance_weighting /= np.sum(performance_weighting)
