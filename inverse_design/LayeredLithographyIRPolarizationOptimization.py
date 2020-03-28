@@ -427,7 +427,7 @@ for epoch in range(start_epoch, num_epochs):
 			create_forward_orthogonal_response = orthogonal_vector[ 0 ] * focal_data[ 'x' ][ focal_idx ] + orthogonal_vector[ 1 ] * focal_data[ 'y' ][ focal_idx ]
 
 			create_forward_parallel_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
-			create_orthogonal_fields = orthogonal_vector[ 0 ] * forward_e_fields[ 'x' ] + orthogonal_vector[ 1 ] * forward_e_fields[ 'y' ]
+			create_forward_orthogonal_fields = orthogonal_vector[ 0 ] * forward_e_fields[ 'x' ] + orthogonal_vector[ 1 ] * forward_e_fields[ 'y' ]
 
 			gradient_performance_weight = performance_weighting[adj_src_idx]
 
