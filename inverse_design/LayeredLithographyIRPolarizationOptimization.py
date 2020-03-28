@@ -385,9 +385,9 @@ for epoch in range(start_epoch, num_epochs):
 					intensity_from_field( paraxial_orthogonal_forward )
 				)
 
-				compute_fom += 1 + contrast_fom(
+				compute_fom += ( 1 + contrast_fom(
 					paraxial_parallel_forward,
-					paraxial_orthogonal_forward )
+					paraxial_orthogonal_forward ) )
 
 			figure_of_merit_per_focal_spot.append( compute_fom )
 
