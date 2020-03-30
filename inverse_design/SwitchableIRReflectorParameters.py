@@ -23,7 +23,7 @@ import FreeBayerFilter2D
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
-project_name = 'cmos_dielectric_2d_switchable_color_layer_ez_6xtsmc_um_focal'
+project_name = 'cmos_dielectric_2d_switchable_color_layer_dual_pol_6xtsmc_um_focal'
 
 is_lumerical_version_2020a = False
 
@@ -75,8 +75,9 @@ layer_thicknesses_um = [
 	0.08, design_layer_thickness_um, 0.095, # M4
 	0.08, design_layer_thickness_um, 0.095, # M3
 	0.08, design_layer_thickness_um, 0.095, # M2
-	0.08, 0.13, 0.03,                       # M1
-]
+    0.08 ]                                 # M1 - here we are using the metal layer as a reflector so we don't get to pattern it
+	# 0.08, 0.13, 0.03,                       # M1
+# ]
 
 layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_thicknesses_um ]
 
@@ -87,8 +88,9 @@ layer_background_index = [
 	1.45, design_index_background, design_index_background, # M4
 	1.45, design_index_background, design_index_background, # M3
 	1.45, design_index_background, design_index_background, # M2
-	1.45, design_index_background, design_index_background # part of M1 until the copper reflecting layer on M1
-]
+    1.45 ]                                                  # M1 used as copper reflector
+	# 1.45, design_index_background, design_index_background # part of M1 until the copper reflecting layer on M1
+# ]
 
 is_layer_designable = [
 	True, False,        # M7
@@ -97,8 +99,9 @@ is_layer_designable = [
 	False, True, False, # M4
 	False, True, False, # M3
 	False, True, False, # M2
-	False, True, False  # M1
-]
+    False ]             # M1 used as copper reflector
+	# False, True, False  # M1
+# ]
 
 device_size_lateral_um = 6.0
 designable_size_vertical_um = np.sum( layer_thicknesses_um )
@@ -135,7 +138,7 @@ gsst_min_k = 0.0
 gsst_max_n = 5.0
 gsst_max_k = 0.2
 
-gsst_num_states = 1#2
+gsst_num_states = 2
 gsst_n_states =[ gsst_min_n, gsst_max_n ]
 gsst_k_states = [ gsst_min_k, gsst_max_k ]
 
@@ -357,7 +360,7 @@ fdtd_simulation_time_fs = 10 * 2000
 #
 # Forward Source
 #
-num_polarizations = 1#2
+num_polarizations = 2
 
 lateral_aperture_um = 1.1 * device_size_lateral_um
 src_maximum_vertical_um = device_size_verical_um + 0.5 * vertical_gap_size_um

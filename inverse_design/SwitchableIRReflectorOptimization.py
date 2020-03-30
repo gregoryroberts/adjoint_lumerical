@@ -144,7 +144,7 @@ xy_names = ['x', 'y']
 # Add a TFSF plane wave forward source at normal incidence
 #
 forward_sources = []
-source_polarization_angles = [ 90, 0 ]
+source_polarization_angles = [0 , 90]#[ 90, 0 ]
 affected_coords_by_polarization = [ [ 2 ], [ 0, 1 ] ]
 
 for pol_idx in range( 0, num_polarizations ):
@@ -208,10 +208,10 @@ def disable_all_sources():
 
 mode_E = []
 mode_H = []
-for idx in range( 0, num_polarizations ):
+for pol_idx in range( 0, num_polarizations ):
 	disable_all_sources()
-	forward_sources[ idx ].enabled = 1
-	forward_sources[ idx ][ 'direction' ] = 'Forward'
+	forward_sources[ pol_idx ].enabled = 1
+	forward_sources[ pol_idx ][ 'direction' ] = 'Forward'
 	fdtd_hook.run()
 
 	get_E_mode = get_complex_monitor_data( mode_reflection_monitor['name'], 'E' )
@@ -222,6 +222,10 @@ for idx in range( 0, num_polarizations ):
 
 	for wl_idx in range( 0, num_wls ):
 		phase_correction = np.exp( 1j * np.angle( get_E_mode[ 2, wl_idx, 0, 0, half_x ] ) )
+
+		if pol_idx == 0:
+			phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, half_x ] ) )
+
 		get_E_mode[ :, wl_idx, :, :, : ] /= phase_correction
 		get_H_mode[ :, wl_idx, :, :, : ] /= phase_correction
 
@@ -235,7 +239,7 @@ for idx in range( 0, num_polarizations ):
 
 
 	disable_all_sources()
-	forward_sources[ idx ][ 'direction' ] = 'Backward'
+	forward_sources[ pol_idx ][ 'direction' ] = 'Backward'
 
 
 copper_bottom = fdtd_hook.addrect()
@@ -365,7 +369,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 
 
 
-def mode_overlap_fom(
+def mode_overlap_fom_ez(
     electric_fields_forward, magnetic_fields_forward,
     electric_mode_fields, magnetic_mode_fields, normal_weighting,
     mode_overlap_norm=None ):
@@ -395,8 +399,38 @@ def mode_overlap_fom(
 
     return total_norm * fom_by_wavelength
 
-# this is currently only doing Ez polarization!
-def mode_overlap_gradient(
+
+def mode_overlap_fom_hz(
+    electric_fields_forward, magnetic_fields_forward,
+    electric_mode_fields, magnetic_mode_fields, normal_weighting,
+    mode_overlap_norm=None ):
+
+    num_wavelengths = electric_fields_forward.shape[ 1 ]
+    total_norm = 1.0 / num_wavelengths
+    fom_by_wavelength = np.zeros( num_wavelengths )
+
+    for wl_idx in range( 0, num_wavelengths ):
+        choose_electric_mode = electric_mode_fields
+        choose_magnetic_mode = magnetic_mode_fields
+
+        choose_electric_forward = electric_fields_forward
+        choose_magnetic_forward = magnetic_fields_forward
+
+        numerator = (
+            -np.sum( choose_electric_forward[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) -
+            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 2, wl_idx, 0, 0, : ] ) )
+        numerator = np.abs( numerator )**2
+        denominator = -8.0 * np.real( np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) )
+
+        fom_by_wavelength[ wl_idx ] = ( numerator / denominator )
+        if mode_overlap_norm is not None:
+            fom_by_wavelength[ wl_idx ] = ( numerator / ( mode_overlap_norm[ wl_idx ] * denominator ) )
+    
+        fom_by_wavelength[ wl_idx ] *= normal_weighting
+
+    return total_norm * fom_by_wavelength
+
+def mode_overlap_gradient_ez(
     figure_of_merit, fom_weighting,
     electric_fields_forward, magnetic_fields_forward,
     electric_mode_fields, magnetic_mode_fields,
@@ -427,94 +461,40 @@ def mode_overlap_gradient(
 
     return -gradient / num_wavelengths
 
+def mode_overlap_gradient_hz(
+    figure_of_merit, fom_weighting,
+    electric_fields_forward, magnetic_fields_forward,
+    electric_mode_fields, magnetic_mode_fields,
+    electric_fields_gradient_forward, electric_fields_gradient_adjoint,
+    normal_weighting,
+    mode_overlap_norm ):
+
+    num_wavelengths = electric_fields_forward.shape[ 1 ]
+
+    gradient = np.zeros( electric_fields_gradient_forward.shape[ 2 : ], dtype=np.complex )
+
+    for wl_idx in range( 0, num_wavelengths ):
+        choose_electric_mode = electric_mode_fields
+        choose_magnetic_mode = magnetic_mode_fields
+
+        choose_electric_forward = electric_fields_forward
+        choose_magnetic_forward = magnetic_fields_forward
+
+        numerator = (
+            -np.sum( choose_electric_forward[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) -
+            np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 2, wl_idx, 0, 0, : ] ) )
+        denominator = -4.0 * np.real( np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) )
+
+        adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm[ wl_idx ] )
+        gradient += normal_weighting * ( 
+            fom_weighting[ wl_idx ] * adjoint_phase *
+            np.sum( electric_fields_gradient_forward[ :, wl_idx, :, :, : ] * electric_fields_gradient_adjoint[ :, wl_idx, :, :, : ], axis=0 ) )
+
+    return -gradient / num_wavelengths
 
 
-
-# def mode_overlap_fom(
-#     electric_fields_forward, magnetic_fields_forward,
-#     electric_mode_fields, magnetic_mode_fields, normal_weighting,
-#     mode_overlap_norm=None ):
-
-#     num_wavelengths = electric_fields_forward.shape[ 1 ]
-#     total_norm = 1.0 / num_wavelengths
-#     fom_by_wavelength = np.zeros( num_wavelengths )
-
-#     for wl_idx in range( 0, num_wavelengths ):
-#         choose_electric_mode = electric_mode_fields
-#         choose_magnetic_mode = magnetic_mode_fields
-
-#         choose_electric_forward = electric_fields_forward
-#         choose_magnetic_forward = magnetic_fields_forward
-
-#         numerator_term_1 = (
-#             np.sum( choose_electric_forward[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, 0, : ] ) ) +
-#             np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 1, wl_idx, 0, 0, : ] ) )
-
-#         numerator_term_2 = -(
-#             np.sum( choose_electric_forward[ 1, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) +
-#             np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, 0, : ] ) )
-
-#         numerator = numerator_term_1 + numerator_term_2
-#         numerator = np.abs( numerator )**2
-
-#         denominator = 8.0 * np.real(
-#             np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, 0, : ] ) ) -
-#             np.sum( choose_electric_mode[ 1, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) )
-#         )
-
-#         fom_by_wavelength[ wl_idx ] = ( numerator / denominator )
-#         if mode_overlap_norm is not None:
-#             fom_by_wavelength[ wl_idx ] = ( numerator / ( mode_overlap_norm[ wl_idx ] * denominator ) )
-    
-#         fom_by_wavelength[ wl_idx ] *= normal_weighting
-
-#     return total_norm * fom_by_wavelength
-
-# def mode_overlap_gradient(
-#     figure_of_merit, fom_weighting,
-#     electric_fields_forward, magnetic_fields_forward,
-#     electric_mode_fields, magnetic_mode_fields,
-#     electric_fields_gradient_forward, electric_fields_gradient_adjoint,
-#     normal_weighting,
-#     mode_overlap_norm ):
-
-#     num_wavelengths = electric_fields_forward.shape[ 1 ]
-
-#     # fom_weighting = ( 2.0 / num_wavelengths ) - figure_of_merit**2 / np.sum( figure_of_merit**2 )
-#     # fom_weighting = np.maximum( fom_weighting, 0 )
-#     # fom_weighting /= np.sum( fom_weighting )
-
-#     gradient = np.zeros( electric_fields_gradient_forward.shape[ 2 : ], dtype=np.complex )
-
-#     for wl_idx in range( 0, num_wavelengths ):
-#         choose_electric_mode = electric_mode_fields
-#         choose_magnetic_mode = magnetic_mode_fields
-
-#         choose_electric_forward = electric_fields_forward
-#         choose_magnetic_forward = magnetic_fields_forward
-
-#         numerator_term_1 = (
-#             np.sum( choose_electric_forward[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, 0, : ] ) ) +
-#             np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 1, wl_idx, 0, 0, : ] ) )
-
-#         numerator_term_2 = -(
-#             np.sum( choose_electric_forward[ 1, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) +
-#             np.sum( np.conj( choose_electric_mode[ 1, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, 0, : ] ) )
-
-#         numerator = numerator_term_1 + numerator_term_2
-
-#         denominator = 4.0 * np.real(
-#             np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 1, wl_idx, 0, 0, : ] ) ) -
-#             np.sum( choose_electric_mode[ 1, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) )
-#         )
-
-#         adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm[ wl_idx ] )
-#         gradient += normal_weighting * ( 
-#             fom_weighting[ wl_idx ] * adjoint_phase *
-#             np.sum( electric_fields_gradient_forward[ :, wl_idx, :, :, : ] * electric_fields_gradient_adjoint[ :, wl_idx, :, :, : ], axis=0 ) )
-
-#     return -gradient / num_wavelengths
-
+mode_overlap_fom_by_pol = [ mode_overlap_fom_hz, mode_overlap_fom_ez ]
+mode_overlap_gradient_by_pol = [ mode_overlap_gradient_hz, mode_overlap_gradient_ez ]
 
 
 #
@@ -637,7 +617,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						figure_of_merit_total = np.zeros( num_design_frequency_points )
 						conjugate_weighting_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ), dtype=np.complex )
 
-						figures_of_merit_by_wavelength = mode_overlap_fom(
+						figures_of_merit_by_wavelength = mode_overlap_fom_by_pol[ pol_idx ](
 							reflected_E, reflected_H,
 							mode_E[ pol_idx ], mode_H[ pol_idx ],
 							1.0
@@ -717,7 +697,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 								directional_norm[ wl_idx ] = -1
 
 						polarized_gradient += my_optimization_state.reinterpolate(
-							mode_overlap_gradient(
+							mode_overlap_gradient_by_pol[ pol_idx ](
 								figures_of_merit_by_wavelength, fom_weighting,
 								reflected_E, reflected_H,
 								mode_E[ pol_idx ], mode_H[ pol_idx ],
@@ -735,14 +715,14 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						# 	polarized_gradient.shape )
 
 
-
-
 						xy_polarized_gradients_by_pol[ pol_idx ] = polarized_gradient
 						xy_polarized_gradients_by_pol_lsf[ pol_idx ] = polarized_gradient
 
 					weight_grad_by_pol = ( 2. / num_polarizations ) - figure_of_merit_by_pol**2 / np.sum( figure_of_merit_by_pol**2 )
 					weight_grad_by_pol = np.maximum( weight_grad_by_pol, 0 )
 					weight_grad_by_pol /= np.sum( weight_grad_by_pol )
+
+					# weight_grad_by_pol = [ 0, 1 ]
 
 					for pol_idx in range( 0, num_polarizations ):
 						xy_polarized_gradients += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol[ pol_idx ]
