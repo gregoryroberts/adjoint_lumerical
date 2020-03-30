@@ -609,6 +609,7 @@ def mode_overlap_gradient(
             np.sum( choose_electric_mode[ 1, wl_idx, 0, :, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, :, : ] ) )
         )
 
+        # todo(gdroberts): I think the polarization is the first index, so this doesn't quite make sense!
         adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm[ wl_idx ] )
         gradient += normal_weighting * ( 
             fom_weighting[ wl_idx ] * adjoint_phase *

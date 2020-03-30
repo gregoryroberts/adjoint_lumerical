@@ -652,7 +652,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						# fom_weighting[ : ] = 0
 						# fom_weighting[ 7 ] = 1.0
 
-						print( fom_weighting )
+						print( "Figure of merit weighting = " + str( fom_weighting ) )
 
 						# print( figure_of_merit_total )
 						# print( figure_of_merit_total_for_weighting )
@@ -722,6 +722,8 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					weight_grad_by_pol = np.maximum( weight_grad_by_pol, 0 )
 					weight_grad_by_pol /= np.sum( weight_grad_by_pol )
 
+					print( "Weight by polarization = " + str( weight_grad_by_pol ) )
+
 					# weight_grad_by_pol = [ 0, 1 ]
 
 					for pol_idx in range( 0, num_polarizations ):
@@ -779,7 +781,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				# compute_weightings = np.array( [ 1, 0 ] )
 				# compute_weightings = np.array( [ 0, 1 ] )
 
-				print('compute_weightings = ' + str(compute_weightings))
+				print( 'Weightings for each device = ' + str( compute_weightings ) )
 
 				grad_by_shape = np.array(real_gradients_by_gsst_state)
 				for gsst_state in range( 0, gsst_num_states ):
