@@ -651,7 +651,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 						print( figures_of_merit_by_wavelength )
 						print( figures_of_merit_by_wavelength_unnorm )
-						print( mode_overlap_norm_by_pol[ pol_idx ]
+						print( mode_overlap_norm_by_pol[ pol_idx ] )
 
 						if np.max( figures_of_merit_by_wavelength ) > 1.0:
 							print( "Warning: figure of merit above 1.0" )
