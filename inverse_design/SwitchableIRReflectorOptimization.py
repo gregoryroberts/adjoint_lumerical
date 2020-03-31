@@ -161,7 +161,7 @@ for pol_idx in range( 0, num_polarizations ):
 	forward_sources.append( forward_src )
 
 
-mode_reflection_monitor_delta_um = 0.3 * vertical_gap_size_um
+mode_reflection_monitor_delta_um = 0.2 * vertical_gap_size_um
 mode_reflection_monitor = fdtd_hook.addpower()
 mode_reflection_monitor['name'] = 'mode_reflection_monitor'
 mode_reflection_monitor['monitor type'] = 'Linear X'
@@ -630,6 +630,13 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							1.0, mode_overlap_norm_by_pol[ pol_idx ]
 						)
 
+						figures_of_merit_by_wavelength_unnorm = mode_overlap_fom_by_pol[ pol_idx ](
+							reflected_E, reflected_H,
+							mode_E[ pol_idx ], mode_H[ pol_idx ],
+							1.0, np.ones( len( mode_overlap_norm_by_pol[ pol_idx ] ) )
+						)
+
+
 						#
 						# We are assuming this is the amorphous (non-lossy) state (also lower index)
 						if gsst_state == 0:
@@ -645,7 +652,8 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							for wl_idx in range( 0, num_design_frequency_points ):
 								figures_of_merit_by_wavelength[ wl_idx ] = 1 - figures_of_merit_by_wavelength[ wl_idx ]
 
-						print(figures_of_merit_by_wavelength)
+						print( figures_of_merit_by_wavelength )
+						print( figures_of_merit_by_wavelength_unnorm )
 
 						if np.max( figures_of_merit_by_wavelength ) > 1.0:
 							print( "Warning: figure of merit above 1.0" )
