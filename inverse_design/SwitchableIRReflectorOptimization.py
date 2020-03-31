@@ -161,7 +161,7 @@ for pol_idx in range( 0, num_polarizations ):
 	forward_sources.append( forward_src )
 
 
-mode_reflection_monitor_delta_um = 0.2 * vertical_gap_size_um
+mode_reflection_monitor_delta_um = 0.3 * vertical_gap_size_um
 mode_reflection_monitor = fdtd_hook.addpower()
 mode_reflection_monitor['name'] = 'mode_reflection_monitor'
 mode_reflection_monitor['monitor type'] = 'Linear X'
