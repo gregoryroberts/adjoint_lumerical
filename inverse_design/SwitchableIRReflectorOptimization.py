@@ -497,8 +497,8 @@ mode_overlap_fom_by_pol = [ mode_overlap_fom_hz, mode_overlap_fom_ez ]
 mode_overlap_gradient_by_pol = [ mode_overlap_gradient_hz, mode_overlap_gradient_ez ]
 
 
-mode_overlap_norm_Hz = mode_overlap_fom_by_pol[ 0 ]( mode_E[ 0 ], mode_H[ 0 ], mode_E[ 0 ], mode_H[ 0 ] )
-mode_overlap_norm_Ez = mode_overlap_fom_by_pol[ 1 ]( mode_E[ 1 ], mode_H[ 1 ], mode_E[ 1 ], mode_H[ 1 ] )
+mode_overlap_norm_Hz = mode_overlap_fom_by_pol[ 0 ]( mode_E[ 0 ], mode_H[ 0 ], mode_E[ 0 ], mode_H[ 0 ], 1.0 )
+mode_overlap_norm_Ez = mode_overlap_fom_by_pol[ 1 ]( mode_E[ 1 ], mode_H[ 1 ], mode_E[ 1 ], mode_H[ 1 ], 1.0 )
 
 print()
 print( "Mode overlap norm Hz = " + str( mode_overlap_norm_Hz ) )
