@@ -501,8 +501,6 @@ for pol_idx in range( 0, num_polarizations ):
 	)
 
 print( mode_overlap_norm_by_pol )
-sys.exit(1)
-
 
 #
 # todo(gdroberts): You should update the device again once you have changed optimization states and/or epochs.  This is because the gradient information
