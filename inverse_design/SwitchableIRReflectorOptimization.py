@@ -241,6 +241,9 @@ for pol_idx in range( 0, num_polarizations ):
 	disable_all_sources()
 	forward_sources[ pol_idx ][ 'direction' ] = 'Backward'
 
+fdtd_hook.run()
+sys.exit(1)
+
 
 copper_bottom = fdtd_hook.addrect()
 copper_bottom['name'] = 'copper_reflector'
@@ -394,7 +397,7 @@ def mode_overlap_fom_ez(
         fom_by_wavelength[ wl_idx ] = ( numerator / denominator )
         if mode_overlap_norm is not None:
             fom_by_wavelength[ wl_idx ] = ( numerator / ( mode_overlap_norm[ wl_idx ] * denominator ) )
-    
+
         fom_by_wavelength[ wl_idx ] *= normal_weighting
 
     return total_norm * fom_by_wavelength
@@ -577,7 +580,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					# the same python library.  Can do things like angled evaluations, ...
 					#
 
-					print( "Working on optimization state " + str( optimization_state_idx ) + " and epoch " + str( epoch ) + " and iteration " + str( iteration ) + " and device " + str( device ) )
+					print( "Working on optimization state " + str( optimization_state_idx ) + " and epoch " + str( epoch ) + " and iteration " + str( iteration ) + " and gsst state " + str( gsst_state ) )
 
 					fdtd_hook.switchtolayout()
 					get_index = my_optimization_state.assemble_index( device )
