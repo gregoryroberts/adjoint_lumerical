@@ -495,16 +495,12 @@ def mode_overlap_gradient_hz(
 
 mode_overlap_fom_by_pol = [ mode_overlap_fom_hz, mode_overlap_fom_ez ]
 mode_overlap_gradient_by_pol = [ mode_overlap_gradient_hz, mode_overlap_gradient_ez ]
+mode_overlap_norm_by_pol = []
 
-
-mode_overlap_norm_Hz = mode_overlap_fom_by_pol[ 0 ]( mode_E[ 0 ], mode_H[ 0 ], mode_E[ 0 ], mode_H[ 0 ], 1.0 )
-mode_overlap_norm_Ez = mode_overlap_fom_by_pol[ 1 ]( mode_E[ 1 ], mode_H[ 1 ], mode_E[ 1 ], mode_H[ 1 ], 1.0 )
-
-print()
-print( "Mode overlap norm Hz = " + str( mode_overlap_norm_Hz ) )
-print( "Mode overlap norm Ez = " + str( mode_overlap_norm_Ez ) )
-print()
-sys.exit(0)
+for pol_idx in range( 0, num_polarizations ):
+	mode_overlap_norm_by_pol.append(
+		mode_overlap_fom_by_pol[ pol_idx ]( mode_E[ pol_idx ], mode_H[ pol_idx ], mode_E[ pol_idx ], mode_H[ pol_idx ], 1.0 )
+	)
 
 
 #
@@ -630,7 +626,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						figures_of_merit_by_wavelength = mode_overlap_fom_by_pol[ pol_idx ](
 							reflected_E, reflected_H,
 							mode_E[ pol_idx ], mode_H[ pol_idx ],
-							1.0
+							1.0, mode_overlap_norm_by_pol[ pol_idx ]
 						)
 
 						#
@@ -650,9 +646,13 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 						print(figures_of_merit_by_wavelength)
 
+						if np.max( figures_of_merit_by_wavelength ) > 1.0:
+							print( "Warning: figure of merit above 1.0" )
+						if np.min( figures_of_merit_by_wavelength ) < 0.0:
+							print( "Warning: figure of merit below 0.0" )
 
 						# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
-						figures_of_merit_by_wavelength = np.maximum( figures_of_merit_by_wavelength, 0 )
+						figures_of_merit_by_wavelength = np.minimum( np.maximum( figures_of_merit_by_wavelength, 0.0 ), 1.0 )
 						# figure_of_merit_total_for_weighting = figure_of_merit_total / np.maximum( choose_normalization, 0.01 )
 						figure_of_merit_total_for_weighting = figures_of_merit_by_wavelength
 						fom_weighting = ( 2. / len( figure_of_merit_total_for_weighting ) ) - figure_of_merit_total_for_weighting**2 / np.sum( figure_of_merit_total_for_weighting**2 )
@@ -691,7 +691,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 						adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
 
-						directional_norm = np.ones( len( figures_of_merit_by_wavelength ) )
+						directional_norm = mode_overlap_norm_by_pol[ pol_idx ]
 						# We are assuming this is the amorphous (non-lossy) state (also lower index)
 						if gsst_state == 0:
 							for wl_idx in range( 0, num_design_frequency_points ):
@@ -701,10 +701,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 								# note: also assuming the max you can get is 1.  You should double-check this.
 								if ( wl_idx >= spectral_map[ 1 ] ) or ( wl_idx < spectral_map[ 0 ] ):
-									directional_norm[ wl_idx ] = -1
+									directional_norm[ wl_idx ] *= -1
 						else:
 							for wl_idx in range( 0, num_design_frequency_points ):
-								directional_norm[ wl_idx ] = -1
+								directional_norm[ wl_idx ] *= -1
 
 						polarized_gradient += my_optimization_state.reinterpolate(
 							mode_overlap_gradient_by_pol[ pol_idx ](
