@@ -23,9 +23,9 @@ import FreeBayerFilter2D
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
-project_name = 'cmos_dielectric_2d_switchable_color_layer_dual_pol_6xtsmc_um_focal'
+project_name = 'cmos_dielectric_2d_switchable_color_layer_dual_pol_6xtsmc_um_focal_test_'
 
-is_lumerical_version_2020a = False
+is_lumerical_version_2020a = True
 
 #
 # Optical

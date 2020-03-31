@@ -6,8 +6,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from SwitchableIRReflectorParameters import *
 
-# import imp
-# imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+import imp
+imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
 import lumapi
 
 import functools
@@ -495,6 +495,16 @@ def mode_overlap_gradient_hz(
 
 mode_overlap_fom_by_pol = [ mode_overlap_fom_hz, mode_overlap_fom_ez ]
 mode_overlap_gradient_by_pol = [ mode_overlap_gradient_hz, mode_overlap_gradient_ez ]
+
+
+mode_overlap_norm_Hz = mode_overlap_fom_by_pol[ 0 ]( mode_E[ 0 ], mode_H[ 0 ], mode_E[ 0 ], mode_H[ 0 ] )
+mode_overlap_norm_Ez = mode_overlap_fom_by_pol[ 1 ]( mode_E[ 1 ], mode_H[ 1 ], mode_E[ 1 ], mode_H[ 1 ] )
+
+print()
+print( "Mode overlap norm Hz = " + str( mode_overlap_norm_Hz ) )
+print( "Mode overlap norm Ez = " + str( mode_overlap_norm_Ez ) )
+print()
+sys.exit(0)
 
 
 #
