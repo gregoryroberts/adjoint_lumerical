@@ -500,7 +500,6 @@ for pol_idx in range( 0, num_polarizations ):
 		mode_overlap_fom_by_pol[ pol_idx ]( mode_E[ pol_idx ], mode_H[ pol_idx ], mode_E[ pol_idx ], mode_H[ pol_idx ], 1.0 )
 	)
 
-print( mode_overlap_norm_by_pol )
 
 #
 # todo(gdroberts): You should update the device again once you have changed optimization states and/or epochs.  This is because the gradient information
@@ -652,6 +651,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 						print( figures_of_merit_by_wavelength )
 						print( figures_of_merit_by_wavelength_unnorm )
+						print( mode_overlap_norm_by_pol[ pol_idx ]
 
 						if np.max( figures_of_merit_by_wavelength ) > 1.0:
 							print( "Warning: figure of merit above 1.0" )
