@@ -236,13 +236,8 @@ for pol_idx in range( 0, num_polarizations ):
 	mode_E.append( get_E_mode )
 	mode_H.append( get_H_mode )
 
-
-
 	disable_all_sources()
 	forward_sources[ pol_idx ][ 'direction' ] = 'Backward'
-
-fdtd_hook.run()
-sys.exit(1)
 
 
 copper_bottom = fdtd_hook.addrect()
@@ -504,6 +499,9 @@ for pol_idx in range( 0, num_polarizations ):
 	mode_overlap_norm_by_pol.append(
 		mode_overlap_fom_by_pol[ pol_idx ]( mode_E[ pol_idx ], mode_H[ pol_idx ], mode_E[ pol_idx ], mode_H[ pol_idx ], 1.0 )
 	)
+
+print( mode_overlap_norm_by_pol )
+sys.exit(1)
 
 
 #
