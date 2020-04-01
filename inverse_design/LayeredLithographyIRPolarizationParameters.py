@@ -8,7 +8,7 @@ import sigmoid
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_splitter_noncontrast_3p6x3p6x3p6um_f2p6'
+project_name = 'layered_infrared_3layers_pol_splitter_noncontrast_4x4x3p6um_f2p6'
 
 #
 # Optical
@@ -43,7 +43,7 @@ mesh_spacing_um = 0.03
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 3.06#3.6
+device_size_lateral_um = 4.02#3.6
 device_size_verical_um = num_vertical_layers * ( 3.0 / num_vertical_layers )
 amorphous_silicon_height_per_layer_um = 0.51#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
@@ -165,11 +165,11 @@ binarization_start_epoch = 1
 max_binarize_movement = 0.01
 desired_binarize_change = 0.005 / 2
 
-epoch_start_permittivity_change_max = 0.05
+epoch_start_permittivity_change_max = 0.025
 epoch_end_permittivity_change_max = 0.01
 epoch_range_permittivity_change_max = epoch_start_permittivity_change_max - epoch_end_permittivity_change_max
 
-epoch_start_permittivity_change_min = 0.025
+epoch_start_permittivity_change_min = 0.01
 epoch_end_permittivity_change_min = 0
 epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
 
