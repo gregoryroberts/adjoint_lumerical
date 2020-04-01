@@ -23,7 +23,7 @@ import FreeBayerFilter2D
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
-project_name = 'cmos_dielectric_2d_switchable_color_layer_dual_pol_6xtsmc_um_normalized_overlaps'
+project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps'
 
 is_lumerical_version_2020a = False#True
 
@@ -173,7 +173,7 @@ device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
 num_free_iterations = 150#25
 num_free_epochs = 1
 max_change_per_iter_free = 0.015 * 2 / 3
-# free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
+free_optimization_seed = init_permittivity_0_1_scale * np.ones( ( 2, 2 ) )
 free_optimization_file_prefix = "free_"
 
 def generate_full_bayer_with_blurs():
@@ -187,8 +187,8 @@ free_optimization_creator_fns = [
     generate_full_bayer_with_blurs()
 ]
 
-np.random.seed( 123123 )
-free_optimization_seed = np.random.random( ( 10, 10 ) )
+# np.random.seed( 123123 )
+# free_optimization_seed = np.random.random( ( 10, 10 ) )
 
 free_optimization = FreeOptimizationMultiDevice.FreeOptimizationMultiDevice(
     num_free_iterations, num_free_epochs, max_change_per_iter_free,
