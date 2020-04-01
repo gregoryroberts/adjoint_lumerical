@@ -9,6 +9,8 @@ import LayeredLithographyIRPolarizationDevice
 
 import imp
 imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+# imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+
 import lumapi
 
 import functools
@@ -16,7 +18,6 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-
 
 
 def intensity_from_field( E ):
@@ -310,6 +311,7 @@ focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 figure_of_merit_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots))
+contrast_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots))
 parallel_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
 orthogonal_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
 
@@ -322,6 +324,9 @@ step_size_start = 0.001
 if start_epoch > 0:
 	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
 	bayer_filter.set_design_variable( design_variable_reload )
+
+
+
 
 #
 # Run the optimization
@@ -361,8 +366,10 @@ for epoch in range(start_epoch, num_epochs):
 		figure_of_merit_per_focal_spot = []
 		parallel_intensity_per_focal_spot = []
 		orthogonal_intensity_per_focal_spot = []
+		weightings_parallel_orthogonal = np.zeros( ( num_focal_spots, num_design_frequency_points, 2 ) )
 		for focal_idx in range(0, num_focal_spots):
 			compute_fom = 0
+			compute_contrast = 0
 
 			analyzer_vector = jones_sorting_vectors[ focal_idx ]
 			orthogonal_vector = jones_orthogonal_vectors[ focal_idx ]
@@ -377,17 +384,34 @@ for epoch in range(start_epoch, num_epochs):
 				paraxial_orthogonal_forward = create_forward_orthogonal_response[ :, spectral_idx, 0, 0, 0 ]
 				paraxial_orthogonal_forward[ 2 ] = 0
 
-				parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, spectral_idx ] = (
-					intensity_from_field( paraxial_parallel_forward )
-				)
+				parallel_intensity = intensity_from_field( paraxial_parallel_forward )
+				orthogonal_intensity = intensity_from_field( paraxial_orthogonal_forward )
 
-				orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, spectral_idx ] = (
-					intensity_from_field( paraxial_orthogonal_forward )
-				)
+				parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, spectral_idx ] = parallel_intensity
+				orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, spectral_idx ] = orthogonal_intensity
 
-				compute_fom += ( 1 + contrast_fom(
+				compute_contrast += contrast_fom(
 					paraxial_parallel_forward,
-					paraxial_orthogonal_forward ) )
+					paraxial_orthogonal_forward )
+
+				normalize_parallel_intensity = parallel_intensity / max_intensity_by_wavelength[ spectral_idx ]
+				normalize_orthogonal_intensity = parallel_intensity / max_intensity_by_wavelength[ spectral_idx ]
+
+				parallel_fom = np.minimum( fom_sigmoid.forward( normalize_parallel_intensity ), 1.0 )
+				orthogonal_fom = np.maximum( 0, 1 - fom_sigmoid.forward( normalize_orthogonal_intensity ) )
+
+				parallel_fom_chain_rule = fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_parallel_intensity ), normalize_parallel_intensity )
+				orthogonal_fom_chain_rule = -fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_orthogonal_intensity ), normalize_orthogonal_intensity )
+
+				compute_fom += 0.5 * ( parallel_fom + orthogonal_fom )
+
+				fom_parallel_orthogonal = np.array( [ parallel_fom, orthogonal_fom ] )
+
+				weightings_parallel_orthogonal[ focal_idx, spectral_idx, : ] = ( 2. / 2. ) - fom_parallel_orthogonal**2 / np.sum( fom_parallel_orthogonal**2 )
+				weightings_parallel_orthogonal[ focal_idx, spectral_idx, 0 ] *= parallel_fom_chain_rule
+				weightings_parallel_orthogonal[ focal_idx, spectral_idx, 1 ] *= orthogonal_fom_chain_rule
+
+			contrast_per_focal_spot_evolution[ epoch, iteration, focal_idx ] = compute_contrast / num_design_frequency_points
 
 			figure_of_merit_per_focal_spot.append( compute_fom )
 
@@ -399,7 +423,8 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# Figure of merit per focal spot, these contrasts can be negative.  The most negative can be -1.  We will add one to each one above 
 		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
-		performance_weighting -= np.min(performance_weighting)
+		# performance_weighting -= np.min(performance_weighting)
+		performance_weighting = np.maximum( performance_weighting, 0 )
 		performance_weighting /= np.sum(performance_weighting)
 
 		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
@@ -407,6 +432,7 @@ for epoch in range(start_epoch, num_epochs):
 
 		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
 		np.save(projects_directory_location + "/figure_of_merit_per_focal_spot.npy", figure_of_merit_per_focal_spot_evolution)
+		np.save(projects_directory_location + "/contrast_per_focal_spot.npy", contrast_per_focal_spot_evolution)
 		np.save(projects_directory_location + "/parallel_intensity.npy", parallel_intensity_per_focal_spot_evolution)
 		np.save(projects_directory_location + "/orthogonal_intensity.npy", orthogonal_intensity_per_focal_spot_evolution)
 
@@ -453,7 +479,7 @@ for epoch in range(start_epoch, num_epochs):
 				for xy_idx in range( 0, 2 ):
 
 					accumulate_gradient += np.sum(
-						gradient_performance_weight *
+						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx ][ spectral_idx ][ 0 ] *
 						adjoint_phase_weightings[ 0 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_parallel_fields[ :, spectral_idx, :, :, : ],
@@ -461,7 +487,7 @@ for epoch in range(start_epoch, num_epochs):
 					)
 
 					accumulate_gradient += np.sum(
-						gradient_performance_weight *
+						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx ][ spectral_idx ][ 1 ] *
 						adjoint_phase_weightings[ 1 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_orthogonal_fields[ :, spectral_idx, :, :, : ],

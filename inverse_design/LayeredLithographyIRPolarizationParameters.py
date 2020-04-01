@@ -3,11 +3,12 @@
 #
 
 import numpy as np
+import sigmoid
 
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_splitter_3p6x3p6x3p6um_f2p6'
+project_name = 'layered_infrared_3layers_pol_splitter_noncontrast_3p6x3p6x3p6um_f2p6'
 
 #
 # Optical
@@ -65,7 +66,10 @@ lambda_max_um = 1.1
 num_design_frequency_points = 10#num_bands * num_points_per_band
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
-max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um**2 * lambda_values_um**2)
+
+effective_focal_length_sq = focal_length_um**2 + ( device_size_lateral_um / 4. )**2 + ( device_size_lateral_um / 4. )**2
+
+max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (effective_focal_length_sq * lambda_values_um**2)
 
 #
 # Fabrication Constraints
@@ -137,6 +141,9 @@ jones_orthogonal_vectors = []
 for jones_idx in range( 0, len( jones_sorting_vectors ) ):
 	jones_orthogonal_vectors.append( find_orthogonal( jones_sorting_vectors[ jones_idx ] ) )
 	
+fom_sigmoid_beta = 5.0
+fom_sigmoid_eta = 0.25
+fom_sigmoid = sigmoid.Sigmoid( fom_sigmoid_beta, fom_sigmoid_eta )
 
 
 #
