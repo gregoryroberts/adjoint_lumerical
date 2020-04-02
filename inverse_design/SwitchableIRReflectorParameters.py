@@ -23,7 +23,7 @@ import FreeBayerFilter2D
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
-project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps_first_order'
+project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps_zero_order_addarc'
 
 is_lumerical_version_2020a = False#True
 
@@ -145,6 +145,12 @@ gsst_k_states = [ gsst_min_k, gsst_max_k ]
 gsst_thickness_um = 0.2
 gsst_min_y_um = designable_device_vertical_maximum_um
 gsst_max_y_um = gsst_min_y_um + gsst_thickness_um
+
+
+arc_thickness_nm = 200
+arc_index_mgf2 = 1.37
+
+
 #
 # Put small spacer here
 #

@@ -180,12 +180,12 @@ mode_reflection_monitor['frequency points'] = num_design_frequency_points
 
 
 
-low_frequency = 3.0 * 1e8 / lambda_max_um
-high_frequency = 3.0 * 1e8 / lambda_min_um
-mid_frequency = 0.5 * ( low_frequency + high_frequency )
-mid_lambda = 3.0 * 1e8 / mid_frequency
-angle_radians_middle_lambda_first_order = np.arcsin( mid_lambda / device_size_lateral_um )
-angle_degrees_middle_lambda_first_order = 180. * angle_radians_middle_lambda_first_order / np.pi
+# low_frequency = 3.0 * 1e8 / lambda_max_um
+# high_frequency = 3.0 * 1e8 / lambda_min_um
+# mid_frequency = 0.5 * ( low_frequency + high_frequency )
+# mid_lambda = 3.0 * 1e8 / mid_frequency
+# angle_radians_middle_lambda_first_order = np.arcsin( mid_lambda / device_size_lateral_um )
+# angle_degrees_middle_lambda_first_order = 180. * angle_radians_middle_lambda_first_order / np.pi
 
 
 adjoint_sources = []
@@ -195,7 +195,7 @@ for pol_idx in range( 0, num_polarizations ):
 	adjoint_src['plane wave type'] = 'Bloch/periodic'
 	adjoint_src['polarization angle'] = source_polarization_angles[ pol_idx ]
 	adjoint_src['direction'] = 'Backward'
-	adjoint_src['angle theta'] = angle_degrees_middle_lambda_first_order
+	# adjoint_src['angle theta'] = angle_degrees_middle_lambda_first_order
 	adjoint_src['x span'] = lateral_aperture_um * 1e-6
 	adjoint_src['y'] = mode_reflection_monitor['y']
 	adjoint_src['wavelength start'] = lambda_min_um * 1e-6
@@ -222,7 +222,7 @@ for pol_idx in range( 0, num_polarizations ):
 	disable_all_sources()
 	forward_sources[ pol_idx ].enabled = 1
 	forward_sources[ pol_idx ][ 'direction' ] = 'Forward'
-	forward_sources[ pol_idx ][ 'angle theta' ] = angle_degrees_middle_lambda_first_order
+	# forward_sources[ pol_idx ][ 'angle theta' ] = angle_degrees_middle_lambda_first_order
 	fdtd_hook.run()
 
 	get_E_mode = get_complex_monitor_data( mode_reflection_monitor['name'], 'E' )
@@ -249,7 +249,7 @@ for pol_idx in range( 0, num_polarizations ):
 
 	disable_all_sources()
 	forward_sources[ pol_idx ][ 'direction' ] = 'Backward'
-	forward_sources[ pol_idx ][ 'angle theta' ] = 0
+	# forward_sources[ pol_idx ][ 'angle theta' ] = 0
 
 
 copper_bottom = fdtd_hook.addrect()
@@ -302,11 +302,21 @@ device_import['z max'] = 0.51 * 1e-6
 
 gsst_import = fdtd_hook.addimport()
 gsst_import['name'] = 'gsst'
-device_import['x span'] = fdtd_region_size_lateral_um * 1e-6
-device_import['y min'] = gsst_min_y_um * 1e-6
-device_import['y max'] = gsst_max_y_um * 1e-6
-device_import['z min'] = -0.51 * 1e-6
-device_import['z max'] = 0.51 * 1e-6
+gsst_import['x span'] = fdtd_region_size_lateral_um * 1e-6
+gsst_import['y min'] = gsst_min_y_um * 1e-6
+gsst_import['y max'] = gsst_max_y_um * 1e-6
+gsst_import['z min'] = -0.51 * 1e-6
+gsst_import['z max'] = 0.51 * 1e-6
+
+arc_rect = fdtd_hook.addrect()
+arc_rect['name'] = 'antireflection layer'
+arc_rect['index'] = arc_index_mgf2
+arc_rect['x span'] - fdtd_region_size_lateral_um * 1e-6
+arc_rect['y min'] = gsst_max_y_um * 1e-6
+arc_rect['y max'] = ( gsst_max_y_um + arc_thickness_nm ) * 1e-6
+arc_rect['z min'] = -0.51 * 1e-6
+arc_rect['z max'] = 0.51 * 1e-6
+
 
 gsst_state_import_data = []
 
