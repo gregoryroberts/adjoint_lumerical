@@ -195,7 +195,7 @@ for pol_idx in range( 0, num_polarizations ):
 	adjoint_src['plane wave type'] = 'Bloch/periodic'
 	adjoint_src['polarization angle'] = source_polarization_angles[ pol_idx ]
 	adjoint_src['direction'] = 'Backward'
-	adjoint_src['angle theta (degrees)'] = angle_degrees_middle_lambda_first_order
+	adjoint_src['angle theta'] = angle_degrees_middle_lambda_first_order
 	adjoint_src['x span'] = lateral_aperture_um * 1e-6
 	adjoint_src['y'] = mode_reflection_monitor['y']
 	adjoint_src['wavelength start'] = lambda_min_um * 1e-6
@@ -222,7 +222,7 @@ for pol_idx in range( 0, num_polarizations ):
 	disable_all_sources()
 	forward_sources[ pol_idx ].enabled = 1
 	forward_sources[ pol_idx ][ 'direction' ] = 'Forward'
-	forward_sources[ pol_idx ][ 'angle theta (degrees)' ] = angle_degrees_middle_lambda_first_order
+	forward_sources[ pol_idx ][ 'angle theta' ] = angle_degrees_middle_lambda_first_order
 	fdtd_hook.run()
 
 	get_E_mode = get_complex_monitor_data( mode_reflection_monitor['name'], 'E' )
@@ -249,7 +249,7 @@ for pol_idx in range( 0, num_polarizations ):
 
 	disable_all_sources()
 	forward_sources[ pol_idx ][ 'direction' ] = 'Backward'
-	forward_sources[ pol_idx ][ 'angle theta (degrees)' ] = 0
+	forward_sources[ pol_idx ][ 'angle theta' ] = 0
 
 
 copper_bottom = fdtd_hook.addrect()
