@@ -395,13 +395,13 @@ for epoch in range(start_epoch, num_epochs):
 					paraxial_orthogonal_forward )
 
 				normalize_parallel_intensity = parallel_intensity / max_intensity_by_wavelength[ spectral_idx ]
-				normalize_orthogonal_intensity = parallel_intensity / max_intensity_by_wavelength[ spectral_idx ]
+				normalize_orthogonal_intensity = orthogonal_intensity / max_intensity_by_wavelength[ spectral_idx ]
 
 				parallel_fom = np.minimum( fom_sigmoid.forward( normalize_parallel_intensity ), 1.0 )
 				orthogonal_fom = np.maximum( 0, 1 - fom_sigmoid.forward( normalize_orthogonal_intensity ) )
 
-				parallel_fom_chain_rule = fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_parallel_intensity ), normalize_parallel_intensity )
-				orthogonal_fom_chain_rule = -fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_orthogonal_intensity ), normalize_orthogonal_intensity )
+				parallel_fom_chain_rule = fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_parallel_intensity ), normalize_parallel_intensity ) / max_intensity_by_wavelength[ spectral_idx ]
+				orthogonal_fom_chain_rule = -fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_orthogonal_intensity ), normalize_orthogonal_intensity ) / max_intensity_by_wavelength[ spectral_idx ]
 
 				compute_fom += 0.5 * ( parallel_fom + orthogonal_fom )
 
@@ -479,7 +479,7 @@ for epoch in range(start_epoch, num_epochs):
 				for xy_idx in range( 0, 2 ):
 
 					accumulate_gradient += np.sum(
-						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx ][ spectral_idx ][ 0 ] *
+						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx, spectral_idx, 0 ] *
 						adjoint_phase_weightings[ 0 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_parallel_fields[ :, spectral_idx, :, :, : ],
@@ -487,7 +487,7 @@ for epoch in range(start_epoch, num_epochs):
 					)
 
 					accumulate_gradient += np.sum(
-						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx ][ spectral_idx ][ 1 ] *
+						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx, spectral_idx, 1 ] *
 						adjoint_phase_weightings[ 1 ][ xy_idx, spectral_idx ] *
 						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
 						create_forward_orthogonal_fields[ :, spectral_idx, :, :, : ],
