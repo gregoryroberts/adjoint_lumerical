@@ -147,7 +147,7 @@ gsst_min_y_um = designable_device_vertical_maximum_um
 gsst_max_y_um = gsst_min_y_um + gsst_thickness_um
 
 
-arc_thickness_nm = 0.2
+arc_thickness_um = 0.2
 arc_index_mgf2 = 1.37
 
 
