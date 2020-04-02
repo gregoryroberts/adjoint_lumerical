@@ -184,7 +184,7 @@ low_frequency = 3.0 * 1e8 / lambda_max_um
 high_frequency = 3.0 * 1e8 / lambda_min_um
 mid_frequency = 0.5 * ( low_frequency + high_frequency )
 mid_lambda = 3.0 * 1e8 / mid_frequency
-angle_radians_middle_lambda_first_order = np.asin( mid_lambda / device_size_lateral_um )
+angle_radians_middle_lambda_first_order = np.arcsin( mid_lambda / device_size_lateral_um )
 angle_degrees_middle_lambda_first_order = 180. * angle_radians_middle_lambda_first_order / np.pi
 
 
