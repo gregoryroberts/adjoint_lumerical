@@ -313,7 +313,7 @@ arc_rect['name'] = 'antireflection layer'
 arc_rect['index'] = arc_index_mgf2
 arc_rect['x span'] - fdtd_region_size_lateral_um * 1e-6
 arc_rect['y min'] = gsst_max_y_um * 1e-6
-arc_rect['y max'] = ( gsst_max_y_um + arc_thickness_nm ) * 1e-6
+arc_rect['y max'] = ( gsst_max_y_um + arc_thickness_um ) * 1e-6
 arc_rect['z min'] = -0.51 * 1e-6
 arc_rect['z max'] = 0.51 * 1e-6
 
