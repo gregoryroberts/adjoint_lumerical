@@ -626,7 +626,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					xy_polarized_gradients_by_angle_and_pol_lsf = np.zeros(reversed_field_shape_with_angle_and_pol, dtype=np.complex)
 					xy_polarized_gradients_lsf = np.zeros(reversed_field_shape, dtype=np.complex)
 
-					figure_of_merit_by_pol_and_angle = np.zeros( num_optimization_angles * num_polarizations )
+					figure_of_merit_by_angle_and_pol = np.zeros( num_optimization_angles * num_polarizations )
 
 					figure_of_merit = 0
 					for angle_idx in range( 0, num_optimization_angles ):
