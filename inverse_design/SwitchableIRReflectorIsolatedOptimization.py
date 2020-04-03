@@ -197,7 +197,7 @@ for angle_idx in range( 0, num_optimization_angles ):
 	forward_sources_by_pol = []
 	for pol_idx in range( 0, num_polarizations ):
 		forward_src = fdtd_hook.addplane()
-		forward_src['name'] = 'adjoint_src_' + str( pol_idx )
+		forward_src['name'] = 'forward_src_' + str( angle_idx ) + '_' + str( pol_idx )
 		forward_src['plane wave type'] = 'Diffracting'
 		forward_src['polarization angle'] = source_polarization_angles[ pol_idx ]
 		forward_src['direction'] = 'Backward'
