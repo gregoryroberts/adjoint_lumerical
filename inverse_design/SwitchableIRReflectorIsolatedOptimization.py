@@ -771,7 +771,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 					if use_y_reflective_symmetry:
 						# flip around the y-axis (i.e. - flip along x-coordinate)
-						print( 'The current shape of the device gradient is ' + str( device_gradient_real_lsf ) )
+						print( 'The current shape of the device gradient is ' + str( device_gradient_real.shape ) )
 						device_gradient_real = 0.5 * ( device_gradient_real + np.flip( device_gradient_real, axis=0 ) )
 						device_gradient_imag = 0.5 * ( device_gradient_imag + np.flip( device_gradient_imag, axis=0 ) )
 						device_gradient_real_lsf = 0.5 * ( device_gradient_real_lsf + np.flip( device_gradient_real_lsf, axis=0 ) )
