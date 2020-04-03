@@ -19,10 +19,6 @@ class Heaviside(filter.Filter):
 		middle_values = np.ones( variable_in.shape ) - greater_values - lesser_values
 
 		middle = -0.25 * ( variable_in / self.bandwidth )**3 + 0.75 * ( variable_in / self.bandwidth ) + 0.5
-		# import matplotlib.pyplot as plt
-		# plt.plot( middle )
-		# plt.plot( variable_in )
-		# plt.show()
 		
 		return ( 1.0 * greater_values ) + ( 0.0 * lesser_values ) + ( middle * middle_values )
 
