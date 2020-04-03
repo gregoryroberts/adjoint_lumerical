@@ -745,7 +745,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					weight_grad_by_angle_and_pol = np.maximum( weight_grad_by_angle_and_pol, 0 )
 					weight_grad_by_angle_and_pol /= np.sum( weight_grad_by_angle_and_pol )
 
-					print( "Weight by polarization = " + str( weight_grad_by_pol ) )
+					print( "Weight by angle and polarization = " + str( weight_grad_by_angle_and_pol ) )
 
 					for angle_idx in range( 0, num_optimization_angles ):
 						for pol_idx in range( 0, num_polarizations ):
