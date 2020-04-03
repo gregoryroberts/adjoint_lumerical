@@ -41,7 +41,6 @@ num_wavelengths = num_design_frequency_points
 num_eval_frequency_points = 1 * num_design_frequency_points
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
-max_intensity_by_wavelength = (device_size_lateral_um * 1.02)**2 / (focal_length_um**2 * lambda_values_um**2)
 
 
 #
@@ -360,8 +359,10 @@ fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / 
 
 fdtd_region_size_lateral_voxels = int( np.ceil( fdtd_region_size_lateral_um / mesh_spacing_um ) )
 
-
 fdtd_simulation_time_fs = 10 * 2000
+
+max_intensity_by_wavelength = (device_size_lateral_um * 1.02)**2 / (focal_length_um**2 * lambda_values_um**2)
+
 
 #
 # Forward Source
