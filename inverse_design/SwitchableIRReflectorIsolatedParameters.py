@@ -346,8 +346,8 @@ eval_device_idx = 0
 #
 # FDTD
 #
-vertical_gap_size_um = 3.0 + 4.0
-lateral_gap_size_um = 4.0 * lambda_max_um
+vertical_gap_size_um = 4.0 * lambda_max_um
+lateral_gap_size_um = 8.0 * lambda_max_um
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um + bottom_metal_absorber_size_vertical_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um

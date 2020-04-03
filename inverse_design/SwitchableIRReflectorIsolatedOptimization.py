@@ -153,7 +153,7 @@ mode_reflection_monitor_delta_um = 0.2 * vertical_gap_size_um
 mode_reflection_monitor = fdtd_hook.addpower()
 mode_reflection_monitor['name'] = 'mode_reflection_monitor'
 mode_reflection_monitor['monitor type'] = 'Linear X'
-mode_reflection_monitor['x span'] = ( fdtd_region_size_lateral_um - lateral_gap_size_um ) * 1e-6
+mode_reflection_monitor['x span'] = ( fdtd_region_size_lateral_um - 0.5 * lateral_gap_size_um ) * 1e-6
 mode_reflection_monitor['y'] = ( mode_sources[ 0 ]['y'] + 1e-6 * mode_reflection_monitor_delta_um )
 mode_reflection_monitor['override global monitor settings'] = 1
 if is_lumerical_version_2020a:
