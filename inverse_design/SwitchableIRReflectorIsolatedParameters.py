@@ -28,6 +28,23 @@ project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xt
 is_lumerical_version_2020a = False#True
 
 #
+# Spectral
+#
+num_bands = 2
+num_points_per_band = 10
+
+lambda_min_um = 0.9#1.2
+lambda_max_um = 1.4#1.7
+
+num_design_frequency_points = num_bands * num_points_per_band
+num_wavelengths = num_design_frequency_points
+num_eval_frequency_points = 1 * num_design_frequency_points
+
+lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
+max_intensity_by_wavelength = (device_size_lateral_um * 1.02)**2 / (focal_length_um**2 * lambda_values_um**2)
+
+
+#
 # Optical
 #
 # todo: the side background index shouldn't be TiO2 because that part will not be etched away!  Go back to oxide!
@@ -325,23 +342,6 @@ num_optimization_states = len( optimization_stages )
 eval_optimization_state = 3
 eval_optimization_epoch = 8#7#5
 eval_device_idx = 0
-
-#
-# Spectral
-#
-num_bands = 2
-num_points_per_band = 10
-
-lambda_min_um = 0.9#1.2
-lambda_max_um = 1.4#1.7
-
-num_design_frequency_points = num_bands * num_points_per_band
-num_wavelengths = num_design_frequency_points
-num_eval_frequency_points = 1 * num_design_frequency_points
-
-lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
-max_intensity_by_wavelength = (device_size_lateral_um * 1.02)**2 / (focal_length_um**2 * lambda_values_um**2)
-
 
 
 #
