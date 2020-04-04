@@ -17,13 +17,16 @@ import FreeBayerFilter2D
 # 4. Illuminate from the bottom so that the GSST is on the bottom of the structure?
 # 5. Check the optimization to make sure the computed gradient is correct!
 
+# todo( gdroberts ): should we also save out the optimization file along with the parameters?
+
+
 #
 # Files
 #
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
-project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps_isolated_addarc'
+project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps_isolated_addarc_v2'
 
 is_lumerical_version_2020a = False#True
 
