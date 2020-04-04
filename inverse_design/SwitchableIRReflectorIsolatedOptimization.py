@@ -533,7 +533,6 @@ for pol_idx in range( 0, num_polarizations ):
 	mode_overlap_norm_by_pol.append(
 		mode_overlap_fom_by_pol[ pol_idx ]( mode_E[ pol_idx ], mode_H[ pol_idx ], mode_E[ pol_idx ], mode_H[ pol_idx ], 1.0 ) / normalize_for_device_width
 	)
-adsfasdf
 
 #
 # todo(gdroberts): You should update the device again once you have changed optimization states and/or epochs.  This is because the gradient information
@@ -573,7 +572,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 	device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
 
 	# 1. Only one adjoint source needed -------> !
-	# 2. Figure out normalization -------------> ?
+	# 2. Figure out normalization -------------> !
 	# 3. Move forward source down -------------> !
 	# 4. Are all sources getting turned off? --> ?
 
