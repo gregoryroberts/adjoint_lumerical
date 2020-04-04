@@ -91,9 +91,8 @@ layer_thicknesses_um = [
 	0.08, design_layer_thickness_um, 0.095, # M4
 	0.08, design_layer_thickness_um, 0.095, # M3
 	0.08, design_layer_thickness_um, 0.095, # M2
-    0.08 ]                                 # M1 - here we are using the metal layer as a reflector so we don't get to pattern it
-	# 0.08, 0.13, 0.03,                       # M1
-# ]
+	0.08, 0.13, 0.03,                       # M1
+]
 
 layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_thicknesses_um ]
 
@@ -104,9 +103,8 @@ layer_background_index = [
 	1.45, design_index_background, design_index_background, # M4
 	1.45, design_index_background, design_index_background, # M3
 	1.45, design_index_background, design_index_background, # M2
-    1.45 ]                                                  # M1 used as copper reflector
-	# 1.45, design_index_background, design_index_background # part of M1 until the copper reflecting layer on M1
-# ]
+    1.45, design_index_background, design_index_background # part of M1 until the copper reflecting layer on M1
+]
 
 is_layer_designable = [
 	True, False,        # M7
@@ -115,9 +113,8 @@ is_layer_designable = [
 	False, True, False, # M4
 	False, True, False, # M3
 	False, True, False, # M2
-    False ]             # M1 used as copper reflector
-	# False, True, False  # M1
-# ]
+	False, True, False  # M1
+]
 
 device_size_lateral_um = 4 * lambda_max_um
 designable_size_vertical_um = np.sum( layer_thicknesses_um )
