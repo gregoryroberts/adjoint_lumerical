@@ -192,9 +192,8 @@ for pol_idx in range( 0, num_polarizations ):
 	adjoint_sources.append( adjoint_src )
 
 
-forward_sources = []
+forward_sources = [ None for i in range( 0, num_optimization_angles * num_polarizations ) ]
 for angle_idx in range( 0, num_optimization_angles ):
-	forward_sources_by_pol = []
 	for pol_idx in range( 0, num_polarizations ):
 		forward_src = fdtd_hook.addplane()
 		forward_src['name'] = 'forward_src_' + str( angle_idx ) + '_' + str( pol_idx )
@@ -203,13 +202,11 @@ for angle_idx in range( 0, num_optimization_angles ):
 		forward_src['direction'] = 'Backward'
 		forward_src['angle theta'] = optimization_angles_mid_frequency_degrees[ angle_idx ]
 		forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
-		forward_src['y'] = mode_reflection_monitor['y']
+		forward_src['y'] = src_maximum_vertical_um * 1e-6
 		forward_src['wavelength start'] = lambda_min_um * 1e-6
 		forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
-		forward_sources_by_pol.append( forward_src )
-
-	forward_sources.append( forward_sources_by_pol )	
+		forward_sources[ angle_idx * num_polarizations + pol_idx ] = forward_src
 
 
 #
@@ -223,7 +220,7 @@ def disable_all_sources():
 		adjoint_sources[ pol_idx ].enabled = 0
 
 		for angle_idx in range( 0, num_optimization_angles ):
-			forward_sources[ angle_idx ][ pol_idx ].enabled = 0
+			forward_sources[ angle_idx * num_polarizations + pol_idx ].enabled = 0
 
 
 
@@ -529,11 +526,14 @@ mode_overlap_fom_by_pol = [ mode_overlap_fom_hz, mode_overlap_fom_ez ]
 mode_overlap_gradient_by_pol = [ mode_overlap_gradient_hz, mode_overlap_gradient_ez ]
 mode_overlap_norm_by_pol = []
 
+normalize_for_device_width = mode_reflection_monitor[ 'x span' ] / ( device_size_lateral_um * 1e-6 )
+print("Normalization for device width = " + str( normalize_for_device_width ) )
+
 for pol_idx in range( 0, num_polarizations ):
 	mode_overlap_norm_by_pol.append(
-		mode_overlap_fom_by_pol[ pol_idx ]( mode_E[ pol_idx ], mode_H[ pol_idx ], mode_E[ pol_idx ], mode_H[ pol_idx ], 1.0 )
+		mode_overlap_fom_by_pol[ pol_idx ]( mode_E[ pol_idx ], mode_H[ pol_idx ], mode_E[ pol_idx ], mode_H[ pol_idx ], 1.0 ) / normalize_for_device_width
 	)
-
+adsfasdf
 
 #
 # todo(gdroberts): You should update the device again once you have changed optimization states and/or epochs.  This is because the gradient information
@@ -571,6 +571,11 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 	device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
 	device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
 	device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
+
+	# 1. Only one adjoint source needed -------> !
+	# 2. Figure out normalization -------------> ?
+	# 3. Move forward source down -------------> !
+	# 4. Are all sources getting turned off? --> ?
 
 	for epoch in range( start_epoch, num_epochs ):
 		# Make sure you start at epoch 0 on the next otimization stage
@@ -629,17 +634,21 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					figure_of_merit_by_angle_and_pol = np.zeros( num_optimization_angles * num_polarizations )
 
 					figure_of_merit = 0
-					for angle_idx in range( 0, num_optimization_angles ):
+					for pol_idx in range( 0, num_polarizations ):
 	
-						figure_of_merit_by_pol = np.zeros( num_polarizations )
+						disable_all_sources()
+						(adjoint_sources[pol_idx]).enabled = 1
+						fdtd_hook.run()
 
-						for pol_idx in range( 0, num_polarizations ):
+						adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+						for angle_idx in range( 0, num_optimization_angles ):
 
 							#
 							# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 							#
 							disable_all_sources()
-							forward_sources[ angle_idx ][ pol_idx ].enabled = 1
+							forward_sources[ angle_idx * num_polarizations + pol_idx ].enabled = 1
 							fdtd_hook.run()
 
 							shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_" + str( epoch ) + ".fsp" )
@@ -707,12 +716,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							#
 							polarized_gradient = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
 							polarized_gradient_lsf = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
-
-							disable_all_sources()
-							(adjoint_sources[pol_idx]).enabled = 1
-							fdtd_hook.run()
-
-							adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
 							directional_norm = ( mode_overlap_norm_by_pol[ pol_idx ] ).copy()
 							# We are assuming this is the amorphous (non-lossy) state (also lower index)
