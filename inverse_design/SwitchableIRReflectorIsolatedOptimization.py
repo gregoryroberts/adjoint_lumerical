@@ -571,11 +571,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 	device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
 	device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
 
-	# 1. Only one adjoint source needed -------> !
-	# 2. Figure out normalization -------------> !
-	# 3. Move forward source down -------------> !
-	# 4. Are all sources getting turned off? --> ?
-
 	for epoch in range( start_epoch, num_epochs ):
 		# Make sure you start at epoch 0 on the next otimization stage
 		start_epoch = 0
