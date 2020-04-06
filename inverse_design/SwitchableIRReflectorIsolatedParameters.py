@@ -26,7 +26,7 @@ import FreeBayerFilter2D
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
-project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps_isolated_addarc_v2'
+project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps_single_angle_isolated_addarc_v3'
 
 is_lumerical_version_2020a = False#True
 
@@ -410,12 +410,15 @@ num_iterations_level_set = num_iterations_free_optimize + 60#150#50
 num_epochs_level_set = 1#5
 # level_set_starting_epoch = 10
 
+reflection_monitor_aperture_um = 1.1 * device_size_lateral_um
+
 #
 # As a first pass, we will not correct for the spread of angles associated with the broadband
 # source and angled injection - each frequency will have different angels they are optimized for
 # and a different spread because they will all coincide at normal incidence
 #
-optimization_angles_mid_frequency_degrees = [ 0, 4, 8, 12 ]
+# optimization_angles_mid_frequency_degrees = [ 0, 4, 8, 12 ]
+optimization_angles_mid_frequency_degrees = [ 8 ]
 num_optimization_angles = len( optimization_angles_mid_frequency_degrees )
 #
 # This should only be selected if you start with a symmetry device and care about the positive and

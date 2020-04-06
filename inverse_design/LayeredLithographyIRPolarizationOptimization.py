@@ -429,6 +429,7 @@ for epoch in range(start_epoch, num_epochs):
 
 		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
+		figure_of_merit_per_focal_spot_evolution[epoch, iteration] = figure_of_merit_per_focal_spot
 
 		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
 		np.save(projects_directory_location + "/figure_of_merit_per_focal_spot.npy", figure_of_merit_per_focal_spot_evolution)
