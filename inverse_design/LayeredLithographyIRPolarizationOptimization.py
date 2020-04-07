@@ -19,46 +19,162 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+#
+# Qij is the the electric field j'th polarization component at a focal point due to an input beam polarized along the i'th direction
+#
+# This function expects the data to be organized first by the focal spot (corresponding to the given Jones analyzer vector laid out in the 
+# parameters file) and then by wavelength.  It will optimize for broadband performance.
+#
+# The figure of merit here is intended to be minimized.  The function will also provide information for performance-based gradient weightings,
+# but the figure of merit here will be computed as an evenly weighted average.
+#
+def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 
-def intensity_from_field( E ):
-	intensity = np.sum( np.conj( E ) * E, axis=0 )
-	return intensity
+	total_fom = 0
+	num_design_frequency_points
+	fom_by_focal_spot_by_type_by_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ) )
 
-def contrast_fom( E_out_parallel, E_out_orthogonal ):
-	I_parallel = intensity_from_field( E_out_parallel )
-	I_orthogonal = intensity_from_field( E_out_orthogonal )
+	for focal_spot_idx in range( 0, num_focal_spots ):
+		alpha = jones_sorting_vectors[ focal_spot_idx ][ 0 ]
+		beta = jones_sorting_vectors[ focal_spot_idx ][ 1 ]
+		alpha_prime = jones_orthogonal_vectors[ focal_spot_idx ][ 0 ]
+		beta_prime = jones_orthogonal_vectors[ focal_spot_idx ][ 1 ]
 
-	contrast = ( I_parallel - I_orthogonal ) / ( I_parallel + I_orthogonal )
+		Qxx_focal_spot = Qxx[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
+		Qxy_focal_spot = Qxy[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
+		Qyx_focal_spot = Qyx[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
+		Qyy_focal_spot = Qyy[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
 
-	return contrast
+		orthogonal_cancel_x = np.abs( Qyx_focal_spot + ( alpha_prime / beta_prime ) * Qxx_focal_spot )**2
+		orthogonal_cancel_y = np.abs( Qxy_focal_spot + ( beta_prime / alpha_prime ) * Qyy_focal_spot )**2
 
-def dipole_weightings( E_out_parallel, E_out_orthogonal ):
-	field_shape = E_out_parallel.shape
-	num_wavelengths = field_shape[ 1 ]
+		parallel = np.max(
+			parallel_fom_bound - np.abs( Qxx_focal_spot / alpha )**2 - np.abs( Qyy_focal_spot / beta )**2,
+			0 )
 
-	x_parallel_weighting = np.zeros( num_wavelengths, dtype=np.complex )
-	y_parallel_weighting = np.zeros( num_wavelengths, dtype=np.complex )
-	x_orthogonal_weighting = np.zeros( num_wavelengths, dtype=np.complex )
-	y_orthogonal_weighting = np.zeros( num_wavelengths, dtype=np.complex )
+		total_fom += ( 1 / num_focal_spots ) * np.mean( orthogonal_cancel_x + orthogonal_cancel_y + parallel )
 
-	for wl_idx in range( 0, num_wavelengths ):
+		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 0, : ] = orthogonal_cancel_x
+		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 1, : ] = orthogonal_cancel_y
+		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 2, : ] = parallel
 
-		I_parallel = intensity_from_field( E_out_parallel )
-		I_orthogonal = intensity_from_field( E_out_orthogonal )
+	return total_fom, fom_by_focal_spot_by_type_by_wavelength
 
-		difference = I_parallel - I_orthogonal
-		total = I_parallel + I_orthogonal
+def gradient(
+	fom_by_focal_spot_by_type_by_wavelength,
+	Ex_forward_fields, Ey_forward_fields,
+	Ex_adjoint_fields_by_focal_spot, Ey_adjoint_fields_by_focal_spot,
+	Qxx, Qxy, Qyx, Qyy ):
 
-		x_parallel_weighting[ wl_idx ] = ( total[ wl_idx ] * np.conj( E_out_parallel[ 0, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_parallel[ 0, wl_idx ] ) ) / total[ wl_idx ]**2
-		# can also write as:
-		# x_parallel_weighting = np.conj( E_out_parallel[ 0 ] ) * ( total[ wl_idx ] - difference[ wl_idx ] ) / total[ wl_idx ]**2
-		y_parallel_weighting[ wl_idx ] = ( total[ wl_idx ] * np.conj( E_out_parallel[ 1, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_parallel[ 1, wl_idx ] ) ) / total[ wl_idx ]**2
+	num_total_fom = num_focal_spots * 3 * num_design_frequency_points
+	rearrange_figures_of_merit = np.zeros( num_total_fom )
 
-		x_orthogonal_weighting[ wl_idx ] = ( -total[ wl_idx ] * np.conj( E_out_orthogonal[ 0, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_orthogonal[ 0, wl_idx ] ) ) / total[ wl_idx ]**2
-		y_orthogonal_weighting[ wl_idx ] = ( -total[ wl_idx ] * np.conj( E_out_orthogonal[ 1, wl_idx ] ) - difference[ wl_idx ] * np.conj( E_out_orthogonal[ 1, wl_idx ] ) ) / total[ wl_idx ]**2
+	for focal_spot_idx in range( 0, num_focal_spots ):
+		for fom_type_idx in range( 0, 3 ):
+			for wl_idx in range( 0, num_design_frequency_points ):
+				rearrange_figures_of_merit[
+					focal_spot_idx * 3 * num_design_frequency_points +
+					fom_type_idx * num_design_frequency_points +
+					wl_idx
+				] = fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, fom_type_idx, wl_idx ]
 
 
-	return [ np.array( [ x_parallel_weighting, y_parallel_weighting ] ), np.array( [ x_orthogonal_weighting, y_orthogonal_weighting ] ) ]
+	fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
+	fom_weightings = np.max( fom_weightings, 0 )
+	fom_weightings /= np.sum( fom_weightings )
+
+	gradient_shape = Ex_forward_fields[ 0, 0 ].shape
+	gradient = np.zeros( gradient_shape )
+
+	for focal_spot_idx in range( 0, num_focal_spots ):
+
+		alpha = jones_sorting_vectors[ focal_spot_idx ][ 0 ]
+		beta = jones_sorting_vectors[ focal_spot_idx ][ 1 ]
+		alpha_prime = jones_orthogonal_vectors[ focal_spot_idx ][ 0 ]
+		beta_prime = jones_orthogonal_vectors[ focal_spot_idx ][ 1 ]
+
+		Qxx_focal_spot = Qxx[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
+		Qxy_focal_spot = Qxy[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
+		Qyx_focal_spot = Qyx[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
+		Qyy_focal_spot = Qyy[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
+
+
+		for fom_type_idx in range( 0, 3 ):
+			weighting_start_idx = focal_spot_idx * 3 * num_design_frequency_points + fom_type_idx * num_design_frequency_points
+			weighting_end_idx = weighting_start_idx + num_design_frequency_points
+
+			get_weightings = rearrange_figures_of_merit[ weighting_start_idx : weighting_end_idx ]
+
+			if fom_type_idx == 0:
+				d_dQxx_0 = np.abs( alpha_prime / beta_prime )**2 * np.conj( Qxx_focal_spot ) + ( alpha_prime / beta_prime ) * np.conj( Qyx_focal_spot )
+				d_dQyx_0 = np.conj( Qyx_focal_spot ) + np.conj( alpha_prime / beta_prime ) * np.conj( Qxx_focal_spot )
+
+				for wl_idx in range( 0, num_design_frequency_points ):
+					gradient_component_0_xx = 2 * np.real(
+						np.sum(
+							get_weightings[ wl_idx ] *
+							d_dQxx_0[ wl_idx ] * Ex_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							axis=0
+						)
+					)
+
+					gradient_component_0_yx = 2 * np.real(
+						np.sum(
+							get_weightings[ wl_idx ] *
+							d_dQyx_0[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							axis=0
+						)
+					)
+
+					gradient += ( gradient_component_0_xx gradient_component_0_yx )
+
+			elif fom_type_idx == 1:
+				d_dQyy_1 = np.abs( beta_prime / alpha_prime )**2 * np.conj( Qyy_focal_spot ) + ( beta_prime / alpha_prime ) * np.conj( Qxy_focal_spot )
+				d_dQxy_1 = np.conj( Qxy_focal_spot ) + np.conj( beta_prime / alpha_prime ) * np.conj( Qyy_focal_spot )
+
+				for wl_idx in range( 0, num_design_frequency_points ):
+					gradient_component_1_yy = 2 * np.real(
+						np.sum(
+							get_weightings[ wl_idx ] *
+							d_dQyy_1[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ey_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							axis=0
+						)
+					)
+
+					gradient_component_1_xy = 2 * np.real(
+						np.sum(
+							get_weightings[ wl_idx ] *
+							d_dQxy_1[ wl_idx ] * Ex_forward_fields[ :, wl_idx, :, :, : ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, wl_idx, :, :, : ],
+							axis=0
+						)
+					)
+
+					gradient += ( gradient_component_1_yy + gradient_component_1_xy )
+
+			else:
+				d_dQxx_2 = np.conj( Qxx_focal_spot ) / np.abs( alpha )**2
+				d_dQyy_2 = np.conj( Qyy_focal_spot ) / np.abs( beta )**2
+
+				for wl_idx in range( 0, num_design_frequency_points ):
+					gradient_component_2_xx = 2 * np.real(
+						np.sum(
+							get_weightings[ wl_idx ] *
+							d_dQxx_2[ wl_idx ] * Ex_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							axis=0
+						)
+					)
+
+					gradient_component_2_yy = 2 * np.real(
+						np.sum(
+							get_weightings[ wl_idx ] *
+							d_dQyy_2[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ey_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							axis=0
+						)
+					)
+
+					gradient += ( gradient_component_2_xx + gradient_component_2_yy )
+
+	return gradient
 
 
 
@@ -99,17 +215,6 @@ fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
 fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
-
-# design_mesh = fdtd_hook.addmesh()
-# design_mesh['name'] = 'design_override_mesh'
-# design_mesh['x span'] = device_size_lateral_um * 1e-6
-# design_mesh['y span'] = device_size_lateral_um * 1e-6
-# design_mesh['z max'] = device_vertical_maximum_um * 1e-6
-# design_mesh['z min'] = device_vertical_minimum_um * 1e-6
-# design_mesh['dx'] = mesh_spacing_um * 1e-6
-# design_mesh['dy'] = mesh_spacing_um * 1e-6
-# design_mesh['dz'] = mesh_spacing_um * 1e-6
-
 
 #
 # General polarized source information
@@ -310,7 +415,7 @@ forward_e_fields = {}
 focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-figure_of_merit_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots))
+figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, 3, num_design_frequency_points))
 contrast_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots))
 parallel_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
 orthogonal_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
@@ -326,8 +431,6 @@ if start_epoch > 0:
 	bayer_filter.set_design_variable( design_variable_reload )
 
 
-
-
 #
 # Run the optimization
 #
@@ -336,6 +439,8 @@ for epoch in range(start_epoch, num_epochs):
 
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
+
+
 
 		fdtd_hook.switchtolayout()
 		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
@@ -346,6 +451,11 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
+		Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+		Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+		Qyx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+		Qyy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+
 		for xy_idx in range(0, 2):
 			disable_all_sources()
 			(forward_sources[xy_idx]).enabled = 1
@@ -354,85 +464,46 @@ for epoch in range(start_epoch, num_epochs):
 			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
 			focal_data[xy_names[xy_idx]] = []
-			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+			for focal_idx in range( 0, num_focal_spots ):
+				focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
+
+				if xy_idx == 0:
+					Qxx[ focal_idx, : ] = focal_monitor_data[ 0, :, 0, 0, 0 ]
+					Qxy[ focal_idx, : ] = focal_monitor_data[ 1, :, 0, 0, 0 ]
+				else:
+					Qyy[ focal_idx, : ] = focal_monitor_data[ 1, :, 0, 0, 0 ]
+					Qyx[ focal_idx, : ] = focal_monitor_data[ 0, :, 0, 0, 0 ]
 
 
-		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
-
-		#
-		# Step 2: Compute the figure of merit
-		#
-		figure_of_merit_per_focal_spot = []
-		parallel_intensity_per_focal_spot = []
-		orthogonal_intensity_per_focal_spot = []
-		weightings_parallel_orthogonal = np.zeros( ( num_focal_spots, num_design_frequency_points, 2 ) )
-		for focal_idx in range(0, num_focal_spots):
-			compute_fom = 0
-			compute_contrast = 0
-
+		
+		for focal_idx in range( 0, num_focal_spots ):
 			analyzer_vector = jones_sorting_vectors[ focal_idx ]
 			orthogonal_vector = jones_orthogonal_vectors[ focal_idx ]
 
-			create_forward_parallel_response = analyzer_vector[ 0 ] * focal_data[ 'x' ][ focal_idx ] + analyzer_vector[ 1 ] * focal_data[ 'y' ][ focal_idx ]
-			create_forward_orthogonal_response = orthogonal_vector[ 0 ] * focal_data[ 'x' ][ focal_idx ] + orthogonal_vector[ 1 ] * focal_data[ 'y' ][ focal_idx ]
+			create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
+			create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
 
-			for spectral_idx in range( 0, num_design_frequency_points ):
-				paraxial_parallel_forward = create_forward_parallel_response[ :, spectral_idx, 0, 0, 0 ]
-				paraxial_parallel_forward[ 2 ] = 0
+			create_forward_orthogonal_response_x = orthogonal_vector[ 0 ] * Qxx[ focal_idx, : ] + orthogonal_vector[ 1 ] * Qyx[ focal_idx, : ]
+			create_forward_orthogonal_response_y = orthogonal_vector[ 0 ] * Qxy[ focal_idx, : ] + orthogonal_vector[ 1 ] * Qyy[ focal_idx, : ]
 
-				paraxial_orthogonal_forward = create_forward_orthogonal_response[ :, spectral_idx, 0, 0, 0 ]
-				paraxial_orthogonal_forward[ 2 ] = 0
+			parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
+			orthogonal_intensity = np.abs( create_forward_orthogonal_response_x )**2 + np.abs( create_forward_orthogonal_response_y )**2
+			contrast = ( parallel_intensity - orthogonal_intensity ) / ( parallel_intensity + orthogonal_intensity )
 
-				parallel_intensity = intensity_from_field( paraxial_parallel_forward )
-				orthogonal_intensity = intensity_from_field( paraxial_orthogonal_forward )
-
-				parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, spectral_idx ] = parallel_intensity
-				orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, spectral_idx ] = orthogonal_intensity
-
-				compute_contrast += contrast_fom(
-					paraxial_parallel_forward,
-					paraxial_orthogonal_forward )
-
-				normalize_parallel_intensity = parallel_intensity / max_intensity_by_wavelength[ spectral_idx ]
-				normalize_orthogonal_intensity = orthogonal_intensity / max_intensity_by_wavelength[ spectral_idx ]
-
-				parallel_fom = np.minimum( fom_sigmoid.forward( normalize_parallel_intensity ), 1.0 )
-				orthogonal_fom = np.maximum( 0, 1 - fom_sigmoid.forward( normalize_orthogonal_intensity ) )
-
-				parallel_fom_chain_rule = fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_parallel_intensity ), normalize_parallel_intensity ) / max_intensity_by_wavelength[ spectral_idx ]
-				orthogonal_fom_chain_rule = -fom_sigmoid.chain_rule( 1, fom_sigmoid.forward( normalize_orthogonal_intensity ), normalize_orthogonal_intensity ) / max_intensity_by_wavelength[ spectral_idx ]
-
-				compute_fom += 0.5 * ( parallel_fom + orthogonal_fom )
-
-				fom_parallel_orthogonal = np.array( [ parallel_fom, orthogonal_fom ] )
-
-				weightings_parallel_orthogonal[ focal_idx, spectral_idx, : ] = ( 2. / 2. ) - fom_parallel_orthogonal**2 / np.sum( fom_parallel_orthogonal**2 )
-				weightings_parallel_orthogonal[ focal_idx, spectral_idx, 0 ] *= parallel_fom_chain_rule
-				weightings_parallel_orthogonal[ focal_idx, spectral_idx, 1 ] *= orthogonal_fom_chain_rule
-
-			contrast_per_focal_spot_evolution[ epoch, iteration, focal_idx ] = compute_contrast / num_design_frequency_points
-
-			figure_of_merit_per_focal_spot.append( compute_fom )
+			parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_spot_idx, : ] = parallel_intensity
+			orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_spot_idx, : ] = orthogonal_intensity
+			contrast_per_focal_spot_evolution[ epoch, iteration, focal_spot_idx, : ] = contrast
 
 
-		figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
+		current_figure_of_merit, fom_by_focal_spot_by_type_by_wavelength = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
 
-		# So we are currently weighting by focal spot but not by individual frequency
-		# This might be why you are getting three peaks in the color splitting version
-		#
-		# Figure of merit per focal spot, these contrasts can be negative.  The most negative can be -1.  We will add one to each one above 
-		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
-		# performance_weighting -= np.min(performance_weighting)
-		performance_weighting = np.maximum( performance_weighting, 0 )
-		performance_weighting /= np.sum(performance_weighting)
+		figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution[ epoch, iteration ] = fom_by_focal_spot_by_type_by_wavelength
+		figure_of_merit_evolution[ epoch, iteration, current_figure_of_merit ]
 
-		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
-		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
-		figure_of_merit_per_focal_spot_evolution[epoch, iteration] = figure_of_merit_per_focal_spot
+		print( 'The current figure of merit = ' + str( current_figure_of_merit ) )
 
 		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
-		np.save(projects_directory_location + "/figure_of_merit_per_focal_spot.npy", figure_of_merit_per_focal_spot_evolution)
+		np.save(projects_directory_location + "/figure_of_merit_by_focal_spot_by_type_by_wavelength.npy", figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution)
 		np.save(projects_directory_location + "/contrast_per_focal_spot.npy", contrast_per_focal_spot_evolution)
 		np.save(projects_directory_location + "/parallel_intensity.npy", parallel_intensity_per_focal_spot_evolution)
 		np.save(projects_directory_location + "/orthogonal_intensity.npy", orthogonal_intensity_per_focal_spot_evolution)
@@ -447,59 +518,32 @@ for epoch in range(start_epoch, num_epochs):
 		accumulate_gradient = np.zeros(reversed_field_shape, dtype=np.complex)
 
 		for adj_src_idx in range(0, num_adjoint_sources):
-			polarizations = polarizations_focal_plane_map[adj_src_idx]
 
-			analyzer_vector = jones_sorting_vectors[ adj_src_idx ]
-			orthogonal_vector = jones_orthogonal_vectors[ adj_src_idx ]
-
-			create_forward_parallel_response = analyzer_vector[ 0 ] * focal_data[ 'x' ][ focal_idx ] + analyzer_vector[ 1 ] * focal_data[ 'y' ][ focal_idx ]
-			create_forward_orthogonal_response = orthogonal_vector[ 0 ] * focal_data[ 'x' ][ focal_idx ] + orthogonal_vector[ 1 ] * focal_data[ 'y' ][ focal_idx ]
-
-			create_forward_parallel_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
-			create_forward_orthogonal_fields = orthogonal_vector[ 0 ] * forward_e_fields[ 'x' ] + orthogonal_vector[ 1 ] * forward_e_fields[ 'y' ]
-
-			gradient_performance_weight = performance_weighting[adj_src_idx]
-
-			adjoint_e_fields = []
+			adjoint_ex_fields = []
+			adjoint_ey_fields = []
 			for xy_idx in range(0, 2):
 				disable_all_sources()
 				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
 				fdtd_hook.run()
 
-				adjoint_e_fields.append(
-					get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+				if xy_idx == 0:
+					adjoint_ex_fields.append(
+						get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+				else:
+					adjoint_ey_fields.append(
+						get_complex_monitor_data(design_efield_monitor['name'], 'E'))
 
-
-			#
-			# For now, just try and increase the contrast.  We will want to make sure overall transmission is high too, which can
-			# be added in as another fiugre of merit.
-			#
-			adjoint_phase_weightings = dipole_weightings( np.squeeze( create_forward_parallel_response ), np.squeeze( create_forward_orthogonal_response ) )
-
-			for spectral_idx in range( 0, num_design_frequency_points ):
-				for xy_idx in range( 0, 2 ):
-
-					accumulate_gradient += np.sum(
-						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx, spectral_idx, 0 ] *
-						adjoint_phase_weightings[ 0 ][ xy_idx, spectral_idx ] *
-						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
-						create_forward_parallel_fields[ :, spectral_idx, :, :, : ],
-						axis=0
-					)
-
-					accumulate_gradient += np.sum(
-						gradient_performance_weight * weightings_parallel_orthogonal[ adj_src_idx, spectral_idx, 1 ] *
-						adjoint_phase_weightings[ 1 ][ xy_idx, spectral_idx ] *
-						adjoint_e_fields[ xy_idx ][ :, spectral_idx, :, :, : ] *
-						create_forward_orthogonal_fields[ :, spectral_idx, :, :, : ],
-						axis=0
-					)
+		minimization_gradient = gradient(
+			fom_by_focal_spot_by_type_by_wavelength,
+			forward_e_fields[ 'x' ], forward_e_fields[ 'y' ],
+			adjoint_ex_fields, adjoint_ey_fields,
+			Qxx, Qxy, Qyx, Qyy )
 
 
 		#
 		# Step 4: Step the design variable.
 		#
-		device_gradient = 2 * np.real( accumulate_gradient )
+		device_gradient = minimization_gradient
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		device_gradient = np.swapaxes(device_gradient, 0, 2)
@@ -530,7 +574,7 @@ for epoch in range(start_epoch, num_epochs):
 		last = 0
 
 		while True:
-			proposed_design_variable = cur_design_variable + step_size * design_gradient
+			proposed_design_variable = cur_design_variable - step_size * design_gradient
 			proposed_design_variable = np.maximum(
 										np.minimum(
 											proposed_design_variable,
@@ -566,7 +610,7 @@ for epoch in range(start_epoch, num_epochs):
 		if epoch >= binarization_start_epoch:
 			enforce_binarization = True
 		device_gradient = np.flip( device_gradient, axis=2 )
-		bayer_filter.step(-device_gradient, step_size, enforce_binarization, projects_directory_location)
+		bayer_filter.step(device_gradient, step_size, enforce_binarization, projects_directory_location)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
@@ -576,6 +620,8 @@ for epoch in range(start_epoch, num_epochs):
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
+		fdtd_hook.switchtolayout()
+		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
 		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
@@ -584,6 +630,7 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
 
+	fdtd_hook.switchtolayout()
 	shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_end_epoch_" + str( epoch ) + ".fsp" )
 
 

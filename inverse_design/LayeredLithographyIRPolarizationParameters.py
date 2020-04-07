@@ -3,12 +3,12 @@
 #
 
 import numpy as np
-import sigmoid
+# import sigmoid
 
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_splitter_noncontrast_4x4x3p6um_f2p6'
+project_name = 'layered_infrared_3layers_pol_splitter_cross_forward_fom_4p2x4p2x3p12um_f2p6'
 
 #
 # Optical
@@ -36,16 +36,16 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-mesh_spacing_um = 0.03
+mesh_spacing_um = 0.04
 
 #
 # Pesky size to get the number of voxels to be a multiple of 3
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 4.02#3.6
-device_size_verical_um = num_vertical_layers * ( 3.0 / num_vertical_layers )
-amorphous_silicon_height_per_layer_um = 0.51#0.8
+device_size_lateral_um = 4.2#3.6
+device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
+amorphous_silicon_height_per_layer_um = 0.52#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
@@ -141,10 +141,12 @@ jones_orthogonal_vectors = []
 for jones_idx in range( 0, len( jones_sorting_vectors ) ):
 	jones_orthogonal_vectors.append( find_orthogonal( jones_sorting_vectors[ jones_idx ] ) )
 	
-fom_sigmoid_beta = 5.0
-fom_sigmoid_eta = 0.25
-fom_sigmoid = sigmoid.Sigmoid( fom_sigmoid_beta, fom_sigmoid_eta )
+# fom_sigmoid_beta = 5.0
+# fom_sigmoid_eta = 0.25
+# fom_sigmoid = sigmoid.Sigmoid( fom_sigmoid_beta, fom_sigmoid_eta )
 
+expected_parallel_max_efficiency = 0.8
+parallel_fom_bound = 0.5 * expected_parallel_max_efficiency
 
 #
 # Adjoint sources
