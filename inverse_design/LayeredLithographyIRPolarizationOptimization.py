@@ -490,9 +490,9 @@ for epoch in range(start_epoch, num_epochs):
 			orthogonal_intensity = np.abs( create_forward_orthogonal_response_x )**2 + np.abs( create_forward_orthogonal_response_y )**2
 			contrast = ( parallel_intensity - orthogonal_intensity ) / ( parallel_intensity + orthogonal_intensity )
 
-			parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_spot_idx, : ] = parallel_intensity
-			orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_spot_idx, : ] = orthogonal_intensity
-			contrast_per_focal_spot_evolution[ epoch, iteration, focal_spot_idx, : ] = contrast
+			parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = parallel_intensity
+			orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = orthogonal_intensity
+			contrast_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = contrast
 
 
 		current_figure_of_merit, fom_by_focal_spot_by_type_by_wavelength = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
