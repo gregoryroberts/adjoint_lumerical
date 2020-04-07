@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_6p75x6p75x3p06um_f2p6'
+project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f2'
 
 #
 # Optical
@@ -28,23 +28,23 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 2.6
+focal_length_um = 2.0
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
 #
 # Device
 #
-mesh_spacing_um = 0.03
+mesh_spacing_um = 0.04
 
 #
 # Pesky size to get the number of voxels to be a multiple of 3
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 2.25 * 3.0#3.06#3.6
-device_size_verical_um = num_vertical_layers * ( 3.0 / num_vertical_layers )
-amorphous_silicon_height_per_layer_um = 0.51#0.8
+device_size_lateral_um = 2.0 * 3.0#3.06#3.6
+device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
+amorphous_silicon_height_per_layer_um = 0.52#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
