@@ -126,7 +126,7 @@ def gradient(
 						)
 					)
 
-					gradient += ( gradient_component_0_xx gradient_component_0_yx )
+					gradient += ( gradient_component_0_xx + gradient_component_0_yx )
 
 			elif fom_type_idx == 1:
 				d_dQyy_1 = np.abs( beta_prime / alpha_prime )**2 * np.conj( Qyy_focal_spot ) + ( beta_prime / alpha_prime ) * np.conj( Qxy_focal_spot )
