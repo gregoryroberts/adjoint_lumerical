@@ -498,7 +498,7 @@ for epoch in range(start_epoch, num_epochs):
 		current_figure_of_merit, fom_by_focal_spot_by_type_by_wavelength = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
 
 		figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution[ epoch, iteration ] = fom_by_focal_spot_by_type_by_wavelength
-		figure_of_merit_evolution[ epoch, iteration, current_figure_of_merit ]
+		figure_of_merit_evolution[ epoch, iteration ] = current_figure_of_merit
 
 		print( 'The current figure of merit = ' + str( current_figure_of_merit ) )
 
