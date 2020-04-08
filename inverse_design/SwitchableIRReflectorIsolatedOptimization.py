@@ -142,7 +142,8 @@ for pol_idx in range( 0, num_polarizations ):
 	mode_src['polarization angle'] = source_polarization_angles[ pol_idx ]
 	mode_src['direction'] = 'Backward'
 	mode_src['x span'] = lateral_aperture_um * 1e-6
-	mode_src['y'] = ( designable_device_vertical_minimum_um - 0.5 * vertical_gap_size_um ) * 1e-6
+	mode_src['y max'] = ( designable_device_vertical_minimum_um - 0.25 * vertical_gap_size_um ) * 1e-6
+	mode_src['y min'] = fdtd_region_minimum_vertical_um * 1e-6
 	mode_src['wavelength start'] = lambda_min_um * 1e-6
 	mode_src['wavelength stop'] = lambda_max_um * 1e-6
 
@@ -188,7 +189,8 @@ for pol_idx in range( 0, num_polarizations ):
 	transmission_adjoint_src['polarization angle'] = source_polarization_angles[ pol_idx ]
 	transmission_adjoint_src['direction'] = 'Forward'
 	transmission_adjoint_src['x span'] = lateral_aperture_um * 1e-6
-	transmission_adjoint_src['y'] = mode_transmission_monitor['y']
+	transmission_adjoint_src['y min'] = mode_transmission_monitor['y']
+	transmission_adjoint_src['y max'] = fdtd_region_maximum_vertical_um * 1e-6
 	transmission_adjoint_src['wavelength start'] = lambda_min_um * 1e-6
 	transmission_adjoint_src['wavelength stop'] = lambda_max_um * 1e-6
 
@@ -221,7 +223,8 @@ for angle_idx in range( 0, num_optimization_angles ):
 		forward_src['direction'] = 'Backward'
 		forward_src['angle theta'] = optimization_angles_mid_frequency_degrees[ angle_idx ]
 		forward_src['x span'] = lateral_aperture_um * 1e-6
-		forward_src['y'] = src_maximum_vertical_um * 1e-6
+		forward_src['y max'] = src_maximum_vertical_um * 1e-6
+		forward_src['y min'] = fdtd_region_minimum_vertical_um * 1e-6
 		forward_src['wavelength start'] = lambda_min_um * 1e-6
 		forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
