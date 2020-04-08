@@ -195,7 +195,7 @@ for pol_idx in range( 0, num_polarizations ):
 	transmission_adjoint_sources.append( transmission_adjoint_src )
 
 
-focusing_adjoint_sources = [ [] for i in range( 0, 3 ) ]
+focusing_adjoint_sources = []
 coord_to_phi = [ 0, 90, 0 ]
 coord_to_theta = [ 90, 90, 0 ]
 
