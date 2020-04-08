@@ -777,7 +777,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 							focused_gradient = np.zeros( forward_e_fields[ 0, 0 ].shape, dtype=np.complex )
 							for wl_idx in range( 0, num_design_frequency_points ):
-								for coord_idx in range( 0, len( focusing_affected_coords ) )
+								for coord_idx in range( 0, len( focusing_affected_coords ) ):
 									focused_gradient += np.sum(
 										np.conj( focused_electric_field_by_coord_by_wavelength[ coord_idx, wl_idx ] ) *
 										fom_weighting_focusing[ wl_idx ] *
