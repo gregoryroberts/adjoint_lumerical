@@ -31,7 +31,6 @@ import time
 def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 
 	total_fom = 0
-	num_design_frequency_points
 	fom_by_focal_spot_by_type_by_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ) )
 
 	for focal_spot_idx in range( 0, num_focal_spots ):
@@ -113,7 +112,7 @@ def gradient(
 					gradient_component_0_xx = 2 * np.real(
 						np.sum(
 							get_weightings[ wl_idx ] *
-							d_dQxx_0[ wl_idx ] * Ex_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							d_dQxx_0[ wl_idx ] * Ex_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, wl_idx, :, :, : ],
 							axis=0
 						)
 					)
@@ -121,7 +120,7 @@ def gradient(
 					gradient_component_0_yx = 2 * np.real(
 						np.sum(
 							get_weightings[ wl_idx ] *
-							d_dQyx_0[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							d_dQyx_0[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, wl_idx, :, :, : ],
 							axis=0
 						)
 					)
@@ -136,7 +135,7 @@ def gradient(
 					gradient_component_1_yy = 2 * np.real(
 						np.sum(
 							get_weightings[ wl_idx ] *
-							d_dQyy_1[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ey_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							d_dQyy_1[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, wl_idx, :, :, : ],
 							axis=0
 						)
 					)
@@ -159,7 +158,7 @@ def gradient(
 					gradient_component_2_xx = 2 * np.real(
 						np.sum(
 							get_weightings[ wl_idx ] *
-							d_dQxx_2[ wl_idx ] * Ex_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							d_dQxx_2[ wl_idx ] * Ex_forward_fields[ :, wl_idx, :, :, : ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, wl_idx, :, :, : ],
 							axis=0
 						)
 					)
@@ -167,7 +166,7 @@ def gradient(
 					gradient_component_2_yy = 2 * np.real(
 						np.sum(
 							get_weightings[ wl_idx ] *
-							d_dQyy_2[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ey_adjoint_fields_by_focal_spot[ focal_idx ][ :, wl_idx, :, :, : ],
+							d_dQyy_2[ wl_idx ] * Ey_forward_fields[ :, wl_idx, :, :, : ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, wl_idx, :, :, : ],
 							axis=0
 						)
 					)
@@ -429,7 +428,7 @@ cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 fdtd_hook.select("design_import")
 fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
-h = 1e-4
+h = 1e-3
 
 
 Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
