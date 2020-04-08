@@ -653,7 +653,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					for pol_idx in range( 0, num_polarizations ):
 	
 						disable_all_sources()
-						(transmitted_adjoint_sources[pol_idx]).enabled = 1
+						(transmission_adjoint_sources[pol_idx]).enabled = 1
 						fdtd_hook.run()
 
 						transmitted_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
