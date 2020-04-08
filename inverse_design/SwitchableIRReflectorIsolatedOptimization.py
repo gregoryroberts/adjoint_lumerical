@@ -654,11 +654,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					for pol_idx in range( 0, num_polarizations ):
 	
 						disable_all_sources()
-						(reflection_adjoint_sources[pol_idx]).enabled = 1
+						(transmitted_adjoint_sources[pol_idx]).enabled = 1
 						fdtd_hook.run()
 
-						reflected_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
-
+						transmitted_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
 
 						focusing_adjoint_e_fields_by_coord = []
 						focusing_affected_coords = affected_coords_by_polarization[ pol_idx ]
@@ -776,16 +775,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							polarized_gradient = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
 							polarized_gradient_lsf = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
 
-
-							transmitted_gradient += my_optimization_state.reinterpolate(
-								mode_overlap_gradient_by_pol[ pol_idx ](
-									figures_of_merit_by_wavelength, fom_weighting,
-									transmitted_E, transmitted_H,
-									mode_E[ pol_idx ], mode_H[ pol_idx ],
-									forward_e_fields, reflected_adjoint_e_fields,
-									1.0, mode_overlap_norm_by_pol[ pol_idx ] ) / 1j,
-								polarized_gradient.shape )
-
 							focused_gradient = np.zeros( forward_e_fields[ 0, 0 ].shape, dtype=np.complex )
 							for wl_idx in range( 0, num_design_frequency_points ):
 								for coord_idx in range( 0, len( focusing_affected_coords ) )
@@ -803,7 +792,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 									figures_of_merit_by_wavelength, fom_weighting_transmission,
 									transmitted_E, transmitted_H,
 									mode_E[ pol_idx ], mode_H[ pol_idx ],
-									forward_e_fields, adjoint_e_fields,
+									forward_e_fields, transmitted_adjoint_e_fields,
 									1.0, directional_norm ) / 1j,
 								polarized_gradient.shape )
 
