@@ -492,7 +492,7 @@ minimization_gradient = gradient(
 
 
 finite_difference_gradient = np.zeros( num_fd_z )
-finite_difference_gradient_all = np.zeros( [ num_fd_z ] + fom_by_focal_spot_by_type_by_wavelength_0.shape )
+finite_difference_gradient_all = np.zeros( ( num_fd_z, num_focal_spots, 3, num_design_frequency_points ) )
 
 for fd_z_idx in range( 0, num_fd_z ):
 	print( "Currently working on finite difference iteration " + str( fd_z_idx ) + " out of " + str( num_fd_z ) + " total!" )

@@ -172,7 +172,8 @@ def gradient(
 						)
 					)
 
-					gradient += ( gradient_component_2_xx + gradient_component_2_yy )
+					if fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, fom_type_idx, wl_idx ] > 0:
+						gradient += ( gradient_component_2_xx + gradient_component_2_yy )
 
 	return -gradient
 
