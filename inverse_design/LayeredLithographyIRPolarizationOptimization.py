@@ -174,7 +174,7 @@ def gradient(
 
 					gradient += ( gradient_component_2_xx + gradient_component_2_yy )
 
-	return gradient
+	return -gradient
 
 
 
