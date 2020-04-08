@@ -209,7 +209,7 @@ for coord_idx in range( 0, 3 ):
 	focusing_adjoint_src['wavelength start'] = lambda_min_um * 1e-6
 	focusing_adjoint_src['wavelength stop'] = lambda_max_um * 1e-6
 
-	focusing_adjoint_sources[ coord_idx ].append( focusing_adjoint_src )
+	focusing_adjoint_sources.append( focusing_adjoint_src )
 
 
 forward_sources = [ None for i in range( 0, num_optimization_angles * num_polarizations ) ]
@@ -242,8 +242,7 @@ def disable_all_sources():
 			forward_sources[ angle_idx * num_polarizations + pol_idx ].enabled = 0
 
 	for coord_idx in range( 0, 3 ):
-		for adj_src_idx in range( 0, num_adjoint_sources ):
-			(focusing_adjoint_sources[ coord_idx ][ adj_src_idx ]).enabled = 0
+		(focusing_adjoint_sources[ coord_idx ]).enabled = 0
 
 
 
