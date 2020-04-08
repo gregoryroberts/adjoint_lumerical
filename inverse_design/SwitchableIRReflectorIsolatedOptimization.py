@@ -661,7 +661,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 						focusing_adjoint_e_fields_by_coord = []
 						focusing_affected_coords = affected_coords_by_polarization[ pol_idx ]
-						for coord_idx in range( 0, len( focusing_affected_coords ) )
+						for coord_idx in range( 0, len( focusing_affected_coords ) ):
 							
 							disable_all_sources()
 							focusing_adjoint_sources[ coord_idx ].enabled = 1
