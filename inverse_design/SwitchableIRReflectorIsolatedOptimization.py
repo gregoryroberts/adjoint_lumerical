@@ -201,7 +201,7 @@ coord_to_theta = [ 90, 90, 0 ]
 
 for coord_idx in range( 0, 3 ):
 	focusing_adjoint_src = fdtd_hook.adddipole()
-	focusing_adjoint_src['name'] = 'focusing_adjoint_src_' + str(adj_src_idx) + "_" + str( coord_idx )
+	focusing_adjoint_src['name'] = 'focusing_adjoint_src_' + str( coord_idx )
 	focusing_adjoint_src['x'] = 0
 	focusing_adjoint_src['y'] = focal_monitor['y']
 	focusing_adjoint_src['theta'] = coord_to_theta[ coord_idx ]
