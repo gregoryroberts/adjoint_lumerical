@@ -428,8 +428,7 @@ cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 fdtd_hook.select("design_import")
 fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
-h = 1e-3
-
+h = 1e-5
 
 Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
