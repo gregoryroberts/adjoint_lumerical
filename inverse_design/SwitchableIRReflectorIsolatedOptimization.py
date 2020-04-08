@@ -714,6 +714,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 							print('\n\n')
 							print( transmitted_figures_of_merit_by_wavelength )
+							print('\n')
 							print( focused_figures_of_merit_by_wavelength)
 							print('\n\n')
 
@@ -798,7 +799,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 									transmitted_E, transmitted_H,
 									mode_E[ pol_idx ], mode_H[ pol_idx ],
 									forward_e_fields, transmitted_adjoint_e_fields,
-									1.0, directional_norm ) / 1j,
+									1.0, mode_overlap_norm[ pol_idx ] ) / 1j,
 								polarized_gradient.shape )
 
 							xy_polarized_gradients_by_angle_and_pol[ angle_idx * num_polarizations + pol_idx ] = polarized_gradient
