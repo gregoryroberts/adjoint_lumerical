@@ -188,7 +188,7 @@ fdtd_hook = lumapi.FDTD()
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + project_name
+projects_directory_location += "/" + project_name + "_fd"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
