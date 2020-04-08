@@ -506,7 +506,7 @@ def mode_overlap_gradient_ez(
         numerator = (
             np.sum( choose_electric_forward[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) +
             np.sum( np.conj( choose_electric_mode[ 2, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, 0, : ] ) )
-        denominator = -4.0 * np.real( np.sum( choose_electric_mode[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) )
+        denominator = 4.0 * np.real( np.sum( choose_electric_mode[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) )
 
         adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm[ wl_idx ] )
         gradient += normal_weighting * ( 
@@ -537,7 +537,7 @@ def mode_overlap_gradient_hz(
         numerator = (
             -np.sum( choose_electric_forward[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) -
             np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 2, wl_idx, 0, 0, : ] ) )
-        denominator = -4.0 * np.real( np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) )
+        denominator = 4.0 * np.real( np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) )
 
         adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm[ wl_idx ] )
         gradient += normal_weighting * ( 
@@ -672,7 +672,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							focusing_adjoint_e_fields_by_coord.append(
 								get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' ) )
 
-
 						for angle_idx in range( 0, num_optimization_angles ):
 
 							#
@@ -714,13 +713,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 								for polarization_coord_idx in range( 0, 3 ):
 									focused_electric_field_by_coord_by_wavelength[ polarization_coord_idx, wl_idx ] = reflected_E[ polarization_coord_idx, wl_idx, 0, 0, 0 ]
-
-							print('\n\n')
-							print( transmitted_figures_of_merit_by_wavelength )
-							print('\n')
-							print( focused_figures_of_merit_by_wavelength)
-							print('\n\n')
-
 
 							figures_of_merit_by_wavelength = np.zeros( num_design_frequency_points )
 
@@ -771,7 +763,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 									fom_weighting_transmission[ wl_idx ] = fom_weighting[ wl_idx ]
 
 
-							print( "Figure of merit weighting = " + str( fom_weighting ) )
+							# print( "Figure of merit weighting = " + str( fom_weighting ) )
 
 							figure_of_merit_by_angle_and_pol[ angle_idx * num_polarizations + pol_idx ] = np.mean( figures_of_merit_by_wavelength )
 							figure_of_merit += ( 1. / ( num_polarizations * num_optimization_angles ) ) * figure_of_merit_by_angle_and_pol[ angle_idx * num_polarizations + pol_idx ]
@@ -812,7 +804,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					weight_grad_by_angle_and_pol = np.maximum( weight_grad_by_angle_and_pol, 0 )
 					weight_grad_by_angle_and_pol /= np.sum( weight_grad_by_angle_and_pol )
 
-					print( "Weight by angle and polarization = " + str( weight_grad_by_angle_and_pol ) )
+					# print( "Weight by angle and polarization = " + str( weight_grad_by_angle_and_pol ) )
 
 					for angle_idx in range( 0, num_optimization_angles ):
 						for pol_idx in range( 0, num_polarizations ):
@@ -838,7 +830,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 					if use_y_reflective_symmetry:
 						# flip around the y-axis (i.e. - flip along x-coordinate)
-						print( 'The current shape of the device gradient is ' + str( device_gradient_real.shape ) )
 						device_gradient_real = 0.5 * ( device_gradient_real + np.flip( device_gradient_real, axis=0 ) )
 						device_gradient_imag = 0.5 * ( device_gradient_imag + np.flip( device_gradient_imag, axis=0 ) )
 						device_gradient_real_lsf = 0.5 * ( device_gradient_real_lsf + np.flip( device_gradient_real_lsf, axis=0 ) )
@@ -874,9 +865,6 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				compute_weightings = ( 2. / gsst_num_states ) - figure_of_merit_device_gsst**2 / np.sum( figure_of_merit_device_gsst**2 )
 				compute_weightings = np.maximum( compute_weightings, 0 )
 				compute_weightings /= np.sum( compute_weightings )
-
-				# compute_weightings = np.array( [ 1, 0 ] )
-				# compute_weightings = np.array( [ 0, 1 ] )
 
 				print( 'Weightings for each device = ' + str( compute_weightings ) )
 
