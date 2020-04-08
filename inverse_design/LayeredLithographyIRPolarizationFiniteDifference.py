@@ -485,7 +485,7 @@ np.save( projects_directory_location + "/Qyx_check_fd.npy", Qyx )
 np.save( projects_directory_location + "/Qyy_check_fd.npy", Qyy )
 
 minimization_gradient = gradient(
-	fom_by_focal_spot_by_type_by_wavelength,
+	fom_by_focal_spot_by_type_by_wavelength_0,
 	forward_e_fields[ 'x' ], forward_e_fields[ 'y' ],
 	adjoint_ex_fields, adjoint_ey_fields,
 	Qxx, Qxy, Qyx, Qyy )
