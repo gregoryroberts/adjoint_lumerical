@@ -712,6 +712,12 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 								for polarization_coord_idx in range( 0, 3 ):
 									focused_electric_field_by_coord_by_wavelength[ polarization_coord_idx, wl_idx ] = reflected_E[ polarization_coord_idx, wl_idx, 0, 0, 0 ]
 
+							print('\n\n')
+							print( transmitted_figures_of_merit_by_wavelength )
+							print( focused_figures_of_merit_by_wavelength)
+							print('\n\n')
+
+
 							figures_of_merit_by_wavelength = np.zeros( num_design_frequency_points )
 
 							#
@@ -780,7 +786,7 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 									focused_gradient += np.sum(
 										np.conj( focused_electric_field_by_coord_by_wavelength[ coord_idx, wl_idx ] ) *
 										fom_weighting_focusing[ wl_idx ] *
-										forward_e_fields[ :, wl_idx ], focusing_adjoint_e_fields_by_coord[ coord_idx ][ :, wl_idx ],
+										forward_e_fields[ :, wl_idx ] * focusing_adjoint_e_fields_by_coord[ coord_idx ][ :, wl_idx ],
 										axis=0
 									) / max_intensity_by_wavelength[ wl_idx ]
 
