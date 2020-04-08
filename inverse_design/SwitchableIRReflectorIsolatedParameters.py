@@ -26,7 +26,7 @@ import FreeBayerFilter2D
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_gsst_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_8xtsmc_um_focal_6p75um'
 # project_name = 'cmos_dielectric_2d_switchable_color_polarization_lossless_high_index_layer_spectral_8xtsmc_um_focal_6p75um_test'
-project_name = 'cmos_dielectric_2d_switchable_color_layer_flat_seed_dual_pol_6xtsmc_um_normalized_overlaps_single_angle_isolated_addarc_v3'
+project_name = 'cmos_dielectric_2d_switchable_color_dual_pol_6xtsmc_um_normalized_overlaps_transmit_focus_single_angle_isolated_addarc_v3'
 
 is_lumerical_version_2020a = False#True
 
@@ -361,7 +361,8 @@ fdtd_region_size_lateral_voxels = int( np.ceil( fdtd_region_size_lateral_um / me
 
 fdtd_simulation_time_fs = 10 * 2000
 
-max_intensity_by_wavelength = (device_size_lateral_um * 1.02)**2 / (focal_length_um**2 * lambda_values_um**2)
+reflected_focal_length_um = 0.5 * vertical_gap_size_um
+max_intensity_by_wavelength = (device_size_lateral_um * 1.02)**2 / (reflected_focal_length_um**2 * lambda_values_um**2)
 
 
 #
@@ -418,7 +419,7 @@ reflection_monitor_aperture_um = 1.1 * device_size_lateral_um
 # and a different spread because they will all coincide at normal incidence
 #
 # optimization_angles_mid_frequency_degrees = [ 0, 4, 8, 12 ]
-optimization_angles_mid_frequency_degrees = [ 8 ]
+optimization_angles_mid_frequency_degrees = [ 0 ]
 num_optimization_angles = len( optimization_angles_mid_frequency_degrees )
 #
 # This should only be selected if you start with a symmetry device and care about the positive and

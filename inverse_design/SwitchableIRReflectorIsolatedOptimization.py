@@ -133,76 +133,94 @@ xy_names = ['x', 'y']
 # Add a TFSF plane wave forward source at normal incidence
 #
 mode_sources = []
-source_polarization_angles = [0 , 90]
+source_polarization_angles = [ 0, 90 ]
+affected_coords_by_polarization = [ [ 0, 1 ], [ 2 ] ]
 
 for pol_idx in range( 0, num_polarizations ):
-	mode_src = fdtd_hook.addplane()
+	mode_src = fdtd_hook.addtfsf()
 	mode_src['name'] = 'mode_src_' + str( pol_idx )
-	mode_src['plane wave type'] = 'Diffracting'
 	mode_src['polarization angle'] = source_polarization_angles[ pol_idx ]
-	mode_src['direction'] = 'Forward'
-	mode_src['x span'] = fdtd_region_size_lateral_um * 1e-6
-	mode_src['y'] = src_maximum_vertical_um * 1e-6
+	mode_src['direction'] = 'Backward'
+	mode_src['x span'] = lateral_aperture_um * 1e-6
+	mode_src['y'] = ( designable_device_vertical_minimum_um - 0.5 * vertical_gap_size_um ) * 1e-6
 	mode_src['wavelength start'] = lambda_min_um * 1e-6
 	mode_src['wavelength stop'] = lambda_max_um * 1e-6
 
 	mode_sources.append( mode_src )
 
 
-mode_reflection_monitor_delta_um = 0.2 * vertical_gap_size_um
-mode_reflection_monitor = fdtd_hook.addpower()
-mode_reflection_monitor['name'] = 'mode_reflection_monitor'
-mode_reflection_monitor['monitor type'] = 'Linear X'
-# mode_reflection_monitor['x span'] = ( fdtd_region_size_lateral_um - 0.5 * lateral_gap_size_um ) * 1e-6
-mode_reflection_monitor['x span'] = reflection_monitor_aperture_um * 1e-6
-mode_reflection_monitor['y'] = ( mode_sources[ 0 ]['y'] + 1e-6 * mode_reflection_monitor_delta_um )
-mode_reflection_monitor['override global monitor settings'] = 1
+mode_transmission_monitor_delta_um = 0.25 * vertical_gap_size_um
+mode_transmission_monitor = fdtd_hook.addpower()
+mode_transmission_monitor['name'] = 'mode_transmission_monitor'
+mode_transmission_monitor['monitor type'] = 'Linear X'
+# mode_transmission_monitor['x span'] = ( fdtd_region_size_lateral_um - 0.5 * lateral_gap_size_um ) * 1e-6
+mode_transmission_monitor['x span'] = lateral_aperture_um * 1e-6
+mode_transmission_monitor['y'] = ( mode_sources[ 0 ]['y'] - 1e-6 * mode_transmission_monitor_delta_um )
+mode_transmission_monitor['override global monitor settings'] = 1
 if is_lumerical_version_2020a:
-	mode_reflection_monitor['use wavelength spacing'] = 1
+	mode_transmission_monitor['use wavelength spacing'] = 1
 else:
-	mode_reflection_monitor['use linear wavelength spacing'] = 1
+	mode_transmission_monitor['use linear wavelength spacing'] = 1
 
-mode_reflection_monitor['use source limits'] = 0
-mode_reflection_monitor['minimum wavelength'] = lambda_min_um * 1e-6
-mode_reflection_monitor['maximum wavelength'] = lambda_max_um * 1e-6
-mode_reflection_monitor['frequency points'] = num_design_frequency_points
-
-
-
-# low_frequency = 3.0 * 1e8 / lambda_max_um
-# high_frequency = 3.0 * 1e8 / lambda_min_um
-# mid_frequency = 0.5 * ( low_frequency + high_frequency )
-# mid_lambda = 3.0 * 1e8 / mid_frequency
-# angle_radians_middle_lambda_first_order = np.arcsin( mid_lambda / device_size_lateral_um )
-# angle_degrees_middle_lambda_first_order = 180. * angle_radians_middle_lambda_first_order / np.pi
+mode_transmission_monitor['use source limits'] = 0
+mode_transmission_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+mode_transmission_monitor['maximum wavelength'] = lambda_max_um * 1e-6
+mode_transmission_monitor['frequency points'] = num_design_frequency_points
 
 
-adjoint_sources = []
+focal_monitor = fdtd_hook.addpower()
+focal_monitor['name'] = 'focal_monitor'
+focal_monitor['monitor type'] = 'point'
+focal_monitor['x'] = 0
+focal_monitor['y'] = ( designable_device_vertical_maximum_um + gsst_thickness_um + arc_thickness_um + reflected_focal_length_um ) * 1e-6
+focal_monitor['override global monitor settings'] = 1
+focal_monitor['use linear wavelength spacing'] = 1
+focal_monitor['use source limits'] = 0
+focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
+focal_monitor['frequency points'] = num_design_frequency_points
+
+
+transmission_adjoint_sources = []
 for pol_idx in range( 0, num_polarizations ):
-	adjoint_src = fdtd_hook.addplane()
-	adjoint_src['name'] = 'adjoint_src_' + str( pol_idx )
-	adjoint_src['plane wave type'] = 'Diffracting'
-	adjoint_src['polarization angle'] = source_polarization_angles[ pol_idx ]
-	adjoint_src['direction'] = 'Backward'
-	# adjoint_src['angle theta'] = angle_degrees_middle_lambda_first_order
-	adjoint_src['x span'] = fdtd_region_size_lateral_um * 1e-6
-	adjoint_src['y'] = mode_reflection_monitor['y']
-	adjoint_src['wavelength start'] = lambda_min_um * 1e-6
-	adjoint_src['wavelength stop'] = lambda_max_um * 1e-6
+	transmission_adjoint_src = fdtd_hook.addtfsf()
+	transmission_adjoint_src['name'] = 'transmission_adjoint_src_' + str( pol_idx )
+	transmission_adjoint_src['polarization angle'] = source_polarization_angles[ pol_idx ]
+	transmission_adjoint_src['direction'] = 'Forward'
+	transmission_adjoint_src['x span'] = lateral_aperture_um * 1e-6
+	transmission_adjoint_src['y'] = mode_transmission_monitor['y']
+	transmission_adjoint_src['wavelength start'] = lambda_min_um * 1e-6
+	transmission_adjoint_src['wavelength stop'] = lambda_max_um * 1e-6
 
-	adjoint_sources.append( adjoint_src )
+	transmission_adjoint_sources.append( transmission_adjoint_src )
+
+
+focusing_adjoint_sources = [ [] for i in range( 0, 3 ) ]
+coord_to_phi = [ 0, 90, 0 ]
+coord_to_theta = [ 90, 90, 0 ]
+
+for coord_idx in range( 0, 3 ):
+	focusing_adjoint_src = fdtd_hook.adddipole()
+	focusing_adjoint_src['name'] = 'focusing_adjoint_src_' + str(adj_src_idx) + "_" + str( coord_idx )
+	focusing_adjoint_src['x'] = 0
+	focusing_adjoint_src['y'] = focal_monitor['y']
+	focusing_adjoint_src['theta'] = coord_to_theta[ coord_idx ]
+	focusing_adjoint_src['phi'] = coord_to_phi[ coord_idx ]
+	focusing_adjoint_src['wavelength start'] = lambda_min_um * 1e-6
+	focusing_adjoint_src['wavelength stop'] = lambda_max_um * 1e-6
+
+	focusing_adjoint_sources[ coord_idx ].append( focusing_adjoint_src )
 
 
 forward_sources = [ None for i in range( 0, num_optimization_angles * num_polarizations ) ]
 for angle_idx in range( 0, num_optimization_angles ):
 	for pol_idx in range( 0, num_polarizations ):
-		forward_src = fdtd_hook.addplane()
+		forward_src = fdtd_hook.addtfsf()
 		forward_src['name'] = 'forward_src_' + str( angle_idx ) + '_' + str( pol_idx )
-		forward_src['plane wave type'] = 'Diffracting'
 		forward_src['polarization angle'] = source_polarization_angles[ pol_idx ]
 		forward_src['direction'] = 'Backward'
 		forward_src['angle theta'] = optimization_angles_mid_frequency_degrees[ angle_idx ]
-		forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
+		forward_src['x span'] = lateral_aperture_um * 1e-6
 		forward_src['y'] = src_maximum_vertical_um * 1e-6
 		forward_src['wavelength start'] = lambda_min_um * 1e-6
 		forward_src['wavelength stop'] = lambda_max_um * 1e-6
@@ -218,10 +236,14 @@ def disable_all_sources():
 
 	for pol_idx in range( 0, num_polarizations ):
 		mode_sources[ pol_idx ].enabled = 0
-		adjoint_sources[ pol_idx ].enabled = 0
+		transmission_adjoint_sources[ pol_idx ].enabled = 0
 
 		for angle_idx in range( 0, num_optimization_angles ):
 			forward_sources[ angle_idx * num_polarizations + pol_idx ].enabled = 0
+
+	for coord_idx in range( 0, 3 ):
+		for adj_src_idx in range( 0, num_adjoint_sources ):
+			(focusing_adjoint_sources[ coord_idx ][ adj_src_idx ]).enabled = 0
 
 
 
@@ -234,8 +256,8 @@ for pol_idx in range( 0, num_polarizations ):
 	# mode_sources[ pol_idx ][ 'angle theta' ] = angle_degrees_middle_lambda_first_order
 	fdtd_hook.run()
 
-	get_E_mode = get_complex_monitor_data( mode_reflection_monitor['name'], 'E' )
-	get_H_mode = get_complex_monitor_data( mode_reflection_monitor['name'], 'H' )
+	get_E_mode = get_complex_monitor_data( mode_transmission_monitor['name'], 'E' )
+	get_H_mode = get_complex_monitor_data( mode_transmission_monitor['name'], 'H' )
 
 	num_wls = get_E_mode.shape[ 1 ]
 	half_x = int( get_E_mode.shape[ 4 ] / 2. )
@@ -419,7 +441,7 @@ def mode_overlap_fom_ez(
             np.sum( choose_electric_forward[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) +
             np.sum( np.conj( choose_electric_mode[ 2, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, 0, : ] ) )
         numerator = np.abs( numerator )**2
-        denominator = 8.0 * np.real( np.sum( choose_electric_mode[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) )
+        denominator = -( -8.0 * np.real( np.sum( choose_electric_mode[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) ) )
 
         fom_by_wavelength[ wl_idx ] = ( numerator / denominator )
         if mode_overlap_norm is not None:
@@ -450,7 +472,7 @@ def mode_overlap_fom_hz(
             -np.sum( choose_electric_forward[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) -
             np.sum( np.conj( choose_electric_mode[ 0, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 2, wl_idx, 0, 0, : ] ) )
         numerator = np.abs( numerator )**2
-        denominator = -8.0 * np.real( np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) )
+        denominator = -( -8.0 * np.real( np.sum( choose_electric_mode[ 0, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 2, wl_idx, 0, 0, : ] ) ) ) )
 
         fom_by_wavelength[ wl_idx ] = ( numerator / denominator )
         if mode_overlap_norm is not None:
@@ -482,7 +504,7 @@ def mode_overlap_gradient_ez(
         numerator = (
             np.sum( choose_electric_forward[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) +
             np.sum( np.conj( choose_electric_mode[ 2, wl_idx, 0, 0, : ] ) * choose_magnetic_forward[ 0, wl_idx, 0, 0, : ] ) )
-        denominator = 4.0 * np.real( np.sum( choose_electric_mode[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) )
+        denominator = -4.0 * np.real( np.sum( choose_electric_mode[ 2, wl_idx, 0, 0, : ] * np.conj( choose_magnetic_mode[ 0, wl_idx, 0, 0, : ] ) ) )
 
         adjoint_phase = np.conj( numerator ) / ( denominator * mode_overlap_norm[ wl_idx ] )
         gradient += normal_weighting * ( 
@@ -527,7 +549,7 @@ mode_overlap_fom_by_pol = [ mode_overlap_fom_hz, mode_overlap_fom_ez ]
 mode_overlap_gradient_by_pol = [ mode_overlap_gradient_hz, mode_overlap_gradient_ez ]
 mode_overlap_norm_by_pol = []
 
-normalize_for_device_width = mode_reflection_monitor[ 'x span' ] / ( device_size_lateral_um * 1e-6 )
+normalize_for_device_width = mode_transmission_monitor[ 'x span' ] / ( device_size_lateral_um * 1e-6 )
 print("Normalization for device width = " + str( normalize_for_device_width ) )
 
 for pol_idx in range( 0, num_polarizations ):
@@ -632,10 +654,23 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 					for pol_idx in range( 0, num_polarizations ):
 	
 						disable_all_sources()
-						(adjoint_sources[pol_idx]).enabled = 1
+						(reflection_adjoint_sources[pol_idx]).enabled = 1
 						fdtd_hook.run()
 
-						adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+						reflected_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
+
+
+						focusing_adjoint_e_fields_by_coord = []
+						focusing_affected_coords = affected_coords_by_polarization[ pol_idx ]
+						for coord_idx in range( 0, len( focusing_affected_coords ) )
+							
+							disable_all_sources()
+							focusing_adjoint_sources[ coord_idx ].enabled = 1
+							fdtd_hook.run()
+
+							focusing_adjoint_e_fields_by_coord.append(
+								get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' ) )
+
 
 						for angle_idx in range( 0, num_optimization_angles ):
 
@@ -650,8 +685,10 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 							forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-							reflected_E = get_complex_monitor_data( mode_reflection_monitor['name'], 'E' )
-							reflected_H = get_complex_monitor_data( mode_reflection_monitor['name'], 'H' )
+							transmitted_E = get_complex_monitor_data( mode_transmission_monitor['name'], 'E' )
+							transmitted_H = get_complex_monitor_data( mode_transmission_monitor['name'], 'H' )
+
+							reflected_E = get_complex_monitor_data( focal_monitor[ 'name' ], 'E' )
 
 							#
 							# Step 2: Compute the figure of merit
@@ -662,11 +699,22 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							figure_of_merit_total = np.zeros( num_design_frequency_points )
 							conjugate_weighting_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ), dtype=np.complex )
 
-							figures_of_merit_by_wavelength = mode_overlap_fom_by_pol[ pol_idx ](
-								reflected_E, reflected_H,
+							transmitted_figures_of_merit_by_wavelength = mode_overlap_fom_by_pol[ pol_idx ](
+								transmitted_E, transmitted_H,
 								mode_E[ pol_idx ], mode_H[ pol_idx ],
 								1.0, mode_overlap_norm_by_pol[ pol_idx ]
 							)
+
+							focused_figures_of_merit_by_wavelength = np.zeros( num_design_frequency_points )
+							focused_electric_field_by_coord_by_wavelength = np.zeros( ( 3, num_design_frequency_points ), dtype=np.complex )
+							for wl_idx in range( 0, num_design_frequency_points ):
+								focused_figures_of_merit_by_wavelength[ wl_idx ] = (
+									np.sum( np.abs( reflected_E[ :, wl_idx, 0, 0, 0 ] )**2, axis=0 ) / max_intensity_by_wavelength[ wl_idx ] )
+
+								for polarization_coord_idx in range( 0, 3 ):
+									focused_electric_field_by_coord_by_wavelength[ polarization_coord_idx, wl_idx ] = reflected_E[ polarization_coord_idx, wl_idx, 0, 0, 0 ]
+
+							figures_of_merit_by_wavelength = np.zeros( num_design_frequency_points )
 
 							#
 							# We are assuming this is the amorphous (non-lossy) state (also lower index)
@@ -679,10 +727,13 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 
 									# note: also assuming the max you can get is 1.  You should double-check this.
 									if ( wl_idx >= spectral_map[ 1 ] ) or ( wl_idx < spectral_map[ 0 ] ):
-										figures_of_merit_by_wavelength[ wl_idx ] = 1 - figures_of_merit_by_wavelength[ wl_idx ]
+										figures_of_merit_by_wavelength[ wl_idx ] = transmitted_figures_of_merit_by_wavelength[ wl_idx ]
+									else:
+										figures_of_merit_by_wavelength[ wl_idx ] = focused_figures_of_merit_by_wavelength[ wl_idx ]
 							else:
 								for wl_idx in range( 0, num_design_frequency_points ):
-									figures_of_merit_by_wavelength[ wl_idx ] = 1 - figures_of_merit_by_wavelength[ wl_idx ]
+									figures_of_merit_by_wavelength[ wl_idx ] = transmitted_figures_of_merit_by_wavelength[ wl_idx ]
+									# figures_of_merit_by_wavelength[ wl_idx ] = 1 - figures_of_merit_by_wavelength[ wl_idx ]
 
 							print( figures_of_merit_by_wavelength )
 
@@ -692,12 +743,25 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 								print( "Warning: figure of merit below 0.0" )
 
 							# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
-							figures_of_merit_by_wavelength = np.minimum( np.maximum( figures_of_merit_by_wavelength, 0.0 ), 1.0 )
+							# figures_of_merit_by_wavelength = np.minimum( np.maximum( figures_of_merit_by_wavelength, 0.0 ), 1.0 )
 							# figure_of_merit_total_for_weighting = figure_of_merit_total / np.maximum( choose_normalization, 0.01 )
 							figure_of_merit_total_for_weighting = figures_of_merit_by_wavelength
 							fom_weighting = ( 2. / len( figure_of_merit_total_for_weighting ) ) - figure_of_merit_total_for_weighting**2 / np.sum( figure_of_merit_total_for_weighting**2 )
 							fom_weighting = np.maximum( fom_weighting, 0 )
 							fom_weighting /= np.sum( fom_weighting )
+
+							fom_weighting_focusing = np.zeros( fom_weighting.shape )
+							fom_weighting_transmission = np.zeros( fom_weighting.shape )
+
+							for wl_idx in range( 0, num_design_frequency_points ):
+								if gsst_state == 0:
+									if ( wl_idx >= spectral_map[ 1 ] ) or ( wl_idx < spectral_map[ 0 ] ):
+										fom_weighting_transmission[ wl_idx ] = fom_weighting[ wl_idx ]
+									else:
+										fom_weighting_focusing[ wl_idx ] = fom_weighting[ wl_idx ]
+								else:
+									fom_weighting_transmission[ wl_idx ] = fom_weighting[ wl_idx ]
+
 
 							print( "Figure of merit weighting = " + str( fom_weighting ) )
 
@@ -712,25 +776,32 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							polarized_gradient = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
 							polarized_gradient_lsf = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
 
-							directional_norm = ( mode_overlap_norm_by_pol[ pol_idx ] ).copy()
-							# We are assuming this is the amorphous (non-lossy) state (also lower index)
-							if gsst_state == 0:
-								for wl_idx in range( 0, num_design_frequency_points ):
-									# note: we are assuming a continuous map.  at some point, we might like to do a discontinuous
-									# spectrum.. for example, reflect both blue and red, but not green.  Then we can get more light out
-									# while still adding some color
 
-									# note: also assuming the max you can get is 1.  You should double-check this.
-									if ( wl_idx >= spectral_map[ 1 ] ) or ( wl_idx < spectral_map[ 0 ] ):
-										directional_norm[ wl_idx ] *= -1
-							else:
-								for wl_idx in range( 0, num_design_frequency_points ):
-									directional_norm[ wl_idx ] *= -1
+							transmitted_gradient += my_optimization_state.reinterpolate(
+								mode_overlap_gradient_by_pol[ pol_idx ](
+									figures_of_merit_by_wavelength, fom_weighting,
+									transmitted_E, transmitted_H,
+									mode_E[ pol_idx ], mode_H[ pol_idx ],
+									forward_e_fields, reflected_adjoint_e_fields,
+									1.0, mode_overlap_norm_by_pol[ pol_idx ] ) / 1j,
+								polarized_gradient.shape )
+
+							focused_gradient = np.zeros( forward_e_fields[ 0, 0 ].shape, dtype=np.complex )
+							for wl_idx in range( 0, num_design_frequency_points ):
+								for coord_idx in range( 0, len( focusing_affected_coords ) )
+									focused_gradient += np.sum(
+										np.conj( focused_electric_field_by_coord_by_wavelength[ coord_idx, wl_idx ] ) *
+										fom_weighting_focusing[ wl_idx ] *
+										forward_e_fields[ :, wl_idx ], focusing_adjoint_e_fields_by_coord[ coord_idx ][ :, wl_idx ],
+										axis=0
+									) / max_intensity_by_wavelength[ wl_idx ]
+
+							polarized_gradient += my_optimization_state.reinterpolate( focused_gradient, polarized_gradient.shape )
 
 							polarized_gradient += my_optimization_state.reinterpolate(
 								mode_overlap_gradient_by_pol[ pol_idx ](
-									figures_of_merit_by_wavelength, fom_weighting,
-									reflected_E, reflected_H,
+									figures_of_merit_by_wavelength, fom_weighting_transmission,
+									transmitted_E, transmitted_H,
 									mode_E[ pol_idx ], mode_H[ pol_idx ],
 									forward_e_fields, adjoint_e_fields,
 									1.0, directional_norm ) / 1j,
