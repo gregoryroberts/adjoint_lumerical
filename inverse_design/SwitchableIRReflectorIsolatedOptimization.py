@@ -156,7 +156,7 @@ mode_transmission_monitor['name'] = 'mode_transmission_monitor'
 mode_transmission_monitor['monitor type'] = 'Linear X'
 # mode_transmission_monitor['x span'] = ( fdtd_region_size_lateral_um - 0.5 * lateral_gap_size_um ) * 1e-6
 mode_transmission_monitor['x span'] = lateral_aperture_um * 1e-6
-mode_transmission_monitor['y'] = ( mode_sources[ 0 ]['y'] - 1e-6 * mode_transmission_monitor_delta_um )
+mode_transmission_monitor['y'] = ( mode_sources[ 0 ]['y max'] - 1e-6 * mode_transmission_monitor_delta_um )
 mode_transmission_monitor['override global monitor settings'] = 1
 if is_lumerical_version_2020a:
 	mode_transmission_monitor['use wavelength spacing'] = 1
@@ -175,11 +175,31 @@ focal_monitor['monitor type'] = 'point'
 focal_monitor['x'] = 0
 focal_monitor['y'] = ( designable_device_vertical_maximum_um + gsst_thickness_um + arc_thickness_um + reflected_focal_length_um ) * 1e-6
 focal_monitor['override global monitor settings'] = 1
-focal_monitor['use linear wavelength spacing'] = 1
+if is_lumerical_version_2020a:
+	focal_monitor['use wavelength spacing'] = 1
+else:
+	focal_monitor['use linear wavelength spacing'] = 1
 focal_monitor['use source limits'] = 0
 focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 focal_monitor['frequency points'] = num_design_frequency_points
+
+focal_transmission_monitor = fdtd_hook.addpower()
+focal_transmission_monitor['name'] = 'focal_transmission_monitor'
+focal_transmission_monitor['monitor type'] = 'Linear X'
+focal_transmission_monitor['x'] = 0
+focal_transmission_monitor['x span'] = device_size_lateral_um * 1e-6
+focal_transmission_monitor['y'] = focal_monitor['y']
+focal_transmission_monitor['override global monitor settings'] = 1
+if is_lumerical_version_2020a:
+	focal_transmission_monitor['use wavelength spacing'] = 1
+else:
+	focal_transmission_monitor['use linear wavelength spacing'] = 1
+focal_transmission_monitor['use source limits'] = 0
+focal_transmission_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+focal_transmission_monitor['maximum wavelength'] = lambda_max_um * 1e-6
+focal_transmission_monitor['frequency points'] = num_design_frequency_points
+
 
 
 transmission_adjoint_sources = []
@@ -750,17 +770,20 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 							fom_weighting = np.maximum( fom_weighting, 0 )
 							fom_weighting /= np.sum( fom_weighting )
 
-							fom_weighting_focusing = np.zeros( fom_weighting.shape )
-							fom_weighting_transmission = np.zeros( fom_weighting.shape )
+							# fom_weighting_focusing = np.zeros( fom_weighting.shape )
+							# fom_weighting_transmission = np.zeros( fom_weighting.shape )
 
-							for wl_idx in range( 0, num_design_frequency_points ):
-								if gsst_state == 0:
-									if ( wl_idx >= spectral_map[ 1 ] ) or ( wl_idx < spectral_map[ 0 ] ):
-										fom_weighting_transmission[ wl_idx ] = fom_weighting[ wl_idx ]
-									else:
-										fom_weighting_focusing[ wl_idx ] = fom_weighting[ wl_idx ]
-								else:
-									fom_weighting_transmission[ wl_idx ] = fom_weighting[ wl_idx ]
+							# for wl_idx in range( 0, num_design_frequency_points ):
+							# 	if gsst_state == 0:
+							# 		if ( wl_idx >= spectral_map[ 1 ] ) or ( wl_idx < spectral_map[ 0 ] ):
+							# 			fom_weighting_transmission[ wl_idx ] = fom_weighting[ wl_idx ]
+							# 		else:
+							# 			fom_weighting_focusing[ wl_idx ] = fom_weighting[ wl_idx ]
+							# 	else:
+							# 		fom_weighting_transmission[ wl_idx ] = fom_weighting[ wl_idx ]
+
+							fom_weighting_focusing = fom_weighting.copy()
+							fom_weighting_transmission = np.zeros( fom_weighting.shape )
 
 
 							# print( "Figure of merit weighting = " + str( fom_weighting ) )
@@ -865,6 +888,8 @@ for optimization_state_idx in range( init_optimization_state, num_optimization_s
 				compute_weightings = ( 2. / gsst_num_states ) - figure_of_merit_device_gsst**2 / np.sum( figure_of_merit_device_gsst**2 )
 				compute_weightings = np.maximum( compute_weightings, 0 )
 				compute_weightings /= np.sum( compute_weightings )
+
+				compute_weightings = [ 1, 0 ]
 
 				print( 'Weightings for each device = ' + str( compute_weightings ) )
 
