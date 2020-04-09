@@ -402,29 +402,13 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 forward_e_fields = {}
 focal_data = {}
 
-figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, 3, num_design_frequency_points))
-contrast_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
-parallel_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
-orthogonal_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
-
-step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-
-step_size_start = 0.001
-
-if start_epoch > 0:
-	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
-	bayer_filter.set_design_variable( design_variable_reload )
-
-
 fix_fd_x = int( 0.5 * device_voxels_lateral )
 fix_fd_y = int( 0.5 * device_voxels_lateral )
 num_fd_z = device_voxels_vertical
 
-fdtd_hook.switchtolayout()
 cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+
+fdtd_hook.switchtolayout()
 fdtd_hook.select("design_import")
 fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
