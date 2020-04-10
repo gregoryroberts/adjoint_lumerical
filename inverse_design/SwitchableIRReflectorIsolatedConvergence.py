@@ -618,6 +618,7 @@ for delta_idx in range( 0, num_delta_values ):
 	inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
 	inflate_index[ :, :, 0 ] = np.sqrt( fd_permittivity )
 	inflate_index[ :, :, 1 ] = np.sqrt( fd_permittivity )
+	fdtd_hook.switchtolayout()
 	fdtd_hook.select( device_import[ 'name' ] )
 	fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
 
@@ -642,6 +643,7 @@ for delta_idx in range( 0, num_delta_values ):
 	inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
 	inflate_index[ :, :, 0 ] = np.sqrt( fd_permittivity )
 	inflate_index[ :, :, 1 ] = np.sqrt( fd_permittivity )
+	fdtd_hook.switchtolayout()
 	fdtd_hook.select( device_import[ 'name' ] )
 	fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
 
