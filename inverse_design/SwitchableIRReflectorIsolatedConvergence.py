@@ -662,6 +662,8 @@ for delta_idx in range( 0, num_delta_values ):
 	fd_grad = ( np.sum( fom_up ) - np.sum( fom_down ) ) / ( 2 * delta )
 	fd_convergence[ delta_idx ] = fd_grad
 
+	print( "Working on delta idx = " + str( delta_idx ) + " and delta = " + str( delta ) + " and fom up = " + str( np.sum( fom_up ) ) + " and fom down = " + str( np.sum( fom_down ) ) )
+
 	np.save( projects_directory_location + '/fd_convergence.npy', fd_convergence )
 	np.save( projects_directory_location + '/fd_delta.npy', delta_values )
 
