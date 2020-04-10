@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 from LayeredLithographyIRPolarizationParameters import *
 import LayeredLithographyIRPolarizationDevice
 
-import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+# import imp
+# imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
 # imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
 
 import lumapi
@@ -47,7 +47,7 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 		orthogonal_cancel_x = np.abs( Qyx_focal_spot + ( alpha_prime / beta_prime ) * Qxx_focal_spot )**2
 		orthogonal_cancel_y = np.abs( Qxy_focal_spot + ( beta_prime / alpha_prime ) * Qyy_focal_spot )**2
 
-		parallel = np.max(
+		parallel = np.minimum( np.abs( alpha )**2, np.abs( beta )**2 ) * np.maximum(
 			parallel_fom_bound - np.abs( Qxx_focal_spot / alpha )**2 - np.abs( Qyy_focal_spot / beta )**2,
 			0 )
 
@@ -79,7 +79,7 @@ def gradient(
 
 
 	fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
-	fom_weightings = np.max( fom_weightings, 0 )
+	fom_weightings = np.maximum( fom_weightings, 0 )
 	fom_weightings /= np.sum( fom_weightings )
 
 	gradient_shape = Ex_forward_fields[ 0, 0 ].shape
@@ -102,7 +102,7 @@ def gradient(
 			weighting_start_idx = focal_spot_idx * 3 * num_design_frequency_points + fom_type_idx * num_design_frequency_points
 			weighting_end_idx = weighting_start_idx + num_design_frequency_points
 
-			get_weightings = rearrange_figures_of_merit[ weighting_start_idx : weighting_end_idx ]
+			get_weightings = fom_weightings[ weighting_start_idx : weighting_end_idx ]
 
 			if fom_type_idx == 0:
 				d_dQxx_0 = np.abs( alpha_prime / beta_prime )**2 * np.conj( Qxx_focal_spot ) + ( alpha_prime / beta_prime ) * np.conj( Qyx_focal_spot )
@@ -151,8 +151,10 @@ def gradient(
 					gradient += ( gradient_component_1_yy + gradient_component_1_xy )
 
 			else:
-				d_dQxx_2 = np.conj( Qxx_focal_spot ) / np.abs( alpha )**2
-				d_dQyy_2 = np.conj( Qyy_focal_spot ) / np.abs( beta )**2
+				d_dQxx_2 = -np.minimum( np.abs( alpha )**2, np.abs( beta )**2 ) * np.conj( Qxx_focal_spot ) / np.abs( alpha )**2
+				d_dQyy_2 = -np.minimum( np.abs( alpha )**2, np.abs( beta )**2 ) * np.conj( Qyy_focal_spot ) / np.abs( beta )**2
+				# d_dQxx_2 = -np.conj( Qxx_focal_spot ) / np.abs( alpha )**2
+				# d_dQyy_2 = -np.conj( Qyy_focal_spot ) / np.abs( beta )**2
 
 				for wl_idx in range( 0, num_design_frequency_points ):
 					gradient_component_2_xx = 2 * np.real(
@@ -187,7 +189,7 @@ fdtd_hook = lumapi.FDTD()
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + project_name + "_fd"
+projects_directory_location += "/" + project_name + "_fd1em3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -206,6 +208,7 @@ fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
 fdtd['mesh type'] = 'uniform'
+fdtd['mesh refinement'] = 'staircase'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
@@ -407,12 +410,13 @@ fix_fd_y = int( 0.5 * device_voxels_lateral )
 num_fd_z = device_voxels_vertical
 
 cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+cur_permittivity = (1.5**2) * np.ones( cur_permittivity.shape )
 
 fdtd_hook.switchtolayout()
 fdtd_hook.select("design_import")
 fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
-h = 1e-6
+delta = 1e-3
 
 Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
@@ -441,36 +445,36 @@ for xy_idx in range(0, 2):
 current_figure_of_merit_0, fom_by_focal_spot_by_type_by_wavelength_0 = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
 
 
-# adjoint_ex_fields = []
-# adjoint_ey_fields = []
-# for adj_src_idx in range(0, num_adjoint_sources):
-# 	for xy_idx in range(0, 2):
-# 		disable_all_sources()
-# 		(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
-# 		fdtd_hook.run()
+adjoint_ex_fields = []
+adjoint_ey_fields = []
+for adj_src_idx in range(0, num_adjoint_sources):
+    for xy_idx in range(0, 2):
+        disable_all_sources()
+        (adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
+        fdtd_hook.run()
 
-# 		if xy_idx == 0:
-# 			adjoint_ex_fields.append(
-# 				get_complex_monitor_data(design_efield_monitor['name'], 'E'))
-# 		else:
-# 			adjoint_ey_fields.append(
-# 				get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+        if xy_idx == 0:
+            adjoint_ex_fields.append(
+                get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+        else:
+            adjoint_ey_fields.append(
+                get_complex_monitor_data(design_efield_monitor['name'], 'E'))
 
-# np.save( projects_directory_location + "/fom_by_focal_spot_by_type_by_wavelength_check_fd.npy", fom_by_focal_spot_by_type_by_wavelength_0 )
-# np.save( projects_directory_location + "/forward_ex_fields_check_fd.npy", forward_e_fields[ 'x' ] )
-# np.save( projects_directory_location + "/forward_ey_fields_check_fd.npy", forward_e_fields[ 'y' ] )
-# np.save( projects_directory_location + "/adjoint_ex_by_focal_spot_fields_check_fd.npy", adjoint_ex_fields )
-# np.save( projects_directory_location + "/adjoint_ey_by_focal_spot_fields_check_fd.npy", adjoint_ey_fields )
-# np.save( projects_directory_location + "/Qxx_check_fd.npy", Qxx )
-# np.save( projects_directory_location + "/Qxy_check_fd.npy", Qxy )
-# np.save( projects_directory_location + "/Qyx_check_fd.npy", Qyx )
-# np.save( projects_directory_location + "/Qyy_check_fd.npy", Qyy )
+np.save( projects_directory_location + "/fom_by_focal_spot_by_type_by_wavelength_check_fd.npy", fom_by_focal_spot_by_type_by_wavelength_0 )
+np.save( projects_directory_location + "/forward_ex_fields_check_fd.npy", forward_e_fields[ 'x' ] )
+np.save( projects_directory_location + "/forward_ey_fields_check_fd.npy", forward_e_fields[ 'y' ] )
+np.save( projects_directory_location + "/adjoint_ex_by_focal_spot_fields_check_fd.npy", adjoint_ex_fields )
+np.save( projects_directory_location + "/adjoint_ey_by_focal_spot_fields_check_fd.npy", adjoint_ey_fields )
+np.save( projects_directory_location + "/Qxx_check_fd.npy", Qxx )
+np.save( projects_directory_location + "/Qxy_check_fd.npy", Qxy )
+np.save( projects_directory_location + "/Qyx_check_fd.npy", Qyx )
+np.save( projects_directory_location + "/Qyy_check_fd.npy", Qyy )
 
-# minimization_gradient = gradient(
-# 	fom_by_focal_spot_by_type_by_wavelength_0,
-# 	forward_e_fields[ 'x' ], forward_e_fields[ 'y' ],
-# 	adjoint_ex_fields, adjoint_ey_fields,
-# 	Qxx, Qxy, Qyx, Qyy )
+minimization_gradient = gradient(
+ 	fom_by_focal_spot_by_type_by_wavelength_0,
+ 	forward_e_fields[ 'x' ], forward_e_fields[ 'y' ],
+ 	adjoint_ex_fields, adjoint_ey_fields,
+ 	Qxx, Qxy, Qyx, Qyy )
 
 np.save( projects_directory_location + "/fom_lower.npy", fom_by_focal_spot_by_type_by_wavelength_0 )
 
@@ -478,13 +482,18 @@ finite_difference_gradient = np.zeros( num_fd_z )
 finite_difference_gradient_all = np.zeros( ( num_fd_z, num_focal_spots, 3, num_design_frequency_points ) )
 fom_upper_all = np.zeros( ( num_fd_z, num_focal_spots, 3, num_design_frequency_points ) )
 
+finite_difference_gradient_single_sided = np.zeros( finite_difference_gradient.shape )
+finite_difference_gradient_all_single_sided = np.zeros( finite_difference_gradient_all.shape )
+
 for fd_z_idx in range( 0, num_fd_z ):
 	print( "Currently working on finite difference iteration " + str( fd_z_idx ) + " out of " + str( num_fd_z ) + " total!" )
-	cur_permittivity[ fix_fd_x, fix_fd_y, fd_z_idx ] += h
+
+	fd_permittivity = cur_permittivity.copy()
+	fd_permittivity[ ( fix_fd_x - 3 ) : ( fix_fd_x + 3 ), ( fix_fd_y - 3 ) : ( fix_fd_y + 3 ), fix_fd_z ] += delta
 
 	fdtd_hook.switchtolayout()
 	fdtd_hook.select("design_import")
-	fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+	fdtd_hook.importnk2(np.sqrt(fd_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
 	Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 	Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
@@ -510,19 +519,52 @@ for fd_z_idx in range( 0, num_fd_z ):
 				Qyx[ focal_idx, : ] = focal_monitor_data[ 0, :, 0, 0, 0 ]
 
 
-	current_figure_of_merit_1, fom_by_focal_spot_by_type_by_wavelength_1 = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
+	current_figure_of_merit_up, fom_by_focal_spot_by_type_by_wavelength_up = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
 
-	finite_difference_gradient[ fd_z_idx ] = ( current_figure_of_merit_1 - current_figure_of_merit_0 ) / h
-	finite_difference_gradient_all[ fd_z_idx ] = ( fom_by_focal_spot_by_type_by_wavelength_1 - fom_by_focal_spot_by_type_by_wavelength_0 ) / h
-	fom_upper_all[ fd_z_idx ] = fom_by_focal_spot_by_type_by_wavelength_1
+	fd_permittivity = cur_permittivity.copy()
+	fd_permittivity[ ( fix_fd_x - 3 ) : ( fix_fd_x + 3 ), ( fix_fd_y - 3 ) : ( fix_fd_y + 3 ), fix_fd_z ] -= delta
+
+	fdtd_hook.switchtolayout()
+	fdtd_hook.select("design_import")
+	fdtd_hook.importnk2(np.sqrt(fd_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+
+	Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+	Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+	Qyx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+	Qyy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+
+	for xy_idx in range(0, 2):
+		disable_all_sources()
+		(forward_sources[xy_idx]).enabled = 1
+		fdtd_hook.run()
+
+		forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+		focal_data[xy_names[xy_idx]] = []
+		for focal_idx in range( 0, num_focal_spots ):
+			focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
+
+			if xy_idx == 0:
+				Qxx[ focal_idx, : ] = focal_monitor_data[ 0, :, 0, 0, 0 ]
+				Qxy[ focal_idx, : ] = focal_monitor_data[ 1, :, 0, 0, 0 ]
+			else:
+				Qyy[ focal_idx, : ] = focal_monitor_data[ 1, :, 0, 0, 0 ]
+				Qyx[ focal_idx, : ] = focal_monitor_data[ 0, :, 0, 0, 0 ]
+
+
+	current_figure_of_merit_down, fom_by_focal_spot_by_type_by_wavelength_down = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
+
+
+	finite_difference_gradient[ fd_z_idx ] = ( current_figure_of_merit_up - current_figure_of_merit_down ) / ( 2 * delta )
+	finite_difference_gradient_all[ fd_z_idx ] = ( fom_by_focal_spot_by_type_by_wavelength_up - fom_by_focal_spot_by_type_by_wavelength_down ) / ( 2 * delta )
+	fom_upper_all[ fd_z_idx ] = fom_by_focal_spot_by_type_by_wavelength_up
+	finite_difference_gradient_single_sided[ fd_z_idx ] = ( current_figure_of_merit_up - current_figure_of_merit_0 ) / ( delta )
+	finite_difference_gradient_all_single_sided[ fd_z_idx ] = ( fom_by_focal_spot_by_type_by_wavelength_up - fom_by_focal_spot_by_type_by_wavelength_0 ) / ( delta )
+
 
 	np.save( projects_directory_location + "/finite_difference_gradient.npy", finite_difference_gradient )
 	np.save( projects_directory_location + "/finite_difference_gradient_all.npy", finite_difference_gradient_all )
 	np.save( projects_directory_location + "/fom_upper_all.npy", fom_upper_all )
-
-	cur_permittivity[ fix_fd_x, fix_fd_y, fd_z_idx ] -= h
-
-
-np.save( projects_directory_location + "/finite_difference_gradient.npy", finite_difference_gradient )
-np.save( projects_directory_location + "/finite_difference_gradient_all.npy", finite_difference_gradient_all )
+	np.save( projects_directory_location + "/finite_difference_gradient_single_sided.npy", finite_difference_gradient_single_sided )
+	np.save( projects_directory_location + "/finite_difference_gradient_all_single_sided.npy", finite_difference_gradient_all_single_sided )
 

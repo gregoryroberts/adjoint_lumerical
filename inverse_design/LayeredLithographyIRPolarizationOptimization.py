@@ -47,7 +47,7 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 		orthogonal_cancel_x = np.abs( Qyx_focal_spot + ( alpha_prime / beta_prime ) * Qxx_focal_spot )**2
 		orthogonal_cancel_y = np.abs( Qxy_focal_spot + ( beta_prime / alpha_prime ) * Qyy_focal_spot )**2
 
-		parallel = np.max(
+		parallel = np.minimum( np.abs( alpha )**2, np.abs( beta )**2 ) * np.maximum(
 			parallel_fom_bound - np.abs( Qxx_focal_spot / alpha )**2 - np.abs( Qyy_focal_spot / beta )**2,
 			0 )
 
@@ -79,7 +79,7 @@ def gradient(
 
 
 	fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
-	fom_weightings = np.max( fom_weightings, 0 )
+	fom_weightings = np.maximum( fom_weightings, 0 )
 	fom_weightings /= np.sum( fom_weightings )
 
 	gradient_shape = Ex_forward_fields[ 0, 0 ].shape
@@ -102,7 +102,7 @@ def gradient(
 			weighting_start_idx = focal_spot_idx * 3 * num_design_frequency_points + fom_type_idx * num_design_frequency_points
 			weighting_end_idx = weighting_start_idx + num_design_frequency_points
 
-			get_weightings = rearrange_figures_of_merit[ weighting_start_idx : weighting_end_idx ]
+			get_weightings = fom_weightings[ weighting_start_idx : weighting_end_idx ]
 
 			if fom_type_idx == 0:
 				d_dQxx_0 = np.abs( alpha_prime / beta_prime )**2 * np.conj( Qxx_focal_spot ) + ( alpha_prime / beta_prime ) * np.conj( Qyx_focal_spot )
@@ -151,8 +151,8 @@ def gradient(
 					gradient += ( gradient_component_1_yy + gradient_component_1_xy )
 
 			else:
-				d_dQxx_2 = np.conj( Qxx_focal_spot ) / np.abs( alpha )**2
-				d_dQyy_2 = np.conj( Qyy_focal_spot ) / np.abs( beta )**2
+				d_dQxx_2 = -np.minimum( np.abs( alpha )**2, np.abs( beta )**2 ) * np.conj( Qxx_focal_spot ) / np.abs( alpha )**2
+				d_dQyy_2 = -np.minimum( np.abs( alpha )**2, np.abs( beta )**2 ) * np.conj( Qyy_focal_spot ) / np.abs( beta )**2
 
 				for wl_idx in range( 0, num_design_frequency_points ):
 					gradient_component_2_xx = 2 * np.real(
@@ -175,6 +175,7 @@ def gradient(
 						gradient += ( gradient_component_2_xx + gradient_component_2_yy )
 
 	return gradient
+
 
 
 
