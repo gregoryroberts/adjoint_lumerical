@@ -662,8 +662,8 @@ for delta_idx in range( 0, num_delta_values ):
 	fd_grad = ( np.sum( fom_up ) - np.sum( fom_down ) ) / ( 2 * delta )
 	fd_convergence[ delta_idx ] = fd_grad
 
-np.save( projects_directory_location + '/fd_convergence.npy' )
-np.save( projects_directory_location + '/fd_delta.npy' )
+	np.save( projects_directory_location + '/fd_convergence.npy', fd_convergence )
+	np.save( projects_directory_location + '/fd_delta.npy', delta_values )
 
 plt.plot( delta_values, fd_convergence, linewidth=2, color='b' )
 plt.show()
