@@ -600,9 +600,9 @@ fdtd_hook.select( gsst_import['name'] )
 fdtd_hook.importnk2( gsst_state_import_data[ 0 ], gsst_x_range, gsst_y_range, gsst_z_range )
 
 
-num_delta_values = 20
+num_delta_values = 12
 start = 1
-delta_values = 5**( -np.linspace( start, start + num_delta_values - 1, num_delta_values ) )
+delta_values = 2**( -np.linspace( start, start + num_delta_values - 1, num_delta_values ) )
 print( delta_values )
 
 fd_convergence = np.zeros( num_delta_values )
