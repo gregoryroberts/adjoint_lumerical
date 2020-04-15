@@ -8,7 +8,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_splitter_cross_forward_fom_v2_4p2x4p2x3p12um_f2p6'
+project_name = 'layered_infrared_3layers_pol_splitter_cross_forward_fom_v2_2_4p2x4p2x3p12um_f2p6'
 
 #
 # Optical

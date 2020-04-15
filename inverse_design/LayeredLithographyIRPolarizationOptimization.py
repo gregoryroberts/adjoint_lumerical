@@ -236,6 +236,14 @@ def gradient(
 	fom_weightings = np.maximum( fom_weightings, 0 )
 	fom_weightings /= np.sum( fom_weightings )
 
+	#
+	# This is because we are actually minimizing all three figures of merit, so we would like to flip the orientation
+	# of the weightings (i.e. - a small figure of merit means you are doing well in this optimization)
+	#
+	fom_weightings = 1 - fom_weightings
+	# Renormalize, so they add to 1
+	fom_weightings /= np.sum( fom_weightings )
+
 	gradient_shape = Ex_forward_fields[ 0, 0 ].shape
 	gradient = np.zeros( gradient_shape )
 
@@ -663,8 +671,8 @@ for epoch in range(start_epoch, num_epochs):
 			orthogonal_intensity = np.abs( create_forward_orthogonal_response_x )**2 + np.abs( create_forward_orthogonal_response_y )**2
 			contrast = ( parallel_intensity - orthogonal_intensity ) / ( parallel_intensity + orthogonal_intensity )
 
-			parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = parallel_intensity
-			orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = orthogonal_intensity
+			parallel_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = parallel_intensity / max_intensity_by_wavelength
+			orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = orthogonal_intensity / max_intensity_by_wavelength
 			contrast_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = contrast
 
 
