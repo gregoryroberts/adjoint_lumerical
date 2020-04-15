@@ -166,7 +166,7 @@ for adj_src in range(0, num_adjoint_sources):
 	transmission_focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
 	transmission_focal_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
 	transmission_focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
-	transmission_focal_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_focal_monitor['y span'] = 0.5 * device_size_lateral_um * 1e-6
 	transmission_focal_monitor['z'] = adjoint_vertical_um * 1e-6
 	transmission_focal_monitor['override global monitor settings'] = 1
 	transmission_focal_monitor['use wavelength spacing'] = 1
@@ -182,7 +182,7 @@ transmission_focal['monitor type'] = '2D Z-Normal'
 transmission_focal['x'] = 0 * 1e-6
 transmission_focal['x span'] = device_size_lateral_um * 1e-6
 transmission_focal['y'] = 0 * 1e-6
-transmission_focal['x span'] = device_size_lateral_um * 1e-6
+transmission_focal['y span'] = device_size_lateral_um * 1e-6
 transmission_focal['z'] = adjoint_vertical_um * 1e-6
 transmission_focal['override global monitor settings'] = 1
 transmission_focal['use wavelength spacing'] = 1
@@ -352,7 +352,7 @@ for epoch in range(start_epoch, num_epochs):
 					get_symmetry_focal[ 1 ] = get_symmetry_focal[ 0 ]
 					get_symmetry_focal[ 0 ] = get_symmetry_focal_ypol
 
-					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ].append( get_symmetry_focal )
+					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_symmetry_focal
 
 
 				disable_all_sources()
