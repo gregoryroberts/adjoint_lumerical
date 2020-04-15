@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f4_test_symmetry'
+project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f4'
 
 #
 # Optical
@@ -42,14 +42,13 @@ mesh_spacing_um = 0.04
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 3.0#2.0 * 3.0#3.06#3.6
+device_size_lateral_um = 2.0 * 3.0#3.06#3.6
 device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
 amorphous_silicon_height_per_layer_um = 0.52#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
-# device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
-device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
+device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
 spacer_size_voxels = 1 + int(spacer_size_um / mesh_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um
@@ -134,8 +133,8 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 # Optimization
 #
 start_epoch = 0#7#6
-num_epochs = 1#8#8
-num_iterations_per_epoch = 1#50#35#50#25
+num_epochs = 8#8
+num_iterations_per_epoch = 50#35#50#25
 binarization_start_epoch = 2
 max_binarize_movement = 0.01
 desired_binarize_change = 0.005 / 2

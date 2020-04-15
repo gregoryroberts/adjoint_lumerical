@@ -343,7 +343,7 @@ for epoch in range(start_epoch, num_epochs):
 
 				forward_e_fields[ xy_names[ xy_idx ] ] = get_symmetry_fields
 
-				np.save( projects_directory_location + '/forward_symmetry_fields_' + xy_names[ xy_idx ] + '.npy', get_symmetry_fields )
+				# np.save( projects_directory_location + '/forward_symmetry_fields_' + xy_names[ xy_idx ] + '.npy', get_symmetry_fields )
 
 				for adj_src_idx in range( 0, num_adjoint_sources ):
 					adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
@@ -355,25 +355,25 @@ for epoch in range(start_epoch, num_epochs):
 					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_symmetry_focal
 
 
-				disable_all_sources()
-				(forward_sources[xy_idx]).enabled = 1
-				fdtd_hook.run()
+				# disable_all_sources()
+				# (forward_sources[xy_idx]).enabled = 1
+				# fdtd_hook.run()
 
-				run_forward_e_fields = get_complex_monitor_data( design_efield_monitor['name'], 'E' )
+				# run_forward_e_fields = get_complex_monitor_data( design_efield_monitor['name'], 'E' )
 
-				np.save( projects_directory_location + '/forward_compare_fields_' + xy_names[ xy_idx ] + '.npy', run_forward_e_fields )
+				# np.save( projects_directory_location + '/forward_compare_fields_' + xy_names[ xy_idx ] + '.npy', run_forward_e_fields )
 
-				run_forward_focal_data = []
-				symmetry_forward_focal_data = []
-				for adj_src_idx in range(0, num_adjoint_sources):
-					pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
-					pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
+				# run_forward_focal_data = []
+				# symmetry_forward_focal_data = []
+				# for adj_src_idx in range(0, num_adjoint_sources):
+				# 	pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
+				# 	pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
 
-					run_forward_focal_data.append( pull_focal_data )
-					symmetry_forward_focal_data.append( focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] )
+				# 	run_forward_focal_data.append( pull_focal_data )
+				# 	symmetry_forward_focal_data.append( focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] )
 
-				np.save( projects_directory_location + '/forward_symmetry_focal_data_' + xy_names[ xy_idx ] + '.npy', symmetry_forward_focal_data )
-				np.save( projects_directory_location + '/forward_compare_focal_data_' + xy_names[ xy_idx ] + '.npy', run_forward_focal_data )
+				# np.save( projects_directory_location + '/forward_symmetry_focal_data_' + xy_names[ xy_idx ] + '.npy', symmetry_forward_focal_data )
+				# np.save( projects_directory_location + '/forward_compare_focal_data_' + xy_names[ xy_idx ] + '.npy', run_forward_focal_data )
 
 			else:
 				disable_all_sources()
@@ -455,14 +455,14 @@ for epoch in range(start_epoch, num_epochs):
 
 					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_adj_symmetry_fields
 
-					disable_all_sources()
-					(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
-					fdtd_hook.run()
+					# disable_all_sources()
+					# (adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
+					# fdtd_hook.run()
 
-					run_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
+					# run_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
 
-					np.save( projects_directory_location + '/adjoint_symmetry_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', get_adj_symmetry_fields )
-					np.save( projects_directory_location + '/adjoint_compare_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', run_adjoint_e_fields )
+					# np.save( projects_directory_location + '/adjoint_symmetry_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', get_adj_symmetry_fields )
+					# np.save( projects_directory_location + '/adjoint_compare_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', run_adjoint_e_fields )
 
 				else:
 					disable_all_sources()
