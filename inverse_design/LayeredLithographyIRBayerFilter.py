@@ -278,6 +278,9 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			print( "Achieved binarization delta = " + str( actual_binarization_change ) )
 
 		else:
+			# x=y symmetry should be preserved here, but since I'm not sure what to conclude for the binarization part, I need
+			# to make sure an x=y symmetric change gets made to the structure (it may happen automatically with a symmetric 
+			# gradient and a symmetric device leading to a symmetric binarization gradient)
 			self.w[0] = self.proposed_design_step(gradient, step_size)
 			# Update the variable stack including getting the permittivity at the w[-1] position
 			self.update_permittivity()
