@@ -42,7 +42,7 @@ mesh_spacing_um = 0.04
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 2.0 * 3.0#3.06#3.6
+device_size_lateral_um = 3.0#2.0 * 3.0#3.06#3.6
 device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
 amorphous_silicon_height_per_layer_um = 0.52#0.8
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
