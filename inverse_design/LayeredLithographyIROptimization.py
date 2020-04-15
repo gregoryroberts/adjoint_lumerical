@@ -264,8 +264,8 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
-forward_e_fields = {}
-focal_data = {}
+# forward_e_fields = {}
+# focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
@@ -293,19 +293,65 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
 
+		forward_e_fields = {}
+		focal_data = [ {} for i in range( 0, num_adjoint_sources ) ]
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
 		for xy_idx in range(0, 2):
-			disable_all_sources()
-			(forward_sources[xy_idx]).enabled = 1
-			fdtd_hook.run()
+			get_symmetry_fields = forward_e_fields.get( forward_symmetry[ xy_idx ], None )
+			if get_symmetry_fields is not None:
+				# fields are organized as [ pol, wavelength, z, y, x ]
+				get_symmetry_fields = np.swapaxes( get_symmetry_fields, 3, 4 )
+				get_symmetry_fields_ypol = ( get_symmetry_fields[ 1 ] ).copy()
+				get_symmetry_fields[ 1 ] = get_symmetry_fields[ 0 ]
+				get_symmetry_fields[ 0 ] = get_symmetry_fields_ypol
 
-			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+				forward_e_fields[ xy_names[ xy_idx ] ] = get_symmetry_fields
 
-			focal_data[xy_names[xy_idx]] = []
-			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+				np.save( 'forward_symmetry_fields_' + xy_names[ xy_idx ] + '.npy', get_symmetry_fields )
+
+				for adj_src_idx in range( 0, num_adjoint_sources ):
+					adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
+					get_symmetry_focal = focal_data[ adjoint_symmetry_loc ][ forward_symmetry[ xy_idx ] ]
+					get_symmetry_focal_ypol = ( get_symmetry_focal[ 1 ] ).copy()
+					get_symmetry_focal[ 1 ] = get_symmetry_focal[ 0 ]
+					get_symmetry_focal[ 0 ] = get_symmetry_focal_ypol
+
+					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ].append( get_symmetry_focal )
+
+
+				disable_all_sources()
+				(forward_sources[xy_idx]).enabled = 1
+				fdtd_hook.run()
+
+				run_forward_e_fields = get_complex_monitor_data( design_efield_monitor['name'], 'E' )
+
+				np.save( 'forward_compare_fields_' + xy_names[ xy_idx ] + '.npy', run_forward_e_fields )
+
+				run_forward_focal_data = []
+				symmetry_forward_focal_data = []
+				for adj_src_idx in range(0, num_adjoint_sources):
+					pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
+					pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
+
+					run_forward_focal_data.append( pull_focal_data )
+					symmetry_forward_focal_data.append( focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] )
+
+				np.save( 'forward_symmetry_focal_data_' + xy_names[ xy_idx ] + '.npy', symmetry_forward_focal_data )
+				np.save( 'forward_compare_focal_data_' + xy_names[ xy_idx ] + '.npy', run_forward_focal_data )
+
+			else:
+				disable_all_sources()
+				(forward_sources[xy_idx]).enabled = 1
+				fdtd_hook.run()
+
+				forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+				for adj_src_idx in range(0, num_adjoint_sources):
+					pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
+					pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
+					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ].append( pull_focal_data )
 
 
 		#
@@ -318,7 +364,8 @@ for epoch in range(start_epoch, num_epochs):
 			polarizations = polarizations_focal_plane_map[focal_idx]
 
 			for polarization_idx in range(0, len(polarizations)):
-				get_focal_data = focal_data[polarizations[polarization_idx]]
+				get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
+				# focal_data[polarizations[polarization_idx]]
 
 				max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
 				total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
@@ -326,7 +373,7 @@ for epoch in range(start_epoch, num_epochs):
 				for spectral_idx in range(0, total_weighting.shape[0]):
 					compute_fom += np.sum(
 						(
-							np.abs(get_focal_data[focal_idx][:, spectral_focal_plane_map[focal_idx][0] + spectral_idx, 0, 0, 0])**2 *
+							np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
 							total_weighting[spectral_idx]
 						)
 					)
@@ -352,29 +399,54 @@ for epoch in range(start_epoch, num_epochs):
 		reversed_field_shape = [cur_permittivity_shape[2], cur_permittivity_shape[1], cur_permittivity_shape[0]]
 		xy_polarized_gradients = [ np.zeros(reversed_field_shape, dtype=np.complex), np.zeros(reversed_field_shape, dtype=np.complex) ]
 
+		adjoint_e_fields = [ {} for i in range( 0, num_adjoint_sources ) ]
+
 		for adj_src_idx in range(0, num_adjoint_sources):
 			polarizations = polarizations_focal_plane_map[adj_src_idx]
 			spectral_indices = spectral_focal_plane_map[adj_src_idx]
 
+			adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
+
 			gradient_performance_weight = performance_weighting[adj_src_idx]
 
-			adjoint_e_fields = []
 			for xy_idx in range(0, 2):
-				disable_all_sources()
-				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
-				fdtd_hook.run()
+				get_adj_symmetry_fields = adjoint_e_fields[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
 
-				adjoint_e_fields.append(
-					get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+				if get_adj_symmetry_fields is not None:
+					# fields are organized as [ pol, wavelength, z, y, x ]
+					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 3, 4 )
+					get_adj_symmetry_fields_ypol = ( get_adj_symmetry_fields[ 1 ] ).copy()
+					get_adj_symmetry_fields[ 1 ] = get_adj_symmetry_fields[ 0 ]
+					get_adj_symmetry_fields[ 0 ] = get_symmetry_fields_ypol
+
+					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_adj_symmetry_fields
+
+					disable_all_sources()
+					(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
+					fdtd_hook.run()
+
+					run_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
+
+					np.save( 'adjoint_symmetry_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', get_adj_symmetry_fields )
+					np.save( 'adjoint_compare_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', run_adjoint_e_fields )
+
+				else:
+					disable_all_sources()
+					(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
+					fdtd_hook.run()
+
+					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
 
 			for pol_idx in range(0, len(polarizations)):
 				pol_name = polarizations[pol_idx]
-				get_focal_data = focal_data[pol_name]
+				# get_focal_data = focal_data[pol_name]
+				get_focal_data = focal_data[ adj_src_idx ][ polarizations[ pol_idx ] ]
+
 				pol_name_to_idx = polarization_name_to_idx[pol_name]
 
 				for xy_idx in range(0, 2):
 					source_weight = np.conj(
-						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
+						get_focal_data[xy_idx, spectral_indices[0] : spectral_indices[1] : 1])
 
 					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
 					total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
@@ -382,8 +454,8 @@ for epoch in range(start_epoch, num_epochs):
 					for spectral_idx in range(0, source_weight.shape[0]):
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
 							(source_weight[spectral_idx] * gradient_performance_weight * total_weighting[spectral_idx]) *
-							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
-							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
+							adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][:, spectral_indices[0] + spectral_idx, :, :, :] *
+							forward_e_fields[ pol_name ][ :, spectral_indices[0] + spectral_idx, :, :, : ],
 							axis=0)
 
 		fdtd_hook.switchtolayout()

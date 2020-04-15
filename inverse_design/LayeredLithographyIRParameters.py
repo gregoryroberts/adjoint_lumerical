@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f4_test_symmetry'
 
 #
 # Optical
@@ -120,6 +120,13 @@ num_focal_spots = 4
 num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
+
+#
+# Symmetry
+#
+forward_symmetry = [ 'y', 'x' ]
+adjoint_symmetry_location = [ 0, 3, 2, 1 ]
+adjoint_symmetry_pol = [ 'y', 'x' ]
 
 #
 # Optimization
