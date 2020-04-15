@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
-data_dir = './symmetry_ir_data/'
+# data_dir = './symmetry_ir_data/'
+data_dir = '../projects/layered_infrared_3layers_pol_insensitive_6x6x3p12um_f4_test_symmetry/'
 
 forward_symmetry_focal = np.load( data_dir + 'forward_symmetry_focal_data_y.npy' )
 forward_compare_focal = np.load( data_dir + 'forward_compare_focal_data_y.npy' )
