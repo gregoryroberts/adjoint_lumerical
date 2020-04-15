@@ -309,7 +309,7 @@ for epoch in range(start_epoch, num_epochs):
 
 				forward_e_fields[ xy_names[ xy_idx ] ] = get_symmetry_fields
 
-				np.save( 'forward_symmetry_fields_' + xy_names[ xy_idx ] + '.npy', get_symmetry_fields )
+				np.save( projects_directory_location + '/forward_symmetry_fields_' + xy_names[ xy_idx ] + '.npy', get_symmetry_fields )
 
 				for adj_src_idx in range( 0, num_adjoint_sources ):
 					adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
@@ -327,7 +327,7 @@ for epoch in range(start_epoch, num_epochs):
 
 				run_forward_e_fields = get_complex_monitor_data( design_efield_monitor['name'], 'E' )
 
-				np.save( 'forward_compare_fields_' + xy_names[ xy_idx ] + '.npy', run_forward_e_fields )
+				np.save( projects_directory_location + '/forward_compare_fields_' + xy_names[ xy_idx ] + '.npy', run_forward_e_fields )
 
 				run_forward_focal_data = []
 				symmetry_forward_focal_data = []
@@ -338,8 +338,8 @@ for epoch in range(start_epoch, num_epochs):
 					run_forward_focal_data.append( pull_focal_data )
 					symmetry_forward_focal_data.append( focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] )
 
-				np.save( 'forward_symmetry_focal_data_' + xy_names[ xy_idx ] + '.npy', symmetry_forward_focal_data )
-				np.save( 'forward_compare_focal_data_' + xy_names[ xy_idx ] + '.npy', run_forward_focal_data )
+				np.save( projects_directory_location + '/forward_symmetry_focal_data_' + xy_names[ xy_idx ] + '.npy', symmetry_forward_focal_data )
+				np.save( projects_directory_location + '/forward_compare_focal_data_' + xy_names[ xy_idx ] + '.npy', run_forward_focal_data )
 
 			else:
 				disable_all_sources()
@@ -427,8 +427,8 @@ for epoch in range(start_epoch, num_epochs):
 
 					run_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
 
-					np.save( 'adjoint_symmetry_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', get_adj_symmetry_fields )
-					np.save( 'adjoint_compare_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', run_adjoint_e_fields )
+					np.save( projects_directory_location + '/adjoint_symmetry_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', get_adj_symmetry_fields )
+					np.save( projects_directory_location + '/adjoint_compare_fields_' + xy_names[ xy_idx ] + '_' + str( adj_src_idx ) + '.npy', run_adjoint_e_fields )
 
 				else:
 					disable_all_sources()
