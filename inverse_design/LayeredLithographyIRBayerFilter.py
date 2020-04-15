@@ -102,7 +102,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.init_variables()
 
 	# In the step function, we should update the permittivity with update_permittivity
-	def step(self, gradient, step_size, enforce_binarization=False, save_location=None):
+	def step(self, gradient, step_size, enforce_binarization=False, save_location=None, enforce_xy_symmetry=True):
 		if enforce_binarization:
 
 			def compute_binarization( input_variable ):
@@ -246,6 +246,12 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				for internal in range( layer_start, layer_end ):
 					reassemble[ :, :, internal ] = pull_design.reshape( original_shapes[ layer_start_idx ] )
 
+			if enforce_xy_symmetry:
+				# Note: with this way of enforcing the symmetry, if the two symmetric voxels are attemptinv to move in opposite directions, then
+				# this will not move that voxel.  We can revisit this if it seems to be a problem.  The changes may very likely come out symmetric
+				# anyway.
+				reassemble = 0.5 * ( reassemble + np.swapaxes( reassemble, 0, 1 ) )
+
 			self.w[0] = reassemble
 			self.update_permittivity()
 
@@ -281,6 +287,8 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			# x=y symmetry should be preserved here, but since I'm not sure what to conclude for the binarization part, I need
 			# to make sure an x=y symmetric change gets made to the structure (it may happen automatically with a symmetric 
 			# gradient and a symmetric device leading to a symmetric binarization gradient)
+			if enforce_xy_symmetry:
+				gradient = 0.5 * ( gradient + np.swapaxes( gradient, 0, 1 ) )
 			self.w[0] = self.proposed_design_step(gradient, step_size)
 			# Update the variable stack including getting the permittivity at the w[-1] position
 			self.update_permittivity()
