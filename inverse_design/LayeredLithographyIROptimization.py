@@ -451,7 +451,7 @@ for epoch in range(start_epoch, num_epochs):
 					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 3, 4 )
 					get_adj_symmetry_fields_ypol = ( get_adj_symmetry_fields[ 1 ] ).copy()
 					get_adj_symmetry_fields[ 1 ] = get_adj_symmetry_fields[ 0 ]
-					get_adj_symmetry_fields[ 0 ] = get_symmetry_fields_ypol
+					get_adj_symmetry_fields[ 0 ] = get_adj_symmetry_fields_ypol
 
 					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_adj_symmetry_fields
 
