@@ -157,6 +157,40 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitors.append(focal_monitor)
 
 
+transmission_focal_monitors = []
+
+for adj_src in range(0, num_adjoint_sources):
+	transmission_focal_monitor = fdtd_hook.addpower()
+	transmission_focal_monitor['name'] = 'transmission_focal_monitor_' + str(adj_src)
+	transmission_focal_monitor['monitor type'] = '2D Z-Normal'
+	transmission_focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
+	transmission_focal_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
+	transmission_focal_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_focal_monitor['z'] = adjoint_vertical_um * 1e-6
+	transmission_focal_monitor['override global monitor settings'] = 1
+	transmission_focal_monitor['use wavelength spacing'] = 1
+	transmission_focal_monitor['use source limits'] = 1
+	transmission_focal_monitor['frequency points'] = num_eval_frequency_points
+	transmission_focal_monitor.enabled = 0
+
+	transmission_focal_monitors.append(transmission_focal_monitor)
+
+transmission_focal = fdtd_hook.addpower()
+transmission_focal['name'] = 'transmission_focal'
+transmission_focal['monitor type'] = '2D Z-Normal'
+transmission_focal['x'] = 0 * 1e-6
+transmission_focal['x span'] = device_size_lateral_um * 1e-6
+transmission_focal['y'] = 0 * 1e-6
+transmission_focal['x span'] = device_size_lateral_um * 1e-6
+transmission_focal['z'] = adjoint_vertical_um * 1e-6
+transmission_focal['override global monitor settings'] = 1
+transmission_focal['use wavelength spacing'] = 1
+transmission_focal['use source limits'] = 1
+transmission_focal['frequency points'] = num_eval_frequency_points
+transmission_focal.enabled = 0
+
+
 #
 # Add SiO2 at the top
 #
@@ -351,7 +385,7 @@ for epoch in range(start_epoch, num_epochs):
 				for adj_src_idx in range(0, num_adjoint_sources):
 					pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
 					pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
-					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ].append( pull_focal_data )
+					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] = pull_focal_data
 
 
 		#
