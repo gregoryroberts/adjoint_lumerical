@@ -788,6 +788,7 @@ for epoch in range(start_epoch, num_epochs):
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
 		fdtd_hook.switchtolayout()
+		fdtd_hook.save()
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
 		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
@@ -798,6 +799,7 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
 
 	fdtd_hook.switchtolayout()
+	fdtd_hook.save()
 	shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_end_epoch_" + str( epoch ) + ".fsp" )
 
 

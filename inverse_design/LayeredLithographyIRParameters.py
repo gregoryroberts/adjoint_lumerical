@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f2'
+project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f4'
 
 #
 # Optical
@@ -28,7 +28,7 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 2.0
+focal_length_um = 4.0
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
