@@ -84,7 +84,8 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 		parallel_y_term = np.abs( alpha * Qxy_focal_spot + beta * Qyy_focal_spot )**2
 		parallel = np.maximum( parallel_fom_bound - parallel_x_term - parallel_y_term, 0 )
 
-		total_fom += ( 1 / num_focal_spots ) * np.mean( orthogonal_cancel_x + orthogonal_cancel_y + parallel )
+		# total_fom += ( 1 / num_focal_spots ) * np.mean( orthogonal_cancel_x + orthogonal_cancel_y + parallel )
+		total_fom += ( 1 / num_focal_spots ) * np.mean( parallel )
 
 		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 0, : ] = orthogonal_cancel_x
 		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 1, : ] = orthogonal_cancel_y
@@ -221,6 +222,7 @@ def gradient(
 
 	num_total_fom = num_focal_spots * 3 * num_design_frequency_points
 	rearrange_figures_of_merit = np.zeros( num_total_fom )
+	weighting_mask = np.zeros( num_total_fom )
 
 	for focal_spot_idx in range( 0, num_focal_spots ):
 		for fom_type_idx in range( 0, 3 ):
@@ -230,6 +232,11 @@ def gradient(
 					fom_type_idx * num_design_frequency_points +
 					wl_idx
 				] = fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, fom_type_idx, wl_idx ]
+
+				if fom_type_idx == 2:
+					weighting_mask[ focal_spot_idx * 3 * num_design_frequency_points +
+						fom_type_idx * num_design_frequency_points +
+						wl_idx ] = 1
 
 
 	fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
@@ -241,6 +248,7 @@ def gradient(
 	# of the weightings (i.e. - a small figure of merit means you are doing well in this optimization)
 	#
 	fom_weightings = 1 - fom_weightings
+	fom_weightings *= weighting_mask
 	# Renormalize, so they add to 1
 	fom_weightings /= np.sum( fom_weightings )
 
