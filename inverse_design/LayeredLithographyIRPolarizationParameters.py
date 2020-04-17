@@ -8,7 +8,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_4p2x4p2x3p12um_f2p6'
+project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_rcp_45_lcp_m45_v1_4p2x4p2x3p12um_f2p6'
 
 #
 # Optical
@@ -117,11 +117,18 @@ polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # 	[num_points_per_band, 2 * num_points_per_band]
 # ]
 
+# jones_sorting_vectors = [
+# 	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] ),
+# 	np.array( [ 0.514, 0.794 + 0.324j ] ),
+# 	np.array( [ 0.986, 0.169j ] ),
+# 	np.array( [ 0.514, -0.794 + 0.324j ] )
+# ]
+
 jones_sorting_vectors = [
-	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] ),
-	np.array( [ 0.514, 0.794 + 0.324j ] ),
-	np.array( [ 0.986, 0.169j ] ),
-	np.array( [ 0.514, -0.794 + 0.324j ] )
+	np.array( [ 1. / np.sqrt( 2 ), 1. / np.sqrt( 2 ) ] ),
+	np.array( [ 1. / np.sqrt( 2 ), 1j / np.sqrt( 2 ) ] ),
+	np.array( [ 1. / np.sqrt( 2 ), -1. / np.sqrt( 2 ) ] ),
+	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] )
 ]
 
 def find_orthogonal( v ):
