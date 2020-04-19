@@ -417,13 +417,9 @@ for iteration in range( 0, num_iterations ):
 
 		for wl_idx in range( 0, num_design_frequency_points ):
 
-			# fdtd_hook.switchtolayout()
-			# fdtd_hook.switchtolayout()
-			disable_all_sources()
-			fdtd_hook.save()
+			fdtd_hook.switchtolayout()
 			get_lambda_um = lambda_values_um[ wl_idx ]
 			adjoint_monitor_top['wavelength center'] = get_lambda_um * 1e-6
-			# adjoint_monitor_top['maximum wavelength'] = get_lambda_um * 1e-6
 
 			disable_all_sources()
 			forward_src.enabled = 1
