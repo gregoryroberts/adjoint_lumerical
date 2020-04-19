@@ -347,7 +347,7 @@ for idx in range( 0, num_gsst_states ):
 
 mirror_max_um = gsst_min_um
 mirror_height_um = 0.5
-mirror_min_um = mirror_max_um - mirror_min_um
+mirror_min_um = mirror_max_um - mirror_height_um
 
 mirror = fdtd_hook.addrect()
 mirror['name'] = 'mirror'
