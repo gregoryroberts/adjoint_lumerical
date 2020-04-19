@@ -135,6 +135,8 @@ lambda_max_um = 0.7
 num_design_frequency_points = 30
 half_frequency_point = int( 0.5 * num_design_frequency_points )
 
+lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequency_points )
+
 device_width_um = 2
 device_height_um = 1
 device_min_um = 0
@@ -411,16 +413,33 @@ for iteration in range( 0, num_iterations ):
 		fom_by_gsst_state.append( np.mean( transmission_fom ) )
 
 		forward_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
+		adjoint_e_fields = np.zeros( forward_e_fields.shape, dtype=np.complex )
 
-		lumapi.evalScript( fdtd_hook.handle,
-			''.join( lumapi_cmd.split() )
-		)
-		disable_all_sources()
-		top_adjoint_source.enabled = 1
+		for wl_idx in range( 0, num_design_frequency_points ):
 
-		fdtd_hook.run()
+			fdtd_hook.switchtolayout()
+			get_lambda_um = lambda_values_um[ wl_idx ]
+			adjoint_monitor_top['minimum wavelength'] = get_lambda_um * 1e-6
+			adjoint_monitor_top['maximum wavelength'] = get_lambda_um * 1e-6
 
-		adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
+			disable_all_sources()
+			forward_src.enabled = 1
+			fdtd_hook.run()
+
+			shutil.copy(
+				projects_directory_location + "/optimization.fsp",
+				projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_gsst_state_" + str( gsst_state ) + ".fsp" )
+
+			lumapi.evalScript( fdtd_hook.handle,
+				''.join( lumapi_cmd.split() )
+			)
+			disable_all_sources()
+			top_adjoint_source.enabled = 1
+
+			fdtd_hook.run()
+
+			single_wl_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
+			adjoint_e_fields[ :, wl_idx, :, :, : ] = single_wl_adjoint_e_fields[ :, wl_idx, :, :, : ]
 
 		gradient = -2 * np.real( np.sum( forward_e_fields * adjoint_e_fields, axis=0 ) / 1j )
 
