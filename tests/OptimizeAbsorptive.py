@@ -356,7 +356,7 @@ mirror['y max'] = mirror_max_um * 1e-6
 mirror['y min'] = mirror_min_um * 1e-6
 mirror['z min'] = -0.51 * 1e-6
 mirror['z max'] = 0.51 * 1e-6
-mirror['material'] = 'Gold (Au) - Palik'
+mirror['material'] = 'Au (Gold) - Palik'
 
 
 lumapi_cmd = """
