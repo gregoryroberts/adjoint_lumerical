@@ -427,7 +427,7 @@ for iteration in range( 0, num_iterations ):
 
 			shutil.copy(
 				projects_directory_location + "/optimization.fsp",
-				projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_gsst_state_" + str( gsst_state ) + ".fsp" )
+				projects_directory_location + "/optimization_gsst_state_" + str( gsst_state ) + ".fsp" )
 
 			lumapi.evalScript( fdtd_hook.handle,
 				''.join( lumapi_cmd.split() )
