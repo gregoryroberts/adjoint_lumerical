@@ -233,9 +233,6 @@ def disable_all_sources():
 	fdtd_hook.switchtolayout()
 
 	top_adjoint_source.enabled = 0
-	for box_idx in range( 0, len( transmission_box_srcs ) ):
-		transmission_box_srcs[ box_idx ].enabled = 0
-
 	forward_src.enabled = 0
 
 
