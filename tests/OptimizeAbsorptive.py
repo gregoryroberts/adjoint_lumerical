@@ -417,8 +417,9 @@ for iteration in range( 0, num_iterations ):
 
 		for wl_idx in range( 0, num_design_frequency_points ):
 
-			fdtd_hook.switchtolayout()
-			fdtd_hook.switchtolayout()
+			# fdtd_hook.switchtolayout()
+			# fdtd_hook.switchtolayout()
+			disable_all_sources()
 			fdtd_hook.save()
 			get_lambda_um = lambda_values_um[ wl_idx ]
 			adjoint_monitor_top['minimum wavelength'] = get_lambda_um * 1e-6
