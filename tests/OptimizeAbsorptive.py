@@ -400,8 +400,8 @@ for iteration in range( 0, num_iterations ):
 		for wl_idx in range( 0, num_design_frequency_points ):
 			get_T_top = compute_transmission_top( [ wl_idx, wl_idx + 1 ] )
 			fom_T = get_T_top
-			if directional_weightings_by_state[ wl_idx ] < 0:
-				fom_T = 1 + directional_weightings_by_state[ wl_idx ] * fom_T
+			if directional_weightings_by_state[ gsst_state ][ wl_idx ] < 0:
+				fom_T = 1 + directional_weightings_by_state[ gsst_state ][ wl_idx ] * fom_T
 
 			fom_T = np.maximum( np.minimum( fom_T, 1.0 ), 0.0 )
 
@@ -425,7 +425,7 @@ for iteration in range( 0, num_iterations ):
 		gradient = -2 * np.real( np.sum( forward_e_fields * adjoint_e_fields, axis=0 ) / 1j )
 
 		for wl_idx in range( 0, num_design_frequency_points ):
-			gradient[ wl_idx, :, :, : ] *= directional_weightings_by_state[ wl_idx ]
+			gradient[ wl_idx, :, :, : ] *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
 
 		fom_weightings = ( 2. / num_design_frequency_points ) - transmission_fom**2 / np.sum( transmission_fom**2 )
 		fom_weightings = np.maximum( fom_weightings, 0 )
