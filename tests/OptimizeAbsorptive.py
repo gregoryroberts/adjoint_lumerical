@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-is_lumerical_version_2020a = True
+is_lumerical_version_2020a = False
 
 def permittivity_to_index( permittivity ):
 	eps_real = np.real( permittivity )
