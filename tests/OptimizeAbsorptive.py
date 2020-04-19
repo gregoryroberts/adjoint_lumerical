@@ -344,6 +344,8 @@ for idx in range( 0, num_gsst_states ):
 	gsst_import["override mesh order from material database"] = 1
 	gsst_import['mesh order'] = 1
 
+	gsst_imports.append( gsst_import )
+
 
 mirror_max_um = gsst_min_um
 mirror_height_um = 0.5
@@ -390,7 +392,7 @@ for iteration in range( 0, num_iterations ):
 		fdtd_hook.switchtolayout()
 		fdtd_hook.select( device_import['name'] )
 		fdtd_hook.importnk2( device_index, device_x_range, device_y_range, device_z_range )
-		fdtd_hook.select( gsst_import[ gsst_state ]['name'] )
+		fdtd_hook.select( gsst_imports[ gsst_state ]['name'] )
 		fdtd_hook.importnk2( gsst_indexes[ gsst_state ], gsst_x_range, gsst_y_range, gsst_z_range )
 
 		disable_all_sources()
