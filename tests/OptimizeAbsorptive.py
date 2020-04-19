@@ -325,14 +325,13 @@ num_gsst_states = len( gsst_n_states )
 gsst_indexes = [ ( gsst_n_states[ idx ] + 1j * gsst_k_states[ idx ] ) * np.ones( ( 2, 2, 2 ), dtype=np.complex ) for idx in range( 0, len( gsst_n_states ) ) ]
 gsst_imports = []
 
+gsst_max_um = cavity_min_um
+gsst_min_um = cavity_min_um - gsst_height_um
 
 gsst_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_um, 2 )
 gsst_y_range = 1e-6 * np.linspace( gsst_min_um, gsst_max_um, 2 )
 gsst_z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
 
-
-gsst_max_um = cavity_min_um
-gsst_min_um = cavity_min_um - gsst_height_um
 
 for idx in range( 0, num_gsst_states ):
 	gsst_import = fdtd_hook.addimport()
