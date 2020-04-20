@@ -457,6 +457,10 @@ for iteration in range( 0, num_iterations ):
 					''.join( lumapi_import_source.split() )
 				)
 
+			if wl_idx > 3:
+				import sys
+				sys.exit(0)
+
 			fdtd_hook.run()
 
 			single_wl_adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
