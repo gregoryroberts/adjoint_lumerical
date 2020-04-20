@@ -385,7 +385,7 @@ lumapi_import_source = """
 
 lumapi_import_source2 = """
 	?wl_idx;
-	Ex = E_field.Ex( :, :, :, wl_idx );
+	Ex = E_field.Ex( :, :, :, 1 );
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
