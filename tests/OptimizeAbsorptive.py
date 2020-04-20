@@ -378,6 +378,8 @@ lumapi_import_source = """
 	EM.addparameter("lambda",get_lambda,"f",get_f);
 	EM.addattribute("E",conj(Ex),conj(Ey),conj(Ez));
 	EM.addattribute("H",conj(Hx),conj(Hy),conj(Hz));
+	switchtolayout;
+	select("top_adjoint_source");
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
