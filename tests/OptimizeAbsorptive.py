@@ -365,22 +365,39 @@ lumapi_pull_results = """
 """
 
 lumapi_import_source = """
+	?'cmd 0';
 	?wl_idx;
+	?'cmd 1';
 	Ex = E_field.Ex( :, :, :, wl_idx );
+	?'cmd 2';
 	Ey = E_field.Ey( :, :, :, wl_idx );
+	?'cmd 3';
 	Ez = E_field.Ez( :, :, :, wl_idx );
+	?'cmd 4';
 	Hx = H_field.Hx( :, :, :, wl_idx );
+	?'cmd 5';
 	Hy = H_field.Hy( :, :, :, wl_idx );
+	?'cmd 6';
 	Hz = H_field.Hz( :, :, :, wl_idx );
+	?'cmd 7';
 	get_f = E_field.f( wl_idx );
+	?'cmd 8';
 	get_lambda = c / get_f;
+	?'cmd 9';
 	EM = rectilineardataset("EM fields",E_field.x,E_field.y,E_field.z);
+	?'cmd a';
 	EM.addparameter("lambda",get_lambda,"f",get_f);
+	?'cmd b';
 	EM.addattribute("E",conj(Ex),conj(Ey),conj(Ez));
+	?'cmd c';
 	EM.addattribute("H",conj(Hx),conj(Hy),conj(Hz));
+	?'cmd d';
 	switchtolayout;
+	?'cmd e';
 	select("top_adjoint_source");
+	?'cmd f';
 	importdataset(EM);
+	?'cmd 10';
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
