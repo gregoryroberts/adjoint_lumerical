@@ -179,7 +179,7 @@ else:
 
 adjoint_monitor_top['use source limits'] = 0
 adjoint_monitor_top['minimum wavelength'] = lambda_min_um * 1e-6
-adjoint_monitor_top['maximum wavelength'] = lambda_min_um * 1e-6
+adjoint_monitor_top['maximum wavelength'] = lambda_max_um * 1e-6
 adjoint_monitor_top['frequency points'] = num_design_frequency_points
 adjoint_monitor_top['output Hx'] = 1
 adjoint_monitor_top['output Hy'] = 1
