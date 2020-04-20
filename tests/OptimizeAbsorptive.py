@@ -365,8 +365,6 @@ lumapi_pull_results = """
 """
 
 lumapi_import_source = """
-	?wl_idx;
-	?size(E_field.Ex);
 	Ex = E_field.Ex( :, :, :, wl_idx );
 	Ey = E_field.Ey( :, :, :, wl_idx );
 	Ez = E_field.Ez( :, :, :, wl_idx );
@@ -434,7 +432,6 @@ for iteration in range( 0, num_iterations ):
 
 
 		for wl_idx in range( 0, num_design_frequency_points ):
-			print("working on adjoint idx = " + str( wl_idx ) )
 			fdtd_hook.switchtolayout()
 			lumapi_set_wavelength( wl_idx )
 
