@@ -374,13 +374,6 @@ lumapi_import_source = """
 	Hz = H_field.Hz( :, :, :, wl_idx );
 	get_f = E_field.f( wl_idx );
 	get_lambda = c / get_f;
-	EM = rectilineardataset("EM fields",E_field.x,E_field.y,E_field.z);
-	EM.addparameter("lambda",get_lambda,"f",get_f);
-	EM.addattribute("E",conj(Ex),conj(Ey),conj(Ez));
-	EM.addattribute("H",conj(Hx),conj(Hy),conj(Hz));
-	switchtolayout;
-	select("top_adjoint_source");
-	importdataset(EM);
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
