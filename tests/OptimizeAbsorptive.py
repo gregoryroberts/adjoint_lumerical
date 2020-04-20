@@ -385,6 +385,7 @@ lumapi_import_source = """
 
 lumapi_import_source2 = """
 	?wl_idx;
+	Ex = E_field.Ex( :, :, :, wl_idx );
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
@@ -456,10 +457,6 @@ for iteration in range( 0, num_iterations ):
 				lumapi.evalScript( fdtd_hook.handle,
 					''.join( lumapi_import_source.split() )
 				)
-
-			if wl_idx > 3:
-				import sys
-				sys.exit(0)
 
 			fdtd_hook.run()
 
