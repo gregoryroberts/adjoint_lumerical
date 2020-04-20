@@ -327,7 +327,7 @@ gsst_min_um = cavity_min_um - gsst_height_um
 gsst_indexes = [ ( gsst_n_states[ idx ] + 1j * gsst_k_states[ idx ] ) * np.ones( ( 2, 2, 2 ), dtype=np.complex ) for idx in range( 0, len( gsst_n_states ) ) ]
 
 gsst_import = fdtd_hook.addimport()
-gsst_import['name'] = 'gsst_import_' + str( idx )
+gsst_import['name'] = 'gsst_import'
 gsst_import['x span'] = device_width_um * 1e-6
 gsst_import['y min'] = gsst_min_um * 1e-6
 gsst_import['y max'] = gsst_max_um * 1e-6
