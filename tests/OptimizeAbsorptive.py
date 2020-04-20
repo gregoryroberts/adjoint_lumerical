@@ -366,7 +366,7 @@ lumapi_pull_results = """
 
 lumapi_import_source = """
 	?wl_idx;
-	?size(E_field.Ex)
+	?size(E_field.Ex);
 	Ex = E_field.Ex( :, :, :, wl_idx );
 	Ey = E_field.Ey( :, :, :, wl_idx );
 	Ez = E_field.Ez( :, :, :, wl_idx );
