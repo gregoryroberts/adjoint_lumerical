@@ -180,7 +180,7 @@ else:
 adjoint_monitor_top['use source limits'] = 0
 adjoint_monitor_top['minimum wavelength'] = lambda_min_um * 1e-6
 adjoint_monitor_top['maximum wavelength'] = lambda_min_um * 1e-6
-adjoint_monitor_top['frequency points'] = 1
+adjoint_monitor_top['frequency points'] = num_design_frequency_points
 adjoint_monitor_top['output Hx'] = 1
 adjoint_monitor_top['output Hy'] = 1
 adjoint_monitor_top['output Hz'] = 1
@@ -321,29 +321,24 @@ gsst_height_um = 3 * mesh_size_um
 
 num_gsst_states = len( gsst_n_states )
 
-gsst_indexes = [ ( gsst_n_states[ idx ] + 1j * gsst_k_states[ idx ] ) * np.ones( ( 2, 2, 2 ), dtype=np.complex ) for idx in range( 0, len( gsst_n_states ) ) ]
-gsst_imports = []
-
 gsst_max_um = cavity_min_um
 gsst_min_um = cavity_min_um - gsst_height_um
+
+gsst_indexes = [ ( gsst_n_states[ idx ] + 1j * gsst_k_states[ idx ] ) * np.ones( ( 2, 2, 2 ), dtype=np.complex ) for idx in range( 0, len( gsst_n_states ) ) ]
+
+gsst_import = fdtd_hook.addimport()
+gsst_import['name'] = 'gsst_import_' + str( idx )
+gsst_import['x span'] = device_width_um * 1e-6
+gsst_import['y min'] = gsst_min_um * 1e-6
+gsst_import['y max'] = gsst_max_um * 1e-6
+gsst_import['z min'] = -0.51 * 1e-6
+gsst_import['z max'] = 0.51 * 1e-6
+gsst_import["override mesh order from material database"] = 1
+gsst_import['mesh order'] = 1
 
 gsst_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_um, 2 )
 gsst_y_range = 1e-6 * np.linspace( gsst_min_um, gsst_max_um, 2 )
 gsst_z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
-
-
-for idx in range( 0, num_gsst_states ):
-	gsst_import = fdtd_hook.addimport()
-	gsst_import['name'] = 'gsst_import_' + str( idx )
-	gsst_import['x span'] = device_width_um * 1e-6
-	gsst_import['y min'] = device_min_um * 1e-6
-	gsst_import['y max'] = device_max_um * 1e-6
-	gsst_import['z min'] = -0.51 * 1e-6
-	gsst_import['z max'] = 0.51 * 1e-6
-	gsst_import["override mesh order from material database"] = 1
-	gsst_import['mesh order'] = 1
-
-	gsst_imports.append( gsst_import )
 
 
 mirror_max_um = gsst_min_um
@@ -359,16 +354,32 @@ mirror['z min'] = -0.51 * 1e-6
 mirror['z max'] = 0.51 * 1e-6
 mirror['material'] = 'Au (Gold) - Palik'
 
+def lumapi_set_wavelength( wl_idx ):
+	# lumerical script is one indexed so need to adjust from python indexing
+	cmd = "wl_idx = " + str( wl_idx + 1 ) + ";"
+	lumapi.evalScript( fdtd_hook.handle, cmd )
 
-lumapi_cmd = """
+lumapi_pull_results = """
 	E_field = getresult( "adjoint_monitor_top", "E" );
 	H_field = getresult( "adjoint_monitor_top", "H" );
+"""
+
+lumapi_import_source = """
+	?wl_idx;
+	Ex = E_field.Ex( :, :, :, wl_idx );
+	Ey = E_field.Ey( :, :, :, wl_idx );
+	Ez = E_field.Ez( :, :, :, wl_idx );
+	Hx = H_field.Hx( :, :, :, wl_idx );
+	Hy = H_field.Hy( :, :, :, wl_idx );
+	Hz = H_field.Hz( :, :, :, wl_idx );
+	get_f = E_field.f( wl_idx );
+	get_lambda = c / get_f;
 	EM = rectilineardataset("EM fields",E_field.x,E_field.y,E_field.z);
-	EM.addparameter("lambda",c/E_field.f,"f",E_field.f);
-	EM.addattribute("E",conj(E_field.Ex),conj(E_field.Ey),conj(E_field.Ez));
-	EM.addattribute("H",conj(H_field.Hx),conj(H_field.Hy),conj(H_field.Hz));
-	select("top_adjoint_source");
+	EM.addparameter("lambda",get_lambda,"f",get_f);
+	EM.addattribute("E",conj(Ex),conj(Ey),conj(Ez));
+	EM.addattribute("H",conj(Hx),conj(Hy),conj(Hz));
 	switchtolayout;
+	select("top_adjoint_source");
 	importdataset(EM);
 """
 
@@ -391,7 +402,7 @@ for iteration in range( 0, num_iterations ):
 		fdtd_hook.switchtolayout()
 		fdtd_hook.select( device_import['name'] )
 		fdtd_hook.importnk2( device_index, device_x_range, device_y_range, device_z_range )
-		fdtd_hook.select( gsst_imports[ gsst_state ]['name'] )
+		fdtd_hook.select( gsst_import['name'] )
 		fdtd_hook.importnk2( gsst_indexes[ gsst_state ], gsst_x_range, gsst_y_range, gsst_z_range )
 
 		disable_all_sources()
@@ -415,22 +426,21 @@ for iteration in range( 0, num_iterations ):
 		forward_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
 		adjoint_e_fields = np.zeros( forward_e_fields.shape, dtype=np.complex )
 
+		lumapi.evalScript( fdtd_hook.handle,
+			''.join( lumapi_pull_results.split() )
+		)
+
 		for wl_idx in range( 0, num_design_frequency_points ):
 
 			fdtd_hook.switchtolayout()
-			get_lambda_um = lambda_values_um[ wl_idx ]
-			adjoint_monitor_top['wavelength center'] = get_lambda_um * 1e-6
-
-			disable_all_sources()
-			forward_src.enabled = 1
-			fdtd_hook.run()
+			lumapi_set_wavelength( wl_idx )
 
 			shutil.copy(
 				projects_directory_location + "/optimization.fsp",
 				projects_directory_location + "/optimization_gsst_state_" + str( gsst_state ) + ".fsp" )
 
 			lumapi.evalScript( fdtd_hook.handle,
-				''.join( lumapi_cmd.split() )
+				''.join( lumapi_import_source.split() )
 			)
 			disable_all_sources()
 			top_adjoint_source.enabled = 1
