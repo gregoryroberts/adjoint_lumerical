@@ -384,11 +384,6 @@ lumapi_import_source = """
 	importdataset(EM);
 """
 
-lumapi_import_source2 = """
-	?wl_idx;
-	Ex = E_field.Ex( :, :, :, 2 );
-"""
-
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
 directional_weightings_by_state[ 0 ][ 0 : half_frequency_point ] = -1
 directional_weightings_by_state[ 1 ][ : ] = -1
@@ -450,14 +445,9 @@ for iteration in range( 0, num_iterations ):
 			disable_all_sources()
 			top_adjoint_source.enabled = 1
 
-			if wl_idx > 0:
-				lumapi.evalScript( fdtd_hook.handle,
-					''.join( lumapi_import_source2.split() )
-				)
-			else:
-				lumapi.evalScript( fdtd_hook.handle,
-					''.join( lumapi_import_source.split() )
-				)
+			lumapi.evalScript( fdtd_hook.handle,
+				''.join( lumapi_import_source.split() )
+			)
 
 			fdtd_hook.run()
 
