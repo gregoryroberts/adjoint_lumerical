@@ -458,7 +458,7 @@ for iteration in range( 0, num_iterations ):
 				lumapi.evalScript( fdtd_hook.handle,
 					''.join( lumapi_import_source2.split() )
 				)
-			else
+			else:
 				lumapi.evalScript( fdtd_hook.handle,
 					''.join( lumapi_import_source.split() )
 				)
