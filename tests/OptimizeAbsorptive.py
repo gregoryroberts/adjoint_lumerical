@@ -86,7 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/optimize_absorptive"
+projects_directory_location += "/optimize_absorptive_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
