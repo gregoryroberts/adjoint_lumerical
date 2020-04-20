@@ -366,6 +366,7 @@ lumapi_pull_results = """
 
 lumapi_import_source = """
 	?wl_idx;
+	?size(E_field.Ex)
 	Ex = E_field.Ex( :, :, :, wl_idx );
 	Ey = E_field.Ey( :, :, :, wl_idx );
 	Ez = E_field.Ez( :, :, :, wl_idx );
@@ -385,7 +386,7 @@ lumapi_import_source = """
 
 lumapi_import_source2 = """
 	?wl_idx;
-	Ex = E_field.Ex( :, :, :, 1 );
+	Ex = E_field.Ex( :, :, :, 2 );
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
