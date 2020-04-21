@@ -10,6 +10,7 @@ import numpy as np
 #
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_rcp_45_lcp_m45_v1_4p2x4p2x3p12um_f2p6'
 project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_4p2x4p2x3p12um_f2p6'
+# project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_4layer_v1_4p2x4p2x3p12um_f2p6'
 
 #
 # Optical
@@ -42,7 +43,7 @@ mesh_spacing_um = 0.04
 #
 # Pesky size to get the number of voxels to be a multiple of 3
 #
-num_vertical_layers = 3
+num_vertical_layers = 3#4
 
 device_size_lateral_um = 4.2#3.6
 device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
@@ -51,7 +52,7 @@ spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_si
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
-spacer_size_voxels = 1 + int(spacer_size_um / mesh_spacing_um)
+spacer_size_voxels = 1 + int(spacer_size_um / mesh_spa0ing_um)
 
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
@@ -169,7 +170,7 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 6
+start_epoch = 5#0
 num_epochs = 10
 num_iterations_per_epoch = 60
 binarization_start_epoch = 1
