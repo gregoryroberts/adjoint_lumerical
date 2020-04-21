@@ -119,19 +119,19 @@ polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # 	[num_points_per_band, 2 * num_points_per_band]
 # ]
 
-# jones_sorting_vectors = [
-# 	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] ),
-# 	np.array( [ 0.514, 0.794 + 0.324j ] ),
-# 	np.array( [ 0.986, 0.169j ] ),
-# 	np.array( [ 0.514, -0.794 + 0.324j ] )
-# ]
-
 jones_sorting_vectors = [
-	np.array( [ 1. / np.sqrt( 2 ), 1. / np.sqrt( 2 ) ] ),
-	np.array( [ 1. / np.sqrt( 2 ), 1j / np.sqrt( 2 ) ] ),
-	np.array( [ 1. / np.sqrt( 2 ), -1. / np.sqrt( 2 ) ] ),
-	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] )
+	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] ),
+	np.array( [ 0.514, 0.794 + 0.324j ] ),
+	np.array( [ 0.986, 0.169j ] ),
+	np.array( [ 0.514, -0.794 + 0.324j ] )
 ]
+
+# jones_sorting_vectors = [
+# 	np.array( [ 1. / np.sqrt( 2 ), 1. / np.sqrt( 2 ) ] ),
+# 	np.array( [ 1. / np.sqrt( 2 ), 1j / np.sqrt( 2 ) ] ),
+# 	np.array( [ 1. / np.sqrt( 2 ), -1. / np.sqrt( 2 ) ] ),
+# 	np.array( [ 1. / np.sqrt( 2 ), -1j / np.sqrt( 2 ) ] )
+# ]
 
 def find_orthogonal( v ):
 	if np.abs( v[ 0 ] ) == 1:
