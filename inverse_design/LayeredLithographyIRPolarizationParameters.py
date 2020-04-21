@@ -8,7 +8,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_rcp_45_lcp_m45_v1_4p2x4p2x3p12um_f2p6'
+# project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_rcp_45_lcp_m45_v1_4p2x4p2x3p12um_f2p6'
+project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_4p2x4p2x3p12um_f2p6'
 
 #
 # Optical
@@ -168,8 +169,8 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 0
-num_epochs = 7
+start_epoch = 6
+num_epochs = 10
 num_iterations_per_epoch = 60
 binarization_start_epoch = 1
 max_binarize_movement = 0.01
