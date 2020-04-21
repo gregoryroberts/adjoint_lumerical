@@ -86,7 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/optimize_absorptive_v2"
+projects_directory_location += "/optimize_absorptive_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -102,7 +102,7 @@ fdtd_region_size_lateral_um = 5
 fdtd_region_minimum_vertical_um = -2.5
 fdtd_region_maximum_vertical_um = 2.5
 
-mesh_size_um = 0.02
+mesh_size_um = 0.005
 
 fdtd_region_minimum_lateral_voxels = 1 + int ( fdtd_region_size_lateral_um / mesh_size_um )
 fdtd_region_minimum_vertical_voxels = 1 + int( ( fdtd_region_maximum_vertical_um - fdtd_region_minimum_vertical_um ) / mesh_size_um )
@@ -132,7 +132,7 @@ fdtd['background index'] = 1.0
 
 lambda_min_um = 0.4
 lambda_max_um = 0.7
-num_design_frequency_points = 30
+num_design_frequency_points = 20
 half_frequency_point = int( 0.5 * num_design_frequency_points )
 
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequency_points )
@@ -313,8 +313,12 @@ cavity['z max'] = 0.51 * 1e-6
 cavity['index'] = cavity_index
 
 
-gsst_n_states = [ 3.0, 4.5 ]
-gsst_k_states = [ 0.1, 0.25 ]
+# gsst_n_states = [ 3.0, 4.5 ]
+# gsst_k_states = [ 0.1, 0.25 ]
+
+gsst_n_states = [ 4.2, 5.75 ]
+gsst_k_states = [ 2.5, 3.75 ]
+
 
 # note: may want an override mesh here around this interface because it is small and high index
 gsst_height_um = 3 * mesh_size_um
