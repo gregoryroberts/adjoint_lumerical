@@ -8,7 +8,7 @@ import scipy.optimize
 
 import numpy as np
 
-from LayeredLithographyIRPolarizationParameters import *
+from LayeredLithographyIRPolarizationRotationParameters import *
 
 def bilinear_interpolation_rotate( input, theta_radians ):
 	def remap_x( x_coord, y_coord ):
@@ -54,7 +54,7 @@ def bilinear_interpolation_rotate( input, theta_radians ):
 class LayeredLithographyIRPolarizationRotationDevice(device.Device):
 
 	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers, spacer_height_voxels, last_layer_permittivity, max_binarize_movement, desired_binarize_change):
-		super(LayeredLithographyIRPolarizationDevice, self).__init__(size, permittivity_bounds, init_permittivity)
+		super(LayeredLithographyIRPolarizationRotationDevice, self).__init__(size, permittivity_bounds, init_permittivity)
 
 		self.num_z_layers = num_z_layers
 		self.flip_threshold = 0.5
