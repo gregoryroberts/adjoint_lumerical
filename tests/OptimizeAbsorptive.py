@@ -347,7 +347,7 @@ gsst_override_mesh['y min'] = ( gsst_min_um - 0.05 ) * 1e-6
 gsst_override_mesh['y max'] = ( gsst_max_um + 0.05 ) * 1e-6
 gsst_override_mesh['z min'] = -0.51 * 1e-6
 gsst_override_mesh['z max'] = 0.51 * 1e-6
-gsst_override_mesh['dx'] = 0.001 * 1e-6
+# gsst_override_mesh['dx'] = 0.001 * 1e-6
 gsst_override_mesh['dy'] = 0.001 * 1e-6
 
 gsst_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_um, 2 )
