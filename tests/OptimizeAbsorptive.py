@@ -347,11 +347,8 @@ gsst_override_mesh['y min'] = ( gsst_min_um - 0.1 ) * 1e-6
 gsst_override_mesh['y max'] = ( gsst_max_um + 0.1 ) * 1e-6
 gsst_override_mesh['z min'] = -0.51 * 1e-6
 gsst_override_mesh['z max'] = 0.51 * 1e-6
-gsst_override_mesh['mesh type'] = 'uniform'
-gsst_override_mesh['define x mesh by'] = 'number of mesh cells'
-gsst_override_mesh['define y mesh by'] = 'number of mesh cells'
-gsst_override_mesh['mesh cells x'] = 1 + int( fdtd_region_size_lateral_um / 0.001 )
-gsst_override_mesh['mesh cells y'] = 1 + int( ( gsst_height_um + 0.2 ) / 0.001 )
+gsst_override_mesh['dx'] = 0.001 * 1e-6
+gsst_override_mesh['dy'] = 0.001 * 1e-6
 
 gsst_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_um, 2 )
 gsst_y_range = 1e-6 * np.linspace( gsst_min_um, gsst_max_um, 2 )
