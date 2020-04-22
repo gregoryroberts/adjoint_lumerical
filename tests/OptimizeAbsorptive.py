@@ -102,7 +102,7 @@ fdtd_region_size_lateral_um = 5
 fdtd_region_minimum_vertical_um = -2.5
 fdtd_region_maximum_vertical_um = 2.5
 
-mesh_size_um = 0.005
+mesh_size_um = 0.001
 
 fdtd_region_minimum_lateral_voxels = 1 + int ( fdtd_region_size_lateral_um / mesh_size_um )
 fdtd_region_minimum_vertical_voxels = 1 + int( ( fdtd_region_maximum_vertical_um - fdtd_region_minimum_vertical_um ) / mesh_size_um )
@@ -298,7 +298,7 @@ device_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_
 device_y_range = 1e-6 * np.linspace( device_min_um, device_max_um, device_height_voxels )
 device_z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
 
-cavity_height_um = 0.2 / 2.
+cavity_height_um = 0.2
 cavity_index = 1.5
 cavity_max_um = device_min_um
 cavity_min_um = cavity_max_um - cavity_height_um
