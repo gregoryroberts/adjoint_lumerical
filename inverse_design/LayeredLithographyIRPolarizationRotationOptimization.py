@@ -239,18 +239,25 @@ def gradient(
 						wl_idx ] = 1
 
 
-	fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
-	fom_weightings = np.maximum( fom_weightings, 0 )
+	# We might like to apply this weighting scheme to the other polarization splitter.  For now, let's see how it does here first.
+	weighting_alpha = 10
+	# We would like to minimize, so anything large should get a larger weighting
+	fom_weightings = np.exp( weighting_alpha * rearrange_figures_of_merit ) / np.sum( weighting_alpha * rearrange_figures_of_merit )
+	fom_weightings *= weighting_mask
 	fom_weightings /= np.sum( fom_weightings )
+
+	# fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
+	# fom_weightings = np.maximum( fom_weightings, 0 )
+	# fom_weightings /= np.sum( fom_weightings )
 
 	#
 	# This is because we are actually minimizing all three figures of merit, so we would like to flip the orientation
 	# of the weightings (i.e. - a small figure of merit means you are doing well in this optimization)
 	#
-	fom_weightings = 1 - fom_weightings
-	fom_weightings *= weighting_mask
+	# fom_weightings = 1 - fom_weightings
+	# fom_weightings *= weighting_mask
 	# Renormalize, so they add to 1
-	fom_weightings /= np.sum( fom_weightings )
+	# fom_weightings /= np.sum( fom_weightings )
 
 	gradient_shape = Ex_forward_fields[ 0, 0 ].shape
 	gradient = np.zeros( gradient_shape )
