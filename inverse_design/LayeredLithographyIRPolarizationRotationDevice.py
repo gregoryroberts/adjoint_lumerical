@@ -74,7 +74,7 @@ class LayeredLithographyIRPolarizationRotationDevice(device.Device):
 		self.mid_pt_x = int( 0.5 * size[ 0 ] )
 		self.mid_pt_y = int( 0.5 * size[ 1 ] )
 		for x_idx in range( 0, size[ 0 ] ):
-			for y_idx in range( 0, square_dimension ):
+			for y_idx in range( 0, size[ 1 ] ):
 				r_sq = ( x_idx - self.mid_pt_x )**2 + ( y_idx - self.mid_pt_y )**2
 				if r_sq < self.circle_dimension**2:
 					self.cut_circle[ x_idx, y_idx ] = 1
