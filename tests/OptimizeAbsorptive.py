@@ -86,7 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/optimize_absorptive_all_v1"
+projects_directory_location += "/optimize_absorptive_switch_states_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -321,7 +321,7 @@ gsst_k_states = [ 2.5, 3.75 ]
 
 
 # note: may want an override mesh here around this interface because it is small and high index
-gsst_height_um = 0.006
+gsst_height_um = 0.009
 
 num_gsst_states = len( gsst_n_states )
 
@@ -348,7 +348,7 @@ gsst_override_mesh['y max'] = ( gsst_max_um + 0.05 ) * 1e-6
 gsst_override_mesh['z min'] = -0.51 * 1e-6
 gsst_override_mesh['z max'] = 0.51 * 1e-6
 # gsst_override_mesh['dx'] = 0.001 * 1e-6
-gsst_override_mesh['dy'] = 0.001 * 1e-6
+gsst_override_mesh['dy'] = 0.003 * 1e-6
 
 gsst_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_um, 2 )
 gsst_y_range = 1e-6 * np.linspace( gsst_min_um, gsst_max_um, 2 )
@@ -397,11 +397,11 @@ lumapi_import_source = """
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
-# directional_weightings_by_state[ 0 ][ 0 : half_frequency_point ] = -1
+directional_weightings_by_state[ 1 ][ 0 : half_frequency_point ] = -1
 directional_weightings_by_state[ 0 ][ : ] = -1
-directional_weightings_by_state[ 1 ][ : ] = -1
+# directional_weightings_by_state[ 1 ][ : ] = -1
 
-num_iterations = 25
+num_iterations = 50
 figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
 figure_of_merit_by_iteration = np.zeros( num_iterations )
 
