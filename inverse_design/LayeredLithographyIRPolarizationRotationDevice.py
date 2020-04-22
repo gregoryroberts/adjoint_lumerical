@@ -94,7 +94,7 @@ class LayeredLithographyIRPolarizationRotationDevice(device.Device):
 			cut_and_rotate_var0[ :, :, z_idx ] *= self.cut_circle
 			cut_and_rotate_var0[ :, :, z_idx ] = ( 1 / 3. ) * (
 				cut_and_rotate_var0[ :, :, z_idx ] +
-				bilinear_interpolation_rotate( cut_and_rotate_var0[ :, :, z_idx ], 2 * np.pi / 3. ),
+				bilinear_interpolation_rotate( cut_and_rotate_var0[ :, :, z_idx ], 2 * np.pi / 3. ) +
 				bilinear_interpolation_rotate( cut_and_rotate_var0[ :, :, z_idx ], 2 * 2 * np.pi / 3. )
 			)
 
@@ -131,7 +131,7 @@ class LayeredLithographyIRPolarizationRotationDevice(device.Device):
 			gradient[ :, :, z_idx ] *= self.cut_circle
 			gradient[ :, :, z_idx ] = ( 1 / 3. ) * (
 				gradient[ :, :, z_idx ] +
-				bilinear_interpolation_rotate( gradient[ :, :, z_idx ], 2 * np.pi / 3. ),
+				bilinear_interpolation_rotate( gradient[ :, :, z_idx ], 2 * np.pi / 3. ) +
 				bilinear_interpolation_rotate( gradient[ :, :, z_idx ], 2 * 2 * np.pi / 3. )
 			)
 
