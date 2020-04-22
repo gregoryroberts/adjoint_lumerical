@@ -102,7 +102,7 @@ fdtd_region_size_lateral_um = 5
 fdtd_region_minimum_vertical_um = -2.5
 fdtd_region_maximum_vertical_um = 2.5
 
-mesh_size_um = 0.001
+mesh_size_um = 0.0025
 
 fdtd_region_minimum_lateral_voxels = 1 + int ( fdtd_region_size_lateral_um / mesh_size_um )
 fdtd_region_minimum_vertical_voxels = 1 + int( ( fdtd_region_maximum_vertical_um - fdtd_region_minimum_vertical_um ) / mesh_size_um )
