@@ -86,7 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/optimize_absorptive_v3"
+projects_directory_location += "/optimize_absorptive_v4"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -321,7 +321,7 @@ gsst_k_states = [ 2.5, 3.75 ]
 
 
 # note: may want an override mesh here around this interface because it is small and high index
-gsst_height_um = 3 * mesh_size_um
+gsst_height_um = 5 * mesh_size_um
 
 num_gsst_states = len( gsst_n_states )
 
