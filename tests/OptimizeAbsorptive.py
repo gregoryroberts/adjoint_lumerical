@@ -86,7 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/optimize_absorptive_v4"
+projects_directory_location += "/optimize_absorptive_all_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -343,8 +343,8 @@ gsst_import['mesh order'] = 1
 gsst_override_mesh = fdtd_hook.addmesh()
 gsst_override_mesh['name'] = 'gsst_override_mesh'
 gsst_override_mesh['x span'] = fdtd_region_size_lateral_um * 1e-6
-gsst_override_mesh['y min'] = ( gsst_min_um - 0.1 ) * 1e-6
-gsst_override_mesh['y max'] = ( gsst_max_um + 0.1 ) * 1e-6
+gsst_override_mesh['y min'] = ( gsst_min_um - 0.05 ) * 1e-6
+gsst_override_mesh['y max'] = ( gsst_max_um + 0.05 ) * 1e-6
 gsst_override_mesh['z min'] = -0.51 * 1e-6
 gsst_override_mesh['z max'] = 0.51 * 1e-6
 gsst_override_mesh['dx'] = 0.001 * 1e-6
@@ -397,10 +397,11 @@ lumapi_import_source = """
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
-directional_weightings_by_state[ 0 ][ 0 : half_frequency_point ] = -1
+# directional_weightings_by_state[ 0 ][ 0 : half_frequency_point ] = -1
+directional_weightings_by_state[ 0 ][ : ] = -1
 directional_weightings_by_state[ 1 ][ : ] = -1
 
-num_iterations = 100
+num_iterations = 25
 figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
 figure_of_merit_by_iteration = np.zeros( num_iterations )
 
@@ -412,6 +413,7 @@ for iteration in range( 0, num_iterations ):
 	for gsst_state in range( 0, num_gsst_states ):
 
 		device_index = permittivity_to_index( device_permittivity )
+		np.save( projects_directory_location + '/cur_device.npy', device_permittivity )
 		fdtd_hook.switchtolayout()
 		fdtd_hook.select( device_import['name'] )
 		fdtd_hook.importnk2( device_index, device_x_range, device_y_range, device_z_range )
