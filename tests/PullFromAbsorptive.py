@@ -133,7 +133,7 @@ fdtd['background index'] = 1.0
 
 lambda_min_um = 0.4
 lambda_max_um = 0.7
-num_design_frequency_points = 20
+num_design_frequency_points = 5#20
 half_frequency_point = int( 0.5 * num_design_frequency_points )
 
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequency_points )
