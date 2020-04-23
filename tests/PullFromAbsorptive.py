@@ -133,7 +133,7 @@ fdtd['background index'] = 1.0
 
 lambda_min_um = 0.4
 lambda_max_um = 0.7
-num_design_frequency_points = 5#20
+num_design_frequency_points = 1#5#20
 half_frequency_point = int( 0.5 * num_design_frequency_points )
 
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequency_points )
@@ -488,9 +488,9 @@ for iteration in range( 0, num_iterations ):
 	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_gsst_state )
 
 	max_movement = 0.01
-	flattened_device = np.flatten( device_permittivity[ :, :, 0 ] )
-	flattened_dark_min_gradient = -np.flatten( gradient_by_gsst_state[ 0 ] )
-	flattened_color_max_gradient = np.flatten( gradient_by_gsst_state[ 1 ] )
+	flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
+	flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] ).flatten()
+	flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] ).flatten()
 
 	# Let's try and pull our colored state up by 0.5 percent per iteration
 	desired_colored_fom_change = 0.005
