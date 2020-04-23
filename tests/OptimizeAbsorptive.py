@@ -399,8 +399,8 @@ lumapi_import_source = """
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
 # directional_weightings_by_state[ 1 ][ 0 : half_frequency_point ] = -1
 directional_weightings_by_state[ 0 ][ : ] = -1
-directional_weightings_by_state[ 1 ][ : ] = -1
-directional_weightings_by_state[ 1 ][ int( 3 * num_design_frequency_points / 4. ) ]
+directional_weightings_by_state[ 1 ][ : ] = 0
+directional_weightings_by_state[ 1 ][ int( 3 * num_design_frequency_points / 4. ) ] = 1
 
 num_iterations = 50
 figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
