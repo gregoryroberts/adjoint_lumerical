@@ -517,7 +517,7 @@ for iteration in range( 0, num_iterations ):
 		# upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
 		# lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
 		upper_bounds[ idx ] = np.maximum( np.minimum( beta, permittivity_max - flattened_device[ idx ] ), 0 )
-		lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -( flatten_design_cuts[ idx ] - permittivity_min ) ), 0 )
+		lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -( flattened_device[ idx ] - permittivity_min ) ), 0 )
 
 	max_possible_colored_change = 0
 	for idx in range( 0, len( c ) ):
