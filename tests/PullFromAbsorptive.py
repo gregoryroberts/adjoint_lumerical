@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-import scipy
+import scipy.optimize
 
 is_lumerical_version_2020a = False
 
