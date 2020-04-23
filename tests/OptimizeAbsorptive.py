@@ -398,7 +398,7 @@ lumapi_import_source = """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
 # directional_weightings_by_state[ 1 ][ 0 : half_frequency_point ] = -1
-directional_weightings_by_state[ 0 ][ : ] = -1
+directional_weightings_by_state[ 0 ][ : ] = -1 / num_design_frequency_points
 directional_weightings_by_state[ 1 ][ : ] = 0
 directional_weightings_by_state[ 1 ][ int( 3 * num_design_frequency_points / 4. ) ] = 1
 
@@ -486,7 +486,7 @@ for iteration in range( 0, num_iterations ):
 
 	fom_by_gsst_state = np.array( fom_by_gsst_state )
 	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_gsst_state )
-	weightings_by_state = 1. - fom_by_gsst_state**2 / np.sum( fom_by_gsst_state )
+	weightings_by_state = 1. - fom_by_gsst_state**2 / np.sum( fom_by_gsst_state**2 )
 	weightings_by_state = np.maximum( weightings_by_state, 0 )
 	weightings_by_state /= np.sum( weightings_by_state )
 	print( "On iteration " + str( iteration ) + " fom by gsst state = " + str( fom_by_gsst_state ) )
