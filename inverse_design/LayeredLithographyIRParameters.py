@@ -132,12 +132,12 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 #
 # Optimization
 #
-start_epoch = 8#7#6
-num_epochs = 12#8
+start_epoch = 12#7#6
+num_epochs = 14#8
 num_iterations_per_epoch = 50#35#50#25
 binarization_start_epoch = 2
 max_binarize_movement = 0.01
-desired_binarize_change = 3 * 0.005 / 2
+desired_binarize_change = 3 * 3 * 0.005 / 2
 
 epoch_start_permittivity_change_max = 0.05#0.1
 epoch_end_permittivity_change_max = 0.01#0.02
