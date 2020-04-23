@@ -86,7 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/optimize_absorptive_switch_states_v1"
+projects_directory_location += "/optimize_absorptive_switch_states_single_freq_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -397,9 +397,10 @@ lumapi_import_source = """
 """
 
 directional_weightings_by_state = [ np.ones( num_design_frequency_points ) for idx in range( 0, num_gsst_states ) ]
-directional_weightings_by_state[ 1 ][ 0 : half_frequency_point ] = -1
+# directional_weightings_by_state[ 1 ][ 0 : half_frequency_point ] = -1
 directional_weightings_by_state[ 0 ][ : ] = -1
-# directional_weightings_by_state[ 1 ][ : ] = -1
+directional_weightings_by_state[ 1 ][ : ] = -1
+directional_weightings_by_state[ 1 ][ int( 3 * num_design_frequency_points / 4. ) ]
 
 num_iterations = 50
 figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
