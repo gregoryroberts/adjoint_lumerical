@@ -478,9 +478,12 @@ for iteration in range( 0, num_iterations ):
 		for wl_idx in range( 0, num_design_frequency_points ):
 			gradient[ wl_idx, :, :, : ] *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
 
-		fom_weightings = ( 2. / num_design_frequency_points ) - transmission_fom**2 / np.sum( transmission_fom**2 )
-		fom_weightings = np.maximum( fom_weightings, 0 )
-		fom_weightings /= np.sum( fom_weightings )
+		# Not the right solution, but ok for now
+		fom_weightings = np.ones( num_design_frequency_points )
+		if gsst_state == 0:
+			fom_weightings = ( 2. / num_design_frequency_points ) - transmission_fom**2 / np.sum( transmission_fom**2 )
+			fom_weightings = np.maximum( fom_weightings, 0 )
+			fom_weightings /= np.sum( fom_weightings )
 
 		weighted_gradient = np.zeros( gradient[ 0 ].shape )
 		for wl_idx in range( 0, num_design_frequency_points ):
@@ -503,6 +506,7 @@ for iteration in range( 0, num_iterations ):
 
 	# Let's try and pull our colored state up by 0.5 percent per iteration
 	desired_colored_fom_change = 0.001 * np.product( device_permittivity[ :, :, 0 ].shape )
+	# print("desired change = " + str( desired_colored_fom_change))
 
 	# Let's not let any epsilon move by more than 1 percent in density per iteration
 	beta = 0.01 * ( permittivity_max - permittivity_min )
