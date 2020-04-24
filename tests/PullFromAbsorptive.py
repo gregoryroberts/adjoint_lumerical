@@ -435,7 +435,7 @@ for iteration in range( 0, num_iterations ):
 			get_T_top = compute_transmission_top( [ wl_idx, wl_idx + 1 ] )
 			fom_T = get_T_top
 			if directional_weightings_by_state[ gsst_state ][ wl_idx ] < 0:
-				fom_T = 1 + directional_weightings_by_state[ gsst_state ][ wl_idx ]
+				fom_T = 1 + directional_weightings_by_state[ gsst_state ][ wl_idx ] * fom_T
 			else:
 				fom_T *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
 
