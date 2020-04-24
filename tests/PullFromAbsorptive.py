@@ -546,7 +546,7 @@ for iteration in range( 0, num_iterations ):
 
 
 	tolerance = 1e-12
-	optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance )
+	optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance, bounds=[ [ 0, np.inf ] ] )
 
 	nu_star = optimization_solution_nu.x
 	lambda_1_star = ramp( nu_star * b - c )
