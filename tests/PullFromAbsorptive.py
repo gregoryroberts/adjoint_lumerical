@@ -435,7 +435,9 @@ for iteration in range( 0, num_iterations ):
 			get_T_top = compute_transmission_top( [ wl_idx, wl_idx + 1 ] )
 			fom_T = get_T_top
 			if directional_weightings_by_state[ gsst_state ][ wl_idx ] < 0:
-				fom_T = 1 + directional_weightings_by_state[ gsst_state ][ wl_idx ] * fom_T
+				fom_T = 1 + directional_weightings_by_state[ gsst_state ][ wl_idx ] * fom
+			else:
+				fom_T *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
 
 			fom_T = np.maximum( np.minimum( fom_T, 1.0 ), 0.0 )
 
@@ -492,15 +494,15 @@ for iteration in range( 0, num_iterations ):
 
 	max_movement = 0.01
 	flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
-	flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] ).flatten()
-	flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] ).flatten()
+	flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
+	flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
 
 	np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
 	np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
 	np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
 
 	# Let's try and pull our colored state up by 0.5 percent per iteration
-	desired_colored_fom_change = 0.005
+	desired_colored_fom_change = 0.001 * np.product( device_permittivity[ :, :, 0 ].shape )
 
 	# Let's not let any epsilon move by more than 1 percent in density per iteration
 	beta = 0.01 * ( permittivity_max - permittivity_min )
