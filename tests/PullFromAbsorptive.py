@@ -508,7 +508,7 @@ for iteration in range( 0, num_iterations ):
 	np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
 
 	# Let's try and pull our colored state up by 0.5 percent per iteration
-	desired_colored_fom_change = 0.00001 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
+	desired_colored_fom_change = 0.0001 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
 	# print("desired change = " + str( desired_colored_fom_change))
 
 	# Let's not let any epsilon move by more than 1 percent in density per iteration
