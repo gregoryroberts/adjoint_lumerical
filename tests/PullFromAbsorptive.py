@@ -495,9 +495,9 @@ for iteration in range( 0, num_iterations ):
 	flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] ).flatten()
 	flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] ).flatten()
 
-	np.save( 'device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
-	np.save( 'gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
-	np.save( 'gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
+	np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
+	np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
+	np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
 
 	# Let's try and pull our colored state up by 0.5 percent per iteration
 	desired_colored_fom_change = 0.005
