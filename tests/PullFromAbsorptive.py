@@ -90,7 +90,7 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 project_load_directory = projects_directory_location + "/optimize_absorptive_switch_states_all_absorptive"
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_v1"
+projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -292,8 +292,8 @@ device_import['mesh order'] = 1
 device_width_voxels = 2 + int( device_width_um / mesh_size_um )
 device_height_voxels = 2 + int( device_height_um / mesh_size_um )
 
-permittivity_max = 2.5
-permittivity_min = 1.5
+permittivity_max = 2.5**2
+permittivity_min = 1.5**2
 permittivity_mid = 0.5 * ( permittivity_min + permittivity_max )
 
 # Load the all-absorptive device
