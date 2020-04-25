@@ -34,7 +34,7 @@ class Focusing2DFilter(device.Device):
         self.filters = [ self.sigmoid_0, self.scale_1 ]
 
     def init_filters_and_variables(self):
-        self.num_filters = 3#5
+        self.num_filters = 2#5
         self.num_variables = 1 + self.num_filters
 
         # Start the sigmoids at weak strengths
