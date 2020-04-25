@@ -44,9 +44,6 @@ num_feature_size_optimizations = len( feature_size_meshes_um )
 device_size_lateral_um = 3.2
 device_size_vertical_um = 1.6
 
-device_voxels_lateral = 1 + int( device_size_lateral_um / computation_mesh_um )
-designable_device_voxels_vertical = 1 + int( device_size_vertical_um / computation_mesh_um )
-
 designable_device_vertical_maximum_um = device_size_vertical_um
 designable_device_vertical_minimum_um = 0
 
