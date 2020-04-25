@@ -314,13 +314,14 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 
 		bayer_filter.update_filters( epoch )
 
-		log_file = open(projects_directory_location + "/log.txt", 'a')
-		log_file.write(
-			"Working on optimization " + str( feature_size_optimization_idx ) + " and epoch " + str( epoch ) +
-			" out of ( " + str( num_feature_size_optimizations - 1 ) + ", " + str( num_epochs - 1 ) + " )" )
-		log_file.close()
-
 		for iteration in range( 0, num_iterations_per_epoch ):
+
+			log_file = open(projects_directory_location + "/log.txt", 'a')
+			log_file.write(
+				"Working on optimization " + str( feature_size_optimization_idx ) + " and epoch " + str( epoch ) +
+				" and iteration " + str( iteration ) + " out of ( " + str( num_feature_size_optimizations - 1 ) + ", " + str( num_epochs - 1 ) +
+				", " + str( num_iterations_per_epoch - 1 ) + " )" )
+			log_file.close()
 
 			device_density = bayer_filter.get_design_variable()
 			device_permittivity = bayer_filter.get_permittivity()
