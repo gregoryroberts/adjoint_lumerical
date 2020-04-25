@@ -297,8 +297,8 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 	binarization_evolution = np.zeros( ( num_epochs, num_iterations_per_epoch ) )
 	figure_of_merit_evolution = np.zeros( ( num_epochs, num_iterations_per_epoch ) )
 
-	reversed_field_shape = [ device_size_voxels_vertical, device_size_voxels_lateral ]
-	reversed_field_shape_with_pol = [ num_polarizations, 1, designable_device_voxels_vertical, device_voxels_lateral ]
+	reversed_field_shape = [ 3, device_size_voxels_vertical, device_size_voxels_lateral ]
+	reversed_field_shape_with_pol = [ num_polarizations, designable_device_voxels_vertical, device_voxels_lateral ]
 	xy_polarized_gradients_by_pol = np.zeros( reversed_field_shape_with_pol, dtype=np.complex )
 	xy_polarized_gradients = np.zeros( reversed_field_shape, dtype=np.complex )
 	figure_of_merit_by_pol = np.zeros( num_polarizations )
@@ -320,7 +320,7 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 			log_file.write(
 				"Working on optimization " + str( feature_size_optimization_idx ) + " and epoch " + str( epoch ) +
 				" and iteration " + str( iteration ) + " out of ( " + str( num_feature_size_optimizations - 1 ) + ", " + str( num_epochs - 1 ) +
-				", " + str( num_iterations_per_epoch - 1 ) + " )" )
+				", " + str( num_iterations_per_epoch - 1 ) + " )\n" )
 			log_file.close()
 
 			device_density = bayer_filter.get_design_variable()
