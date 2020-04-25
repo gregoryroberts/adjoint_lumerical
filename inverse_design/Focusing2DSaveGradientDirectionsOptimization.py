@@ -445,7 +445,7 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 			# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 			# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 			device_gradient_real = np.swapaxes( device_gradient_real, 0, 1 )
-			design_gradient = bayer_filter.backpropagate( device_gradient_real ):
+			design_gradient = bayer_filter.backpropagate( device_gradient_real )
 
 			step_size = 0.01 / np.max( np.abs( design_gradient ) )
 			step_size_evolution[ epoch ][ iteration ] = step_size
