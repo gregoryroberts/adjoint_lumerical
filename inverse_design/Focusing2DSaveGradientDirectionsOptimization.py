@@ -417,7 +417,7 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 									np.sum(
 										conjugate_weighting_wavelength[ current_coord, spectral_indices[ 0 ] + spectral_idx ] *
 										reinterpolate_adjoint_efields *
-										reinterpolate_forward_efields
+										reinterpolate_forward_efields,
 									axis=0 )
 								)
 
