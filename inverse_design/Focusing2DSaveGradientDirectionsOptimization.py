@@ -297,7 +297,8 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 	binarization_evolution = np.zeros( ( num_epochs, num_iterations_per_epoch ) )
 	figure_of_merit_evolution = np.zeros( ( num_epochs, num_iterations_per_epoch ) )
 
-	reversed_field_shape = [ 3, device_size_voxels_vertical, device_size_voxels_lateral ]
+	reversed_field_shape = [ device_size_voxels_vertical, device_size_voxels_lateral ]
+	reversed_field_shape_xyz = [ 3, device_size_voxels_vertical, device_size_voxels_lateral ]
 	reversed_field_shape_with_pol = [ num_polarizations, device_size_voxels_vertical, device_size_voxels_lateral ]
 	xy_polarized_gradients_by_pol = np.zeros( reversed_field_shape_with_pol, dtype=np.complex )
 	xy_polarized_gradients = np.zeros( reversed_field_shape, dtype=np.complex )
@@ -410,8 +411,8 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 							pull_adjoint_efields = np.squeeze( adjoint_e_fields[ :, spectral_indices[ 0 ] + spectral_idx, 0, :, : ] )
 							pull_forward_efields = np.squeeze( forward_e_fields[ :, spectral_indices[ 0 ] + spectral_idx, 0, :, : ] )
 
-							reinterpolate_adjoint_efields = reinterpolate( pull_adjoint_efields, reversed_field_shape )
-							reinterpolate_forward_efields = reinterpolate( pull_forward_efields, reversed_field_shape )
+							reinterpolate_adjoint_efields = reinterpolate( pull_adjoint_efields, reversed_field_shape_xyz )
+							reinterpolate_forward_efields = reinterpolate( pull_forward_efields, reversed_field_shape_xyz )
 
 							gradient_by_epoch_by_iteration_by_pol_by_wavelength[
 								epoch, iteration, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = 2 * np.real(
