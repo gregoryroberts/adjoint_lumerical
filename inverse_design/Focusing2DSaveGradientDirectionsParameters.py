@@ -119,20 +119,6 @@ adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_latera
 num_epochs = 8
 num_iterations_per_epoch = 50
 
-#
-# Figure of merit regularization
-#
-regularization = 0.1
-alpha = 5
-
-num_gradient_iterations_fraction = 0.1
-num_gradient_iterations = int( num_gradient_iterations_fraction * num_iterations_per_epoch )
-
-if ( num_epochs is not 1 ) and use_simulated_annealing:
-	print("Error: We are only setting parameters to use simulated annealing for single epoch optimizations right now.")
-	sys.exit(1)
-
-
 use_fixed_step_size = True
 fixed_step_size = 10 * 1 / 5
 max_density_change_epoch_start = 0.05 / ( max_real_permittivity - min_real_permittivity )
