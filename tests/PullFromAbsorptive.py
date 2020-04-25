@@ -90,7 +90,7 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 project_load_directory = projects_directory_location + "/optimize_absorptive_switch_states_all_absorptive"
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v1"
+projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -298,7 +298,8 @@ permittivity_mid = 0.5 * ( permittivity_min + permittivity_max )
 
 # Load the all-absorptive device
 # device_permittivity = np.load( project_load_directory + '/cur_device.npy' )
-device_permittivity = permittivity_mid * np.ones( ( device_width_voxels, device_height_voxels, 2 ) )
+quarter_permittivity = permittivity_min + 0.25 * ( permittivity_max - permittivity_min )
+device_permittivity = quarter_permittivity * np.ones( ( device_width_voxels, device_height_voxels, 2 ) )
 
 
 device_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_um, device_width_voxels )
