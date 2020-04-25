@@ -31,18 +31,18 @@ device_mid_permittivity = 0.5 * ( device_min_permittivity + device_max_permittiv
 init_max_random_0_1_scale = 0.25
 init_permittivity_0_1_scale = 0.5
 
-focal_length_um = 1.5
+focal_length_um = 2.0
 
 #
 # Device
 #
 computation_mesh_um = 0.025
-feature_size_meshes_um = [ 0.01, 0.016, 0.02, 0.032, 0.04, 0.08, 0.16, 0.32, 0.64 ]
+feature_size_meshes_um = [ 0.01, 0.016, 0.02, 0.032, 0.04, 0.08, 0.16, 0.32 ]
 
 num_feature_size_optimizations = len( feature_size_meshes_um )
 
 device_size_lateral_um = 3.2
-device_size_vertical_um = 3.2
+device_size_vertical_um = 1.6
 
 device_voxels_lateral = 1 + int( device_size_lateral_um / computation_mesh_um )
 designable_device_voxels_vertical = 1 + int( device_size_vertical_um / computation_mesh_um )
@@ -117,7 +117,7 @@ adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_latera
 # Optimization
 #
 num_epochs = 8
-num_iterations_per_epoch = 50
+num_iterations_per_epoch = 30
 
 use_fixed_step_size = True
 fixed_step_size = 10 * 1 / 5
