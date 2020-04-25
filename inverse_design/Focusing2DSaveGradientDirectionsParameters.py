@@ -36,7 +36,7 @@ focal_length_um = 1.5
 #
 # Device
 #
-computation_mesh_um = 0.01
+computation_mesh_um = 0.025
 feature_size_meshes_um = [ 0.01, 0.016, 0.02, 0.032, 0.04, 0.08, 0.16, 0.32, 0.64 ]
 
 num_feature_size_optimizations = len( feature_size_meshes_um )
