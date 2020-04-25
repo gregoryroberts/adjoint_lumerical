@@ -7,6 +7,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 from Focusing2DSaveGradientDirectionsParameters import *
 import Focusing2DFilter
 
+import imp
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
 import lumapi
 
 import functools
@@ -194,7 +196,7 @@ design_efield_monitor['x span'] = device_size_lateral_um * 1e-6
 design_efield_monitor['y min'] = designable_device_vertical_minimum_um * 1e-6
 design_efield_monitor['y max'] = designable_device_vertical_maximum_um * 1e-6
 design_efield_monitor['override global monitor settings'] = 1
-design_efield_monitor['use linear wavelength spacing'] = 1
+design_efield_monitor['use wavelength spacing'] = 1
 design_efield_monitor['use source limits'] = 0
 design_efield_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 design_efield_monitor['maximum wavelength'] = lambda_max_um * 1e-6
@@ -223,7 +225,7 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
 	focal_monitor['y'] = adjoint_vertical_um * 1e-6
 	focal_monitor['override global monitor settings'] = 1
-	focal_monitor['use linear wavelength spacing'] = 1
+	focal_monitor['use wavelength spacing'] = 1
 	focal_monitor['use source limits'] = 0
 	focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
 	focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
@@ -240,7 +242,7 @@ for adj_src in range(0, num_adjoint_sources):
 	transmission_monitor['x span'] = ( 1.0 / num_focal_spots ) * device_size_lateral_um * 1e-6
 	transmission_monitor['y'] = adjoint_vertical_um * 1e-6
 	transmission_monitor['override global monitor settings'] = 1
-	transmission_monitor['use linear wavelength spacing'] = 1
+	transmission_monitor['use wavelength spacing'] = 1
 	transmission_monitor['use source limits'] = 1
 	transmission_monitor['frequency points'] = num_eval_frequency_points
 
