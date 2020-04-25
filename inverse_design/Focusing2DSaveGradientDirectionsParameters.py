@@ -121,8 +121,6 @@ num_iterations_per_epoch = 50
 
 use_fixed_step_size = True
 fixed_step_size = 10 * 1 / 5
-max_density_change_epoch_start = 0.05 / ( max_real_permittivity - min_real_permittivity )
-max_density_change_epoch_end = 0.005 / ( max_real_permittivity - min_real_permittivity )
 
 use_adaptive_step_size = False
 desired_max_max_design_change = 0.05
