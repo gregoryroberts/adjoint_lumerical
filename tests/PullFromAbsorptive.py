@@ -545,8 +545,10 @@ for iteration in range( 0, num_iterations ):
 	flattened_color_max_gradient = ( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
 
 	np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
-	np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
-	np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
+	# np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
+	# np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
+	np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_temp[ 0 ] )
+	np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_temp[ 1 ] )
 
 	desired_colored_fom_change = 0.0001 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
 	# print("desired change = " + str( desired_colored_fom_change))
