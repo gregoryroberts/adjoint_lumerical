@@ -305,7 +305,7 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 	figure_of_merit_by_pol = np.zeros( num_polarizations )
 
 	net_gradient_by_epoch_by_iteration = np.zeros(
-		( num_epochs, num_iterations_per_epoch, device_size_voxels_lateral, device_size_voxels_vertical ) )
+		( num_epochs, num_iterations_per_epoch, device_size_voxels_vertical, device_size_voxels_lateral ) )
 	gradient_by_epoch_by_iteration_by_pol_by_wavelength = np.zeros(
 		( num_epochs, num_iterations_per_epoch, num_polarizations, num_design_frequency_points, device_size_voxels_vertical, device_size_voxels_lateral ) )
 	fom_by_epoch_by_iteration_by_pol_by_wavelength = np.zeros(
