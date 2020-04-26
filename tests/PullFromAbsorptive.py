@@ -90,7 +90,7 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 project_load_directory = projects_directory_location + "/optimize_absorptive_switch_states_all_absorptive"
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v2"
+projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -410,14 +410,26 @@ directional_weightings_by_state[ 0 ][ : ] = -1
 directional_weightings_by_state[ 1 ][ : ] = 0
 directional_weightings_by_state[ 1 ][ int( 3 * num_design_frequency_points / 4. ) ] = num_design_frequency_points
 
+choose_hot_color = int( 3 * num_design_frequency_points / 4. )
+hot_colors = [ choose_hot_color - 1, choose_hot_color, choose_hot_color + 1 ]
+cold_colors = []
+for idx in range( 0, num_design_frequency_points ):
+	if not ( idx in hot_colors ):
+		cold_colors.append( idx )
+
+num_hot_colors = len( hot_colors )
+num_cold_colors = len( cold_colors )
+
 num_iterations = 50
-figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
+# figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
 figure_of_merit_by_iteration = np.zeros( num_iterations )
 
 for iteration in range( 0, num_iterations ):
 
-	gradient_by_gsst_state = []
-	fom_by_gsst_state = []
+	# gradient_by_gsst_state = []
+	# fom_by_gsst_state = []
+	fom_by_temp = [ 0 for i in range( 0, 2 ) ]
+	gradient_by_temp = []
 
 	for gsst_state in range( 0, num_gsst_states ):
 
@@ -433,24 +445,37 @@ for iteration in range( 0, num_iterations ):
 		forward_src.enabled = 1
 		fdtd_hook.run()
 
-		transmission_fom = np.zeros( num_design_frequency_points )
+		# transmission_fom = 0#np.zeros( num_design_frequency_points )
 		for wl_idx in range( 0, num_design_frequency_points ):
 			get_T_top = compute_transmission_top( [ wl_idx, wl_idx + 1 ] )
 			fom_T = get_T_top
-			if directional_weightings_by_state[ gsst_state ][ wl_idx ] < 0:
-				fom_T = 1 + directional_weightings_by_state[ gsst_state ][ wl_idx ] * fom_T
-			else:
-				fom_T *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
+			# if directional_weightings_by_state[ gsst_state ][ wl_idx ] < 0:
+			# 	fom_T = 1 + directional_weightings_by_state[ gsst_state ][ wl_idx ] * fom_T
+			# else:
+			# 	fom_T *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
 
 			# fom_T = np.maximum( np.minimum( fom_T, 1.0 ), 0.0 )
 			fom_T = np.maximum( fom_T, 0.0 )
 
-			transmission_fom[ wl_idx ] = fom_T
+			if wl_idx in hot_colors:
+				if gsst_state == 1:
+					fom_by_temp[ 0 ] += ( 1. / num_hot_colors ) * fom_T
+				else:
+					fom_by_temp[ 0 ] -= ( 1. / num_hot_colors ) * fom_T
+			else:
+				if gsst_state == 0:
+					fom_by_temp[ 1 ] += ( 1. / num_cold_colors ) * ( 1 - fom_T )
 
-		figure_of_merit_by_iteration_by_state_by_wavelength[ iteration, gsst_state, : ] = transmission_fom
-		fom_by_gsst_state.append( np.mean( transmission_fom ) )
+			# transmission_fom[ wl_idx ] = fom_T
+
+		# figure_of_merit_by_iteration_by_state_by_wavelength[ iteration, gsst_state, : ] = transmission_fom
+		# fom_by_temp.append( transmission_fom )# np.mean( transmission_fom ) )
 
 		forward_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
+		if gsst_state == 0:
+			for i in range( 0, 2 ):
+				gradient_by_temp.append( np.zeros( forward_e_fields[ 0, 0 ].shape ) )
+
 		adjoint_e_fields = np.zeros( forward_e_fields.shape, dtype=np.complex )
 
 		lumapi.evalScript( fdtd_hook.handle,
@@ -480,47 +505,61 @@ for iteration in range( 0, num_iterations ):
 		gradient = -2 * np.real( np.sum( forward_e_fields * adjoint_e_fields, axis=0 ) / 1j )
 
 		for wl_idx in range( 0, num_design_frequency_points ):
-			gradient[ wl_idx, :, :, : ] *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
+
+			if wl_idx in hot_colors:
+				if gsst_state == 1:
+					gradient_by_temp[ 0 ] += ( 1. / num_hot_colors ) * gradient[ wl_idx ]
+				else:
+					gradient_by_temp[ 0 ] -= ( 1. / num_hot_colors ) * gradient[ wl_idx ]
+			else:
+				if gsst_state == 0:
+					gradient_by_temp[ 1 ] -= ( 1. / num_cold_colors ) * gradient[ wl_idx ]
+
+
+
+			# gradient[ wl_idx, :, :, : ] *= directional_weightings_by_state[ gsst_state ][ wl_idx ]
 
 		# Not the right solution, but ok for now
-		fom_weightings = np.ones( num_design_frequency_points )
-		if gsst_state == 0:
-			fom_weightings = ( 2. / num_design_frequency_points ) - transmission_fom**2 / np.sum( transmission_fom**2 )
-			fom_weightings = np.maximum( fom_weightings, 0 )
-			fom_weightings /= np.sum( fom_weightings )
+		# fom_weightings = np.ones( num_design_frequency_points )
+		# if gsst_state == 0:
+		# 	fom_weightings = ( 2. / num_design_frequency_points ) - transmission_fom**2 / np.sum( transmission_fom**2 )
+		# 	fom_weightings = np.maximum( fom_weightings, 0 )
+		# 	fom_weightings /= np.sum( fom_weightings )
 
-		weighted_gradient = np.zeros( gradient[ 0 ].shape )
-		for wl_idx in range( 0, num_design_frequency_points ):
-			weighted_gradient += fom_weightings[ wl_idx ] * gradient[ wl_idx ] 
+		# weighted_gradient = np.zeros( gradient[ 0 ].shape )
+		# for wl_idx in range( 0, num_design_frequency_points ):
+		# 	weighted_gradient += fom_weightings[ wl_idx ] * gradient[ wl_idx ] 
 
-		weighted_gradient = np.swapaxes( weighted_gradient, 0, 2 )
-		gradient_by_gsst_state.append( weighted_gradient )
+		# weighted_gradient = np.swapaxes( weighted_gradient, 0, 2 )
+		# gradient_by_gsst_state.append( weighted_gradient )
 
-	fom_by_gsst_state = np.array( fom_by_gsst_state )
-	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_gsst_state )
+	# fom_by_gsst_state = np.array( fom_by_gsst_state )
+	fom_by_temp = np.array( fom_by_temp )
+	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_temp )
 
-	max_movement = 0.01
+	# max_movement = 0.01
 	flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
-	flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
-	flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
+	# flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
+	# flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
+	flattened_dark_min_gradient = -( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
+	flattened_color_max_gradient = ( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
 
 	np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
 	np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
 	np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
 
-	# Let's try and pull our colored state up by 0.5 percent per iteration
 	desired_colored_fom_change = 0.0001 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
 	# print("desired change = " + str( desired_colored_fom_change))
 
-	# Let's not let any epsilon move by more than 1 percent in density per iteration
-	beta = 0.01 * ( permittivity_max - permittivity_min )
+	# Let's not let any epsilon move by more than 0.25 percent in density per iteration
+	beta = 0.0025 * ( permittivity_max - permittivity_min )
 	projected_binarization_increase = 0
 
 	# c = flatten_fom_gradients
 	c = flattened_dark_min_gradient
 	dim = len(c)
 
-	initial_colored_fom = fom_by_gsst_state[ 1 ]
+	initial_colored_fom = fom_by_temp[ 0 ]
 	print( "Starting colored FOM = " + str( initial_colored_fom ) )
 
 	# b = np.real( extract_binarization_gradient )
@@ -578,7 +617,7 @@ for iteration in range( 0, num_iterations ):
 	print( "Expected color min change = " + str( expected_color_min_change ) )
 	print( "Expected color max change = " + str( expected_color_max_change ) )
 
-	print( "On iteration " + str( iteration ) + " fom by gsst state = " + str( fom_by_gsst_state ) )
+	print( "On iteration " + str( iteration ) + " fom by gsst state = " + str( fom_by_temp ) )
 
 	# total_gradient = np.zeros( gradient_by_gsst_state[ 0 ].shape )
 	# for gsst_state in range( 0, num_gsst_states ):
