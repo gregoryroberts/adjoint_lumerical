@@ -628,6 +628,7 @@ for iteration in range( 0, num_iterations ):
 	max_reflection = 0.5
 	fom_by_gsst_state[ 0 ] = np.maximum( max_reflection - fom_by_gsst_state[ 0 ], 0 )
 	fom_by_gsst_state[ 1 ] = np.maximum( fom_by_gsst_state[ 1 ], 0 )
+	fom_by_gsst_state = np.array( fom_by_gsst_state )
 
 	# fom_by_gsst_state = np.array( fom_by_gsst_state )
 	# fom_by_temp = np.array( fom_by_temp )
@@ -720,7 +721,7 @@ for iteration in range( 0, num_iterations ):
 		print( "Expected color max change = " + str( expected_color_max_change ) )
 
 	else:
-		fom_weightings = ( 2. / num_gsst_states ) - fom_by_gsst_state**2 / np.sum( fom_by_gsst_state )
+		fom_weightings = ( 2. / num_gsst_states ) - fom_by_gsst_state**2 / np.sum( fom_by_gsst_state**2 )
 		fom_weightings = np.maximum( fom_weightings, 0 )
 		fom_weightings /= np.sum( fom_weightings )
 
