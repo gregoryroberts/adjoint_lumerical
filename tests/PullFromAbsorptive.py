@@ -136,7 +136,7 @@ fdtd['background index'] = 1.0
 
 lambda_min_um = 0.4
 lambda_max_um = 0.7
-num_design_frequency_points = 10#20
+num_design_frequency_points = 20
 half_frequency_point = int( 0.5 * num_design_frequency_points )
 
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequency_points )
@@ -489,7 +489,7 @@ def grad_color( transmission_by_wavelength, gradient_by_wavelength ):
 # num_hot_colors = len( hot_colors )
 # num_cold_colors = len( cold_colors )
 
-num_iterations = 50
+num_iterations = 100
 # figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
 figure_of_merit_by_iteration = np.zeros( num_iterations )
 
@@ -625,7 +625,7 @@ for iteration in range( 0, num_iterations ):
 	# for gsst_state_idx in range( 0, len( gradient_by_temp ) ):
 	# 	gradient_by_temp[ gsst_state_idx ] = np.swapaxes( gradient_by_temp[ gsst_state_idx ], 0, 2 )
 
-	max_reflection = 0.5
+	max_reflection = 0.6
 	print( fom_by_gsst_state )
 	fom_by_gsst_state[ 0 ] = np.maximum( max_reflection - fom_by_gsst_state[ 0 ], 0 )
 	fom_by_gsst_state[ 1 ] = np.maximum( fom_by_gsst_state[ 1 ], 0 )
@@ -732,7 +732,7 @@ for iteration in range( 0, num_iterations ):
 			weighted_gradient += gradient_by_gsst_state[ gsst_state_idx ] * fom_weightings[ gsst_state_idx ]
 
 		# step = 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
-		step = 0.01 * ( weighted_gradient / np.max( np.abs( weighted_gradient ) ) )
+		step = 0.01 * ( permittivity_max - permittivity_min ) * ( weighted_gradient / np.max( np.abs( weighted_gradient ) ) )
 		stepped_permittivity = device_permittivity[ :, :, 0 ] + step[ :, :, 0 ]
 		stepped_permittivity = np.minimum( np.maximum( stepped_permittivity, permittivity_min ), permittivity_max )
 
