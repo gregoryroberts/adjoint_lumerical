@@ -539,16 +539,14 @@ for iteration in range( 0, num_iterations ):
 	fom_by_temp = np.array( fom_by_temp )
 	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_temp )
 
-	flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
-	if iteration < num_iterations_just_hot:
-		x_star = ( 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ) ).flatten()
-	else:
+	if iteration >= num_iterations_just_hot:
 
 		# max_movement = 0.01
 		# flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
 		# flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
 		flattened_dark_min_gradient = -( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
 		flattened_color_max_gradient = ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
+		flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
 
 		np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
 		# np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
@@ -617,14 +615,19 @@ for iteration in range( 0, num_iterations ):
 				x_star[ idx ] = lower_bounds[ idx ]
 
 
-	proposed_device = flattened_device + x_star
-	proposed_device = np.minimum( np.maximum( proposed_device, permittivity_min ), permittivity_max )
-	stepped_permittivity = np.reshape( proposed_device, device_permittivity[ :, :, 0 ].shape )
+		proposed_device = flattened_device + x_star
+		proposed_device = np.minimum( np.maximum( proposed_device, permittivity_min ), permittivity_max )
+		stepped_permittivity = np.reshape( proposed_device, device_permittivity[ :, :, 0 ].shape )
 
-	expected_color_max_change = np.dot( x_star, b )
-	expected_color_min_change = np.dot( x_star, -c )
-	print( "Expected color min change = " + str( expected_color_min_change ) )
-	print( "Expected color max change = " + str( expected_color_max_change ) )
+		expected_color_max_change = np.dot( x_star, b )
+		expected_color_min_change = np.dot( x_star, -c )
+		print( "Expected color min change = " + str( expected_color_min_change ) )
+		print( "Expected color max change = " + str( expected_color_max_change ) )
+
+	else iteration < num_iterations_just_hot:
+		proposed_device = device_permittivity + 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
+		proposed_device = np.minimum( np.maximum( proposed_device, permittivity_min ), permittivity_max )
+		stepped_permittivity = proposed_device
 
 	print( "On iteration " + str( iteration ) + " fom by gsst state = " + str( fom_by_temp ) )
 
