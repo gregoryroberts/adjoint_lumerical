@@ -293,6 +293,7 @@ def import_device_permittivity( permittivity ):
 
 	fdtd_hook.switchtolayout()
 	fdtd_hook.select( device_import[ 'name' ] )
+	fdtd_hook.select( device_import[ 'name' ] )
 	fdtd_hook.importnk2( index, x_range, y_range, z_range )
 
 min_feature_size_um = feature_size_meshes_um[ 0 ]
