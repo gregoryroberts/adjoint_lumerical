@@ -539,12 +539,12 @@ for iteration in range( 0, num_iterations ):
 	fom_by_temp = np.array( fom_by_temp )
 	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_temp )
 
+	flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
 	if iteration < num_iterations_just_hot:
-		x_star = 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
+		x_star = ( 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ) ).flatten()
 	else:
 
 		# max_movement = 0.01
-		flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
 		# flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
 		# flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
 		flattened_dark_min_gradient = -( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
