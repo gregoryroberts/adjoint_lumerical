@@ -535,6 +535,10 @@ for iteration in range( 0, num_iterations ):
 		# weighted_gradient = np.swapaxes( weighted_gradient, 0, 2 )
 		# gradient_by_gsst_state.append( weighted_gradient )
 
+	# HAVE TO SWAP THE AXES!!
+	for gsst_state_idx in range( 0, len( gradient_by_temp ) ):
+		gradient_by_temp[ gsst_state_idx ] = np.swapaxes( gradient_by_temp, 0, 2 )
+
 	# fom_by_gsst_state = np.array( fom_by_gsst_state )
 	fom_by_temp = np.array( fom_by_temp )
 	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_temp )
@@ -625,9 +629,8 @@ for iteration in range( 0, num_iterations ):
 		print( "Expected color max change = " + str( expected_color_max_change ) )
 
 	else:
-		proposed_device = device_permittivity + 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
-		proposed_device = np.minimum( np.maximum( proposed_device, permittivity_min ), permittivity_max )
-		stepped_permittivity = proposed_device
+		stepped_permittivity = device_permittivity[ :, :, 0 ] + 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
+		stepped_permittivity = np.minimum( np.maximum( stepped_permittivity, permittivity_min ), permittivity_max )
 
 	print( "On iteration " + str( iteration ) + " fom by gsst state = " + str( fom_by_temp ) )
 
