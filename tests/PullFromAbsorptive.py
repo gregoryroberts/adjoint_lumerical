@@ -738,6 +738,12 @@ for iteration in range( 0, num_iterations ):
 		for gsst_state_idx in range( 0, num_gsst_states ):
 			weighted_gradient += gradient_by_gsst_state[ gsst_state_idx ] * fom_weightings[ gsst_state_idx ]
 
+		weighted_gradient = np.swapaxes( weighted_gradient, 0, 2 )
+
+		print( weighted_gradient.shape )
+		plt.imshow( np.squeeze( weighted_gradient[:, :] ) )
+		plt.show()
+
 		step_magnitude = 0.05 - ( iteration / ( num_iterations - 1 ) ) * ( 0.05 - 0.01 )
 		# step = 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
 		step = step_magnitude * ( permittivity_max - permittivity_min ) * ( weighted_gradient / np.max( np.abs( weighted_gradient ) ) )
