@@ -537,7 +537,7 @@ for iteration in range( 0, num_iterations ):
 
 	# HAVE TO SWAP THE AXES!!
 	for gsst_state_idx in range( 0, len( gradient_by_temp ) ):
-		gradient_by_temp[ gsst_state_idx ] = np.swapaxes( gradient_by_temp, 0, 2 )
+		gradient_by_temp[ gsst_state_idx ] = np.swapaxes( gradient_by_temp[ gsst_state_idx ], 0, 2 )
 
 	# fom_by_gsst_state = np.array( fom_by_gsst_state )
 	fom_by_temp = np.array( fom_by_temp )
