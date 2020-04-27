@@ -625,7 +625,7 @@ for iteration in range( 0, num_iterations ):
 	# for gsst_state_idx in range( 0, len( gradient_by_temp ) ):
 	# 	gradient_by_temp[ gsst_state_idx ] = np.swapaxes( gradient_by_temp[ gsst_state_idx ], 0, 2 )
 
-	max_reflection = 0.6
+	max_reflection = 1.0
 	print( fom_by_gsst_state )
 	fom_by_gsst_state[ 0 ] = np.maximum( max_reflection - fom_by_gsst_state[ 0 ], 0 )
 	fom_by_gsst_state[ 1 ] = np.maximum( fom_by_gsst_state[ 1 ], 0 )
@@ -731,8 +731,9 @@ for iteration in range( 0, num_iterations ):
 		for gsst_state_idx in range( 0, num_gsst_states ):
 			weighted_gradient += gradient_by_gsst_state[ gsst_state_idx ] * fom_weightings[ gsst_state_idx ]
 
+		step_magnitude = 0.05 - ( iteration / ( num_iterations - 1 ) ) * ( 0.05 - 0.01 )
 		# step = 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
-		step = 0.01 * ( permittivity_max - permittivity_min ) * ( weighted_gradient / np.max( np.abs( weighted_gradient ) ) )
+		step = step_magnitude * ( permittivity_max - permittivity_min ) * ( weighted_gradient / np.max( np.abs( weighted_gradient ) ) )
 		stepped_permittivity = device_permittivity[ :, :, 0 ] + step[ :, :, 0 ]
 		stepped_permittivity = np.minimum( np.maximum( stepped_permittivity, permittivity_min ), permittivity_max )
 
