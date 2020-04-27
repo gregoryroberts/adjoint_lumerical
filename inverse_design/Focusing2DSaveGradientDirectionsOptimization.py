@@ -289,14 +289,12 @@ def import_device_permittivity( permittivity ):
 
 	fdtd_hook.switchtolayout()
 	fdtd_hook.select( 'device_import' )
-	fdtd_hook.importnk2( index, x_range, y_range, z_range )
+	fdtd_hook.importnk2( index_from_permittivity, x_range, y_range, z_range )
 
 for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 	min_feature_size_um = feature_size_meshes_um[ feature_size_optimization_idx ]
 	device_size_voxels_lateral = int( device_size_lateral_um / min_feature_size_um )
 	device_size_voxels_vertical = int( device_size_vertical_um / min_feature_size_um )
-
-	device_permittivity = ( device_mid_permittivity ) * np.ones( ( device_size_voxels_lateral, device_size_voxels_vertical ) )
 
 	bayer_filter = Focusing2DFilter.Focusing2DFilter( [ device_size_voxels_lateral, device_size_voxels_vertical ], device_permittivity_bounds, 0.5 )
 
@@ -389,7 +387,7 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 
 				figure_of_merit_by_pol[ pol_idx ] = figure_of_merit
 
-				figure_of_merit_evolution[epoch, iteration] += ( 1. / num_polarizations ) * figure_of_merit
+				figure_of_merit_evolution[ epoch, iteration ] += ( 1. / num_polarizations ) * figure_of_merit
 
 				#
 				# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
