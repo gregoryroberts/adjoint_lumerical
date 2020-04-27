@@ -626,6 +626,7 @@ for iteration in range( 0, num_iterations ):
 	# 	gradient_by_temp[ gsst_state_idx ] = np.swapaxes( gradient_by_temp[ gsst_state_idx ], 0, 2 )
 
 	max_reflection = 0.5
+	print( fom_by_gsst_state )
 	fom_by_gsst_state[ 0 ] = np.maximum( max_reflection - fom_by_gsst_state[ 0 ], 0 )
 	fom_by_gsst_state[ 1 ] = np.maximum( fom_by_gsst_state[ 1 ], 0 )
 	fom_by_gsst_state = np.array( fom_by_gsst_state )
