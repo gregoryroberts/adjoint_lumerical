@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_6x6x3p12um_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x3p12um_f4'
 
 #
 # Optical
@@ -44,7 +44,8 @@ num_vertical_layers = 3
 
 device_size_lateral_um = 2.0 * 3.0#3.06#3.6
 device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
-amorphous_silicon_height_per_layer_um = 0.52#0.8
+# amorphous_silicon_height_per_layer_um = 0.52#0.8
+amorphous_silicon_height_per_layer_um = 0.72
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
@@ -132,7 +133,7 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 #
 # Optimization
 #
-start_epoch = 12#7#6
+start_epoch = 0#12#7#6
 num_epochs = 14#8
 num_iterations_per_epoch = 50#35#50#25
 binarization_start_epoch = 2
