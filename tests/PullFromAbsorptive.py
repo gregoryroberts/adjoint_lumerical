@@ -541,7 +541,7 @@ for iteration in range( 0, num_iterations ):
 
 	if iteration < num_iterations_just_hot:
 		x_star = 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
-	else
+	else:
 
 		# max_movement = 0.01
 		flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
