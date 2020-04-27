@@ -306,6 +306,7 @@ device_x_range = 1e-6 * np.linspace( -0.5 * device_width_um, 0.5 * device_width_
 device_y_range = 1e-6 * np.linspace( device_min_um, device_max_um, device_height_voxels )
 device_z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
 
+# todo: If you were going for a quarter wave of the mid-wave this is not the right thickness
 cavity_height_um = 0.2
 cavity_index = 1.5
 cavity_max_um = device_min_um
@@ -429,6 +430,9 @@ def grad_dark( transmission_by_wavelength, gradient_by_wavelength ):
 	for wl_idx in range( 0, len( transmission_by_wavelength ) ):
 		gradient += gradient_by_wavelength[ wl_idx ] * gradient_max[ wl_idx ]
 
+	plt.imshow( np.squeeze( gradient ) )
+	plt.show()
+
 	return gradient
 
 
@@ -463,6 +467,9 @@ def grad_color( transmission_by_wavelength, gradient_by_wavelength ):
 	gradient = np.zeros( gradient_by_wavelength[ 0 ].shape )
 	for wl_idx in range( 0, len( trim_transmission ) ):
 		gradient += trim_gradient[ wl_idx ] * gradient_min[ wl_idx ]
+
+	plt.imshow( np.squeeze( gradient ) )
+	plt.show()
 
 	return gradient
 
