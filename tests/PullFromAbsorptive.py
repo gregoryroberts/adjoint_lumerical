@@ -624,7 +624,7 @@ for iteration in range( 0, num_iterations ):
 		print( "Expected color min change = " + str( expected_color_min_change ) )
 		print( "Expected color max change = " + str( expected_color_max_change ) )
 
-	else iteration < num_iterations_just_hot:
+	else:
 		proposed_device = device_permittivity + 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
 		proposed_device = np.minimum( np.maximum( proposed_device, permittivity_min ), permittivity_max )
 		stepped_permittivity = proposed_device
