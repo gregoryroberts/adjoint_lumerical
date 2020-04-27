@@ -455,11 +455,11 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 			step_size = 0.01 / np.max( np.abs( design_gradient ) )
 
 			bayer_filter.step( -device_gradient_real, step_size )
+			np.save( projects_directory_location + "/figure_of_merit_" + str( feature_size_optimization_idx ) + ".npy", figure_of_merit_evolution )
 
 		# Save once per epoch in case we want to check on it!
 		np.save( projects_directory_location + "/net_gradient_direction_" + str( feature_size_optimization_idx ) + ".npy", net_gradient_by_epoch_by_iteration )
 		np.save( projects_directory_location + "/gradient_directions_" + str( feature_size_optimization_idx ) + ".npy", gradient_by_epoch_by_iteration_by_pol_by_wavelength )
 		np.save( projects_directory_location + "/fom_all_objectives_" + str( feature_size_optimization_idx ) + ".npy", fom_by_epoch_by_iteration_by_pol_by_wavelength )
-		np.save( projects_directory_location + "/figure_of_merit_" + str( feature_size_optimization_idx ) + ".npy", figure_of_merit_evolution )
 		np.save( projects_directory_location + "/binarization_" + str( feature_size_optimization_idx ) + ".npy", binarization_evolution )
 
