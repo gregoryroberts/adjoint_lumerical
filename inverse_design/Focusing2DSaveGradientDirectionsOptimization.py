@@ -281,9 +281,15 @@ def import_device_permittivity( permittivity ):
 	y_range = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, permittivity_shape[ 1 ] )
 	z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
 
+	index = np.sqrt( permittivity )
+
+	index_from_permittivity = np.zeros( ( permittivity_shape[ 0 ], permittivity_shape[ 1 ], 2 ) )
+	index_from_permittivity[ :, :, 0 ] = index
+	index_from_permittivity[ :, :, 1 ] = index
+
 	fdtd_hook.switchtolayout()
 	fdtd_hook.select( 'device_import' )
-	fdtd_hook.importnk2( np.sqrt( permittivity ), x_range, y_range, z_range )
+	fdtd_hook.importnk2( index, x_range, y_range, z_range )
 
 for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 	min_feature_size_um = feature_size_meshes_um[ feature_size_optimization_idx ]
@@ -330,7 +336,6 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 
 			binarization = np.mean( np.abs( device_density - 0.5 ) ) / 0.5
 			binarization_evolution[ epoch, iteration ] = binarization
-
 
 			for pol_idx in range( 0, num_polarizations ):
 
