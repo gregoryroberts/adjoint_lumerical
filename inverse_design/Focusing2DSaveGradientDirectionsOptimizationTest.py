@@ -286,15 +286,10 @@ def import_device_permittivity( permittivity ):
 	index_from_permittivity = np.zeros( ( permittivity_shape[ 0 ], permittivity_shape[ 1 ], 2 ) )
 	index_from_permittivity[ :, :, 0 ] = index
 	index_from_permittivity[ :, :, 1 ] = index
-	print( index )
-	print( x_range )
-	print( y_range )
-	print( z_range )
 
 	fdtd_hook.switchtolayout()
 	fdtd_hook.select( device_import[ 'name' ] )
-	fdtd_hook.select( device_import[ 'name' ] )
-	fdtd_hook.importnk2( index, x_range, y_range, z_range )
+	fdtd_hook.importnk2( index_from_permittivity, x_range, y_range, z_range )
 
 min_feature_size_um = feature_size_meshes_um[ 0 ]
 device_size_voxels_lateral = int( device_size_lateral_um / min_feature_size_um )
