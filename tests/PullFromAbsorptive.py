@@ -449,7 +449,7 @@ def fom_color( transmission_by_wavelength ):
 
 def grad_color( transmission_by_wavelength, gradient_by_wavelength ):
 	trim_transmission = np.zeros( len( hot_colors ) )
-	trim_gradient = np.zeros( [ len( hot_colors ) ] + gradient_by_wavelength[ 0 ].shape )
+	trim_gradient = np.zeros( [ len( hot_colors ) ] + list( gradient_by_wavelength[ 0 ].shape ) )
 
 	cur_idx = 0
 	for color_idx in range( 0, len( transmission_by_wavelength ) ):
