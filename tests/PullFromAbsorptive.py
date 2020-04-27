@@ -497,7 +497,7 @@ num_iterations_just_hot = num_iterations
 
 for iteration in range( 0, num_iterations ):
 
-	# gradient_by_gsst_state = []
+	gradient_by_gsst_state = []
 	fom_by_gsst_state = []
 	# fom_by_temp = [ 0 for i in range( 0, 2 ) ]
 	# gradient_by_temp = []
