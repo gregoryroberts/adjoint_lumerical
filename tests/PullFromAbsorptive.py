@@ -629,7 +629,8 @@ for iteration in range( 0, num_iterations ):
 		print( "Expected color max change = " + str( expected_color_max_change ) )
 
 	else:
-		stepped_permittivity = device_permittivity[ :, :, 0 ] + 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
+		step = 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
+		stepped_permittivity = device_permittivity[ :, :, 0 ] + step[ :, :, 0 ]
 		stepped_permittivity = np.minimum( np.maximum( stepped_permittivity, permittivity_min ), permittivity_max )
 
 	print( "On iteration " + str( iteration ) + " fom by gsst state = " + str( fom_by_temp ) )
