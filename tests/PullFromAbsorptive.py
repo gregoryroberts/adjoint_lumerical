@@ -725,6 +725,7 @@ for iteration in range( 0, num_iterations ):
 		fom_weightings = ( 2. / num_gsst_states ) - fom_by_gsst_state**2 / np.sum( fom_by_gsst_state**2 )
 		fom_weightings = np.maximum( fom_weightings, 0 )
 		fom_weightings /= np.sum( fom_weightings )
+		print( 'cur weightings = ' + str( fom_weightings ) )
 
 		weighted_gradient = np.zeros( gradient_by_gsst_state[ 0 ].shape )
 		for gsst_state_idx in range( 0, num_gsst_states ):
