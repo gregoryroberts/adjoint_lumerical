@@ -454,7 +454,7 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 
 			step_size = 0.01 / np.max( np.abs( design_gradient ) )
 
-			bayer_filter.step( device_gradient_real, step_size )
+			bayer_filter.step( -device_gradient_real, step_size )
 
 		# Save once per epoch in case we want to check on it!
 		np.save( projects_directory_location + "/net_gradient_direction_" + str( feature_size_optimization_idx ) + ".npy", net_gradient_by_epoch_by_iteration )
