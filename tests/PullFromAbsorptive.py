@@ -422,7 +422,7 @@ def approx_min_grad( v ):
 
 def fom_dark( transmission_by_wavelength ):
 	return approx_max( transmission_by_wavelength )
-def grad_dark( transmission_by_wavelength, gradient_by_wavelength );
+def grad_dark( transmission_by_wavelength, gradient_by_wavelength ):
 	gradient_max = approx_max_grad( transmission_by_wavelength )
 
 	gradient = np.zeros( gradient_by_wavelength[ 0 ].shape )
