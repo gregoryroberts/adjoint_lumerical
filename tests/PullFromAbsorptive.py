@@ -106,7 +106,7 @@ fdtd_region_size_lateral_um = 5
 fdtd_region_minimum_vertical_um = -2.5
 fdtd_region_maximum_vertical_um = 2.5
 
-mesh_size_um = 0.005
+mesh_size_um = 0.02
 
 fdtd_region_minimum_lateral_voxels = 1 + int ( fdtd_region_size_lateral_um / mesh_size_um )
 fdtd_region_minimum_vertical_voxels = 1 + int( ( fdtd_region_maximum_vertical_um - fdtd_region_minimum_vertical_um ) / mesh_size_um )
@@ -424,6 +424,8 @@ num_iterations = 50
 # figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
 figure_of_merit_by_iteration = np.zeros( num_iterations )
 
+num_iterations_just_hot = 10
+
 for iteration in range( 0, num_iterations ):
 
 	# gradient_by_gsst_state = []
@@ -537,78 +539,83 @@ for iteration in range( 0, num_iterations ):
 	fom_by_temp = np.array( fom_by_temp )
 	figure_of_merit_by_iteration[ iteration ] = np.mean( fom_by_temp )
 
-	# max_movement = 0.01
-	flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
-	# flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
-	# flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
-	flattened_dark_min_gradient = -( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
-	flattened_color_max_gradient = ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
+	if iteration < num_iterations_just_hot:
+		x_star = 0.01 * ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) )
+	else
 
-	np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
-	# np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
-	# np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
-	np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_temp[ 0 ] )
-	np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_temp[ 1 ] )
+		# max_movement = 0.01
+		flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
+		# flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
+		# flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
+		flattened_dark_min_gradient = -( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
+		flattened_color_max_gradient = ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
 
-	desired_colored_fom_change = 0.0001 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
-	# print("desired change = " + str( desired_colored_fom_change))
+		np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
+		# np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 0 ] )
+		# np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_gsst_state[ 1 ] )
+		np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_temp[ 0 ] )
+		np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_temp[ 1 ] )
 
-	# Let's not let any epsilon move by more than 0.25 percent in density per iteration
-	beta = 0.0025 * ( permittivity_max - permittivity_min )
-	projected_binarization_increase = 0
+		desired_colored_fom_change = 0.0001 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
+		# print("desired change = " + str( desired_colored_fom_change))
 
-	# c = flatten_fom_gradients
-	c = flattened_dark_min_gradient
-	dim = len(c)
+		# Let's not let any epsilon move by more than 0.25 percent in density per iteration
+		beta = 0.0025 * ( permittivity_max - permittivity_min )
+		projected_binarization_increase = 0
 
-	initial_colored_fom = fom_by_temp[ 0 ]
-	print( "Starting colored FOM = " + str( initial_colored_fom ) )
+		# c = flatten_fom_gradients
+		c = flattened_dark_min_gradient
+		dim = len(c)
 
-	# b = np.real( extract_binarization_gradient )
-	b = flattened_color_max_gradient
-	cur_x = np.zeros( dim )
+		initial_colored_fom = fom_by_temp[ 0 ]
+		print( "Starting colored FOM = " + str( initial_colored_fom ) )
 
-	lower_bounds = np.zeros( len( c ) )
-	upper_bounds = np.zeros( len( c ) )
+		# b = np.real( extract_binarization_gradient )
+		b = flattened_color_max_gradient
+		cur_x = np.zeros( dim )
 
-	for idx in range( 0, len( c ) ):
-		# upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
-		# lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
-		upper_bounds[ idx ] = np.maximum( np.minimum( beta, permittivity_max - flattened_device[ idx ] ), 0 )
-		lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -( flattened_device[ idx ] - permittivity_min ) ), 0 )
+		lower_bounds = np.zeros( len( c ) )
+		upper_bounds = np.zeros( len( c ) )
 
-	max_possible_colored_change = 0
-	for idx in range( 0, len( c ) ):
-		if b[ idx ] > 0:
-			max_possible_colored_change += b[ idx ] * upper_bounds[ idx ]
-		else:
-			max_possible_colored_change += b[ idx ] * lower_bounds[ idx ]
-	
-	alpha = np.minimum( max_possible_colored_change / 3., desired_colored_fom_change )
+		for idx in range( 0, len( c ) ):
+			# upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+			# lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+			upper_bounds[ idx ] = np.maximum( np.minimum( beta, permittivity_max - flattened_device[ idx ] ), 0 )
+			lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -( flattened_device[ idx ] - permittivity_min ) ), 0 )
 
-	def ramp( x ):
-		return np.maximum( x, 0 )
+		max_possible_colored_change = 0
+		for idx in range( 0, len( c ) ):
+			if b[ idx ] > 0:
+				max_possible_colored_change += b[ idx ] * upper_bounds[ idx ]
+			else:
+				max_possible_colored_change += b[ idx ] * lower_bounds[ idx ]
+		
+		alpha = np.minimum( max_possible_colored_change / 3., desired_colored_fom_change )
 
-	def opt_function( nu ):
-		lambda_1 = ramp( nu * b - c )
-		lambda_2 = c + lambda_1 - nu * b
+		def ramp( x ):
+			return np.maximum( x, 0 )
 
-		return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
+		def opt_function( nu ):
+			lambda_1 = ramp( nu * b - c )
+			lambda_2 = c + lambda_1 - nu * b
+
+			return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
 
 
-	tolerance = 1e-12
-	optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance, bounds=[ [ 0, np.inf ] ] )
+		tolerance = 1e-12
+		optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance, bounds=[ [ 0, np.inf ] ] )
 
-	nu_star = optimization_solution_nu.x
-	lambda_1_star = ramp( nu_star * b - c )
-	lambda_2_star = c + lambda_1_star - nu_star * b
-	x_star = np.zeros( dim )
+		nu_star = optimization_solution_nu.x
+		lambda_1_star = ramp( nu_star * b - c )
+		lambda_2_star = c + lambda_1_star - nu_star * b
+		x_star = np.zeros( dim )
 
-	for idx in range( 0, dim ):
-		if lambda_1_star[ idx ] > 0:
-			x_star[ idx ] = upper_bounds[ idx ]
-		else:
-			x_star[ idx ] = lower_bounds[ idx ]
+		for idx in range( 0, dim ):
+			if lambda_1_star[ idx ] > 0:
+				x_star[ idx ] = upper_bounds[ idx ]
+			else:
+				x_star[ idx ] = lower_bounds[ idx ]
+
 
 	proposed_device = flattened_device + x_star
 	proposed_device = np.minimum( np.maximum( proposed_device, permittivity_min ), permittivity_max )
