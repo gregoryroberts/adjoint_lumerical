@@ -718,14 +718,16 @@ for iteration in range( start_iter, num_iterations ):
 		projected_binarization_increase = 0
 
 		# c = flatten_fom_gradients
-		c = flattened_dark_min_gradient
+		c = -flattened_color_max_gradient
+		# c = flattened_dark_min_gradient
 		dim = len(c)
 
 		# initial_colored_fom = fom_by_temp[ 0 ]
 		# print( "Starting colored FOM = " + str( initial_colored_fom ) )
 
 		# b = np.real( extract_binarization_gradient )
-		b = flattened_color_max_gradient
+		b = -flattened_dark_min_gradient
+		# b = flattened_color_max_gradient
 		cur_x = np.zeros( dim )
 
 		lower_bounds = np.zeros( len( c ) )
@@ -775,8 +777,10 @@ for iteration in range( start_iter, num_iterations ):
 		proposed_device = np.minimum( np.maximum( proposed_device, permittivity_min ), permittivity_max )
 		stepped_permittivity = np.reshape( proposed_device, device_permittivity[ :, :, 0 ].shape )
 
-		expected_color_max_change = np.dot( x_star, b )
-		expected_color_min_change = np.dot( x_star, -c )
+		expected_color_max_change = np.dot( x_star, -c )
+		expected_color_min_change = np.dot( x_star, b )
+		# expected_color_max_change = np.dot( x_star, b )
+		# expected_color_min_change = np.dot( x_star, -c )
 		print( "Expected color min change = " + str( expected_color_min_change ) )
 		print( "Expected color max change = " + str( expected_color_max_change ) )
 
