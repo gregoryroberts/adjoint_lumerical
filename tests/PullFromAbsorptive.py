@@ -691,9 +691,15 @@ for iteration in range( start_iter, num_iterations ):
 
 	if iteration >= num_iterations_just_hot:
 
+		hot_normalized_gradient = gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) )
+		cold_normalized_gradient = -gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) )
+
+		hot_normalized_gradient = np.swapaxes( hot_normalized_gradient, 0, 2 )
+		cold_normalized_gradient = np.swapaxes( cold_normalized_gradient, 0, 2 )
+
 		# max_movement = 0.01
-		flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
-		flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
+		flattened_dark_min_gradient = cold_normalized_gradient.flatten()
+		flattened_color_max_gradient = hot_normalized_gradient.flatten()
 		# flattened_dark_min_gradient = -( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
 		# flattened_color_max_gradient = ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
 		flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
