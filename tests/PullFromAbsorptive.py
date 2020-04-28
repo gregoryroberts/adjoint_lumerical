@@ -704,7 +704,7 @@ for iteration in range( start_iter, num_iterations ):
 		# np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_temp[ 0 ] )
 		# np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_temp[ 1 ] )
 
-		desired_colored_fom_change = 0.001 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
+		desired_colored_fom_change = 0.0005 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
 		# print("desired change = " + str( desired_colored_fom_change))
 
 		# Let's not let any epsilon move by more than 0.25 percent in density per iteration
