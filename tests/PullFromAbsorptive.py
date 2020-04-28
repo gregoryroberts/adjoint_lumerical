@@ -90,7 +90,7 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 project_load_directory = projects_directory_location + "/optimize_absorptive_switch_states_all_absorptive"
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v3"
+projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v4"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -307,8 +307,9 @@ device_y_range = 1e-6 * np.linspace( device_min_um, device_max_um, device_height
 device_z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
 
 # todo: If you were going for a quarter wave of the mid-wave this is not the right thickness
-cavity_height_um = 0.2
 cavity_index = 1.5
+# cavity_height_um = 0.2
+cavity_height_um = 0.25 * 0.5 * ( lambda_min_um + lambda_max_um ) / cavity_index
 cavity_max_um = device_min_um
 cavity_min_um = cavity_max_um - cavity_height_um
 
