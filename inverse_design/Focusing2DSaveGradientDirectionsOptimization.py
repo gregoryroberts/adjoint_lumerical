@@ -292,7 +292,7 @@ def reinterpolate_by_averaging_2d( input_array, output_shape ):
     		output_y = int( np.floor( scale_y * y_idx ) )
 
     		output_x = np.minimum( output_x, output_shape[ 0 ] - 1 )
-    		output_y = np.minimum( output_x, output_shape[ 1 ] - 1 )
+    		output_y = np.minimum( output_y, output_shape[ 1 ] - 1 )
 
     		output_array[ output_x, output_y ] += input_array[ x_idx, y_idx ]
 
