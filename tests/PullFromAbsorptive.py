@@ -91,11 +91,11 @@ if not os.path.isdir(projects_directory_location):
 
 project_load_directory = projects_directory_location + "/optimize_absorptive_switch_states_all_absorptive"
 
-preload = False
+preload = True
 start_iter = 50
-preload_loc = projects_directory_location + "/pull_from_absorptive_switch_states_from_start_higher_index_v4"
+preload_loc = projects_directory_location + "/pull_from_absorptive_switch_states_from_start_higher_index_v6"
 
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v6"
+projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v7"
 
 
 if not os.path.isdir(projects_directory_location):
@@ -710,7 +710,7 @@ for iteration in range( start_iter, num_iterations ):
 		# np.save( projects_directory_location + '/gradient_dark_' + str( iteration ) + '.npy', gradient_by_temp[ 0 ] )
 		# np.save( projects_directory_location + '/gradient_bright_' + str( iteration ) + '.npy', gradient_by_temp[ 1 ] )
 
-		desired_colored_fom_change = 0.00025 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
+		desired_colored_fom_change = 0.0025 * np.product( device_permittivity[ :, :, 0 ].shape ) * ( 1.1 - ( iteration / ( num_iterations - 1 ) ) )
 		# print("desired change = " + str( desired_colored_fom_change))
 
 		# Let's not let any epsilon move by more than 0.25 percent in density per iteration
