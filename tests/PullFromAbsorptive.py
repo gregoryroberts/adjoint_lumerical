@@ -90,7 +90,13 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 project_load_directory = projects_directory_location + "/optimize_absorptive_switch_states_all_absorptive"
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v4"
+
+preload = True
+start_iter = 50
+preload_loc = projects_directory_location + "/pull_from_absorptive_switch_states_from_start_higher_index_v4"
+
+projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v5"
+
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -470,6 +476,39 @@ def grad_color( transmission_by_wavelength, gradient_by_wavelength ):
 
 
 
+def fom_dark_narrow( transmission_by_wavelength ):
+	trim_transmission = np.zeros( len( hot_colors ) )
+
+	cur_idx = 0
+	for color_idx in range( 0, len( transmission_by_wavelength ) ):
+		if color_idx in hot_colors:
+			trim_transmission[ cur_idx ] = transmission_by_wavelength[ color_idx ]
+			cur_idx += 1
+
+	return approx_max( trim_transmission )
+
+def grad_dark_narrow( transmission_by_wavelength, gradient_by_wavelength ):
+	trim_transmission = np.zeros( len( hot_colors ) )
+	trim_gradient = np.zeros( [ len( hot_colors ) ] + list( gradient_by_wavelength[ 0 ].shape ) )
+
+	cur_idx = 0
+	for color_idx in range( 0, len( transmission_by_wavelength ) ):
+		if color_idx in hot_colors:
+			trim_transmission[ cur_idx ] = transmission_by_wavelength[ color_idx ]
+			trim_gradient[ cur_idx ] = gradient_by_wavelength[ color_idx ]
+			cur_idx += 1
+
+	gradient_min = approx_max_grad( trim_transmission )
+
+	gradient = np.zeros( gradient_by_wavelength[ 0 ].shape )
+	for wl_idx in range( 0, len( trim_transmission ) ):
+		gradient += trim_gradient[ wl_idx ] * gradient_min[ wl_idx ]
+
+	return gradient
+
+
+
+
 
 
 
@@ -495,9 +534,15 @@ num_iterations = 100
 # figure_of_merit_by_iteration_by_state_by_wavelength = np.zeros( ( num_iterations, num_gsst_states, num_design_frequency_points ) )
 figure_of_merit_by_iteration = np.zeros( num_iterations )
 
-num_iterations_just_hot = num_iterations
+num_iterations_just_hot = 50
 
-for iteration in range( 0, num_iterations ):
+if not preload:
+	start_iter = 0
+
+if preload:
+	device_permittivity = np.load( preload_loc + '/cur_device.npy' )
+
+for iteration in range( start_iter, num_iterations ):
 
 	gradient_by_gsst_state = []
 	fom_by_gsst_state = []
@@ -547,7 +592,10 @@ for iteration in range( 0, num_iterations ):
 
 		get_fom = 0
 		if gsst_state == 0:
-			get_fom = fom_dark( transmission_by_wavelength )
+			if iteration >= num_iterations_just_hot:
+				get_fom = fom_dark_narrow( transmission_by_wavelength )
+			else:
+				get_fom = fom_dark( transmission_by_wavelength )
 		else:
 			get_fom = fom_color( transmission_by_wavelength )
 
@@ -590,7 +638,10 @@ for iteration in range( 0, num_iterations ):
 		gradient = -2 * np.real( np.sum( forward_e_fields * adjoint_e_fields, axis=0 ) / 1j )
 
 		if gsst_state == 0:
-			gradient_by_gsst_state.append( grad_dark( transmission_by_wavelength, -gradient ) )
+			if iteration >= num_iterations_just_hot:
+				gradient_by_gsst_state.append( grad_dark_narrow( transmission_by_wavelength, -gradient ) )
+			else:
+				gradient_by_gsst_state.append( grad_dark( transmission_by_wavelength, -gradient ) )
 		else:
 			gradient_by_gsst_state.append( grad_color( transmission_by_wavelength, gradient ) )
 
@@ -641,10 +692,10 @@ for iteration in range( 0, num_iterations ):
 	if iteration >= num_iterations_just_hot:
 
 		# max_movement = 0.01
-		# flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
-		# flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
-		flattened_dark_min_gradient = -( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
-		flattened_color_max_gradient = ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
+		flattened_dark_min_gradient = -( gradient_by_gsst_state[ 0 ] / np.max( np.abs( gradient_by_gsst_state[ 0 ] ) ) ).flatten()
+		flattened_color_max_gradient = ( gradient_by_gsst_state[ 1 ] / np.max( np.abs( gradient_by_gsst_state[ 1 ] ) ) ).flatten()
+		# flattened_dark_min_gradient = -( gradient_by_temp[ 1 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
+		# flattened_color_max_gradient = ( gradient_by_temp[ 0 ] / np.max( np.abs( gradient_by_temp[ 0 ] ) ) ).flatten()
 		flattened_device = ( device_permittivity[ :, :, 0 ] ).flatten()
 
 		np.save( projects_directory_location + '/device_permittivity_' + str( iteration ) + '.npy', device_permittivity )
