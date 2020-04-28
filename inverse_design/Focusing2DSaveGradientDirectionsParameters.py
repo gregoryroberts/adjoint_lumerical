@@ -8,7 +8,7 @@ import sys
 #
 # Files
 #
-project_name = '2d_rbg_save_directions'
+project_name = '2d_rbg_save_directions_v2'
 
 #
 # Random Seed
@@ -113,8 +113,8 @@ adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_latera
 #
 # Optimization
 #
-num_epochs = 8
-num_iterations_per_epoch = 30
+num_epochs = 10
+num_iterations_per_epoch = 25
 
 use_fixed_step_size = True
 fixed_step_size = 10 * 1 / 5

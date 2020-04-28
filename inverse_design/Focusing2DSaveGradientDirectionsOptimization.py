@@ -275,6 +275,34 @@ def reinterpolate( input_array, output_shape ):
 
     return output_array    
 
+def reinterpolate_by_averaging_2d( input_array, output_shape ):
+    input_shape = input_array.shape
+
+    assert len( input_shape ) == len( output_shape ), "Reinterpolate by averaging: expected the input and output to have same number of dimensions"
+
+    output_counts = np.zeros( output_shape )
+    output_array = np.zeros ( output_shape )
+
+    scale_x = output_shape[ 0 ] / input_array.shape[ 0 ]
+    scale_y = output_shape[ 1 ] / input_array.shape[ 1 ]
+
+    for x_idx in range( 0, input_array.shape[ 0 ] ):
+    	for y_idx in range( 0, input_array.shape[ 1 ]):
+    		output_x = int( np.floor( scale_x * x_idx ) )
+    		output_y = int( np.floor( scale_y * y_idx ) )
+
+    		output_x = np.minimum( output_x, output_shape[ 0 ] - 1 )
+    		output_y = np.minimum( output_x, output_shape[ 1 ] - 1 )
+
+    		output_array[ output_x, output_y ] += input_array[ x_idx, y_idx ]
+
+    		output_counts[ output_x, output_y ] += 1
+
+    assert np.min( output_counts ) > 0, "Reinterpolate by averaging: expected all output bins to be hit"
+    output_array /= output_counts
+    return output_array
+
+
 def import_device_permittivity( permittivity ):
 	permittivity_shape = permittivity.shape
 	x_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, permittivity_shape[ 0 ] )
@@ -291,6 +319,10 @@ def import_device_permittivity( permittivity ):
 	fdtd_hook.select( 'device_import' )
 	fdtd_hook.importnk2( index_from_permittivity, x_range, y_range, z_range )
 
+
+device_size_voxels_lateral_base = int( device_size_lateral_um / computation_mesh_um )
+device_size_voxels_vertical_base = int( device_size_vertical_um / computation_mesh_um )
+
 for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 	min_feature_size_um = feature_size_meshes_um[ feature_size_optimization_idx ]
 	device_size_voxels_lateral = int( device_size_lateral_um / min_feature_size_um )
@@ -301,17 +333,19 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 	binarization_evolution = np.zeros( ( num_epochs, num_iterations_per_epoch ) )
 	figure_of_merit_evolution = np.zeros( ( num_epochs, num_iterations_per_epoch ) )
 
-	reversed_field_shape = [ device_size_voxels_vertical, device_size_voxels_lateral ]
-	reversed_field_shape_xyz = [ 3, device_size_voxels_vertical, device_size_voxels_lateral ]
-	reversed_field_shape_with_pol = [ num_polarizations, device_size_voxels_vertical, device_size_voxels_lateral ]
+	reversed_field_shape = [ device_size_voxels_vertical_base, device_size_voxels_lateral_base ]
+	reversed_field_shape_xyz = [ 3, device_size_voxels_vertical_base, device_size_voxels_lateral_base ]
+	reversed_field_shape_with_pol = [ num_polarizations, device_size_voxels_vertical_base, device_size_voxels_lateral_base ]
 	xy_polarized_gradients_by_pol = np.zeros( reversed_field_shape_with_pol, dtype=np.complex )
 	xy_polarized_gradients = np.zeros( reversed_field_shape, dtype=np.complex )
 	figure_of_merit_by_pol = np.zeros( num_polarizations )
 
+	averaged_gradient_shape = [ device_size_voxels_lateral, device_size_voxels_vertical ]
+
 	net_gradient_by_epoch_by_iteration = np.zeros(
-		( num_epochs, num_iterations_per_epoch, device_size_voxels_vertical, device_size_voxels_lateral ) )
+		( num_epochs, num_iterations_per_epoch, device_size_voxels_lateral, device_size_voxels_vertical ) )
 	gradient_by_epoch_by_iteration_by_pol_by_wavelength = np.zeros(
-		( num_epochs, num_iterations_per_epoch, num_polarizations, num_design_frequency_points, device_size_voxels_vertical, device_size_voxels_lateral ) )
+		( num_epochs, num_iterations_per_epoch, num_polarizations, num_design_frequency_points, device_size_voxels_lateral, device_size_voxels_vertical ) )
 	fom_by_epoch_by_iteration_by_pol_by_wavelength = np.zeros(
 		( num_epochs, num_iterations_per_epoch, num_polarizations, num_design_frequency_points ) )
 
@@ -417,14 +451,17 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 							reinterpolate_adjoint_efields = reinterpolate( pull_adjoint_efields, reversed_field_shape_xyz )
 							reinterpolate_forward_efields = reinterpolate( pull_forward_efields, reversed_field_shape_xyz )
 
-							gradient_by_epoch_by_iteration_by_pol_by_wavelength[
-								epoch, iteration, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = 2 * np.real(
+							non_averaged_gradient = 2 * np.real(
 									np.sum(
 										conjugate_weighting_wavelength[ current_coord, spectral_indices[ 0 ] + spectral_idx ] *
 										reinterpolate_adjoint_efields *
 										reinterpolate_forward_efields,
 									axis=0 )
 								)
+
+							gradient_by_epoch_by_iteration_by_pol_by_wavelength[
+								epoch, iteration, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = reinterpolate_by_averaging_2d(
+									np.swapaxes( non_averaged_gradient, 0, 1 ), averaged_gradient_shape )
 
 							polarized_gradient += np.sum(
 								( conjugate_weighting_wavelength[current_coord, spectral_indices[0] + spectral_idx] * fom_weighting[spectral_indices[0] + spectral_idx] ) *
@@ -446,16 +483,21 @@ for feature_size_optimization_idx in range( 0, num_feature_size_optimizations ):
 			#
 			device_gradient_real = 2 * np.real( xy_polarized_gradients )
 
-			net_gradient_by_epoch_by_iteration[ epoch, iteration ] = device_gradient_real
 			# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 			# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 			device_gradient_real = np.swapaxes( device_gradient_real, 0, 1 )
-			design_gradient = bayer_filter.backpropagate( device_gradient_real )
+			average_device_gradient_real = reinterpolate_by_averaging_2d( device_gradient_real, averaged_gradient_shape )
+			net_gradient_by_epoch_by_iteration[ epoch, iteration ] = average_device_gradient_real
 
-			step_size = 0.01 / np.max( np.abs( design_gradient ) )
+			average_design_gradient = bayer_filter.backpropagate( average_device_gradient_real )
 
-			bayer_filter.step( -device_gradient_real, step_size )
+			# step_size_normalized_zeroth_mesh = 0.025
+			# step_size = ( step_size_normalized_zeroth_mesh / np.max( np.abs( average_design_gradient ) ) ) * ( feature_size_meshes_um[ 0 ] / min_feature_size_um )**2
+			step_size = 0.01 / np.max( np.abs( average_design_gradient ) )
+
+			bayer_filter.step( -average_device_gradient_real, step_size )
 			np.save( projects_directory_location + "/figure_of_merit_" + str( feature_size_optimization_idx ) + ".npy", figure_of_merit_evolution )
+			np.save( projects_directory_location + "/design_variable_" + str( feature_size_optimization_idx ) + ".npy", bayer_filter.get_design_variable() )
 
 		# Save once per epoch in case we want to check on it!
 		np.save( projects_directory_location + "/net_gradient_direction_" + str( feature_size_optimization_idx ) + ".npy", net_gradient_by_epoch_by_iteration )

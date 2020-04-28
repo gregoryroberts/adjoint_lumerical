@@ -28,7 +28,7 @@ class Focusing2DFilter(device.Device):
 
 
     def update_filters(self, epoch):
-        self.sigmoid_beta = 0.00625 * (2**epoch)
+        self.sigmoid_beta = 0.0625 * (2**epoch)
 
         self.sigmoid_0 = sigmoid.Sigmoid( self.sigmoid_beta, self.sigmoid_eta )
         self.filters = [ self.sigmoid_0, self.scale_1 ]
@@ -38,7 +38,7 @@ class Focusing2DFilter(device.Device):
         self.num_variables = 1 + self.num_filters
 
         # Start the sigmoids at weak strengths
-        self.sigmoid_beta = 0.0625 / ( 2**3 )
+        self.sigmoid_beta = 0.0625 * (2**epoch)
         self.sigmoid_eta = 0.5
         self.sigmoid_0 = sigmoid.Sigmoid( self.sigmoid_beta, self.sigmoid_eta )
 
