@@ -95,7 +95,7 @@ preload = False
 start_iter = 50
 preload_loc = projects_directory_location + "/pull_from_absorptive_switch_states_from_start_higher_index_v6"
 
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v8"
+projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v9"
 
 
 if not os.path.isdir(projects_directory_location):
@@ -593,7 +593,8 @@ for iteration in range( start_iter, num_iterations ):
 		get_fom = 0
 		if gsst_state == 0:
 			if iteration >= num_iterations_just_hot:
-				get_fom = fom_dark_narrow( transmission_by_wavelength )
+				# get_fom = fom_dark_narrow( transmission_by_wavelength )
+				get_fom = fom_dark( transmission_by_wavelength )
 			else:
 				get_fom = fom_dark( transmission_by_wavelength )
 		else:
@@ -639,7 +640,8 @@ for iteration in range( start_iter, num_iterations ):
 
 		if gsst_state == 0:
 			if iteration >= num_iterations_just_hot:
-				gradient_by_gsst_state.append( grad_dark_narrow( transmission_by_wavelength, -gradient ) )
+				# gradient_by_gsst_state.append( grad_dark_narrow( transmission_by_wavelength, -gradient ) )
+				gradient_by_gsst_state.append( grad_dark( transmission_by_wavelength, -gradient ) )
 			else:
 				gradient_by_gsst_state.append( grad_dark( transmission_by_wavelength, -gradient ) )
 		else:
