@@ -329,7 +329,7 @@ def mode_overlap_gradient(
         adjoint_phase = np.conj( numerator ) / ( denominator )
         gradient += normal_weighting * ( 
             fom_weighting[ wl_idx ] * adjoint_phase *
-            np.sum( electric_fields_gradient_forward[ wl_idx, :, :, :, : ] * electric_fields_gradient_adjoint[ wl_idx, :, :, :, : ], axis=0 ) )
+            np.sum( electric_fields_gradient_forward[ :, wl_idx, :, :, : ] * electric_fields_gradient_adjoint[ :, wl_idx, :, :, : ], axis=0 ) )
 
     return -gradient / num_wavelengths
 
