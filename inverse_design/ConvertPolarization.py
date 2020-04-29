@@ -80,7 +80,7 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 
 mesh_spacing_um = 0.015
 
-device_thickness_um = 1.0
+device_thickness_um = 1.05
 device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
 
 unit_cell_size_um = 0.35
