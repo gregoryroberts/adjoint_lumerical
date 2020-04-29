@@ -384,6 +384,7 @@ for iteration in range(0, num_iterations):
 
     get_gradient = np.swapaxes( get_gradient, 0, 2 )
 
+    print( forward_e_fields.shape )
     print( device_permittivity.shape )
     print( get_gradient.shape )
 
