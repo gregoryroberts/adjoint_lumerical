@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/convert_polarization_focusing_3layers_v1/"
+projects_directory_location += "/convert_polarization_focusing_6halflayers_spacers_v1/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -82,12 +82,19 @@ mesh_spacing_um = 0.025
 
 focal_length_um = 1.5
 
-device_thickness_um = 1.5
+device_thickness_um = 1.5 * 2
 device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
 
-layer_size_um = 0.5
-num_layers = int( device_thickness_um / layer_size_um )
-voxels_per_layer = int( device_thickness_voxels / num_layers )
+layer_size_um = 0.5 / 2
+num_layers = int( 0.5 * device_thickness_um / layer_size_um )
+voxels_per_layer = int( 0.5 * device_thickness_voxels / num_layers )
+voxels_per_spacer = voxels_per_layer
+
+print( num_layers )
+print( voxels_per_layer )
+print( voxels_per_spacer )
+print( device_thickness_voxels )
+adfsd
 
 device_size_lateral_um = 2.0
 device_size_lateral_voxels = 2 + int( device_size_lateral_um / mesh_spacing_um )
@@ -231,10 +238,15 @@ random_design_seed = 0.25 * np.random.random( device_permittivity.shape )
 random_design_seed = gaussian_filter( random_design_seed, sigma=3 )
 device_permittivity = permittivity_min + ( permittivity_max - permittivity_min ) * random_design_seed
 
+spacer_permittivity = 1.5**2
+
 layer_device = np.zeros( device_permittivity.shape )
 for layer_idx in range( 0, num_layers ):
-    layer_start = layer_idx * voxels_per_layer
-    layer_end = ( layer_idx + 1 ) * voxels_per_layer
+    spacer_start = layer_idx * ( voxels_per_layer + voxels_per_spacer )
+    layer_start = voxels_per_spacer + layer_idx * ( voxels_per_layer + voxels_per_spacer )
+    layer_end = layer_start + voxels_per_layer
+
+    layer_device[ :, :, spacer_start : layer_start ] = spacer_permittivity
 
     if layer_idx == ( num_layers - 1 ):
         layer_end = device_thickness_voxels
@@ -307,8 +319,11 @@ for iteration in range(0, num_iterations):
 
     layer_gradient = np.zeros( net_gradient.shape )
     for layer_idx in range( 0, num_layers ):
-        layer_start = layer_idx * voxels_per_layer
-        layer_end = ( layer_idx + 1 ) * voxels_per_layer
+        spacer_start = layer_idx * ( voxels_per_layer + voxels_per_spacer )
+        layer_start = voxels_per_spacer + layer_idx * ( voxels_per_layer + voxels_per_spacer )
+        layer_end = layer_start + voxels_per_layer
+
+        layer_gradient[ :, :, spacer_start : layer_start ] = 0
 
         if layer_idx == ( num_layers - 1 ):
             layer_end = device_thickness_voxels
@@ -325,6 +340,7 @@ for iteration in range(0, num_iterations):
 
     np.save( projects_directory_location + '/device_gradient.npy', net_gradient )
     np.save( projects_directory_location + '/device_gradient_layered.npy', layer_gradient )
+    np.save( projects_directory_location + '/device_permittivity.npy', device_permittivity )
     np.save( projects_directory_location + '/figure_of_merit.npy', figure_of_merit_evolution )
 
 
