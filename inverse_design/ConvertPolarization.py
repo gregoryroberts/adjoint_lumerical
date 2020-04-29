@@ -234,7 +234,7 @@ mode_h_fields = {}
 # == 377.1
 mu_nought_c = ( 1.257 * 1e-6 ) * ( 3.0 * 1e8 )
 
-monitor_lateral_voxels = 1 + int( 1e6 * mode_transmission_monitor[ 'x span' ] / mesh_spacing_um )
+monitor_lateral_voxels = 2 + int( 1e6 * mode_transmission_monitor[ 'x span' ] / mesh_spacing_um )
 # Organize these as freq, pol, z, y, x
 
 mode_e_field_ypol = np.zeros( ( 3, num_design_frequency_points, 1, monitor_lateral_voxels, monitor_lateral_voxels ), dtype=np.complex )
@@ -342,6 +342,10 @@ figure_of_merit_evolution = np.zeros( num_iterations )
 fdtd_hook.save(projects_directory_location + "/optimization")
 for iteration in range(0, num_iterations):
     print( "Working on iteration " + str( iteration ) )
+
+    fdtd_hook.switchtolayout()
+    fdtd_hook.select( device_import[ 'name' ] )
+    fdtd_hook.importnk2( np.sqrt( device_permittivity ), device_x_range, device_y_range, device_z_range )
 
     disable_all_sources()
     forward_src.enabled = 1
