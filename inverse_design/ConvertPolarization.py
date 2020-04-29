@@ -257,7 +257,7 @@ mode_h_field_ypol[ 0, :, :, :, : ] = -( 1. / mu_nought_c )
 np.random.seed( 123123 )
 
 device_permittivity = np.zeros( ( device_size_lateral_voxels, device_size_lateral_voxels, device_thickness_voxels ) )
-random_design_seed = 0.5 * np.random.random( device_permittivity.shape )
+random_design_seed = 0.25 * np.random.random( device_permittivity.shape )
 random_design_seed = gaussian_filter( random_design_seed, sigma=3 )
 device_permittivity = permittivity_min + ( permittivity_max - permittivity_min ) * random_design_seed
 
