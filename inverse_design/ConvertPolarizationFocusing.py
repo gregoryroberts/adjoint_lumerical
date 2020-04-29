@@ -90,12 +90,6 @@ num_layers = int( 0.5 * device_thickness_um / layer_size_um )
 voxels_per_layer = int( 0.5 * device_thickness_voxels / num_layers )
 voxels_per_spacer = voxels_per_layer
 
-print( num_layers )
-print( voxels_per_layer )
-print( voxels_per_spacer )
-print( device_thickness_voxels )
-adfsd
-
 device_size_lateral_um = 2.0
 device_size_lateral_voxels = 2 + int( device_size_lateral_um / mesh_spacing_um )
 
