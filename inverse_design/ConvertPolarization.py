@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/convert_polarization_v2/"
+projects_directory_location += "/convert_polarization_v3/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -78,22 +78,22 @@ def get_complex_monitor_data(monitor_name, monitor_field):
     return (data['real'] + np.complex(0, 1) * data['imag'])
 
 
-mesh_spacing_um = 0.015
+mesh_spacing_um = 0.02
 
-device_thickness_um = 1.05
+device_thickness_um = 0.66
 device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
 
-unit_cell_size_um = 0.35
+unit_cell_size_um = 0.48
 device_size_lateral_um = unit_cell_size_um
 device_size_lateral_voxels = 2 + int( device_size_lateral_um / mesh_spacing_um )
 
-permittivity_max = 2.0**2
+permittivity_max = 3.5**2
 permittivity_min = 1.0**2
 
-num_design_frequency_points = 20
+num_design_frequency_points = 10
 
-lambda_min_um = 0.45
-lambda_max_um = 0.65
+lambda_min_um = 0.8
+lambda_max_um = 0.9
 
 top_gap_um = 2.0
 bottom_gap_um = 2.0
@@ -249,7 +249,7 @@ mode_h_field_ypol[ 0, :, :, :, : ] = -( 1. / mu_nought_c )
 np.random.seed( 123123 )
 
 device_permittivity = np.zeros( ( device_size_lateral_voxels, device_size_lateral_voxels, device_thickness_voxels ) )
-random_design_seed = 0.25 * np.random.random( device_permittivity.shape )
+random_design_seed = 0.5 * np.random.random( device_permittivity.shape )
 random_design_seed = gaussian_filter( random_design_seed, sigma=3 )
 device_permittivity = permittivity_min + ( permittivity_max - permittivity_min ) * random_design_seed
 
