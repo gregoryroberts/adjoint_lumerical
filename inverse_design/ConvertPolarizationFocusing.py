@@ -100,9 +100,9 @@ wavelengths_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequency
 max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um**2 * wavelengths_um**2)
 
 
-top_gap_um = 2.0
-lateral_gap_um = 1.0
-bottom_gap_um = 1.0
+top_gap_um = 1.6
+lateral_gap_um = 0.75
+bottom_gap_um = 0.6
 
 fdtd_lateral_size_um = device_size_lateral_um + 2 * lateral_gap_um
 fdtd_lateral_size_voxels = 1 + int( fdtd_lateral_size_um / mesh_spacing_um )
@@ -266,7 +266,7 @@ for iteration in range(0, num_iterations):
 
     adjoint_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
 
-    fom_weighting = ( 2.0 / num_wavelengths ) - intensity_y**2 / np.sum( intensity_y**2 )
+    fom_weighting = ( 2.0 / num_design_frequency_points ) - intensity_y**2 / np.sum( intensity_y**2 )
     fom_weighting = np.maximum( fom_weighting, 0 )
     fom_weighting /= np.sum( fom_weighting )
 
