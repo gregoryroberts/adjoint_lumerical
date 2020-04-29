@@ -109,7 +109,7 @@ fdtd_lateral_size_voxels = 1 + int( fdtd_lateral_size_um / mesh_spacing_um )
 fdtd_vertical_size_um = top_gap_um + bottom_gap_um + focal_length_um + device_thickness_um
 fdtd_vertical_size_voxels = 1 + int( fdtd_vertical_size_um / mesh_spacing_um )
 
-fdtd_simulation_time_fs = 5000 * 2
+fdtd_simulation_time_fs = 5000
 
 #
 # Set up the FDTD region and mesh
