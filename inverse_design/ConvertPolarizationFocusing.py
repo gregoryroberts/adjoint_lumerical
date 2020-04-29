@@ -145,7 +145,6 @@ forward_src = fdtd_hook.addtfsf()
 forward_src['name'] = 'forward_src'
 forward_src['angle phi'] = xy_phi_rotations[ 'x' ]
 forward_src['direction'] = 'Backward'
-forward_src['plane wave type'] = 'Bloch/Periodic'
 forward_src['x span'] = 1.1 * fdtd_lateral_size_um * 1e-6
 forward_src['y span'] = 1.1 * fdtd_lateral_size_um * 1e-6
 forward_src['z max'] = ( device_thickness_um + 0.5 * top_gap_um ) * 1e-6
