@@ -321,10 +321,6 @@ def import_device_permittivity( permittivity ):
 	fdtd_hook.importnk2( index_from_permittivity, x_range, y_range, z_range )
 
 
-device_size_voxels_lateral_base = int( device_size_lateral_um / computation_mesh_um )
-device_size_voxels_vertical_base = int( device_size_vertical_um / computation_mesh_um )
-
-
 # Seed the random generator and save out the seed for repeatibility
 random_seed = 5234294
 np.save( projects_directory_location + "/random_seed.npy", np.array( [ random_seed ] ) )
@@ -361,9 +357,9 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 
 		import_device_permittivity( device_permittivity )
 
-		reversed_field_shape = [ device_size_voxels_vertical_base, device_size_voxels_lateral_base ]
-		reversed_field_shape_xyz = [ 3, device_size_voxels_vertical_base, device_size_voxels_lateral_base ]
-		reversed_field_shape_with_pol = [ num_polarizations, device_size_voxels_vertical_base, device_size_voxels_lateral_base ]
+		reversed_field_shape = [ device_size_voxels_vertical, device_size_voxels_lateral ]
+		reversed_field_shape_xyz = [ 3, device_size_voxels_vertical, device_size_voxels_lateral ]
+		reversed_field_shape_with_pol = [ num_polarizations, device_size_voxels_vertical, device_size_voxels_lateral ]
 		xy_polarized_gradients_by_pol = np.zeros( reversed_field_shape_with_pol, dtype=np.complex )
 		xy_polarized_gradients = np.zeros( reversed_field_shape, dtype=np.complex )
 		figure_of_merit_by_pol = np.zeros( num_polarizations )
