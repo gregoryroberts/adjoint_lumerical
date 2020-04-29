@@ -110,10 +110,10 @@ fdtd_simulation_time_fs = 5000
 #
 fdtd = fdtd_hook.addfdtd()
 fdtd['dimension'] = '3D'
-fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
-fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
-fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
+fdtd['x span'] = fdtd_lateral_size_um * 1e-6
+fdtd['y span'] = fdtd_lateral_size_um * 1e-6
+fdtd['z max'] = ( device_thickness_um + top_gap_um ) * 1e-6
+fdtd['z min'] = -bottom_gap_um * 1e-6
 fdtd['x min bc'] = 'Bloch'
 fdtd['y min bc'] = 'Bloch'
 fdtd['z min bc'] = 'PML'
