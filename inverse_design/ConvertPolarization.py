@@ -142,7 +142,7 @@ adjoint_src = {}
 
 forward_src = fdtd_hook.addplane()
 forward_src['name'] = 'forward_src'
-forward_src['angle phi'] = xy_phi_rotations[ 0 ]
+forward_src['angle phi'] = xy_phi_rotations[ 'x' ]
 forward_src['direction'] = 'Backward'
 forward_src['plane wave type'] = 'Bloch/Periodic'
 forward_src['x span'] = 1.1 * fdtd_lateral_size_um * 1e-6
@@ -154,7 +154,7 @@ forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
 adjoint_src = fdtd_hook.addplane()
 adjoint_src['name'] = 'adjoint_src'
-adjoint_src['angle phi'] = xy_phi_rotations[ 1 ]
+adjoint_src['angle phi'] = xy_phi_rotations[ 'y' ]
 adjoint_src['direction'] = 'Forward'
 adjoint_src['plane wave type'] = 'Bloch/Periodic'
 adjoint_src['x span'] = 1.1 * fdtd_lateral_size_um * 1e-6
