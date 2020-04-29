@@ -80,20 +80,20 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 
 mesh_spacing_um = 0.015
 
-device_thickness_um = 0.45
+device_thickness_um = 1.0
 device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
 
-unit_cell_size_um = 0.3
+unit_cell_size_um = 0.35
 device_size_lateral_um = unit_cell_size_um
 device_size_lateral_voxels = 2 + int( device_size_lateral_um / mesh_spacing_um )
 
 permittivity_max = 2.0**2
 permittivity_min = 1.0**2
 
-num_design_frequency_points = 30
+num_design_frequency_points = 20
 
-lambda_min_um = 0.4
-lambda_max_um = 0.7
+lambda_min_um = 0.45
+lambda_max_um = 0.65
 
 top_gap_um = 2.0
 bottom_gap_um = 2.0
@@ -333,6 +333,11 @@ def mode_overlap_gradient(
 
 num_iterations = 100
 figure_of_merit_evolution = np.zeros( num_iterations )
+
+max_value = mode_overlap_fom(
+    mode_e_field_ypol, mode_h_field_ypol,
+    mode_e_field_ypol, mode_h_field_ypol )
+print( 'Max value = ' + str( max_value ) )
 
 #
 # Run the optimization
