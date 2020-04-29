@@ -341,7 +341,7 @@ figure_of_merit_evolution = np.zeros( num_iterations )
 #
 fdtd_hook.save(projects_directory_location + "/optimization")
 for iteration in range(0, num_iterations):
-    print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
+    print( "Working on iteration " + str( iteration ) )
 
     disable_all_sources()
     forward_src.enabled = 1
