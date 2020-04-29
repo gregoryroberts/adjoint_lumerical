@@ -239,8 +239,7 @@ for layer_idx in range( 0, num_layers ):
     if layer_idx == ( num_layers - 1 ):
         layer_end = device_thickness_voxels
 
-    print( layer_device[ :, :, layer_start : layer_end ].shape )
-    average_device = np.mean( layer_device[ :, :, layer_start : layer_end ], axis=2 )
+    average_device = np.mean( device_permittivity[ :, :, layer_start : layer_end ], axis=2 )
 
     for internal_idx in range( layer_start, layer_end ):
         layer_device[ :, :, internal_idx ] = average_device
@@ -314,8 +313,7 @@ for iteration in range(0, num_iterations):
         if layer_idx == ( num_layers - 1 ):
             layer_end = device_thickness_voxels
 
-        average_gradient = np.mean( layer_gradient[ :, :, layer_start : layer_end ], axis=2 )
-        print( average_gradient )
+        average_gradient = np.mean( net_gradient[ :, :, layer_start : layer_end ], axis=2 )
 
         for internal_idx in range( layer_start, layer_end ):
             layer_gradient[ :, :, internal_idx ] = average_gradient
