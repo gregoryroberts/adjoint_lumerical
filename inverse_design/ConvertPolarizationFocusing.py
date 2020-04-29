@@ -297,6 +297,7 @@ for iteration in range(0, num_iterations):
             layer_end = device_thickness_voxels
 
         average_gradient = np.mean( layer_gradient[ :, :, layer_start : layer_end ], axis=2 )
+        print( average_gradient )
 
         for internal_idx in range( layer_start, layer_end ):
             layer_gradient[ :, :, internal_idx ] = average_gradient
