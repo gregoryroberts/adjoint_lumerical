@@ -254,7 +254,7 @@ device_permittivity = permittivity_min + ( permittivity_max - permittivity_min )
 
 def mode_overlap_fom(
     electric_fields_forward, magnetic_fields_forward,
-    electric_mode_fields, magnetic_mode_fields, normal_weighting ):
+    electric_mode_fields, magnetic_mode_fields ):
 
     num_wavelengths = electric_fields_forward.shape[ 1 ]
     total_norm = 1.0 / num_wavelengths
