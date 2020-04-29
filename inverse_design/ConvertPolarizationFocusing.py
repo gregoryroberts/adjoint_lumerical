@@ -280,7 +280,7 @@ for iteration in range(0, num_iterations):
                 adjoint_e_fields[ :, wl_idx, :, :, : ] ),
             axis=0 )
 
-        net_gradient += fom_weighting * wl_gradient
+        net_gradient += fom_weighting[ wl_idx ] * wl_gradient
 
     net_gradient = np.swapaxes( net_gradient, 0, 2 )
 
