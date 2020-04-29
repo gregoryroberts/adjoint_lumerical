@@ -231,6 +231,23 @@ random_design_seed = 0.25 * np.random.random( device_permittivity.shape )
 random_design_seed = gaussian_filter( random_design_seed, sigma=3 )
 device_permittivity = permittivity_min + ( permittivity_max - permittivity_min ) * random_design_seed
 
+layer_device = np.zeros( device_permittivity.shape )
+for layer_idx in range( 0, num_layers ):
+    layer_start = layer_idx * voxels_per_layer
+    layer_end = ( layer_idx + 1 ) * voxels_per_layer
+
+    if layer_idx == ( num_layers - 1 ):
+        layer_end = device_thickness_voxels
+
+    average_device = np.mean( layer_device[ :, :, layer_start : layer_end ], axis=2 )
+
+    for internal_idx in range( layer_start, layer_end ):
+        layer_device[ :, :, internal_idx ] = average_device
+
+device_permittivity = layer_device
+
+
+
 
 num_iterations = 100
 figure_of_merit_evolution = np.zeros( num_iterations )
