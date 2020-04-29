@@ -131,6 +131,14 @@ fdtd['background index'] = 1.0
 fdtd['auto shutoff min'] = shutoff_min
 # fdtd['dt stability factor'] = fdtd_dt_stability_factor
 
+substrate = fdtd_hook.addrect()
+substrate['name'] = 'substrate'
+substrate['z min'] = device_thickness_um * 1e-6
+substrate['z max'] = ( device_thickness_um + top_gap_um ) * 1e-6
+substrate['x span'] = fdtd_lateral_size_um * 1e-6
+substrate['y span'] = fdtd_lateral_size_um * 1e-6
+substrate['index'] = 1.45
+
 #
 # General polarized source information
 #
