@@ -239,6 +239,7 @@ for layer_idx in range( 0, num_layers ):
     if layer_idx == ( num_layers - 1 ):
         layer_end = device_thickness_voxels
 
+    print( layer_device[ :, :, layer_start : layer_end ].shape )
     average_device = np.mean( layer_device[ :, :, layer_start : layer_end ], axis=2 )
 
     for internal_idx in range( layer_start, layer_end ):
