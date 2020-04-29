@@ -360,9 +360,8 @@ for iteration in range(0, num_iterations):
         transmitted_e_fields, transmitted_h_fields,
         mode_e_field_ypol, mode_h_field_ypol, -1.0 )
 
-    print( "Current average overlap = " + str( cur_overlap ) )
-
     average_overlap = np.mean( cur_overlap )
+    print( "Current average overlap = " + str( average_overlap ) )
     figure_of_merit_evolution[ iteration ] = average_overlap
 
     disable_all_sources()
@@ -383,10 +382,6 @@ for iteration in range(0, num_iterations):
         -1.0 ) / 1j )
 
     get_gradient = np.swapaxes( get_gradient, 0, 2 )
-
-    print( forward_e_fields.shape )
-    print( device_permittivity.shape )
-    print( get_gradient.shape )
 
     step_size = 0.025 * ( permittivity_max - permittivity_min ) / np.max( np.abs( get_gradient ) )
     device_permittivity += step_size * get_gradient
