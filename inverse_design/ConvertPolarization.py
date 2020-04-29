@@ -284,7 +284,6 @@ def mode_overlap_fom(
         )
 
         fom_by_wavelength[ wl_idx ] = ( numerator / denominator )
-        fom_by_wavelength[ wl_idx ] *= normal_weighting
 
     return total_norm * fom_by_wavelength
 
@@ -292,8 +291,7 @@ def mode_overlap_gradient(
     figure_of_merit,
     electric_fields_forward, magnetic_fields_forward,
     electric_mode_fields, magnetic_mode_fields,
-    electric_fields_gradient_forward, electric_fields_gradient_adjoint,
-    normal_weighting ):
+    electric_fields_gradient_forward, electric_fields_gradient_adjoint )
 
     num_wavelengths = electric_fields_forward.shape[ 1 ]
 
@@ -327,7 +325,7 @@ def mode_overlap_gradient(
 
         # todo(gdroberts): I think the polarization is the first index, so this doesn't quite make sense! Should there be a 1j in here?
         adjoint_phase = np.conj( numerator ) / ( denominator )
-        gradient += normal_weighting * ( 
+        gradient += ( 
             fom_weighting[ wl_idx ] * adjoint_phase *
             np.sum( electric_fields_gradient_forward[ :, wl_idx, :, :, : ] * electric_fields_gradient_adjoint[ :, wl_idx, :, :, : ], axis=0 ) )
 
@@ -358,7 +356,7 @@ for iteration in range(0, num_iterations):
 
     cur_overlap = mode_overlap_fom(
         transmitted_e_fields, transmitted_h_fields,
-        mode_e_field_ypol, mode_h_field_ypol, -1.0 )
+        mode_e_field_ypol, mode_h_field_ypol )
 
     print( cur_overlap )
     average_overlap = np.mean( cur_overlap )
@@ -379,8 +377,7 @@ for iteration in range(0, num_iterations):
         cur_overlap,
         transmitted_e_fields, transmitted_h_fields,
         mode_e_field_ypol, mode_h_field_ypol,
-        forward_e_fields, adjoint_e_fields,
-        -1.0 ) / 1j )
+        forward_e_fields, adjoint_e_fields ) / 1j )
 
     get_gradient = np.swapaxes( get_gradient, 0, 2 )
 
