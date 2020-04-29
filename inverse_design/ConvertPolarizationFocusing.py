@@ -80,6 +80,8 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 
 mesh_spacing_um = 0.025
 
+focal_length_um = 1.5
+
 device_thickness_um = 1.5
 device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
 
@@ -100,7 +102,6 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 
 top_gap_um = 2.0
 lateral_gap_um = 1.0
-focal_length_um = 1.5
 bottom_gap_um = 1.0
 
 fdtd_lateral_size_um = device_size_lateral_um + 2 * lateral_gap_um
