@@ -81,11 +81,11 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 mesh_spacing_um = 0.015
 
 device_thickness_um = 0.4
-device_thickness_voxels = 1 + int( device_thickness_um / mesh_spacing_um )
+device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
 
 unit_cell_size_um = 0.3
 device_size_lateral_um = unit_cell_size_um
-device_size_lateral_voxels = 1 + int( device_size_lateral_um / mesh_spacing_um )
+device_size_lateral_voxels = 2 + int( device_size_lateral_um / mesh_spacing_um )
 
 permittivity_max = 2.0**2
 permittivity_min = 1.0**2
@@ -375,8 +375,6 @@ for iteration in range(0, num_iterations):
     # Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
     # gradients for x- and y-polarized forward sources.
     #
-    reversed_field_shape = [ device_thickness_voxels, device_size_lateral_voxels, device_size_lateral_voxels ]
-
     get_gradient = np.real( mode_overlap_gradient(
         cur_overlap,
         transmitted_e_fields, transmitted_h_fields,
@@ -385,6 +383,9 @@ for iteration in range(0, num_iterations):
         -1.0 ) / 1j )
 
     get_gradient = np.swapaxes( get_gradient, 0, 2 )
+
+    print( device_permittivity.shape )
+    print( get_gradient.shape )
 
     step_size = 0.025 * ( permittivity_max - permittivity_min ) / np.max( np.abs( get_gradient ) )
     device_permittivity += step_size * get_gradient
