@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/convert_polarization_focusing_v1/"
+projects_directory_location += "/convert_polarization_focusing_3layers_v1/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -84,6 +84,10 @@ focal_length_um = 1.5
 
 device_thickness_um = 1.5
 device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
+
+layer_size_um = 0.5
+num_layers = int( device_thickness_um / layer_size_um )
+voxels_per_layer = int( device_thickness_voxels / num_layers )
 
 device_size_lateral_um = 2.0
 device_size_lateral_voxels = 2 + int( device_size_lateral_um / mesh_spacing_um )
@@ -284,11 +288,26 @@ for iteration in range(0, num_iterations):
 
     net_gradient = np.swapaxes( net_gradient, 0, 2 )
 
-    step_size = 0.025 * ( permittivity_max - permittivity_min ) / np.max( np.abs( net_gradient ) )
-    device_permittivity += step_size * net_gradient
+    layer_gradient = np.zeros( net_gradient.shape )
+    for layer_idx in range( 0, num_layers ):
+        layer_start = layer_idx * voxels_per_layer
+        layer_end = ( layer_idx + 1 ) * voxels_per_layer
+
+        if layer_idx == ( num_layers - 1 ):
+            layer_end = device_thickness_voxels
+
+        average_gradient = np.mean( layer_gradient[ :, :, layer_start : layer_end ], axis=2 )
+
+        for internal_idx in range( layer_start, layer_end ):
+            layer_gradient[ :, :, internal_idx ] = average_gradient
+
+
+    step_size = 0.025 * ( permittivity_max - permittivity_min ) / np.max( np.abs( layer_gradient ) )
+    device_permittivity += step_size * layer_gradient
     device_permittivity = np.maximum( permittivity_min, np.minimum( device_permittivity, permittivity_max ) )
 
     np.save( projects_directory_location + '/device_gradient.npy', net_gradient )
+    np.save( projects_directory_location + '/device_gradient_layered.npy', layer_gradient )
     np.save( projects_directory_location + '/figure_of_merit.npy', figure_of_merit_evolution )
 
 
