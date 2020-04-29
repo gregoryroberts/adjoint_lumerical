@@ -101,7 +101,7 @@ bottom_gap_um = 2.0
 fdtd_lateral_size_um = unit_cell_size_um
 fdtd_lateral_size_voxels = 1 + int( fdtd_lateral_size_um / mesh_spacing_um )
 fdtd_vertical_size_um = top_gap_um + bottom_gap_um + device_thickness_um
-fdtd_vertical_size_voxels = 1 + int( fdtd_lateral_size_um / mesh_spacing_um )
+fdtd_vertical_size_voxels = 1 + int( fdtd_vertical_size_um / mesh_spacing_um )
 
 fdtd_simulation_time_fs = 5000
 
