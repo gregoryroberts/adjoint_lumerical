@@ -326,7 +326,7 @@ device_size_voxels_vertical_base = int( device_size_vertical_um / computation_me
 
 
 # Seed the random generator and save out the seed for repeatibility
-random_seed = 5234234324
+random_seed = 5234294
 np.save( projects_directory_location + "/random_seed.npy", np.array( [ random_seed ] ) )
 np.random.seed( random_seed )
 
