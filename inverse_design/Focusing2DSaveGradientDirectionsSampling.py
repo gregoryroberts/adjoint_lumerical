@@ -418,7 +418,7 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 						conjugate_weighting_wavelength[ current_coord, wl_idx + spectral_indices[ 0 ] ] = np.conj(
 							focal_data[ focal_idx ][ current_coord, wl_idx + spectral_indices[ 0 ], 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx + spectral_indices[ 0 ] ] )
 
-					fom_by_epoch_by_iteration_by_pol_by_wavelength[ epoch, iteration, pol_idx, wl_idx + spectral_indices[ 0 ] ] = figure_of_merit_total[ wl_idx + spectral_indices[ 0 ] ]
+					figures_of_merit_by_pol_by_wavelength[ feature_size_idx, pol_idx, wl_idx + spectral_indices[ 0 ] ] = figure_of_merit_total[ wl_idx + spectral_indices[ 0 ] ]
 
 			fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
 			fom_weighting = np.maximum( fom_weighting, 0 )
@@ -463,8 +463,8 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 								axis=0 )
 							)
 
-						gradient_by_epoch_by_iteration_by_pol_by_wavelength[
-							epoch, iteration, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = reinterpolate_by_averaging_2d(
+						gradient_by_pol_by_wavelength[
+							feature_size_idx, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = reinterpolate_by_averaging_2d(
 								np.swapaxes( non_averaged_gradient, 0, 1 ), averaged_gradient_shape )
 
 						polarized_gradient += np.sum(
@@ -491,12 +491,11 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		device_gradient_real = np.swapaxes( device_gradient_real, 0, 1 )
 		average_device_gradient_real = reinterpolate_by_averaging_2d( device_gradient_real, averaged_gradient_shape )
-		net_gradient_by_epoch_by_iteration[ epoch, iteration ] = average_device_gradient_real
+		net_gradient[ feature_size_idx ] = average_device_gradient_real
 
 		np.save( projects_directory_location + "/figure_of_merit_" + str( feature_size_idx ) + ".npy", figure_of_merit_evolution )
 
-	# Save once per epoch in case we want to check on it!
-	np.save( projects_directory_location + "/net_gradient_direction_" + str( feature_size_idx ) + ".npy", net_gradient_by_epoch_by_iteration )
-	np.save( projects_directory_location + "/gradient_directions_" + str( feature_size_idx ) + ".npy", gradient_by_epoch_by_iteration_by_pol_by_wavelength )
+	np.save( projects_directory_location + "/net_gradient_direction_" + str( feature_size_idx ) + ".npy", net_gradient )
+	np.save( projects_directory_location + "/gradient_directions_" + str( feature_size_idx ) + ".npy", gradient_by_pol_by_wavelength )
 	np.save( projects_directory_location + "/fom_all_objectives_" + str( feature_size_idx ) + ".npy", figures_of_merit_by_pol_by_wavelength )
 

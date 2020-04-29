@@ -36,14 +36,14 @@ focal_length_um = 1.5
 #
 # Device
 #
-computation_mesh_um = 0.016
-feature_size_sigmas = [ 0, 1, 2, 3, 4 ]
+computation_mesh_um = 0.01
+feature_size_sigmas = [ 1, 2, 3, 4, 5 ]
 
 num_random_points = 100
 
 num_feature_sizes = len( feature_size_sigmas )
 
-device_size_lateral_um = 3.04
+device_size_lateral_um = 3.0
 device_size_vertical_um = 1.6
 
 designable_device_vertical_maximum_um = device_size_vertical_um
