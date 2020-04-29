@@ -267,7 +267,7 @@ for iteration in range(0, num_iterations):
     intensity_y = np.zeros( num_design_frequency_points )
     conj_Ey = np.zeros( num_design_frequency_points, dtype=np.complex )
     for wl_idx in range( 0, num_design_frequency_points ):
-        intensity_y = np.sum( np.abs( focal_e[ 1, wl_idx, 0, 0, 0 ] )**2 / max_intensity[ wl_idx ] )
+        intensity_y = np.sum( np.abs( focal_e[ 1, wl_idx, 0, 0, 0 ] )**2 / max_intensity_by_wavelength[ wl_idx ] )
         conj_Ey = np.squeeze( np.conj( focal_e[ 1, wl_idx, 0, 0, 0 ] ) )
 
     forward_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
@@ -290,7 +290,7 @@ for iteration in range(0, num_iterations):
     net_gradient = np.zeros( forward_e_fields[ 0, 0 ].shape )
 
     for wl_idx in range ( 0, num_design_frequency_points ):
-        wl_gradient = np.sum(
+        wl_gradient = ( 1. / max_intensity_by_wavelength[ wl_idx ] ) * np.sum(
             np.real(
                 conj_Ey[ wl_idx ] *
                 forward_e_fields[ :, wl_idx, :, :, : ] *
