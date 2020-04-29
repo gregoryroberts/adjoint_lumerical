@@ -240,7 +240,10 @@ for layer_idx in range( 0, num_layers ):
     layer_start = voxels_per_spacer + layer_idx * ( voxels_per_layer + voxels_per_spacer )
     layer_end = layer_start + voxels_per_layer
 
-    layer_device[ :, :, spacer_start : layer_start ] = spacer_permittivity
+    if layer_idx == ( num_layers - 1 ):
+        layer_device[ :, :, spacer_start : layer_start ] = 1.0
+    else:
+        layer_device[ :, :, spacer_start : layer_start ] = spacer_permittivity
 
     if layer_idx == ( num_layers - 1 ):
         layer_end = device_thickness_voxels
