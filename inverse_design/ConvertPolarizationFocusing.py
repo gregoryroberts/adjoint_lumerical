@@ -251,7 +251,7 @@ for iteration in range(0, num_iterations):
     conj_Ey = np.zeros( num_design_frequency_points, dtype=np.complex )
     for wl_idx in range( 0, num_design_frequency_points ):
         intensity_y[ wl_idx ] = np.sum( np.abs( focal_e[ 1, wl_idx, 0, 0, 0 ] )**2 / max_intensity_by_wavelength[ wl_idx ] )
-        conj_Ey = np.squeeze( np.conj( focal_e[ 1, wl_idx, 0, 0, 0 ] ) )
+        conj_Ey[ wl_idx ] = np.squeeze( np.conj( focal_e[ 1, wl_idx, 0, 0, 0 ] ) )
 
     forward_e_fields = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
 
