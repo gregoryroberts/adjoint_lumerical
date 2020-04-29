@@ -452,25 +452,23 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 						pull_adjoint_efields = np.squeeze( adjoint_e_fields[ :, spectral_indices[ 0 ] + spectral_idx, 0, :, : ] )
 						pull_forward_efields = np.squeeze( forward_e_fields[ :, spectral_indices[ 0 ] + spectral_idx, 0, :, : ] )
 
-						reinterpolate_adjoint_efields = reinterpolate( pull_adjoint_efields, reversed_field_shape_xyz )
-						reinterpolate_forward_efields = reinterpolate( pull_forward_efields, reversed_field_shape_xyz )
-
 						non_averaged_gradient = 2 * np.real(
 								np.sum(
 									conjugate_weighting_wavelength[ current_coord, spectral_indices[ 0 ] + spectral_idx ] *
-									reinterpolate_adjoint_efields *
-									reinterpolate_forward_efields,
+									pull_adjoint_efields *
+									pull_forward_efields,
 								axis=0 )
 							)
 
 						gradient_by_pol_by_wavelength[
-							feature_size_idx, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = reinterpolate_by_averaging_2d(
-								np.swapaxes( non_averaged_gradient, 0, 1 ), averaged_gradient_shape )
+							feature_size_idx, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = np.swapaxes( non_averaged_gradient, 0, 1 )
+							# reinterpolate_by_averaging_2d(
+							# 	np.swapaxes( non_averaged_gradient, 0, 1 ), averaged_gradient_shape )
 
 						polarized_gradient += np.sum(
 							( conjugate_weighting_wavelength[current_coord, spectral_indices[0] + spectral_idx] * fom_weighting[spectral_indices[0] + spectral_idx] ) *
-							reinterpolate_adjoint_efields *
-							reinterpolate_forward_efields,
+							pull_adjoint_efields *
+							pull_forward_efields,
 							axis=0 )
 				
 			xy_polarized_gradients_by_pol[ pol_idx ] = polarized_gradient
@@ -490,7 +488,8 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		device_gradient_real = np.swapaxes( device_gradient_real, 0, 1 )
-		average_device_gradient_real = reinterpolate_by_averaging_2d( device_gradient_real, averaged_gradient_shape )
+		average_device_gradient_real = device_gradient_real
+		#reinterpolate_by_averaging_2d( device_gradient_real, averaged_gradient_shape )
 		net_gradient[ feature_size_idx ] = average_device_gradient_real
 
 		np.save( projects_directory_location + "/figure_of_merit_" + str( feature_size_idx ) + ".npy", figure_of_merit_evolution )
