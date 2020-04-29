@@ -103,7 +103,8 @@ fdtd_lateral_size_voxels = 1 + int( fdtd_lateral_size_um / mesh_spacing_um )
 fdtd_vertical_size_um = top_gap_um + bottom_gap_um + device_thickness_um
 fdtd_vertical_size_voxels = 1 + int( fdtd_vertical_size_um / mesh_spacing_um )
 
-fdtd_simulation_time_fs = 5000
+fdtd_simulation_time_fs = 5000 * 4
+shutoff_min = 5e-5
 
 #
 # Set up the FDTD region and mesh
@@ -127,6 +128,7 @@ fdtd['mesh cells y'] = fdtd_lateral_size_voxels
 fdtd['mesh cells z'] = fdtd_vertical_size_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = 1.0
+fdtd['auto shutoff min'] = shutoff_min
 # fdtd['dt stability factor'] = fdtd_dt_stability_factor
 
 #
