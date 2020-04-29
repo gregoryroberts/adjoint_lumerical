@@ -291,7 +291,7 @@ def mode_overlap_gradient(
     figure_of_merit,
     electric_fields_forward, magnetic_fields_forward,
     electric_mode_fields, magnetic_mode_fields,
-    electric_fields_gradient_forward, electric_fields_gradient_adjoint )
+    electric_fields_gradient_forward, electric_fields_gradient_adjoint ):
 
     num_wavelengths = electric_fields_forward.shape[ 1 ]
 
