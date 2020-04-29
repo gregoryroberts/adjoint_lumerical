@@ -207,23 +207,6 @@ design_efield_monitor['output Hx'] = 0
 design_efield_monitor['output Hy'] = 0
 design_efield_monitor['output Hz'] = 0
 
-#
-# Set up adjoint point monitors to get electric field strength at focus spots.  This will allow us to
-# compute the figure of merit as well as weight the adjoint simulations properly in calculation of the
-# gradient.
-#
-mode_transmission_monitor = fdtd_hook.addpower()
-mode_transmission_monitor['name'] = 'mode_transmission_monitor'
-mode_transmission_monitor['monitor type'] = '2D Z-normal'
-mode_transmission_monitor['x span'] = unit_cell_size_um * 1e-6
-mode_transmission_monitor['y span'] = unit_cell_size_um * 1e-6
-mode_transmission_monitor['z'] = -0.5 * bottom_gap_um * 1e-6
-mode_transmission_monitor['override global monitor settings'] = 1
-mode_transmission_monitor['use wavelength spacing'] = 1
-mode_transmission_monitor['use source limits'] = 0
-mode_transmission_monitor['minimum wavelength'] = lambda_min_um * 1e-6
-mode_transmission_monitor['maximum wavelength'] = lambda_max_um * 1e-6
-mode_transmission_monitor['frequency points'] = num_design_frequency_points
 
 focal_monitor = fdtd_hook.addpower()
 focal_monitor['name'] = 'focal_monitor'
