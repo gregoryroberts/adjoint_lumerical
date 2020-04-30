@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/polarizability_test_v2/"
+projects_directory_location += "/polarizability_test_v3/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -258,7 +258,8 @@ device_permittivity[ region_start_x : region_end_x, region_start_y : region_end_
 
 initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
 
-deps_values = [ 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
+# deps_values = [ 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
+deps_values = [ 2**(-8) ]
 
 for deps_idx in range( 0, len( deps_values ) ):
     deps = deps_values[ deps_idx ]
