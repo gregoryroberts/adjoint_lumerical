@@ -263,7 +263,8 @@ initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
 fd_grad_in_stencil = np.zeros( list( stencil.shape ) + [ num_design_frequency_points ] )
 
 for stencil_x in range( 0, region_dim ):
-    for stencil_y in rannge( 0, region_dim ):
+    print( "Working on stencil x = " + str( stencil_x ) )
+    for stencil_y in range( 0, region_dim ):
         for stencil_z in range( 0, region_dim ):
 
             permittivity_step = device_permittivity.copy()
@@ -303,6 +304,7 @@ fd_grad_by_user_shape = np.zeros( [ len( user_shapes ), num_design_frequency_poi
 shapes_by_user = np.zeros( [ len( user_shapes ) ] + list( stencil.shape ) )
 
 for shape in range( 0, len( user_shapes ) ):
+    print( "Working on user shape " + str( shape ) + " out of " + str( len( user_shapes ) - 1 ) )
     permittivity_step = device_permittivity.copy()
     permittivity_step[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] += deps * user_shapes[ shape ]
 
@@ -329,6 +331,7 @@ fd_grad_medium_shapes = np.zeros( [ len( user_shapes ), num_design_frequency_poi
 fd_grad_heavy_shapes = np.zeros( [ len( user_shapes ), num_design_frequency_points ] )
 
 for shape in range( 0, num_light_shapes ):
+    print( "Working on light shape " + str( shape ) + " out of " + str( num_light_shapes - 1 ) )
     random_shape = 1.0 * np.greater( np.random.random( stencil.shape ), 0.75 )
 
     permittivity_step = device_permittivity.copy()
@@ -342,6 +345,7 @@ for shape in range( 0, num_light_shapes ):
 
 
 for shape in range( 0, num_medium_shapes ):
+    print( "Working on medium shape " + str( shape ) + " out of " + str( num_light_shapes - 1 ) )
     random_shape = 1.0 * np.greater( np.random.random( stencil.shape ), 0.5 )
 
     permittivity_step = device_permittivity.copy()
@@ -355,6 +359,7 @@ for shape in range( 0, num_medium_shapes ):
 
 
 for shape in range( 0, num_medium_shapes ):
+    print( "Working on heavy shape " + str( shape ) + " out of " + str( num_light_shapes - 1 ) )
     random_shape = 1.0 * np.greater( np.random.random( stencil.shape ), 0.25 )
 
     permittivity_step = device_permittivity.copy()
