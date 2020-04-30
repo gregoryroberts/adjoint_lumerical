@@ -256,12 +256,12 @@ stencil = 0.5 * ( permittivity_max + permittivity_min ) * np.ones( ( region_dim,
 
 device_permittivity[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] = stencil
 
+initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
+
 deps_values = [ 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
 
-for deps_idx in range( 0, len( deps_values ) )
+for deps_idx in range( 0, len( deps_values ) ):
     deps = deps_values[ deps_idx ]
-
-    initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
 
     fd_grad_in_stencil = np.zeros( list( stencil.shape ) + [ num_design_frequency_points ] )
 
