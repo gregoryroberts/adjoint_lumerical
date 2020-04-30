@@ -333,7 +333,7 @@ for deps_idx in range( 0, len( deps_values ) ):
 
     user_shapes.append( tall_slender_45 )
 
-    for j in range( 0, region_dim )
+    for j in range( 0, region_dim ):
         slender_45 = np.zeros( stencil.shape )
         for i in range( 0, region_dim ):
             lower = np.maximum( i - 1, 0 )
