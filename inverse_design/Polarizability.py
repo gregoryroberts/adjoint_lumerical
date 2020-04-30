@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/polarizability_test_v1/"
+projects_directory_location += "/polarizability_test_v2/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -256,126 +256,106 @@ stencil = 0.5 * ( permittivity_max + permittivity_min ) * np.ones( ( region_dim,
 
 device_permittivity[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] = stencil
 
-deps = 2**(-10)
+deps_values = [ 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
 
-initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
+for deps_idx in range( 0, len( deps_values ) )
+    deps = deps_values[ deps_idx ]
 
-# fd_grad_in_stencil = np.zeros( list( stencil.shape ) + [ num_design_frequency_points ] )
+    initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
 
-# for stencil_x in range( 0, region_dim ):
-#     print( "Working on stencil x = " + str( stencil_x ) )
-#     for stencil_y in range( 0, region_dim ):
-#         for stencil_z in range( 0, region_dim ):
+    fd_grad_in_stencil = np.zeros( list( stencil.shape ) + [ num_design_frequency_points ] )
 
-#             permittivity_step = device_permittivity.copy()
-#             permittivity_step[ stencil_x + region_start_x, stencil_y + region_start_y, stencil_z + region_start_z ] += deps
+    for stencil_x in range( 0, region_dim ):
+        print( "Working on stencil x = " + str( stencil_x ) )
+        for stencil_y in range( 0, region_dim ):
+            for stencil_z in range( 0, region_dim ):
 
-#             fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
-#             fd_grad_in_stencil[ stencil_x, stencil_y, stencil_z ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
+                permittivity_step = device_permittivity.copy()
+                permittivity_step[ stencil_x + region_start_x, stencil_y + region_start_y, stencil_z + region_start_z ] += deps
 
-# np.save( projects_directory_location + '/fd_grad_in_stencil.npy', fd_grad_in_stencil )
+                fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
+                fd_grad_in_stencil[ stencil_x, stencil_y, stencil_z ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
 
-# slender_x = np.zeros( stencil.shape )
-# slender_x[ :, 0, ]
-# user_shapes = [
-#     np.ones( stencil.shape ) ]
+    np.save( projects_directory_location + '/fd_grad_in_stencil_' + str( deps_idx ) + '.npy', fd_grad_in_stencil )
 
-# for i in range( 0, region_dim ):
-#     slender_x = np.zeros( stencil.shape )
-#     slender_x[ :, i, i ] = 1
+    user_shapes = [
+        np.ones( stencil.shape ) ]
 
-#     user_shapes.append( slender_x )
+    three_box = np.zeros( stencil.shape )
+    three_box[ 1:4, 1:4, 1:4 ] = 1
+    user_shapes.append( three_box )
 
-# bracket = np.zeros( stencil.shape )
-# bracket[ 0, :, : ] = 1
-# bracket[ :, :, 0 ] = 1
+    three_box_right = np.zeros( stencil.shape )
+    three_box_right[ 2:5, 1:4, 1:4 ] = 1
+    user_shapes.append( three_box_right )
 
-# user_shapes.append( bracket )
+    three_box_up_left = np.zeros( stencil.shape )
+    three_box_up_left[ 0:3, 0:3, 2:5 ] = 1
+    user_shapes.append( three_box_up_left )
 
-# slender_45 = np.zeros( stencil.shape )
-# for i in range( 0, region_dim ):
-#     lower = np.maximum( i - 1, 0 )
-#     upper = np.minimum( i + 2, region_dim )
-#     slender_45[ lower : upper, lower : upper, : ] = 1
+    two_box = np.zeros( stencil.shape )
+    two_box[ 2:4, 1:3, 3:5 ] = 1
+    user_shapes.append( two_box )
 
-# user_shapes.append( slender_45 )
+    four_box = np.zeros( stencil.shape )
+    four_box[ 1:5, 1:5, 1:5 ] = 1
+    user_shapes.append( four_box )
 
-# fd_grad_by_user_shape = np.zeros( [ len( user_shapes ), num_design_frequency_points ] )
-# shapes_by_user = np.zeros( [ len( user_shapes ) ] + list( stencil.shape ) )
+    four_box2 = np.zeros( stencil.shape )
+    four_box2[ 0:4, 1:5, 0:4 ] = 1
+    user_shapes.append( four_box2 )
 
-# for shape in range( 0, len( user_shapes ) ):
-#     print( "Working on user shape " + str( shape ) + " out of " + str( len( user_shapes ) - 1 ) )
-#     permittivity_step = device_permittivity.copy()
-#     permittivity_step[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] += deps * user_shapes[ shape ]
+    for i in range( 0, region_dim ):
+        slender_x = np.zeros( stencil.shape )
+        slender_x[ :, i, i ] = 1
 
-#     shapes_by_user[ shape ] = user_shapes[ shape ]
+        user_shapes.append( slender_x )
 
-#     fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
+    tall_slender_x = np.zeros( stencil.shape )
+    tall_slender_x[ :, 0, : ] = 1
+    user_shapes.append( tall_slender_x )
 
-#     fd_grad_by_user_shape[ shape ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
+    for i in range( 0, region_dim ):
+        slender_y = np.zeros( stencil.shape )
+        slender_y[ i, :, i ] = 1
 
-# np.save( projects_directory_location + '/fd_grad_by_user_shape.npy', fd_grad_by_user_shape )
-# np.save( projects_directory_location + '/shapes_by_user.npy', shapes_by_user )
+        user_shapes.append( slender_y )
 
+    tall_slender_y = np.zeros( stencil.shape )
+    tall_slender_y[ 3, :, : ] = 1
+    user_shapes.append( tall_slender_y )
 
-num_light_shapes = 10
-num_medium_shapes = 10
-num_heavy_shapes = 10
+    tall_slender_45 = np.zeros( stencil.shape )
+    for i in range( 0, region_dim ):
+        lower = np.maximum( i - 1, 0 )
+        upper = np.minimum( i + 2, region_dim )
+        tall_slender_45[ lower : upper, lower : upper, : ] = 1
 
-light_shapes = np.zeros( [ num_light_shapes ] + list( stencil.shape ) )
-medium_shapes = np.zeros( [ num_medium_shapes ] + list( stencil.shape ) )
-heavy_shapes = np.zeros( [ num_heavy_shapes ] + list( stencil.shape ) )
+    user_shapes.append( tall_slender_45 )
 
-fd_grad_light_shapes = np.zeros( [ num_light_shapes, num_design_frequency_points ] )
-fd_grad_medium_shapes = np.zeros( [ num_medium_shapes, num_design_frequency_points ] )
-fd_grad_heavy_shapes = np.zeros( [ num_heavy_shapes, num_design_frequency_points ] )
+    for j in range( 0, region_dim )
+        slender_45 = np.zeros( stencil.shape )
+        for i in range( 0, region_dim ):
+            lower = np.maximum( i - 1, 0 )
+            upper = np.minimum( i + 2, region_dim )
+            slender_45[ lower : upper, lower : upper, j ] = 1
 
-for shape in range( 0, num_light_shapes ):
-    print( "Working on light shape " + str( shape ) + " out of " + str( num_light_shapes - 1 ) )
-    random_shape = 1.0 * np.greater( np.random.random( stencil.shape ), 0.75 )
+        user_shapes.append( slender_45 )
 
-    permittivity_step = device_permittivity.copy()
-    permittivity_step[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] += deps * random_shape
+    fd_grad_by_user_shape = np.zeros( [ len( user_shapes ), num_design_frequency_points ] )
+    shapes_by_user = np.zeros( [ len( user_shapes ) ] + list( stencil.shape ) )
 
-    light_shapes[ shape ] = random_shape
+    for shape in range( 0, len( user_shapes ) ):
+        print( "Working on user shape " + str( shape ) + " out of " + str( len( user_shapes ) - 1 ) )
+        permittivity_step = device_permittivity.copy()
+        permittivity_step[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] += deps * user_shapes[ shape ]
 
-    fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
+        shapes_by_user[ shape ] = user_shapes[ shape ]
 
-    fd_grad_light_shapes[ shape ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
+        fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
 
+        fd_grad_by_user_shape[ shape ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
 
-for shape in range( 0, num_medium_shapes ):
-    print( "Working on medium shape " + str( shape ) + " out of " + str( num_light_shapes - 1 ) )
-    random_shape = 1.0 * np.greater( np.random.random( stencil.shape ), 0.5 )
+    np.save( projects_directory_location + '/fd_grad_by_user_shape_' + str( deps_idx ) + '.npy', fd_grad_by_user_shape )
+    np.save( projects_directory_location + '/shapes_by_user_' + str( deps_idx ) + '.npy', shapes_by_user )
 
-    permittivity_step = device_permittivity.copy()
-    permittivity_step[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] += deps * random_shape
-
-    medium_shapes[ shape ] = random_shape
-
-    fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
-
-    fd_grad_medium_shapes[ shape ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
-
-
-for shape in range( 0, num_medium_shapes ):
-    print( "Working on heavy shape " + str( shape ) + " out of " + str( num_light_shapes - 1 ) )
-    random_shape = 1.0 * np.greater( np.random.random( stencil.shape ), 0.25 )
-
-    permittivity_step = device_permittivity.copy()
-    permittivity_step[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] += deps * random_shape
-
-    heavy_shapes[ shape ] = random_shape
-
-    fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
-
-    fd_grad_heavy_shapes[ shape ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
-
-
-np.save( projects_directory_location + "/light_shapes.npy", light_shapes )
-np.save( projects_directory_location + "/medium_shapes.npy", medium_shapes )
-np.save( projects_directory_location + "/heavy_shapes.npy", heavy_shapes )
-
-np.save( projects_directory_location + "/fd_grad_light_shapes.npy", fd_grad_light_shapes )
-np.save( projects_directory_location + "/fd_grad_medium_shapes.npy", fd_grad_medium_shapes )
-np.save( projects_directory_location + "/fd_grad_heavy_shapes.npy", fd_grad_heavy_shapes )
