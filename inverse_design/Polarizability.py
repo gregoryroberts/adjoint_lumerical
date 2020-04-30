@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/polarizability_test_v5/"
+projects_directory_location += "/polarizability_test_v6/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -227,7 +227,7 @@ def compute_fom_by_wavelength( input_permittivity ):
 
     intensity_y = np.zeros( num_design_frequency_points )
     for wl_idx in range( 0, num_design_frequency_points ):
-        intensity_y[ wl_idx ] = np.sum( np.abs( focal_e[ 1, wl_idx, 0, 0, 0 ] )**2 / max_intensity_by_wavelength[ wl_idx ] )
+        intensity_y[ wl_idx ] = np.sum( np.abs( focal_e[ 0, wl_idx, 0, 0, 0 ] )**2 / max_intensity_by_wavelength[ wl_idx ] )
 
     return intensity_y
 
@@ -258,10 +258,10 @@ device_permittivity[ region_start_x : region_end_x, region_start_y : region_end_
 
 initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
 
-# deps_values = [ 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
+deps_values = [ 2**(-8), 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
 # deps_values = [ 2**(-8) ]
 # deps_values = [ 0.5 * ( 2**(-8) + 2**(-9) ) ]
-deps_values = [ 0.5 * ( 2**(-9) + 2**(-10) ) ]
+# deps_values = [ 0.5 * ( 2**(-9) + 2**(-10) ) ]
 
 for deps_idx in range( 0, len( deps_values ) ):
     deps = deps_values[ deps_idx ]
