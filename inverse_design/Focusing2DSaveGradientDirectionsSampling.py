@@ -414,7 +414,7 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 						conjugate_weighting_wavelength[ current_coord, wl_idx + spectral_indices[ 0 ] ] = np.conj(
 							focal_data[ focal_idx ][ current_coord, wl_idx + spectral_indices[ 0 ], 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx + spectral_indices[ 0 ] ] )
 
-					figures_of_merit_by_pol_by_wavelength[ feature_size_idx, pol_idx, wl_idx + spectral_indices[ 0 ] ] = figure_of_merit_total[ wl_idx + spectral_indices[ 0 ] ]
+					figures_of_merit_by_pol_by_wavelength[ random_point, pol_idx, wl_idx + spectral_indices[ 0 ] ] = figure_of_merit_total[ wl_idx + spectral_indices[ 0 ] ]
 
 			fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
 			fom_weighting = np.maximum( fom_weighting, 0 )
@@ -457,7 +457,7 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 							)
 
 						gradient_by_pol_by_wavelength[
-							feature_size_idx, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = np.swapaxes( non_averaged_gradient, 0, 1 )
+							random_point, pol_idx, spectral_indices[ 0 ] + spectral_idx ] = np.swapaxes( non_averaged_gradient, 0, 1 )
 							# reinterpolate_by_averaging_2d(
 							# 	np.swapaxes( non_averaged_gradient, 0, 1 ), averaged_gradient_shape )
 
@@ -486,7 +486,7 @@ for feature_size_idx in range( 0, num_feature_sizes ):
 		device_gradient_real = np.swapaxes( device_gradient_real, 0, 1 )
 		average_device_gradient_real = device_gradient_real
 		#reinterpolate_by_averaging_2d( device_gradient_real, averaged_gradient_shape )
-		net_gradient[ feature_size_idx ] = average_device_gradient_real
+		net_gradient[ random_point ] = average_device_gradient_real
 
 		np.save( projects_directory_location + "/figure_of_merit_" + str( feature_size_idx ) + ".npy", figure_of_merit_evolution )
 
