@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/polarizability_test_v6_v3/"
+projects_directory_location += "/polarizability_test_v7/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -82,10 +82,10 @@ mesh_spacing_um = 0.025
 
 focal_length_um = 1.5
 
-device_thickness_um = 1.5
+device_thickness_um = 0.5
 device_thickness_voxels = 2 + int( device_thickness_um / mesh_spacing_um )
 
-device_size_lateral_um = 2.0
+device_size_lateral_um = 1.0
 device_size_lateral_voxels = 2 + int( device_size_lateral_um / mesh_spacing_um )
 
 permittivity_max = 2.0**2
@@ -243,7 +243,7 @@ random_design_seed = gaussian_filter( random_design_seed, sigma=3 )
 device_permittivity = permittivity_min + ( permittivity_max - permittivity_min ) * random_design_seed
 
 region_start_x = int( 0.35 * device_size_lateral_voxels )
-region_start_y = int( 0.14 * device_size_lateral_voxels )
+region_start_y = int( 0.68 * device_size_lateral_voxels )
 region_start_z = int( 0.57 * device_size_lateral_voxels )
 
 region_dim = 5
@@ -256,11 +256,12 @@ stencil = 0.5 * ( permittivity_max + permittivity_min ) * np.ones( ( region_dim,
 
 device_permittivity[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] = stencil
 
-initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
+# initial_fom_by_wavelength = compute_fom_by_wavelength( device_permittivity )
 
 # deps_values = [ 2**(-8), 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
 # deps_values = [ 0.5 * ( 2**(-8) + 2**(-9) ), 0.5 * ( 2**(-9) + 2**(-10) ) ]
-deps_values = [ 2**(-13), 2**(-14) ]
+# deps_values = [ 2**(-13), 2**(-14) ]
+deps_values = [ 1e-3, 5e-4, 1e-4, 1e-5, 5e-6, 1e-6 ]
 
 # deps_values = [ 2**(-8) ]
 # deps_values = [ 0.5 * ( 2**(-8) + 2**(-9) ) ]
@@ -280,7 +281,13 @@ for deps_idx in range( 0, len( deps_values ) ):
                 permittivity_step[ stencil_x + region_start_x, stencil_y + region_start_y, stencil_z + region_start_z ] += deps
 
                 fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
-                fd_grad_in_stencil[ stencil_x, stencil_y, stencil_z ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
+
+                permittivity_step = device_permittivity.copy()
+                permittivity_step[ stencil_x + region_start_x, stencil_y + region_start_y, stencil_z + region_start_z ] -= deps
+
+                fom_down_by_wavelength = compute_fom_by_wavelength( permittivity_step )
+
+                fd_grad_in_stencil[ stencil_x, stencil_y, stencil_z ] = ( fom_up_by_wavelength - fom_down_by_wavelength ) / ( 2 * deps )
 
     np.save( projects_directory_location + '/fd_grad_in_stencil_' + str( deps_idx ) + '.npy', fd_grad_in_stencil )
 
@@ -360,7 +367,12 @@ for deps_idx in range( 0, len( deps_values ) ):
 
         fom_up_by_wavelength = compute_fom_by_wavelength( permittivity_step )
 
-        fd_grad_by_user_shape[ shape ] = ( fom_up_by_wavelength - initial_fom_by_wavelength ) / deps
+        permittivity_step = device_permittivity.copy()
+        permittivity_step[ region_start_x : region_end_x, region_start_y : region_end_y, region_start_z : region_end_z ] -= deps * user_shapes[ shape ]
+
+        fom_down_by_wavelength = compute_fom_by_wavelength( permittivity_step )
+
+        fd_grad_by_user_shape[ shape ] = ( fom_up_by_wavelength - fom_down_by_wavelength ) / ( 2 * deps )
 
     np.save( projects_directory_location + '/fd_grad_by_user_shape_' + str( deps_idx ) + '.npy', fd_grad_by_user_shape )
     np.save( projects_directory_location + '/shapes_by_user_' + str( deps_idx ) + '.npy', shapes_by_user )
