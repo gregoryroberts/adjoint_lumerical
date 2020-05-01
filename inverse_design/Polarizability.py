@@ -244,7 +244,7 @@ device_permittivity = permittivity_min + ( permittivity_max - permittivity_min )
 
 region_start_x = int( 0.35 * device_size_lateral_voxels )
 region_start_y = int( 0.68 * device_size_lateral_voxels )
-region_start_z = int( 0.57 * device_size_lateral_voxels )
+region_start_z = int( 0.57 * device_thickness_voxels )
 
 region_dim = 5
 
