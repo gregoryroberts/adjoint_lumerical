@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/polarizability_test_v8/"
+projects_directory_location += "/polarizability_test_staircase_v9/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -120,6 +120,7 @@ fdtd['y span'] = fdtd_lateral_size_um * 1e-6
 fdtd['z max'] = ( device_thickness_um + top_gap_um ) * 1e-6
 fdtd['z min'] = -( focal_length_um + bottom_gap_um ) * 1e-6
 fdtd['mesh type'] = 'uniform'
+fdtd['mesh refinement'] = 'staircase'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
@@ -263,7 +264,7 @@ device_permittivity[ region_start_x : region_end_x, region_start_y : region_end_
 # deps_values = [ 2**(-8), 2**(-9), 2**(-10), 2**(-11), 2**(-12) ]
 # deps_values = [ 0.5 * ( 2**(-8) + 2**(-9) ), 0.5 * ( 2**(-9) + 2**(-10) ) ]
 # deps_values = [ 2**(-13), 2**(-14) ]
-deps_values = [ 1e-3, 5e-4, 1e-4, 1e-5, 5e-6, 1e-6 ]
+deps_values = [ 1e-2, 5e-3, 1e-3, 5e-4, 1e-4, 1e-5 ]
 
 # deps_values = [ 2**(-8) ]
 # deps_values = [ 0.5 * ( 2**(-8) + 2**(-9) ) ]
