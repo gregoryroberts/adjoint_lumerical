@@ -31,7 +31,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
 
-projects_directory_location += "/polarizability_test_v7/"
+projects_directory_location += "/polarizability_test_v8/"
 
 if not os.path.isdir(projects_directory_location):
     os.mkdir(projects_directory_location)
@@ -232,15 +232,17 @@ def compute_fom_by_wavelength( input_permittivity ):
     return intensity_y
 
 
-random_generator_seed = 6245234
-np.random.seed( random_generator_seed )
+# random_generator_seed = 6245234
+# np.random.seed( random_generator_seed )
 
-np.save( projects_directory_location + "/random_generator_seed.npy", np.array( [ random_generator_seed ] ) )
+# np.save( projects_directory_location + "/random_generator_seed.npy", np.array( [ random_generator_seed ] ) )
 
-device_permittivity = np.zeros( ( device_size_lateral_voxels, device_size_lateral_voxels, device_thickness_voxels ) )
-random_design_seed = 0.25 * np.random.random( device_permittivity.shape )
-random_design_seed = gaussian_filter( random_design_seed, sigma=3 )
-device_permittivity = permittivity_min + ( permittivity_max - permittivity_min ) * random_design_seed
+device_permittivity = 0.5 * ( permittivity_max + permittivity_min ) * np.ones( ( device_size_lateral_voxels, device_size_lateral_voxels, device_thickness_voxels ) )
+
+# device_permittivity = np.zeros( ( device_size_lateral_voxels, device_size_lateral_voxels, device_thickness_voxels ) )
+# random_design_seed = 0.25 * np.random.random( device_permittivity.shape )
+# random_design_seed = gaussian_filter( random_design_seed, sigma=3 )
+# device_permittivity = permittivity_min + ( permittivity_max - permittivity_min ) * random_design_seed
 
 region_start_x = int( 0.35 * device_size_lateral_voxels )
 region_start_y = int( 0.68 * device_size_lateral_voxels )
