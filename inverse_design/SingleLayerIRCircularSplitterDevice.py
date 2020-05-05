@@ -40,11 +40,6 @@ class SingleLayerIRCircularSplitterDevice(device.Device):
 		self.w[2] = var2
 
 		var3 = self.scale_2.forward(var2)
-		get_last_layer_var2 = var2[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ]
-		var3[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ] = (
-			self.last_layer_permittivity[ 0 ] + ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_var2
-		)
-		var3[ :, :, self.layering_z_0.last_layer_end : var3.shape[ 2 ] ] = self.last_layer_permittivity[ 0 ]
 
 		self.w[3] = var3
 
@@ -56,8 +51,6 @@ class SingleLayerIRCircularSplitterDevice(device.Device):
 		get_last_layer_gradient = gradient[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ]
 
 		gradient = self.scale_2.chain_rule(gradient, self.w[3], self.w[2])
-		gradient[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ] = ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_gradient
-
 		gradient = self.max_blur_xy_1.chain_rule(gradient, self.w[2], self.w[1])
 		gradient = self.layering_z_0.chain_rule(gradient, self.w[1], self.w[0])
 
