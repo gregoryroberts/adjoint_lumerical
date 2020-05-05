@@ -99,9 +99,6 @@ def get_slurm_node_list( slurm_job_env_variable=None ):
 # Code from Conner // END
 #
 
-print("success")
-sys.exit(0)
-
 #
 # Create FDTD hook
 #
@@ -112,6 +109,7 @@ num_cpus_per_node = 8
 slurm_list = get_slurm_node_list()
 # configure_resources_for_cluster( fdtd_hook, get_slurm_node_list(), N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
+print("success")
 sys.exit(0)
 
 #
