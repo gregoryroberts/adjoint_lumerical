@@ -88,7 +88,7 @@ def get_slurm_node_list(slurm_job_env_variable = None):
 				ending_number = starting_number
 			for i in range(starting_number, ending_number+1):
 				# Can use print("{:02d}".format(1)) to turn a 1 into a '01'
-				string. 111 -> 111 still, in case nodes hit triple-digits.
+				# string. 111 -> 111 still, in case nodes hit triple-digits.
 				output_arr.append(prefix + "{:02d}".format(i))
 	return output_arr
 
