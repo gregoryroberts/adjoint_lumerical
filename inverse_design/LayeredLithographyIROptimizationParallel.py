@@ -342,11 +342,15 @@ def disable_all_sources():
 	fdtd_hook.switchtolayout()
 
 	for xy_idx in range(0, 2):
-		(forward_sources[xy_idx]).enabled = 0
+		fdtd_hook.select( forward_sources[xy_idx][name] )
+		fdtd_hook.set( 'enabled', 0 )
+		# (forward_sources[xy_idx]).enabled = 0
 
 	for adj_src_idx in range(0, num_adjoint_sources):
 		for xy_idx in range(0, 2):
-			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
+			fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx][name] )
+			fdtd_hook.set( 'enabled', 0 )
+			# (adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
@@ -429,12 +433,15 @@ for epoch in range(start_epoch, num_epochs):
 			get_symmetry_fields = forward_e_fields_job_queued.get( forward_symmetry[ xy_idx ], None )
 			if get_symmetry_fields is None:
 				disable_all_sources()
-				(forward_sources[xy_idx]).enabled = 1
+				fdtd_hook.select( forward_sources[xy_idx][name] )
+				fdtd_hook.set( 'enabled', 1 )
 
 				job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
+				job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
 				job_names[ ( 'forward', xy_idx ) ] = job_name
 
 				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name )
+				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name_review )
 
 				fdtd_hook.addjob( job_name )
 				forward_e_fields_job_queued[xy_names[xy_idx]] = 1
@@ -450,11 +457,15 @@ for epoch in range(start_epoch, num_epochs):
 
 				if get_adj_symmetry_fields is None:
 					disable_all_sources()
-					(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
+					fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx][name] )
+					fdtd_hook.set( 'enabled', 1 )
+
 					job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
+					job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
 					job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
 
 					shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name )
+					shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name_review )
 					fdtd_hook.addjob( job_name )
 
 					adjoint_e_fields_job_queued[ adj_src_idx ][ xy_names[ xy_idx ] ] = 1
