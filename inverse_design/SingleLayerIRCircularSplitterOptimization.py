@@ -413,6 +413,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		device_gradient = np.swapaxes(device_gradient, 0, 2)
+		print( device_gradient.shape )
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
