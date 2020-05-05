@@ -35,11 +35,11 @@ focal_length_um = 9.6
 #
 mesh_spacing_um = 0.03
 
-# device_width_um = 9.6
-# device_height_um = 4.8
+device_width_um = 9.6
+device_height_um = 4.8
 
-device_width_um = 2.4
-device_height_um = 1.2
+# device_width_um = 2.4
+# device_height_um = 1.2
 
 device_size_vertical_um = 0.63
 
