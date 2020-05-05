@@ -66,7 +66,7 @@ lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequen
 
 effective_focal_length_sq = focal_length_um**2 + ( device_width_um / 4. )**2
 
-max_intensity_by_wavelength = ( device_size_lateral_um**2 )**2 / ( effective_focal_length_sq * lambda_values_um**2 )
+max_intensity_by_wavelength = ( device_width_voxels * device_height_um )**2 / ( effective_focal_length_sq * lambda_values_um**2 )
 
 #
 # Fabrication Constraints
@@ -82,19 +82,22 @@ vertical_gap_size_um = 1.0
 lateral_gap_size_um = 1.0
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_vertical_um + focal_length_um
-fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
+fdtd_region_width_um = 2 * lateral_gap_size_um + device_width_um
+fdtd_region_height_um = 2 * lateral_gap_size_um + device_height_um
 fdtd_region_maximum_vertical_um = device_size_vertical_um + vertical_gap_size_um
 fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
 
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
-fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
+fdtd_region_minimum_width_voxels = int( np.ceil(fdtd_region_width_um / mesh_spacing_um) )
+fdtd_region_minimum_height_voxels = int( np.ceil(fdtd_region_height_um / mesh_spacing_um) )
 
 fdtd_simulation_time_fs = 4 * 700
 
 #
 # Forward Source
 #
-lateral_aperture_um = device_size_lateral_um + 0.2
+lateral_aperture_width_um = device_width_um + 0.2
+lateral_aperture_height_um = device_height_um + 0.2
 src_maximum_vertical_um = device_size_vertical_um + 0.5 * vertical_gap_size_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 

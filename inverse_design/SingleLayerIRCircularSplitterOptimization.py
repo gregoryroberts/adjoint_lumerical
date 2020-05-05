@@ -44,16 +44,16 @@ shutil.copy2(python_src_directory + "/SingleLayerIRCircularSplitterParameters.py
 # Set up the FDTD region and mesh
 #
 fdtd = fdtd_hook.addfdtd()
-fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
-fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
+fdtd['x span'] = fdtd_region_width_um * 1e-6
+fdtd['y span'] = fdtd_region_height_um * 1e-6
 fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
 fdtd['mesh type'] = 'uniform'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
-fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
+fdtd['mesh cells x'] = fdtd_region_minimum_width_voxels
+fdtd['mesh cells y'] = fdtd_region_minimum_height_voxels
 fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
@@ -75,8 +75,8 @@ for xy_idx in range(0, 2):
 	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
 	forward_src['angle phi'] = xy_phi_rotations[xy_idx]
 	forward_src['direction'] = 'Backward'
-	forward_src['x span'] = lateral_aperture_um * 1e-6
-	forward_src['y span'] = lateral_aperture_um * 1e-6
+	forward_src['x span'] = lateral_aperture_width_um * 1e-6
+	forward_src['y span'] = lateral_aperture_height_um * 1e-6
 	forward_src['z max'] = src_maximum_vertical_um * 1e-6
 	forward_src['z min'] = src_minimum_vertical_um * 1e-6
 	forward_src['wavelength start'] = lambda_src_min_um * 1e-6
@@ -156,9 +156,9 @@ for adj_src in range(0, num_adjoint_sources):
 	transmission_focal_monitor['name'] = 'transmission_focal_monitor_' + str(adj_src)
 	transmission_focal_monitor['monitor type'] = '2D Z-Normal'
 	transmission_focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
-	transmission_focal_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_focal_monitor['x span'] = 0.5 * device_width_um * 1e-6
 	transmission_focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
-	transmission_focal_monitor['y span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_focal_monitor['y span'] = 0.5 * device_height_um * 1e-6
 	transmission_focal_monitor['z'] = adjoint_vertical_um * 1e-6
 	transmission_focal_monitor['override global monitor settings'] = 1
 	transmission_focal_monitor['use wavelength spacing'] = 1
@@ -174,9 +174,9 @@ transmission_focal = fdtd_hook.addpower()
 transmission_focal['name'] = 'transmission_focal'
 transmission_focal['monitor type'] = '2D Z-Normal'
 transmission_focal['x'] = 0 * 1e-6
-transmission_focal['x span'] = device_size_lateral_um * 1e-6
+transmission_focal['x span'] = device_width_um * 1e-6
 transmission_focal['y'] = 0 * 1e-6
-transmission_focal['y span'] = device_size_lateral_um * 1e-6
+transmission_focal['y span'] = device_height_um * 1e-6
 transmission_focal['z'] = adjoint_vertical_um * 1e-6
 transmission_focal['override global monitor settings'] = 1
 transmission_focal['use wavelength spacing'] = 1
@@ -192,8 +192,8 @@ transmission_focal.enabled = 0
 #
 sio2_top = fdtd_hook.addrect()
 sio2_top['name'] = 'sio2_top'
-sio2_top['x span'] = fdtd_region_size_lateral_um * 1e-6
-sio2_top['y span'] = fdtd_region_size_lateral_um * 1e-6
+sio2_top['x span'] = fdtd_region_width_um * 1e-6
+sio2_top['y span'] = fdtd_region_height_um * 1e-6
 sio2_top['z min'] = device_vertical_maximum_um * 1e-6
 sio2_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 sio2_top['index'] = index_sio2
