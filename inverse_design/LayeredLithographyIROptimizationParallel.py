@@ -61,8 +61,6 @@ def configure_resources_for_cluster( fdtd_hook, node_hostnames, N_resources=2, N
 
 
 def get_slurm_node_list( slurm_job_env_variable=None ):
-
-	return
 	if slurm_job_env_variable is None:
 		slurm_job_env_variable = os.getenv('SLURM_JOB_NODELIST')
 	if slurm_job_env_variable is None:
