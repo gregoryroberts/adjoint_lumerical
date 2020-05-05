@@ -101,7 +101,7 @@ def get_slurm_node_list(slurm_job_env_variable = None):
 #
 # Create FDTD hook
 #
-fdtd_hook = lumapi.FDTD()
+fdtd_hook = lumapi.FDTD( hide=True )
 
 num_nodes_to_use = 6
 num_cpus_per_node = 8
