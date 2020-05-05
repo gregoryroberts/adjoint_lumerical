@@ -388,7 +388,7 @@ for epoch in range(start_epoch, num_epochs):
 			create_forward_e_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
 
 			for wl_idx in range( 0, num_design_frequency_points ):
-				gradient_by_focal_spot[ focal_idx ] += 2 * np.sum(
+				maximization_gradient[ focal_idx ] += 2 * np.sum(
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
@@ -397,7 +397,7 @@ for epoch in range(start_epoch, num_epochs):
 					),
 				axis=0 )
 
-				gradient_by_focal_spot[ focal_idx ] += 2 * np.sum(
+				maximization_gradient[ focal_idx ] += 2 * np.sum(
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
