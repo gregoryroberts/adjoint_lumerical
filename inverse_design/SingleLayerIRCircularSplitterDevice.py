@@ -67,7 +67,7 @@ class SingleLayerIRCircularSplitterDevice(device.Device):
 		y_dimension_idx = 1
 		z_dimension_idx = 2
 
-		self.layering_z_0 = layering.Layering(z_dimension_idx, self.num_z_layers, [0, 1], 0.0, 0.0)
+		self.layering_z_0 = layering.Layering(z_dimension_idx, self.num_z_layers, [0, 1])
 
 		alpha = 8
 		self.blur_half_width = blur_half_width_voxels
