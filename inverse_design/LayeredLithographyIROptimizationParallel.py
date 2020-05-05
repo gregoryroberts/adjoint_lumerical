@@ -24,7 +24,7 @@ import re
 # Code from Conner // START
 #
 
-def configure_resources_for_cluster( fdtd_hook, node_hostnames, N_resources = 2, N_threads_per_resource = 8):
+def configure_resources_for_cluster( fdtd_hook, node_hostnames, N_resources=2, N_threads_per_resource=8 ):
 	'''
 	Take in a list of hostnames (different nodes on the cluster), and configure
 	them to have N_threads_per_resource.
@@ -60,7 +60,9 @@ def configure_resources_for_cluster( fdtd_hook, node_hostnames, N_resources = 2,
 			fdtd_hook.setresource('FDTD', i+1, 'hostname', node_hostnames[i])
 
 
-def get_slurm_node_list(slurm_job_env_variable = None):
+def get_slurm_node_list( slurm_job_env_variable=None ):
+
+	return
 	if slurm_job_env_variable is None:
 		slurm_job_env_variable = os.getenv('SLURM_JOB_NODELIST')
 	if slurm_job_env_variable is None:
