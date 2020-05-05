@@ -102,15 +102,12 @@ def get_slurm_node_list( slurm_job_env_variable=None ):
 #
 # Create FDTD hook
 #
-fdtd_hook = lumapi.FDTD()
+fdtd_hook = lumapi.FDTD( hide=True )
 
 num_nodes_to_use = 6
 num_cpus_per_node = 8
 slurm_list = get_slurm_node_list()
-# configure_resources_for_cluster( fdtd_hook, get_slurm_node_list(), N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
-
-print("success")
-sys.exit(0)
+configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
