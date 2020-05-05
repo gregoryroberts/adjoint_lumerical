@@ -10,10 +10,10 @@ import numpy as np
 
 from SingleLayerIRCircularSplitterParameters import *
 
-class SingelLayerIRCircularSplitterDevice(device.Device):
+class SingleLayerIRCircularSplitterDevice(device.Device):
 
 	def __init__(self, size, permittivity_bounds, init_permittivity, max_binarize_movement, desired_binarize_change):
-		super(SingelLayerIRCircularSplitterDevice, self).__init__(size, permittivity_bounds, init_permittivity)
+		super(SingleLayerIRCircularSplitterDevice, self).__init__(size, permittivity_bounds, init_permittivity)
 
 		self.num_z_layers = 1
 		self.minimum_design_value = 0
