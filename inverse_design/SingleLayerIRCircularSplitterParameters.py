@@ -8,7 +8,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'single_layer_circular_pol_splitter_9p6x4p8xp64um_f9p6'
+project_name = 'single_layer_circular_pol_splitter_3p2x1p6xp64um_f9p6'
 
 #
 # Optical
@@ -28,20 +28,24 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.25
 
-focal_length_um = 9.6
+# focal_length_um = 9.6
+focal_length_um = 3.2
 
 #
 # Device
 #
-mesh_spacing_um = 0.03
+# mesh_spacing_um = 0.03
+mesh_spacing_um = 0.032
 
-device_width_um = 9.6
-device_height_um = 4.8
+# device_width_um = 9.6
+# device_height_um = 4.8
 
+device_width_um = 3.2
+device_height_um = 1.6
 # device_width_um = 2.4
 # device_height_um = 1.2
 
-device_size_vertical_um = 0.63
+device_size_vertical_um = 0.64
 
 device_width_voxels = 2 + int( device_width_um / mesh_spacing_um )
 device_height_voxels = 2 + int( device_height_um / mesh_spacing_um )
@@ -79,8 +83,8 @@ blur_half_width_voxels = int( np.ceil( ( min_feature_size_voxels - 1 ) / 2. ) )
 #
 # FDTD
 #
-vertical_gap_size_um = 1.0
-lateral_gap_size_um = 1.0
+vertical_gap_size_um = 2.0
+lateral_gap_size_um = 2.0
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_vertical_um + focal_length_um
 fdtd_region_width_um = 2 * lateral_gap_size_um + device_width_um
