@@ -105,7 +105,8 @@ fdtd_hook = lumapi.FDTD( hide=True )
 
 num_nodes_to_use = 6
 num_cpus_per_node = 8
-configure_resources_for_cluster( fdtd_hook, get_slurm_node_list(), N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
+slurm_list = get_slurm_node_list()
+# configure_resources_for_cluster( fdtd_hook, get_slurm_node_list(), N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
 sys.exit(0)
 
