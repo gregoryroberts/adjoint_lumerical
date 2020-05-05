@@ -107,8 +107,8 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 
 jones_polarizations = [
-	( 1. / np.sqrt( 2. ) ) * np.array( 1, 1j ),
-	( 1. / np.sqrt( 2. ) ) * np.array( 1, -1j )
+	( 1. / np.sqrt( 2. ) ) * np.array( [ 1, 1j ] ),
+	( 1. / np.sqrt( 2. ) ) * np.array( [ 1, -1j ] )
 ]
 
 #
