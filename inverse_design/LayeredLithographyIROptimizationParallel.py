@@ -342,13 +342,13 @@ def disable_all_sources():
 	fdtd_hook.switchtolayout()
 
 	for xy_idx in range(0, 2):
-		fdtd_hook.select( forward_sources[xy_idx][name] )
+		fdtd_hook.select( forward_sources[xy_idx]['name'] )
 		fdtd_hook.set( 'enabled', 0 )
 		# (forward_sources[xy_idx]).enabled = 0
 
 	for adj_src_idx in range(0, num_adjoint_sources):
 		for xy_idx in range(0, 2):
-			fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx][name] )
+			fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
 			fdtd_hook.set( 'enabled', 0 )
 			# (adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
@@ -433,7 +433,7 @@ for epoch in range(start_epoch, num_epochs):
 			get_symmetry_fields = forward_e_fields_job_queued.get( forward_symmetry[ xy_idx ], None )
 			if get_symmetry_fields is None:
 				disable_all_sources()
-				fdtd_hook.select( forward_sources[xy_idx][name] )
+				fdtd_hook.select( forward_sources[xy_idx]['name'] )
 				fdtd_hook.set( 'enabled', 1 )
 
 				job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
@@ -457,7 +457,7 @@ for epoch in range(start_epoch, num_epochs):
 
 				if get_adj_symmetry_fields is None:
 					disable_all_sources()
-					fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx][name] )
+					fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
 					fdtd_hook.set( 'enabled', 1 )
 
 					job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
