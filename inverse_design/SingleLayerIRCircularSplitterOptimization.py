@@ -378,7 +378,7 @@ for epoch in range(start_epoch, num_epochs):
 					adjoint_ey_fields.append(
 						get_complex_monitor_data(design_efield_monitor['name'], 'E'))
 
-		maximization_gradient = np.zeros( [ num_focal_spots ] + list( forward_e_fields[ 0, 0 ].shape ) )
+		maximization_gradient = np.zeros( [ num_focal_spots ] + list( forward_e_fields[ 'x' ][ 0, 0 ].shape ) )
 		for focal_idx in range( 0, num_focal_spots ):
 			analyzer_vector = jones_polarizations[ focal_idx ]
 
@@ -391,18 +391,18 @@ for epoch in range(start_epoch, num_epochs):
 				gradient_by_focal_spot[ focal_idx ] += 2 * np.sum(
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
-						np.conj( create_forward_parallel_response_x ) *
-						create_forward_e_fields *
-						adjoint_ex_fields[ focal_idx ]
+						np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
+						create_forward_e_fields[ :, wl_idx ] *
+						adjoint_ex_fields[ focal_idx ][ :, wl_idx ]
 					),
 				axis=0 )
 
 				gradient_by_focal_spot[ focal_idx ] += 2 * np.sum(
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
-						np.conj( create_forward_parallel_response_y ) *
-						create_forward_e_fields *
-						adjoint_ey_fields[ focal_idx ]
+						np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
+						create_forward_e_fields[ :, wl_idx ] *
+						adjoint_ey_fields[ focal_idx ][ :, wl_idx ]
 					),
 				axis=0 )
 
