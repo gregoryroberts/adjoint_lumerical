@@ -43,9 +43,9 @@ device_height_um = 1.2
 
 device_size_vertical_um = 0.63
 
-device_width_voxels = 1 + int( device_width_um / mesh_spacing_um )
-device_height_voxels = 1 + int( device_height_um / mesh_spacing_um )
-device_voxels_vertical = 1 + int( device_size_vertical_um / mesh_spacing_um )
+device_width_voxels = 2 + int( device_width_um / mesh_spacing_um )
+device_height_voxels = 2 + int( device_height_um / mesh_spacing_um )
+device_voxels_vertical = 2 + int( device_size_vertical_um / mesh_spacing_um )
 
 device_vertical_minimum_um = 0
 device_vertical_maximum_um = device_size_vertical_um
