@@ -107,6 +107,8 @@ num_nodes_to_use = 6
 num_cpus_per_node = 8
 configure_resources_for_cluster( fdtd_hook, get_slurm_node_list(), N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
+sys.exit(0)
+
 #
 # Create project folder and save out the parameter file for documentation for this optimization
 #
