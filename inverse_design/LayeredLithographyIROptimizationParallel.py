@@ -99,6 +99,7 @@ def get_slurm_node_list( slurm_job_env_variable=None ):
 # Code from Conner // END
 #
 
+sys.exit(0)
 
 #
 # Create FDTD hook
