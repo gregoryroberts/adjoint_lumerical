@@ -378,7 +378,7 @@ for epoch in range(start_epoch, num_epochs):
 					adjoint_ey_fields.append(
 						get_complex_monitor_data(design_efield_monitor['name'], 'E'))
 
-		maximization_gradient = np.zeros( [ num_focal_spots ] + list( forward_e_fields[ 'x' ][ 0, 0 ].shape ) )
+		maximization_gradient = np.zeros( forward_e_fields[ 'x' ][ 0, 0 ].shape )
 		for focal_idx in range( 0, num_focal_spots ):
 			analyzer_vector = jones_polarizations[ focal_idx ]
 
@@ -388,7 +388,7 @@ for epoch in range(start_epoch, num_epochs):
 			create_forward_e_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
 
 			for wl_idx in range( 0, num_design_frequency_points ):
-				maximization_gradient[ focal_idx ] += 2 * np.sum(
+				maximization_gradient += 2 * np.sum(
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
@@ -397,7 +397,7 @@ for epoch in range(start_epoch, num_epochs):
 					),
 				axis=0 )
 
-				maximization_gradient[ focal_idx ] += 2 * np.sum(
+				maximization_gradient += 2 * np.sum(
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
@@ -413,7 +413,6 @@ for epoch in range(start_epoch, num_epochs):
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		device_gradient = np.swapaxes(device_gradient, 0, 2)
-		print( device_gradient.shape )
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
