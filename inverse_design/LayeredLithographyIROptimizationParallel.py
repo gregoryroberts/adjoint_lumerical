@@ -339,7 +339,8 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
 #
 def disable_all_sources():
-	fdtd_hook.switchtolayout()
+	# fdtd_hook.switchtolayout()
+	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 	for xy_idx in range(0, 2):
 		fdtd_hook.select( forward_sources[xy_idx]['name'] )
@@ -418,7 +419,9 @@ for epoch in range(start_epoch, num_epochs):
 
 		job_names = {}
 
-		fdtd_hook.switchtolayout()
+		# fdtd_hook.switchtolayout()
+		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+
 		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 		fdtd_hook.select( design_import[ 'name' ] )
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
@@ -626,8 +629,10 @@ for epoch in range(start_epoch, num_epochs):
 							forward_e_fields[ pol_name ][ :, spectral_indices[0] + spectral_idx, :, :, : ],
 							axis=0)
 
-		fdtd_hook.switchtolayout()
-		fdtd_hook.save()
+		# fdtd_hook.switchtolayout()
+		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+
+		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 
 		#
@@ -719,7 +724,8 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
 
 	fdtd_hook.switchtolayout()
-	fdtd_hook.save()
+	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+	fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 	shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_end_epoch_" + str( epoch ) + ".fsp" )
 
 
