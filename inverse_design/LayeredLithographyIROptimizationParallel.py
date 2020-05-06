@@ -443,6 +443,7 @@ for epoch in range(start_epoch, num_epochs):
 				job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
 				job_names[ ( 'forward', xy_idx ) ] = job_name
 
+				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name )
 				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name_review )
 
@@ -467,6 +468,7 @@ for epoch in range(start_epoch, num_epochs):
 					job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
 					job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
 
+					fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 					shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name )
 					shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name_review )
 					fdtd_hook.addjob( job_name )
