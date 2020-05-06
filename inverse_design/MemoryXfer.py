@@ -301,7 +301,7 @@ log_file = open( projects_directory_location + "/log.txt", 'a' )
 log_file.write( "Starting Data Xfer Method 1!\n" )
 log_file.close()
 
-num_xfers = 1
+num_xfers = 5
 
 start = time.time()
 
@@ -328,7 +328,7 @@ log_file.close()
 start = time.time()
 
 for xfer in range( 0, num_xfers ):
-	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
+	lumerical_data_name = "monitor_data_" + design_efield_monitor['name'] + "_" + monitor_field
 	extracted_data_name = lumerical_data_name + "_data"
 
 	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
