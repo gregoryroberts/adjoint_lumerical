@@ -444,8 +444,8 @@ for epoch in range(start_epoch, num_epochs):
 				job_names[ ( 'forward', xy_idx ) ] = job_name
 
 				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name )
-				shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name_review )
+				fdtd_hook.save( projects_directory_location + "/" + job_name )
+				fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 
 				fdtd_hook.addjob( job_name )
 				forward_e_fields_job_queued[xy_names[xy_idx]] = 1
@@ -469,8 +469,8 @@ for epoch in range(start_epoch, num_epochs):
 					job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
 
 					fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-					shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name )
-					shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + job_name_review )
+					fdtd_hook.save( projects_directory_location + "/" + job_name )
+					fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 					fdtd_hook.addjob( job_name )
 
 					adjoint_e_fields_job_queued[ adj_src_idx ][ xy_names[ xy_idx ] ] = 1
