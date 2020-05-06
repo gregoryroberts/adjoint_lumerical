@@ -301,7 +301,7 @@ log_file.close()
 start = time.time()
 
 for xfer in range( 0, num_xfers ):
-	lumerical_data_name = "monitor_data_" + design_efield_monitor['name'] + "_" + monitor_field
+	lumerical_data_name = "monitor_data_" + design_efield_monitor['name'] + "_" + "E"
 	extracted_data_name = lumerical_data_name + "_data"
 
 	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
