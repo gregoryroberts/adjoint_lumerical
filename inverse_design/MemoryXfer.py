@@ -282,7 +282,7 @@ data_size_GB = 0
 
 for xfer in range( 0, num_xfers ):
 	data = get_complex_monitor_data( design_efield_monitor[ 'name' ], 'E' )
-	data_size = data.nbytes / ( 1024. * 1024. * 1024. )
+	data_size_GB = data.nbytes / ( 1024. * 1024. * 1024. )
 
 elapsed = time.time() - start
 
@@ -311,7 +311,7 @@ for xfer in range( 0, num_xfers ):
 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
 
 	data = lumapi.getv( extracted_data_name )
-	data_size = data.nbytes / ( 1024. * 1024. * 1024. )
+	data_size_GB = data.nbytes / ( 1024. * 1024. * 1024. )
 
 elapsed = time.time() - start
 
