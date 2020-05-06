@@ -287,12 +287,13 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 	data = get_monitor_data(monitor_name, monitor_field)
 	return (data['real'] + np.complex(0, 1) * data['imag'])
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Starting Simulation!\n" )
-log_file.close()
 
 disable_all_sources()
 forward_sources[0].enabled = 1
+
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Starting Simulation!\n" )
+log_file.close()
 
 fdtd_hook.run()
 
