@@ -287,10 +287,18 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 	data = get_monitor_data(monitor_name, monitor_field)
 	return (data['real'] + np.complex(0, 1) * data['imag'])
 
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Starting Simulation!\n" )
+log_file.close()
+
 disable_all_sources()
 forward_sources[0].enabled = 0
 
 fdtd_hook.run()
+
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Starting Data Xfer Method 1!\n" )
+log_file.close()
 
 num_xfers = 1
 
@@ -311,6 +319,12 @@ log_file.write( "Average data rate for xfer is: " + str( 1024. * data_size_GB / 
 log_file.close()
 
 data_size_GB = 0
+
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Starting Data Xfer Method 2!\n" )
+log_file.close()
+
+start = time.time()
 
 for xfer in range( 0, num_xfers ):
 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
