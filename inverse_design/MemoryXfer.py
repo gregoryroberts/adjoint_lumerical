@@ -292,7 +292,7 @@ log_file.write( "Starting Simulation!\n" )
 log_file.close()
 
 disable_all_sources()
-forward_sources[0].enabled = 0
+forward_sources[0].enabled = 1
 
 fdtd_hook.run()
 
