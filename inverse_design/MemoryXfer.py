@@ -4,8 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from LayeredLithographyIRPolarizationParameters import *
-import LayeredLithographyIRPolarizationDevice
+from MemoryXferParameters import *
 
 import imp
 imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
@@ -42,7 +41,7 @@ log_file = open( projects_directory_location + "/log.txt", 'w' )
 log_file.write( "Log\n" )
 log_file.close()
 
-shutil.copy2(python_src_directory + "/LayeredLithographyIRPolarizationParameters.py", projects_directory_location + "/LayeredLithographyIRPolarizationParameters.py")
+shutil.copy2(python_src_directory + "/MemoryXferParameters.py", projects_directory_location + "/MemoryXferParameters.py")
 
 #
 # Set up the FDTD region and mesh
@@ -213,33 +212,6 @@ design_import['x span'] = device_size_lateral_um * 1e-6
 design_import['y span'] = device_size_lateral_um * 1e-6
 design_import['z max'] = device_vertical_maximum_um * 1e-6
 design_import['z min'] = device_vertical_minimum_um * 1e-6
-
-bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredLithographyIRPolarizationDevice.LayeredLithographyIRPolarizationDevice(
-	bayer_filter_size_voxels,
-	[min_device_permittivity, max_device_permittivity],
-	init_permittivity_0_1_scale,
-	num_vertical_layers,
-	spacer_size_voxels,
-	[index_air**2, index_silicon**2],
-	max_binarize_movement,
-	desired_binarize_change)
-
-
-# bayer_filter.set_design_variable( np.random.random( bayer_filter.get_design_variable().shape ) )
-# bayer_filter.step(
-# 	np.random.random( bayer_filter.get_design_variable().shape ),
-# 	0.01,
-# 	True,
-# 	projects_directory_location
-# )
-# sys.exit(0)
-
-# bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
-
-bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
 
 #
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
