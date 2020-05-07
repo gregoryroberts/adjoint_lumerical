@@ -113,6 +113,7 @@ fdtd_region_size_lateral_um = 5
 fdtd_region_minimum_vertical_um = -2.5
 fdtd_region_maximum_vertical_um = 2.5
 
+# mesh_size_um = 0.02
 mesh_size_um = 0.02
 
 fdtd_region_minimum_lateral_voxels = 1 + int ( fdtd_region_size_lateral_um / mesh_size_um )
@@ -315,7 +316,8 @@ device_z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
 
 # todo: If you were going for a quarter wave of the mid-wave this is not the right thickness
 cavity_index = 1.5
-cavity_height_um = 0.2
+# cavity_height_um = 0.2
+cavity_height_um = 0.1
 # cavity_height_um = 0.25 * 0.5 * ( lambda_min_um + lambda_max_um ) / cavity_index
 cavity_max_um = device_min_um
 cavity_min_um = cavity_max_um - cavity_height_um
@@ -339,8 +341,8 @@ gsst_k_states = [ 0, 0 ]
 
 
 # note: may want an override mesh here around this interface because it is small and high index
-# gsst_height_um = 3 * mesh_size_um
-gsst_height_um = 20 * mesh_size_um
+gsst_height_um = 3 * mesh_size_um
+# gsst_height_um = 20 * mesh_size_um
 
 num_gsst_states = len( gsst_n_states )
 
