@@ -265,15 +265,15 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 disable_all_sources()
 forward_sources[0].enabled = 1
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Starting Simulation!\n" )
-log_file.close()
+# log_file = open( projects_directory_location + "/log.txt", 'a' )
+# log_file.write( "Starting Simulation!\n" )
+# log_file.close()
 
 fdtd_hook.run()
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Starting Data Xfer Method 1!\n" )
-log_file.close()
+# log_file = open( projects_directory_location + "/log.txt", 'a' )
+# log_file.write( "Starting Data Xfer Method 1!\n" )
+# log_file.close()
 
 num_xfers = 5
 
@@ -287,17 +287,17 @@ for xfer in range( 0, num_xfers ):
 
 elapsed = time.time() - start
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Average time for to/from disk: " + str( elapsed / num_xfers ) + " over " + str( num_xfers ) + " xfers\n" )
-log_file.write( "The data size is: " + str( data_size_GB ) + " GB\n" )
-log_file.write( "Average data rate for xfer is: " + str( 1024. * data_size_GB / ( elapsed / num_xfers ) ) + " MB/s\n" )
-log_file.close()
+# log_file = open( projects_directory_location + "/log.txt", 'a' )
+# log_file.write( "Average time for to/from disk: " + str( elapsed / num_xfers ) + " over " + str( num_xfers ) + " xfers\n" )
+# log_file.write( "The data size is: " + str( data_size_GB ) + " GB\n" )
+# log_file.write( "Average data rate for xfer is: " + str( 1024. * data_size_GB / ( elapsed / num_xfers ) ) + " MB/s\n" )
+# log_file.close()
 
 data_size_GB = 0
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Starting Data Xfer Method 2!\n" )
-log_file.close()
+# log_file = open( projects_directory_location + "/log.txt", 'a' )
+# log_file.write( "Starting Data Xfer Method 2!\n" )
+# log_file.close()
 
 start = time.time()
 
