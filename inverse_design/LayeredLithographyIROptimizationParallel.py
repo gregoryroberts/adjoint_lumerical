@@ -446,6 +446,7 @@ for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 
 	for iteration in range(0, num_iterations_per_epoch):
+		iteration_start_time = time.time()
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
 		fdtd_hook.load( projects_directory_location + "/optimization.fsp" )
@@ -459,6 +460,8 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.select( design_import[ 'name' ] )
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
+
+		num_fdtd_jobs = 0
 
 		forward_e_fields_job_queued = {}
 		#
@@ -481,6 +484,7 @@ for epoch in range(start_epoch, num_epochs):
 				fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 
 				fdtd_hook.addjob( job_name )
+				num_fdtd_jobs += 1
 				forward_e_fields_job_queued[xy_names[xy_idx]] = 1
 
 
@@ -505,6 +509,7 @@ for epoch in range(start_epoch, num_epochs):
 					fdtd_hook.save( projects_directory_location + "/" + job_name )
 					fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 					fdtd_hook.addjob( job_name )
+					num_fdtd_jobs += 1
 
 					adjoint_e_fields_job_queued[ adj_src_idx ][ xy_names[ xy_idx ] ] = 1
 
@@ -514,7 +519,13 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# Step 2: Now that all the jobs are queued up, let's get them all run!
 		#
+		start = time.time()
 		fdtd_hook.runjobs()
+		elapsed = time.time() - start
+
+		log_file = open( projects_directory_location + "/log.txt", 'a' )
+		log_file.write( "To run all " + str( num_fdtd_jobs ) + " jobs in parallel took " + str( elapsed ) + " seconds\n\n" )
+		log_file.close()
 
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
@@ -770,6 +781,12 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
 		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
+
+		iteration_elapsed_time = time.time() - iteration_start_time
+		log_file = open( projects_directory_location + "/log.txt", 'a' )
+		log_file.write( "To do one iteration took " + str( iteration_elapsed_time ) + " seconds = " + str( iteration_elapsed_time / 60. ) + " minutes\n\n" )
+		log_file.close()
+
 
 	fdtd_hook.switchtolayout()
 	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
