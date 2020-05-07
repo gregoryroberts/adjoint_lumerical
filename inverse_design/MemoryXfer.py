@@ -6,8 +6,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from MemoryXferParameters import *
 
-# import imp
+import imp
 # imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
 
 import lumapi
 
@@ -304,8 +305,8 @@ for xfer in range( 0, num_xfers ):
 	lumerical_data_name = "monitor_data_" + design_efield_monitor['name'] + "_" + "E"
 	extracted_data_name = lumerical_data_name + "_data"
 
-	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
-	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
+	command_read_monitor = lumerical_data_name + " = getresult(\'" + design_efield_monitor['name'] + "\', \'" + "E" + "\');"
+	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + "E" + ";"
 
 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
