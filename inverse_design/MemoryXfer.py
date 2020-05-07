@@ -20,9 +20,92 @@ import time
 
 
 #
+# Code from Conner // START
+#
+
+def configure_resources_for_cluster( fdtd_hook, node_hostnames, N_resources=2, N_threads_per_resource=8 ):
+	'''
+	Take in a list of hostnames (different nodes on the cluster), and configure
+	them to have N_threads_per_resource.
+	'''
+	if len(node_hostnames) != N_resources:
+		raise ValueError('Length of node_hostnames should be N_resources')
+
+	# Use different MPIs depending on platform.
+	if platform.system() == 'Windows':
+		mpi_type = 'Remote: Intel MPI'
+	else:
+		mpi_type = 'Remote: MPICH2'
+	# Delete all resources. Lumerical doesn't let us delete the last resource, so
+	# we stop when it throws an Exception.
+	while True:
+		try:
+			fdtd_hook.deleteresource("FDTD", 1)
+		except lumapi.LumApiError:
+			break
+	# Change the one resource we have to have the proper number of threads.
+	fdtd_hook.setresource("FDTD", 1, "processes", N_threads_per_resource)
+	fdtd_hook.setresource('FDTD', 1, 'Job launching preset', mpi_type)
+	fdtd_hook.setresource('FDTD', 1, 'hostname', node_hostnames[0])
+	# Now add and configure the rest.
+	for i in np.arange(1, N_resources):
+		try:
+			fdtd_hook.addresource("FDTD")
+		except:
+			pass
+		finally:
+			fdtd_hook.setresource("FDTD", i+1, "processes", N_threads_per_resource)
+			fdtd_hook.setresource('FDTD', i+1, 'Job launching preset', mpi_type)
+			fdtd_hook.setresource('FDTD', i+1, 'hostname', node_hostnames[i])
+
+
+def get_slurm_node_list( slurm_job_env_variable=None ):
+	if slurm_job_env_variable is None:
+		slurm_job_env_variable = os.getenv('SLURM_JOB_NODELIST')
+	if slurm_job_env_variable is None:
+		raise ValueError('Environment variable does not exist.')
+
+	solo_node_pattern = r'hpc-\d\d-[\w]+'
+	cluster_node_pattern = r'hpc-\d\d-\[.*?\]'
+	solo_nodes = re.findall(solo_node_pattern, slurm_job_env_variable)
+	cluster_nodes = re.findall(cluster_node_pattern, slurm_job_env_variable)
+	inner_bracket_pattern = r'\[(.*?)\]'
+
+	output_arr = solo_nodes
+	for cluster_node in cluster_nodes:
+		prefix = cluster_node.split('[')[0]
+		inside_brackets = re.findall(inner_bracket_pattern, cluster_node)[0]
+		# Split at commas and iterate through results
+		for group in inside_brackets.split(','):
+			# Split at hypen. Get first and last number. Create string in range
+			# from first to last.
+			node_clump_split = group.split('-')
+			starting_number = int(node_clump_split[0])
+			try:
+				ending_number = int(node_clump_split[1])
+			except IndexError:
+				ending_number = starting_number
+			for i in range(starting_number, ending_number+1):
+				# Can use print("{:02d}".format(1)) to turn a 1 into a '01'
+				# string. 111 -> 111 still, in case nodes hit triple-digits.
+				output_arr.append(prefix + "{:02d}".format(i))
+	return output_arr
+
+
+#
+# Code from Conner // END
+#
+
+#
 # Create FDTD hook
 #
-fdtd_hook = lumapi.FDTD()
+fdtd_hook = lumapi.FDTD( hide=True )
+
+num_nodes_to_use = 1
+num_cpus_per_node = 8
+slurm_list = get_slurm_node_list()
+configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
+
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
