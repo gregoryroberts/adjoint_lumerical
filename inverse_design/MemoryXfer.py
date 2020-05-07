@@ -115,7 +115,7 @@ configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = "/central/groups/Faraon_Computing/projects/"
 # projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + "memory_test4"
+projects_directory_location += "/" + "memory_test5"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
