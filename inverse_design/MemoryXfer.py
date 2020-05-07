@@ -360,7 +360,7 @@ log_file = open( projects_directory_location + "/log.txt", 'a' )
 log_file.write( "Starting Data Xfer Method 1!\n" )
 log_file.close()
 
-num_xfers = 5
+num_xfers = 10
 
 start = time.time()
 
