@@ -104,7 +104,7 @@ def get_slurm_node_list( slurm_job_env_variable=None ):
 #
 fdtd_hook = lumapi.FDTD( hide=True )
 
-num_nodes_to_use = 6
+num_nodes_to_use = 5
 num_cpus_per_node = 8
 slurm_list = get_slurm_node_list()
 configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
@@ -121,6 +121,10 @@ projects_directory_location += "/" + project_name + '_parallel'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
+
+log_file = open( projects_directory_location + "/log.txt", 'w' )
+log_file.write( "Log\n" )
+log_file.close()
 
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
@@ -387,6 +391,35 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 	data = get_monitor_data(monitor_name, monitor_field)
 	return (data['real'] + np.complex(0, 1) * data['imag'])
 
+def get_efield( monitor_name ):
+	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
+	data_xfer_size_MB = 0
+
+	start = time.time()
+
+	Epol_0 = fdtd_hook.getdata( monitor_name, field_polariations[ 0 ] )
+	data_xfer_size_MB += Epol_0.nbytes / ( 1024. * 1024. )
+
+	total_efield = np.zeros( [ len (field_polariations ) ] + list( Epol_0.shape ), dtype=np.complex )
+	total_efield[ 0 ] = Epol_0
+
+	for pol_idx in range( 1, len( field_polariations ) ):
+		Epol = fdtd_hook.getdata( monitor_name, field_polariations[ pol_idx ] )
+		data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
+
+		total_efield[ pol_idx ] = Epol
+
+	elapsed = time.time() - start
+
+	date_xfer_rate_MB_sec = data_xfer_size_MB / elapsed
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Transferred " + str( data_xfer_size_MB ) + " MB\n" )
+	log_file.write( "Data rate = " + str( date_xfer_rate_MB_sec ) + " MB/sec\n\n" )
+	log_file.close()
+
+	return total_efield
+
+
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
@@ -531,11 +564,14 @@ for epoch in range(start_epoch, num_epochs):
 			else:
 				fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
 
-				forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+				# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+				forward_e_fields[xy_names[xy_idx]] = get_efield( design_efield_monitor['name' ] )
 
 				for adj_src_idx in range(0, num_adjoint_sources):
-					pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
-					pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
+					# pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
+					pull_focal_data = get_efield( focal_monitors[ adj_src_idx ][ 'name' ] )
+					# pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
+					pull_focal_data = pull_focal_data[ :, 0, 0, 0, : ]
 					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] = pull_focal_data
 
 
@@ -598,7 +634,9 @@ for epoch in range(start_epoch, num_epochs):
 
 				if get_adj_symmetry_fields is not None:
 					# fields are organized as [ pol, wavelength, z, y, x ]
-					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 3, 4 )
+					# fields are organized as [ pol, x, y, z, wavelength ]
+					# get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 3, 4 )
+					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 1, 2 )
 					get_adj_symmetry_fields_ypol = ( get_adj_symmetry_fields[ 1 ] ).copy()
 					get_adj_symmetry_fields[ 1 ] = get_adj_symmetry_fields[ 0 ]
 					get_adj_symmetry_fields[ 0 ] = get_adj_symmetry_fields_ypol
@@ -608,7 +646,8 @@ for epoch in range(start_epoch, num_epochs):
 				else:
 					fdtd_hook.load( job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] )
 
-					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
+					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
+					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_efield( design_efield_monitor['name'] )
 
 			for pol_idx in range(0, len(polarizations)):
 				pol_name = polarizations[pol_idx]
@@ -625,11 +664,18 @@ for epoch in range(start_epoch, num_epochs):
 					total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
 
 					for spectral_idx in range(0, source_weight.shape[0]):
+						# xy_polarized_gradients[pol_name_to_idx] += np.sum(
+						# 	(source_weight[spectral_idx] * gradient_performance_weight * total_weighting[spectral_idx]) *
+						# 	adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][:, spectral_indices[0] + spectral_idx, :, :, :] *
+						# 	forward_e_fields[ pol_name ][ :, spectral_indices[0] + spectral_idx, :, :, : ],
+						# 	axis=0)
+
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
 							(source_weight[spectral_idx] * gradient_performance_weight * total_weighting[spectral_idx]) *
-							adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][:, spectral_indices[0] + spectral_idx, :, :, :] *
-							forward_e_fields[ pol_name ][ :, spectral_indices[0] + spectral_idx, :, :, : ],
-							axis=0)
+							adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][ :, :, :, :, spectral_indices[0] + spectral_idx ] *
+							forward_e_fields[ pol_name ][ :, :, :, :, spectral_indices[0] + spectral_idx ],
+							axis=0 )
+
 
 		# fdtd_hook.switchtolayout()
 		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
@@ -643,7 +689,7 @@ for epoch in range(start_epoch, num_epochs):
 		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
-		device_gradient = np.swapaxes(device_gradient, 0, 2)
+		# device_gradient = np.swapaxes(device_gradient, 0, 2)
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 

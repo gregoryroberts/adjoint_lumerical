@@ -7,8 +7,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
-# project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v2'
 
 #
 # Optical
@@ -44,16 +44,16 @@ mesh_spacing_um = 0.04
 num_vertical_layers = 3
 
 device_size_lateral_um = 2.0 * 3.0#3.06#3.6
-device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
-# device_size_verical_um = num_vertical_layers * ( 4.32 / num_vertical_layers )
+# device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
+device_size_verical_um = num_vertical_layers * ( 4.32 / num_vertical_layers )
 # amorphous_silicon_height_per_layer_um = 0.52#0.8
 # amorphous_silicon_height_per_layer_um = 0.72
 amorphous_silicon_height_per_layer_um = 0.72
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
-device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
-# device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
+# device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
+device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
 spacer_size_voxels = 1 + int(spacer_size_um / mesh_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um
