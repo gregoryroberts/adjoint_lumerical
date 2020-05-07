@@ -317,7 +317,7 @@ device_z_range = 1e-6 * np.linspace( -0.51, 0.51, 2 )
 # todo: If you were going for a quarter wave of the mid-wave this is not the right thickness
 cavity_index = 1.5
 # cavity_height_um = 0.2
-cavity_height_um = 0.1
+cavity_height_um = 3 * mesh_size_um
 # cavity_height_um = 0.25 * 0.5 * ( lambda_min_um + lambda_max_um ) / cavity_index
 cavity_max_um = device_min_um
 cavity_min_um = cavity_max_um - cavity_height_um
