@@ -8,7 +8,7 @@ from LayeredLithographyIRParameters import *
 import LayeredLithographyIRBayerFilter
 
 import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
 import lumapi
 
 import functools
