@@ -1,6 +1,8 @@
 import os
 import shutil
 import sys
+import re
+import platform
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
