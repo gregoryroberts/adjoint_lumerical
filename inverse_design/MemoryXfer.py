@@ -28,8 +28,8 @@ fdtd_hook = lumapi.FDTD()
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-# projects_directory_location = "/central/groups/Faraon_Computing/projects/"
-projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+projects_directory_location = "/central/groups/Faraon_Computing/projects/"
+# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 projects_directory_location += "/" + "memory_test"
 
 if not os.path.isdir(projects_directory_location):
