@@ -95,7 +95,8 @@ preload = False
 start_iter = 50
 preload_loc = projects_directory_location + "/pull_from_absorptive_switch_states_from_start_higher_index_v6"
 
-projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v9"
+# projects_directory_location += "/pull_from_absorptive_switch_states_from_start_higher_index_v9"
+projects_directory_location += "/pull_from_absorptive_noloss_switch_states_from_start_higher_index_v9"
 
 
 if not os.path.isdir(projects_directory_location):
@@ -333,11 +334,13 @@ cavity['index'] = cavity_index
 # gsst_k_states = [ 0.1, 0.25 ]
 
 gsst_n_states = [ 4.2, 5.75 ]
-gsst_k_states = [ 2.5, 3.75 ]
+gsst_k_states = [ 0, 0 ]
+# gsst_k_states = [ 2.5, 3.75 ]
 
 
 # note: may want an override mesh here around this interface because it is small and high index
-gsst_height_um = 3 * mesh_size_um
+# gsst_height_um = 3 * mesh_size_um
+gsst_height_um = 20 * mesh_size_um
 
 num_gsst_states = len( gsst_n_states )
 
