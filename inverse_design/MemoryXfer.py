@@ -8,9 +8,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from MemoryXferParameters import *
 
-import imp
+# import imp
 # imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
+# imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
 
 import lumapi
 
@@ -113,9 +113,9 @@ configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-projects_directory_location = "/central/groups/Faraon_Computing/projects/"
-# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + "memory_test5"
+# projects_directory_location = "/central/groups/Faraon_Computing/projects/"
+projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+projects_directory_location += "/" + "memory_test4"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
