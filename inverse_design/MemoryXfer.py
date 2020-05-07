@@ -115,7 +115,7 @@ configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = "/central/groups/Faraon_Computing/projects/"
 # projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + "memory_test"
+projects_directory_location += "/" + "memory_test3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -386,18 +386,25 @@ log_file.close()
 
 start = time.time()
 
+pol = [ 'Ex', 'Ey', 'Ez' ]
+
 for xfer in range( 0, num_xfers ):
-	lumerical_data_name = "monitor_data_" + design_efield_monitor['name'] + "_" + "E"
-	extracted_data_name = lumerical_data_name + "_data"
+	data_size_GB = 0
+	for pol_idx in range( 0, len( pol ) ):
+		Epol = fdtd_hook.getdata( design_efield_monitor[ 'name' ], pol[ pol_idx ] )
+		data_size_GB += Epol.nbytes / ( 1024. * 1024. * 1024. )
 
-	command_read_monitor = lumerical_data_name + " = getresult(\'" + design_efield_monitor['name'] + "\', \'" + "E" + "\');"
-	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + "E" + ";"
+	# lumerical_data_name = "monitor_data_" + design_efield_monitor['name'] + "_" + "E"
+	# extracted_data_name = lumerical_data_name + "_data"
 
-	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
-	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
+	# command_read_monitor = lumerical_data_name + " = getresult(\'" + design_efield_monitor['name'] + "\', \'" + "E" + "\');"
+	# command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + "E" + ";"
 
-	data = fdtd_hook.getv( extracted_data_name )
-	data_size_GB = data.nbytes / ( 1024. * 1024. * 1024. )
+	# lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
+	# lumapi.evalScript(fdtd_hook.handle, command_extract_data)
+
+	# data = fdtd_hook.getv( extracted_data_name )
+	# data_size_GB = data.nbytes / ( 1024. * 1024. * 1024. )
 
 elapsed = time.time() - start
 
