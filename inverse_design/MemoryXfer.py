@@ -311,7 +311,7 @@ for xfer in range( 0, num_xfers ):
 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
 
-	data = lumapi.getv( extracted_data_name )
+	data = fdtd_hook.getv( extracted_data_name )
 	data_size_GB = data.nbytes / ( 1024. * 1024. * 1024. )
 
 elapsed = time.time() - start
