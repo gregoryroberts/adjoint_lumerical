@@ -508,19 +508,18 @@ for epoch in range(start_epoch, num_epochs):
 			create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
 			create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
 
-			# create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
-			# create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
-
+			create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
+			create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
 
 			parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
-			# reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
+			reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
 
-			# parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
-			# reflected_fom_by_wavelength = 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength )
+			parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+			reflected_fom_by_wavelength = np.maximum( 0, 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength ) )
 
-			# fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
+			fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
 
-			fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+			# fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
 			figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration, focal_idx, : ] = fom_by_wavelength
 			fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
 
@@ -564,11 +563,21 @@ for epoch in range(start_epoch, num_epochs):
 			create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
 			create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
 
+			create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
+			create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
+
+			parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
+			reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
+
+			parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+			reflected_fom_by_wavelength = np.maximum( 0, 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength ) )
+
 			create_forward_e_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
 
 			for wl_idx in range( 0, num_design_frequency_points ):
 				maximization_gradient += 2 * np.sum(
 					np.real(
+						reflected_fom_by_wavelength[ wl_idx ] *
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
 						create_forward_e_fields[ :, :, :, :, wl_idx ] *
@@ -576,10 +585,31 @@ for epoch in range(start_epoch, num_epochs):
 					),
 				axis=0 )
 
+				maximization_gradient -= 2 * np.sum(
+					np.real(
+						parallel_fom_by_wavelength[ wl_idx ] *
+						fom_weightings[ focal_idx, wl_idx ] *
+						np.conj( create_reflected_parallel_response_x[ wl_idx ] ) *
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+					),
+				axis=0 )
+
 				maximization_gradient += 2 * np.sum(
 					np.real(
+						reflected_fom_by_wavelength[ wl_idx ] *
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+					),
+				axis=0 )
+
+				maximization_gradient -= 2 * np.sum(
+					np.real(
+						parallel_fom_by_wavelength[ wl_idx ] *
+						fom_weightings[ focal_idx, wl_idx ] *
+						np.conj( create_reflected_parallel_response_x[ wl_idx ] ) *
 						create_forward_e_fields[ :, :, :, :, wl_idx ] *
 						adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ]
 					),
