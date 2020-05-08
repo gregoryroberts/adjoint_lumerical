@@ -26,9 +26,10 @@ while True:
                 print(file_root)                
                 os.remove( file_root + "READY" )
                 
-                lumerical_bin_loc = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/"
+                lumerical_bin_mpiexec = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/"
+                lumerical_bin_nemesis = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/bin/"
                 os.system(
-                    lumerical_bin_loc +  "mpiexec -n 8 " + lumerical_bin_loc + "fdtd-engine-mpich2nem -t 1 " + file_root + "fsp" )
+                    lumerical_bin_mpiexec +  "mpiexec -n 8 " + lumerical_bin_nemesis + "fdtd-engine-mpich2nem -t 1 " + file_root + "fsp" )
 
                 # fdtd_hook.load( file_root + "fsp" )
                 # fdtd_hook.run()
