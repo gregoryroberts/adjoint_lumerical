@@ -23,7 +23,9 @@ while True:
             if pattern.match( filepath ):
 
                 file_root = filebase + "/" + filepath[:-5]
-                print(file_root)                
+                print("File root is...")
+                print(file_root)
+                print("File root was...")
                 os.remove( file_root + "READY" )
                 
                 lumerical_bin_mpiexec = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/"
