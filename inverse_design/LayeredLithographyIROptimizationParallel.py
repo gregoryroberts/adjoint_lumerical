@@ -444,7 +444,7 @@ jobs_queue = []
 
 def add_job( job_name ):
 	job_idx = len( jobs_queue ) % num_nodes_available
-	jobs_queue.append( projects_directory_location + "/ID" + str( job_idx ) "_" + job_name )
+	jobs_queue.append( projects_directory_location + "/ID" + str( job_idx ) + "_" + job_name )
 
 def run_jobs():
 	for job_idx in range( 0, len( jobs_queue ) ):
