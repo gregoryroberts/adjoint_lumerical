@@ -460,11 +460,16 @@ def run_jobs( queue ):
 		lumerical_bin_nemesis = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/bin/"
 
 		process = subprocess.Popen(
-			# [
-				'cd /home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/; ' +
-				 'mpiexec ' +
-				'-n 8 -host ' + cluster_hostnames[ job_idx ] + ' ' + lumerical_bin_nemesis +  '/fdtd-engine-mpich2nem -t 1 ' + get_job_path
-			# ],
+			[
+				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh ',
+				cluster_hostnames[ job_idx ]
+			]
+
+			# # [
+			# 	'cd /home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/; ' +
+			# 	 'mpiexec ' +
+			# 	'-n 8 -host ' + cluster_hostnames[ job_idx ] + ' ' + lumerical_bin_nemesis +  '/fdtd-engine-mpich2nem -t 1 ' + get_job_path
+			# # ],
 			,
 			stdout=subprocess.PIPE, stderr=subprocess.PIPE )
 		out = process.communicate()
