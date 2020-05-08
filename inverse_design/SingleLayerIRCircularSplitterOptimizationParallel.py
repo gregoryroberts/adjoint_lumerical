@@ -519,7 +519,7 @@ for epoch in range(start_epoch, num_epochs):
 
 			log_file = open( projects_directory_location + "/log.txt", 'a' )
 			log_file.write( str( parallel_fom_by_wavelength ) + "\n" )
-			log_file.write( str( reflected_fom_by_wavelength ) + "\n" )
+			log_file.write( str( reflected_fom_by_wavelength ) + "\n\n" )
 			log_file.close()
 
 			reflected_fom_by_wavelength = np.maximum( 0, reflected_fom_by_wavelength )
