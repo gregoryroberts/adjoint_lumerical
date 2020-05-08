@@ -14,7 +14,7 @@ NUM_WORKERS_MINUS_ONE=4
 
 worker_slurm_ids=()
 
-for WORKER_ID in $(seq 1 $NUM_WORKERS)
+for WORKER_ID in $(seq 0 $NUM_WORKERS_MINUS_ONE)
 do	
 	SLURM_ID=$(sbatch launch_worker.sh /central/groups/Faraon_Computing/projects/layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3_parallel/ $WORKER_ID | tr -dc '0-9')
 	worker_slurm_ids+=( $SLURM_ID )
