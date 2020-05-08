@@ -17,6 +17,28 @@ do
 	worker_slurm_ids+=( $SLURM_ID )
 done
 
-echo $worker_slurm_ids > slurms.out
+while true; do
+	NUM_WORKERS_STARTED=0
+	declare -i NUM_WORKERS_STARTED
+
+	for WORKER_ID in  { 1 .. $NUM_WORKERS }
+	do
+		if grep ${worker_slurm_ids[2]} $(squeue -u gdrobert --state=running)
+		then
+			$NUM_WORKERS_STARTED+=1
+		fi
+	done
+
+	if [ $NUM_WORKERS_STARTED == $NUM_WORKERS ]
+	then
+		break
+	fi
+
+	echo $NUM_WORKERS_STARTED >> slurms.out
+
+	sleep 1
+done
+
+echo ${worker_slurm_ids[*]} >> slurms.out
 
 exit $?
