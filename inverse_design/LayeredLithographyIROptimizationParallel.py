@@ -475,9 +475,9 @@ def run_jobs( queue ):
 			if completed_jobs[ job_idx ] == 0:
 
 				poll_result = proccesses[ job_idx ].poll()
-				# log_file = open( projects_directory_location + "/log.txt", 'a' )
-				# log_file.write( "Poll result " + str( poll_result ) )
-				# log_file.close()
+				log_file = open( projects_directory_location + "/log.txt", 'a' )
+				log_file.write( "Poll result for " + str( job_idx ) + " is " + str( poll_result ) )
+				log_file.close()
 				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
 
