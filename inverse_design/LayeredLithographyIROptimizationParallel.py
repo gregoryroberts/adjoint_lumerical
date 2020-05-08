@@ -464,6 +464,7 @@ def run_jobs( queue ):
 				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh',
 				cluster_hostnames[ job_idx ]
 			]
+		)
 
 			# # [
 			# 	'cd /home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/; ' +
@@ -471,8 +472,8 @@ def run_jobs( queue ):
 			# 	'-n 8 -host ' + cluster_hostnames[ job_idx ] + ' ' + lumerical_bin_nemesis +  '/fdtd-engine-mpich2nem -t 1 ' + get_job_path
 			# # ],
 			,
-			stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-		out = process.communicate()
+			# stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+		# out = process.communicate()
 		log_file = open( projects_directory_location + "/log.txt", 'a' )
 		log_file.write( "stdout = " + str( out ) + " \n" )
 		log_file.close()
