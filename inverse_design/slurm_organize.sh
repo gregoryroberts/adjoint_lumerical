@@ -23,7 +23,7 @@ while true; do
 
 	for WORKER_ID in  {1..$NUM_WORKERS}
 	do
-		if grep ${worker_slurm_ids[2]} $(squeue -u gdrobert --state=running)
+		if grep ${worker_slurm_ids[$WORKER_ID]} $(squeue -u gdrobert --state=running)
 		then
 			$NUM_WORKERS_STARTED+=1
 		fi
