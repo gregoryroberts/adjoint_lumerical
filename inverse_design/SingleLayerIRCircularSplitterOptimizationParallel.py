@@ -557,7 +557,7 @@ for epoch in range(start_epoch, num_epochs):
 					adjoint_ey_fields.append(
 						get_efield(design_efield_monitor['name']))
 
-		maximization_gradient = np.zeros( forward_e_fields[ 'x' ][ 0, 0 ].shape )
+		maximization_gradient = np.zeros( forward_e_fields[ 'x' ][ 0, :, :, :, 0 ].shape )
 		for focal_idx in range( 0, num_focal_spots ):
 			analyzer_vector = jones_polarizations[ focal_idx ]
 
