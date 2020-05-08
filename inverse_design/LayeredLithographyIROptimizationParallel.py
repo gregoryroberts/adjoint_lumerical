@@ -461,16 +461,7 @@ def run_jobs( queue ):
 		process = subprocess.Popen(
 			[
 				lumerical_bin_nemesis +  "fdtd-engine-mpich2nem",
-				"-n",
-				"8",
-				"-hosts",
-				cluster_hostnames[ job_idx ],
-				get_job_path,
-				">",
-				"/dev/null",
-				"2>",
-				"/dev/null",
-				"&"
+				"-n 8 -hosts + " cluster_hostnames[ job_idx ] + " " + get_job_path
 			] )
 
 		# process = subprocess.Popen(
