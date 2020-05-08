@@ -471,7 +471,7 @@ def run_jobs( queue ):
 			# 	 'mpiexec ' +
 			# 	'-n 8 -host ' + cluster_hostnames[ job_idx ] + ' ' + lumerical_bin_nemesis +  '/fdtd-engine-mpich2nem -t 1 ' + get_job_path
 			# # ],
-			,
+			# ,
 			# stdout=subprocess.PIPE, stderr=subprocess.PIPE )
 		# out = process.communicate()
 		log_file = open( projects_directory_location + "/log.txt", 'a' )
