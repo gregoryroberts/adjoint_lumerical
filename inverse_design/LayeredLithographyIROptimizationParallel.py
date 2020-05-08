@@ -108,7 +108,7 @@ fdtd_hook = lumapi.FDTD( hide=True )
 
 num_nodes_available = int( sys.argv[ 1 ] )
 num_cpus_per_node = 8
-slurm_list = get_slurm_node_list()
+cluster_hostnames = get_slurm_node_list()
 # configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
 #
@@ -458,7 +458,7 @@ def run_jobs( queue ):
 		lumerical_bin_nemesis = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/bin/"
 
 		process = subprocess.Popen(
-			lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + get_slurm_node_list[ job_idx ] + " " +
+			lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + cluster_hostnames[ job_idx ] + " " +
 			get_job_path + " > /dev/null 2> /dev/null &" )
 		proccesses.append( process )
 	
