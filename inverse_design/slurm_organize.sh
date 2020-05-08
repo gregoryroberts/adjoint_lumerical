@@ -37,12 +37,14 @@ while true; do
 		fi
 	done
 
+	echo $NUM_WORKERS_STARTED >> slurms.out
+
+
 	if [ $NUM_WORKERS_STARTED == $NUM_WORKERS ]
 	then
 		break
 	fi
 
-	echo $NUM_WORKERS_STARTED >> slurms.out
 
 	sleep 5
 done
