@@ -459,8 +459,23 @@ def run_jobs( queue ):
 		lumerical_bin_nemesis = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/bin/"
 
 		process = subprocess.Popen(
-			lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + cluster_hostnames[ job_idx ] + " " +
-			get_job_path + " > /dev/null 2> /dev/null &" )
+			[
+				lumerical_bin_nemesis +  "fdtd-engine-mpich2nem",
+				"-n",
+				"8",
+				"-hosts",
+				cluster_hostnames[ job_idx ],
+				get_job_path,
+				">",
+				"/dev/null",
+				"2>",
+				"/dev/null",
+				"&"
+			] )
+
+		# process = subprocess.Popen(
+		# 	lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + cluster_hostnames[ job_idx ] + " " +
+		# 	get_job_path + " > /dev/null 2> /dev/null &" )
 		proccesses.append( process )
 	
 	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
