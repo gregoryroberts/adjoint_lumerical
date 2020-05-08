@@ -71,7 +71,7 @@ lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_design_frequen
 
 effective_focal_length_sq = focal_length_um**2 + ( device_width_um / 4. )**2
 
-max_intensity_by_wavelength = ( device_width_voxels * device_height_um )**2 / ( effective_focal_length_sq * lambda_values_um**2 )
+max_intensity_by_wavelength = ( device_width_um * device_height_um )**2 / ( effective_focal_length_sq * lambda_values_um**2 )
 
 #
 # Fabrication Constraints
