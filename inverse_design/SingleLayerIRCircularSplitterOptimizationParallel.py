@@ -106,10 +106,13 @@ def get_slurm_node_list( slurm_job_env_variable=None ):
 #
 fdtd_hook = lumapi.FDTD( hide=True )
 
-num_nodes_to_use = 3
+num_nodes_available = int( sys.argv[ 1 ] )
 num_cpus_per_node = 8
-slurm_list = get_slurm_node_list()
-configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
+cluster_hostnames = get_slurm_node_list()
+# num_nodes_to_use = 3
+# num_cpus_per_node = 8
+# slurm_list = get_slurm_node_list()
+# configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
@@ -396,6 +399,44 @@ def get_efield( monitor_name ):
 
 	return total_efield
 
+jobs_queue = []
+
+def add_job( job_name, queue ):
+	full_name = projects_directory_location + "/" + job_name
+	fdtd_hook.save( full_name )
+	queue.append( full_name )
+
+	return full_name
+
+def run_jobs( queue ):
+	proccesses = []
+	for job_idx in range( 0, len( queue ) ):
+		get_job_path = queue[ job_idx ]
+
+		process = subprocess.Popen(
+			[
+				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh',
+				cluster_hostnames[ job_idx ],
+				get_job_path
+			]
+		)
+		proccesses.append( process )
+	
+	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
+	while np.sum( completed_jobs ) < len( queue ):
+		for job_idx in range( 0, len( queue ) ):
+			if completed_jobs[ job_idx ] == 0:
+
+				poll_result = proccesses[ job_idx ].poll()
+				if not( poll_result is None ):
+					completed_jobs[ job_idx ] = 1
+
+		time.sleep( 10 )
+
+	queue = []
+
+
+
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
@@ -451,14 +492,15 @@ for epoch in range(start_epoch, num_epochs):
 			fdtd_hook.set( 'enabled', 1 )
 
 			job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
-			job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
-			job_names[ ( 'forward', xy_idx ) ] = job_name
+			# job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
+			# job_names[ ( 'forward', xy_idx ) ] = job_name
 
 			fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-			fdtd_hook.save( projects_directory_location + "/" + job_name )
-			fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+			# fdtd_hook.save( projects_directory_location + "/" + job_name )
+			# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+			job_names[ ( 'forward', xy_idx ) ] = add_job( job_name, jobs_queue )
 
-			fdtd_hook.addjob( job_name )
+			# fdtd_hook.addjob( job_name )
 
 
 		for adj_src_idx in range(0, num_adjoint_sources):
@@ -469,15 +511,19 @@ for epoch in range(start_epoch, num_epochs):
 				fdtd_hook.set( 'enabled', 1 )
 
 				job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
-				job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
-				job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
+				# job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
+				# job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
 
 				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-				fdtd_hook.save( projects_directory_location + "/" + job_name )
-				fdtd_hook.save( projects_directory_location + "/" + job_name_review )
-				fdtd_hook.addjob( job_name )
+				# fdtd_hook.save( projects_directory_location + "/" + job_name )
+				# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+				job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = add_job( job_name, jobs_queue )
+				
+				# fdtd_hook.addjob( job_name )
 
-		fdtd_hook.runjobs()
+
+		run_jobs( jobs_queue )
+		# fdtd_hook.runjobs()
 
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
