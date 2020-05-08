@@ -461,7 +461,7 @@ def run_jobs( queue ):
 
 		process = subprocess.Popen(
 			[
-				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh ',
+				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh',
 				cluster_hostnames[ job_idx ]
 			]
 
