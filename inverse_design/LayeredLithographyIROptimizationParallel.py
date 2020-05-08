@@ -459,7 +459,7 @@ def run_jobs( queue ):
 
 		process = subprocess.Popen(
 			lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + get_slurm_node_list[ job_idx ] + " " +
-			file_root + "fsp" + " > /dev/null 2> /dev/null &" )
+			get_job_path + " > /dev/null 2> /dev/null &" )
 		proccesses.append( process )
 	
 	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
