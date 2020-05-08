@@ -462,7 +462,14 @@ def run_jobs( queue ):
 			[
 				lumerical_bin_nemesis +  "fdtd-engine-mpich2nem",
 				"-n 8 -hosts + " + cluster_hostnames[ job_idx ] + " " + get_job_path
-			] )
+			],
+			stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+		out = process.communicate()
+		log_file = open( projects_directory_location + "/log.txt", 'a' )
+		log_file.write( "stdout = " + str( out ) + " \n" )
+		log_file.close()
+
+
 
 		# process = subprocess.Popen(
 		# 	lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + cluster_hostnames[ job_idx ] + " " +
@@ -476,7 +483,7 @@ def run_jobs( queue ):
 
 				poll_result = proccesses[ job_idx ].poll()
 				log_file = open( projects_directory_location + "/log.txt", 'a' )
-				log_file.write( "Poll result for " + str( job_idx ) + " is " + str( poll_result ) )
+				log_file.write( "Poll result for " + str( job_idx ) + " is " + str( poll_result ) + "\n" )
 				log_file.close()
 				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
