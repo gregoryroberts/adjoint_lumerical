@@ -10,6 +10,7 @@
 echo "LOG" > slurms.out
 
 NUM_WORKERS=3
+NUM_WORKERS_MINUS_ONE=2
 
 worker_slurm_ids=()
 
@@ -25,7 +26,7 @@ while true; do
 	NUM_WORKERS_STARTED=0
 	declare -i NUM_WORKERS_STARTED
 
-	for WORKER_ID in $(seq 1 $NUM_WORKERS)
+	for WORKER_ID in $(seq 0 $NUM_WORKERS_MINUS_ONE)
 	do
 		#echo $(squeue -u gdrobert --state=running) >> slurms.out
 		echo ${worker_slurm_ids[$WORKER_ID]} >> slurms.out
