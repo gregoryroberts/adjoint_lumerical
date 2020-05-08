@@ -48,6 +48,6 @@
 
 source activate fdtd
 
-xvfb-run --server-args="-screen 0 1280x1024x24" python LayeredLithographyIROptimizationParallel.py $NUM_WORKERS > stdout_ir_parallel.log 2> stderr_ir_parallel.log
+xvfb-run --server-args="-screen 0 1280x1024x24" python LayeredLithographyIROptimizationParallel.py 5 > stdout_ir_parallel.log 2> stderr_ir_parallel.log
 
 exit $?
