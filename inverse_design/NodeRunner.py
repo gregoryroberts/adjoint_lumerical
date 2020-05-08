@@ -4,12 +4,12 @@ import re
 import sys
 import time
 
-import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
+# import imp
+# imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
 
-import lumapi
+# import lumapi
 
-fdtd_hook = lumapi.FDTD( hide=True )
+# fdtd_hook = lumapi.FDTD( hide=True )
 
 filebase = sys.argv[ 1 ]
 id_number = sys.argv[ 2 ]
@@ -23,11 +23,15 @@ while True:
             if pattern.match( filepath ):
 
                 file_root = filebase + "/" + filepath[:-5]
-                
+                print(file_root)                
                 os.remove( file_root + "READY" )
                 
-                fdtd_hook.load( file_root + "fsp" )
-                fdtd_hook.run()
+                lumerical_bin_loc = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/"
+                os.system(
+                    lumerical_bin_loc +  "mpiexec -n 8 " + lumerical_bin_loc + "fdtd-engine-mpich2nem -t 1 " + file_root + "fsp" )
+
+                # fdtd_hook.load( file_root + "fsp" )
+                # fdtd_hook.run()
 
                 completed = open( file_root + "COMPLETED", "w" )
                 completed.write( "COMPLETED\n" )
