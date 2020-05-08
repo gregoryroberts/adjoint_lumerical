@@ -514,7 +514,7 @@ for epoch in range(start_epoch, num_epochs):
 				fdtd_hook.select( forward_sources[xy_idx]['name'] )
 				fdtd_hook.set( 'enabled', 1 )
 
-				# job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
+				job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
 				# job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
 				# job_names[ ( 'forward', xy_idx ) ] = job_name
 
@@ -541,7 +541,7 @@ for epoch in range(start_epoch, num_epochs):
 					fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
 					fdtd_hook.set( 'enabled', 1 )
 
-					# job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
+					job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
 					# job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
 					# job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
 
