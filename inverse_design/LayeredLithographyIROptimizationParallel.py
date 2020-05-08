@@ -473,7 +473,12 @@ def run_jobs( queue ):
 	while np.sum( completed_jobs ) < len( queue ):
 		for job_idx in range( 0, len( queue ) ):
 			if completed_jobs[ job_idx ] == 0:
-				if not( proccesses[ job_idx ].poll is None ):
+
+				poll_result = proccesses[ job_idx ].poll()
+				# log_file = open( projects_directory_location + "/log.txt", 'a' )
+				# log_file.write( "Poll result " + str( poll_result ) )
+				# log_file.close()
+				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
 
 		time.sleep( 1 )
