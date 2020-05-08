@@ -8,7 +8,7 @@ import numpy as np
 # Files
 #
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
-project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v2'
+project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3'
 
 #
 # Optical

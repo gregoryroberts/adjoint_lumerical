@@ -104,10 +104,10 @@ def get_slurm_node_list( slurm_job_env_variable=None ):
 #
 fdtd_hook = lumapi.FDTD( hide=True )
 
-num_nodes_to_use = 5
-num_cpus_per_node = 8
-slurm_list = get_slurm_node_list()
-configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
+num_nodes_available = sys.argv[ 1 ]
+# num_cpus_per_node = 8
+# slurm_list = get_slurm_node_list()
+# configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
@@ -439,6 +439,40 @@ if start_epoch > 0:
 
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
+
+jobs_queue = []
+
+def add_job( job_name ):
+	job_idx = len( jobs_queue ) % num_nodes_available
+	jobs_queue.append( projects_directory_location + "/ID" + str( job_idx ) "_" + job_name )
+
+def run_jobs():
+	for job_idx in range( 0, len( jobs_queue ) ):
+		get_job_path = jobs_queue[ job_idx ]
+		
+		ready_file = open( get_job_path[:-3] + "READY", 'w' )
+		ready_file.write( "READY" )
+		ready_file.close()
+
+	completed_jobs = [ 0 for i in range( 0, job_idx ) ]
+	while np.sum( completed_jobs ) < len( jobs_queue ):
+		for job_idx in range( 0, len( jobs_queue ) ):
+			if completed_jobs[ job_idx ] == 0:
+
+				get_job_path = jobs_queue[ job_idx ]
+
+				completed_name = get_job_path[:-3] + "COMPLETED"
+				if os.path.exists( completed_name ):
+					completed_jobs[ job_idx ] = 1
+					os.remove( completed_name )
+
+		time.sleep( 1 )
+
+	jobs_queue = []
+
+
+
+
 #
 # Run the optimization
 #
@@ -483,7 +517,8 @@ for epoch in range(start_epoch, num_epochs):
 				fdtd_hook.save( projects_directory_location + "/" + job_name )
 				fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 
-				fdtd_hook.addjob( job_name )
+				# fdtd_hook.addjob( job_name )
+				add_job( job_name )
 				num_fdtd_jobs += 1
 				forward_e_fields_job_queued[xy_names[xy_idx]] = 1
 
@@ -508,7 +543,8 @@ for epoch in range(start_epoch, num_epochs):
 					fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 					fdtd_hook.save( projects_directory_location + "/" + job_name )
 					fdtd_hook.save( projects_directory_location + "/" + job_name_review )
-					fdtd_hook.addjob( job_name )
+					# fdtd_hook.addjob( job_name )
+					add_job( job_name )
 					num_fdtd_jobs += 1
 
 					adjoint_e_fields_job_queued[ adj_src_idx ][ xy_names[ xy_idx ] ] = 1
@@ -520,7 +556,8 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 2: Now that all the jobs are queued up, let's get them all run!
 		#
 		start = time.time()
-		fdtd_hook.runjobs()
+		# fdtd_hook.runjobs()
+		run_jobs()
 		elapsed = time.time() - start
 
 		log_file = open( projects_directory_location + "/log.txt", 'a' )
