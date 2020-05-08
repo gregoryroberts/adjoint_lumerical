@@ -556,7 +556,9 @@ for epoch in range(start_epoch, num_epochs):
 			get_symmetry_fields = forward_e_fields.get( forward_symmetry[ xy_idx ], None )
 			if get_symmetry_fields is not None:
 				# fields are organized as [ pol, wavelength, z, y, x ]
-				get_symmetry_fields = np.swapaxes( get_symmetry_fields, 3, 4 )
+				# fields are organized as [ pol, x, y, z, wavelength ]
+				# get_symmetry_fields = np.swapaxes( get_symmetry_fields, 3, 4 )
+				get_symmetry_fields = np.swapaxes( get_symmetry_fields, 1, 2 )
 				get_symmetry_fields_ypol = ( get_symmetry_fields[ 1 ] ).copy()
 				get_symmetry_fields[ 1 ] = get_symmetry_fields[ 0 ]
 				get_symmetry_fields[ 0 ] = get_symmetry_fields_ypol
@@ -679,14 +681,6 @@ for epoch in range(start_epoch, num_epochs):
 						# 	adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][:, spectral_indices[0] + spectral_idx, :, :, :] *
 						# 	forward_e_fields[ pol_name ][ :, spectral_indices[0] + spectral_idx, :, :, : ],
 						# 	axis=0)
-
-
-						log_file = open( projects_directory_location + "/log.txt", 'a' )
-						log_file.write( str( adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ].shape ) )
-						log_file.write( "\n" )
-						log_file.write( str( forward_e_fields[ pol_name ].shape ) )
-						log_file.write( "\n\n" )
-						log_file.close()
 
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
 							(source_weight[spectral_idx] * gradient_performance_weight * total_weighting[spectral_idx]) *
