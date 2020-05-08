@@ -462,9 +462,7 @@ def run_jobs( queue ):
 		process = subprocess.Popen(
 			[
 				'mpiexec',
-				"-n 8 -hosts " + cluster_hostnames[ job_idx ],
-				lumerical_bin_nemesis +  "fdtd-engine-mpich2nem",
-				"-t 1 " + get_job_path
+				'-n 8 -hosts ' + cluster_hostnames[ job_idx ] + lumerical_bin_nemesis +  '/fdtd-engine-mpich2nem -t 1 ' + get_job_path
 			],
 			stdout=subprocess.PIPE, stderr=subprocess.PIPE )
 		out = process.communicate()
