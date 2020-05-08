@@ -9,14 +9,14 @@
 
 echo "LOG" > slurms.out
 
-NUM_WORKERS=3
-NUM_WORKERS_MINUS_ONE=2
+NUM_WORKERS=5
+NUM_WORKERS_MINUS_ONE=4
 
 worker_slurm_ids=()
 
 for WORKER_ID in $(seq 1 $NUM_WORKERS)
 do	
-	SLURM_ID=$(sbatch launch_worker.sh $WORKER_ID | tr -dc '0-9')
+	SLURM_ID=$(sbatch launch_worker.sh /central/groups/Faraon_Computing/projects/layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3/ $WORKER_ID | tr -dc '0-9')
 	worker_slurm_ids+=( $SLURM_ID )
 done
 
@@ -28,9 +28,6 @@ while true; do
 
 	for WORKER_ID in $(seq 0 $NUM_WORKERS_MINUS_ONE)
 	do
-		#echo $(squeue -u gdrobert --state=running) >> slurms.out
-		echo ${worker_slurm_ids[$WORKER_ID]} >> slurms.out
-		echo $(squeue -u gdrobert --state=running | grep ${worker_slurm_ids[$WORKER_ID]}) >> slurms.out
 		if squeue -u gdrobert --state=running | grep ${worker_slurm_ids[$WORKER_ID]}
 		then
 			NUM_WORKERS_STARTED+=1
@@ -49,5 +46,8 @@ while true; do
 	sleep 5
 done
 
+source activate fdtd
+
+xvfb-run --server-args="-screen 0 1280x1024x24" python LayeredLithographyIROptimizationParallel.py $NUM_WORKERS > stdout_ir_parallel.log 2> stderr_ir_parallel.log
 
 exit $?
