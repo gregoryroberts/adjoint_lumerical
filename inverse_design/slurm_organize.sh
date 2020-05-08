@@ -19,6 +19,8 @@ do
 	worker_slurm_ids+=( $SLURM_ID )
 done
 
+echo ${worker_slurm_ids[*]} >> slurms.out
+
 while true; do
 	NUM_WORKERS_STARTED=0
 	declare -i NUM_WORKERS_STARTED
@@ -30,7 +32,7 @@ while true; do
 		echo $(squeue -u gdrobert --state=running | grep ${worker_slurm_ids[$WORKER_ID]}) >> slurms.out
 		if squeue -u gdrobert --state=running | grep ${worker_slurm_ids[$WORKER_ID]}
 		then
-			$NUM_WORKERS_STARTED+=1
+			NUM_WORKERS_STARTED+=1
 		fi
 	done
 
@@ -44,6 +46,5 @@ while true; do
 	sleep 5
 done
 
-echo ${worker_slurm_ids[*]} >> slurms.out
 
 exit $?
