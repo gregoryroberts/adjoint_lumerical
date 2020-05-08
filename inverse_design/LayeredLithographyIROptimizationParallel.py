@@ -456,9 +456,6 @@ def run_jobs( queue ):
 	for job_idx in range( 0, len( queue ) ):
 		get_job_path = queue[ job_idx ]
 
-		# lumerical_bin_mpiexec = "/home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/"
-		lumerical_bin_nemesis = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/bin/"
-
 		process = subprocess.Popen(
 			[
 				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh',
@@ -466,24 +463,6 @@ def run_jobs( queue ):
 				get_job_path
 			]
 		)
-
-			# # [
-			# 	'cd /home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/; ' +
-			# 	 'mpiexec ' +
-			# 	'-n 8 -host ' + cluster_hostnames[ job_idx ] + ' ' + lumerical_bin_nemesis +  '/fdtd-engine-mpich2nem -t 1 ' + get_job_path
-			# # ],
-			# ,
-			# stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-		# out = process.communicate()
-		# log_file = open( projects_directory_location + "/log.txt", 'a' )
-		# log_file.write( "stdout = " + str( out ) + " \n" )
-		# log_file.close()
-
-
-
-		# process = subprocess.Popen(
-		# 	lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + cluster_hostnames[ job_idx ] + " " +
-		# 	get_job_path + " > /dev/null 2> /dev/null &" )
 		proccesses.append( process )
 	
 	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
@@ -492,41 +471,12 @@ def run_jobs( queue ):
 			if completed_jobs[ job_idx ] == 0:
 
 				poll_result = proccesses[ job_idx ].poll()
-				log_file = open( projects_directory_location + "/log.txt", 'a' )
-				log_file.write( "Poll result for " + str( job_idx ) + " is " + str( poll_result ) + "\n" )
-				log_file.close()
 				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
 
 		time.sleep( 10 )
 
 	queue = []
-
-# def run_jobs( queue ):
-# 	for job_idx in range( 0, len( queue ) ):
-# 		get_job_path = queue[ job_idx ]
-		
-# 		ready_file = open( get_job_path[:-3] + "READY", 'w' )
-# 		ready_file.write( "READY" )
-# 		ready_file.close()
-
-# 	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
-# 	while np.sum( completed_jobs ) < len( queue ):
-# 		for job_idx in range( 0, len( queue ) ):
-# 			if completed_jobs[ job_idx ] == 0:
-
-# 				get_job_path = queue[ job_idx ]
-
-# 				completed_name = get_job_path[:-3] + "COMPLETED"
-# 				if os.path.exists( completed_name ):
-# 					completed_jobs[ job_idx ] = 1
-# 					os.remove( completed_name )
-
-# 		time.sleep( 1 )
-
-# 	queue = []
-
-
 
 
 #
@@ -670,10 +620,6 @@ for epoch in range(start_epoch, num_epochs):
 			else:
 				fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
 
-				log_file = open( projects_directory_location + "/log.txt", 'a' )
-				log_file.write( job_names[ ( 'forward', xy_idx ) ] + "\n" )
-				log_file.close()
-
 				# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 				forward_e_fields[xy_names[xy_idx]] = get_efield( design_efield_monitor['name' ] )
 
@@ -753,10 +699,6 @@ for epoch in range(start_epoch, num_epochs):
 					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_adj_symmetry_fields
 
 				else:
-					log_file = open( projects_directory_location + "/log.txt", 'a' )
-					log_file.write( job_names[ ( 'forward', xy_idx ) ] + "\n" )
-					log_file.close()
-
 					fdtd_hook.load( job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] )
 
 					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
