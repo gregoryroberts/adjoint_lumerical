@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+import subprocess
+
 import platform
 
 import re
@@ -105,8 +107,8 @@ def get_slurm_node_list( slurm_job_env_variable=None ):
 fdtd_hook = lumapi.FDTD( hide=True )
 
 num_nodes_available = int( sys.argv[ 1 ] )
-# num_cpus_per_node = 8
-# slurm_list = get_slurm_node_list()
+num_cpus_per_node = 8
+slurm_list = get_slurm_node_list()
 # configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
 #
@@ -443,37 +445,58 @@ fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 jobs_queue = []
 
 def add_job( job_name, queue ):
-	job_idx = len( queue ) % num_nodes_available
+	fdtd_hook.save( job_name )
+	queue.append( job_name )
 
-	full_job_name = projects_directory_location + "/ID" + str( job_idx ) + "_" + job_name
-	fdtd_hook.save( full_job_name )
-	queue.append( full_job_name )
-
-	return full_job_name
+	return job_name
 
 def run_jobs( queue ):
+	proccesses = []
 	for job_idx in range( 0, len( queue ) ):
 		get_job_path = queue[ job_idx ]
-		
-		ready_file = open( get_job_path[:-3] + "READY", 'w' )
-		ready_file.write( "READY" )
-		ready_file.close()
+
+        lumerical_bin_nemesis = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/bin/"
+
+		process = subprocess.Popen(
+			lumerical_bin_nemesis +  "fdtd-engine-mpich2nem -n 8 -hosts " + get_slurm_node_list[ job_idx ] + " " +
+			file_root + "fsp" + " > /dev/null 2> /dev/null &" )
+		proccesses.append( process )
+	
 
 	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
 	while np.sum( completed_jobs ) < len( queue ):
 		for job_idx in range( 0, len( queue ) ):
 			if completed_jobs[ job_idx ] == 0:
-
-				get_job_path = queue[ job_idx ]
-
-				completed_name = get_job_path[:-3] + "COMPLETED"
-				if os.path.exists( completed_name ):
+				if not( proccesses[ job_idx ].poll is None ):
 					completed_jobs[ job_idx ] = 1
-					os.remove( completed_name )
 
 		time.sleep( 1 )
 
 	queue = []
+
+# def run_jobs( queue ):
+# 	for job_idx in range( 0, len( queue ) ):
+# 		get_job_path = queue[ job_idx ]
+		
+# 		ready_file = open( get_job_path[:-3] + "READY", 'w' )
+# 		ready_file.write( "READY" )
+# 		ready_file.close()
+
+# 	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
+# 	while np.sum( completed_jobs ) < len( queue ):
+# 		for job_idx in range( 0, len( queue ) ):
+# 			if completed_jobs[ job_idx ] == 0:
+
+# 				get_job_path = queue[ job_idx ]
+
+# 				completed_name = get_job_path[:-3] + "COMPLETED"
+# 				if os.path.exists( completed_name ):
+# 					completed_jobs[ job_idx ] = 1
+# 					os.remove( completed_name )
+
+# 		time.sleep( 1 )
+
+# 	queue = []
 
 
 
@@ -619,6 +642,10 @@ for epoch in range(start_epoch, num_epochs):
 			else:
 				fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
 
+				log_file = open( projects_directory_location + "/log.txt", 'a' )
+				log_file.write( job_names[ ( 'forward', xy_idx ) ] + "\n" )
+				log_file.close()
+
 				# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 				forward_e_fields[xy_names[xy_idx]] = get_efield( design_efield_monitor['name' ] )
 
@@ -698,6 +725,10 @@ for epoch in range(start_epoch, num_epochs):
 					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_adj_symmetry_fields
 
 				else:
+					log_file = open( projects_directory_location + "/log.txt", 'a' )
+					log_file.write( job_names[ ( 'forward', xy_idx ) ] + "\n" )
+					log_file.close()
+
 					fdtd_hook.load( job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] )
 
 					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )

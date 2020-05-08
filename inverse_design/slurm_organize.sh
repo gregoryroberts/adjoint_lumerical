@@ -2,49 +2,49 @@
 
 #SBATCH -A Faraon_Computing
 #SBATCH --time=01:00:00
-#SBATCH --nodes=1
+#SBATCH --nodes=5
 #SBATCH --ntasks-per-node=8
 #SBATCH --qos=normal
 #SBATCH --mem=16G
 
-echo "LOG" > slurms.out
+# echo "LOG" > slurms.out
 
-NUM_WORKERS=5
-NUM_WORKERS_MINUS_ONE=4
+# NUM_WORKERS=5
+# NUM_WORKERS_MINUS_ONE=4
 
-worker_slurm_ids=()
+# worker_slurm_ids=()
 
-for WORKER_ID in $(seq 0 $NUM_WORKERS_MINUS_ONE)
-do	
-	SLURM_ID=$(sbatch launch_worker.sh /central/groups/Faraon_Computing/projects/layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3_parallel/ $WORKER_ID | tr -dc '0-9')
-	worker_slurm_ids+=( $SLURM_ID )
-done
+# for WORKER_ID in $(seq 0 $NUM_WORKERS_MINUS_ONE)
+# do	
+# 	SLURM_ID=$(sbatch launch_worker.sh /central/groups/Faraon_Computing/projects/layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3_parallel/ $WORKER_ID | tr -dc '0-9')
+# 	worker_slurm_ids+=( $SLURM_ID )
+# done
 
-echo ${worker_slurm_ids[*]} >> slurms.out
+# echo ${worker_slurm_ids[*]} >> slurms.out
 
-while true; do
-	NUM_WORKERS_STARTED=0
-	declare -i NUM_WORKERS_STARTED
+# while true; do
+# 	NUM_WORKERS_STARTED=0
+# 	declare -i NUM_WORKERS_STARTED
 
-	for WORKER_ID in $(seq 0 $NUM_WORKERS_MINUS_ONE)
-	do
-		if squeue -u gdrobert --state=running | grep ${worker_slurm_ids[$WORKER_ID]}
-		then
-			NUM_WORKERS_STARTED+=1
-		fi
-	done
+# 	for WORKER_ID in $(seq 0 $NUM_WORKERS_MINUS_ONE)
+# 	do
+# 		if squeue -u gdrobert --state=running | grep ${worker_slurm_ids[$WORKER_ID]}
+# 		then
+# 			NUM_WORKERS_STARTED+=1
+# 		fi
+# 	done
 
-	echo $NUM_WORKERS_STARTED >> slurms.out
-
-
-	if [ $NUM_WORKERS_STARTED == $NUM_WORKERS ]
-	then
-		break
-	fi
+# 	echo $NUM_WORKERS_STARTED >> slurms.out
 
 
-	sleep 5
-done
+# 	if [ $NUM_WORKERS_STARTED == $NUM_WORKERS ]
+# 	then
+# 		break
+# 	fi
+
+
+# 	sleep 5
+# done
 
 source activate fdtd
 
