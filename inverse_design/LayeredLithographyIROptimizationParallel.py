@@ -462,7 +462,8 @@ def run_jobs( queue ):
 		process = subprocess.Popen(
 			[
 				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh',
-				cluster_hostnames[ job_idx ]
+				cluster_hostnames[ job_idx ],
+				get_job_path
 			]
 		)
 
@@ -497,7 +498,7 @@ def run_jobs( queue ):
 				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
 
-		time.sleep( 1 )
+		time.sleep( 10 )
 
 	queue = []
 
