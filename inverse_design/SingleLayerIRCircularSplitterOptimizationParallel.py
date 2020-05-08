@@ -491,7 +491,7 @@ for epoch in range(start_epoch, num_epochs):
 			focal_data[xy_names[xy_idx]] = []
 			for focal_idx in range( 0, num_focal_spots ):
 				# focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
-				focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ], 'E' )
+				focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ])
 
 				if xy_idx == 0:
 					Qxx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
@@ -508,7 +508,17 @@ for epoch in range(start_epoch, num_epochs):
 			create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
 			create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
 
+			# create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
+			# create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
+
+
 			parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
+			# reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
+
+			# parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+			# reflected_fom_by_wavelength = 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength )
+
+			# fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
 
 			fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
 			figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration, focal_idx, : ] = fom_by_wavelength
@@ -542,10 +552,10 @@ for epoch in range(start_epoch, num_epochs):
 
 				if xy_idx == 0:
 					adjoint_ex_fields.append(
-						get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+						get_efield(design_efield_monitor['name']))
 				else:
 					adjoint_ey_fields.append(
-						get_complex_monitor_data(design_efield_monitor['name'], 'E'))
+						get_efield(design_efield_monitor['name']))
 
 		maximization_gradient = np.zeros( forward_e_fields[ 'x' ][ 0, 0 ].shape )
 		for focal_idx in range( 0, num_focal_spots ):
