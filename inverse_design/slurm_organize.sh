@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -A Faraon_Computing
-#SBATCH --time=00:05:00
+#SBATCH --time=01:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 #SBATCH --qos=normal
