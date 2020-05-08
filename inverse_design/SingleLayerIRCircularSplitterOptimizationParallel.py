@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+import subprocess
+
 import platform
 
 import re
