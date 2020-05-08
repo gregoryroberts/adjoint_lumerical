@@ -444,7 +444,10 @@ jobs_queue = []
 
 def add_job( job_name, queue ):
 	job_idx = len( queue ) % num_nodes_available
-	queue.append( projects_directory_location + "/ID" + str( job_idx ) + "_" + job_name )
+
+	full_job_name = projects_directory_location + "/ID" + str( job_idx ) + "_" + job_name
+	fdtd_hook.save( full_job_name )
+	queue.append( full_job_name )
 
 def run_jobs( queue ):
 	for job_idx in range( 0, len( queue ) ):
@@ -514,8 +517,8 @@ for epoch in range(start_epoch, num_epochs):
 				job_names[ ( 'forward', xy_idx ) ] = job_name
 
 				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-				fdtd_hook.save( projects_directory_location + "/" + job_name )
-				fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+				# fdtd_hook.save( projects_directory_location + "/" + job_name )
+				# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 
 				# fdtd_hook.addjob( job_name )
 				add_job( job_name, jobs_queue )
@@ -541,8 +544,8 @@ for epoch in range(start_epoch, num_epochs):
 					job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
 
 					fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-					fdtd_hook.save( projects_directory_location + "/" + job_name )
-					fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+					# fdtd_hook.save( projects_directory_location + "/" + job_name )
+					# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 					# fdtd_hook.addjob( job_name )
 					add_job( job_name, jobs_queue )
 					num_fdtd_jobs += 1
