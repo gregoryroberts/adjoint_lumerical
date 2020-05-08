@@ -1,6 +1,7 @@
 import platform
 import os
 import re
+import numpy as np
 
 import imp
 imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
