@@ -474,9 +474,9 @@ def run_jobs( queue ):
 			# ,
 			# stdout=subprocess.PIPE, stderr=subprocess.PIPE )
 		# out = process.communicate()
-		log_file = open( projects_directory_location + "/log.txt", 'a' )
-		log_file.write( "stdout = " + str( out ) + " \n" )
-		log_file.close()
+		# log_file = open( projects_directory_location + "/log.txt", 'a' )
+		# log_file.write( "stdout = " + str( out ) + " \n" )
+		# log_file.close()
 
 
 
