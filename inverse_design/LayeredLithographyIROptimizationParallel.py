@@ -449,6 +449,8 @@ def add_job( job_name, queue ):
 	fdtd_hook.save( full_job_name )
 	queue.append( full_job_name )
 
+	return full_job_name
+
 def run_jobs( queue ):
 	for job_idx in range( 0, len( queue ) ):
 		get_job_path = queue[ job_idx ]
@@ -512,16 +514,16 @@ for epoch in range(start_epoch, num_epochs):
 				fdtd_hook.select( forward_sources[xy_idx]['name'] )
 				fdtd_hook.set( 'enabled', 1 )
 
-				job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
-				job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
-				job_names[ ( 'forward', xy_idx ) ] = job_name
+				# job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
+				# job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
+				# job_names[ ( 'forward', xy_idx ) ] = job_name
 
 				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 				# fdtd_hook.save( projects_directory_location + "/" + job_name )
 				# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 
 				# fdtd_hook.addjob( job_name )
-				add_job( job_name, jobs_queue )
+				job_names[ ( 'forward', xy_idx ) ] = add_job( job_name, jobs_queue )
 				num_fdtd_jobs += 1
 				forward_e_fields_job_queued[xy_names[xy_idx]] = 1
 
@@ -539,15 +541,15 @@ for epoch in range(start_epoch, num_epochs):
 					fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
 					fdtd_hook.set( 'enabled', 1 )
 
-					job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
-					job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
-					job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
+					# job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
+					# job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
+					# job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
 
 					fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 					# fdtd_hook.save( projects_directory_location + "/" + job_name )
 					# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
 					# fdtd_hook.addjob( job_name )
-					add_job( job_name, jobs_queue )
+					job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = add_job( job_name, jobs_queue )
 					num_fdtd_jobs += 1
 
 					adjoint_e_fields_job_queued[ adj_src_idx ][ xy_names[ xy_idx ] ] = 1
