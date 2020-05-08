@@ -456,12 +456,13 @@ def run_jobs( queue ):
 	for job_idx in range( 0, len( queue ) ):
 		get_job_path = queue[ job_idx ]
 
-		lumerical_bin_mpiexec = "/home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/"
+		# lumerical_bin_mpiexec = "/home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/"
 		lumerical_bin_nemesis = "/central/home/gdrobert/Develompent/lumerical/2020a_r6/bin/"
 
 		process = subprocess.Popen(
 			[
-				lumerical_bin_mpiexec + 'mpiexec',
+				'cd /home/gdrobert/Develompent/lumerical/2020a_r6/mpich2/nemesis/bin/; ' +
+				 'mpiexec ' +
 				'-n 8 -host ' + cluster_hostnames[ job_idx ] + ' ' + lumerical_bin_nemesis +  '/fdtd-engine-mpich2nem -t 1 ' + get_job_path
 			],
 			stdout=subprocess.PIPE, stderr=subprocess.PIPE )
