@@ -454,7 +454,7 @@ def run_jobs( queue ):
 		ready_file.write( "READY" )
 		ready_file.close()
 
-	completed_jobs = [ 0 for i in range( 0, job_idx ) ]
+	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
 	while np.sum( completed_jobs ) < len( queue ):
 		for job_idx in range( 0, len( queue ) ):
 			if completed_jobs[ job_idx ] == 0:
