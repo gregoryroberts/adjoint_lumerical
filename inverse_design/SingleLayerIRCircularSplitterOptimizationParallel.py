@@ -8,7 +8,7 @@ from SingleLayerIRCircularSplitterParameters import *
 import SingleLayerIRCircularSplitterDevice
 
 import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
 # imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
 
 import lumapi
@@ -19,21 +19,114 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+import platform
+
+import re
+
+
+#
+# Code from Conner // START
+#
+
+def configure_resources_for_cluster( fdtd_hook, node_hostnames, N_resources=2, N_threads_per_resource=8 ):
+	'''
+	Take in a list of hostnames (different nodes on the cluster), and configure
+	them to have N_threads_per_resource.
+	'''
+	if len(node_hostnames) != N_resources:
+		raise ValueError('Length of node_hostnames should be N_resources')
+
+	# Use different MPIs depending on platform.
+	if platform.system() == 'Windows':
+		mpi_type = 'Remote: Intel MPI'
+	else:
+		mpi_type = 'Remote: MPICH2'
+	# Delete all resources. Lumerical doesn't let us delete the last resource, so
+	# we stop when it throws an Exception.
+	while True:
+		try:
+			fdtd_hook.deleteresource("FDTD", 1)
+		except lumapi.LumApiError:
+			break
+	# Change the one resource we have to have the proper number of threads.
+	fdtd_hook.setresource("FDTD", 1, "processes", N_threads_per_resource)
+	fdtd_hook.setresource('FDTD', 1, 'Job launching preset', mpi_type)
+	fdtd_hook.setresource('FDTD', 1, 'hostname', node_hostnames[0])
+	# Now add and configure the rest.
+	for i in np.arange(1, N_resources):
+		try:
+			fdtd_hook.addresource("FDTD")
+		except:
+			pass
+		finally:
+			fdtd_hook.setresource("FDTD", i+1, "processes", N_threads_per_resource)
+			fdtd_hook.setresource('FDTD', i+1, 'Job launching preset', mpi_type)
+			fdtd_hook.setresource('FDTD', i+1, 'hostname', node_hostnames[i])
+
+
+def get_slurm_node_list( slurm_job_env_variable=None ):
+	if slurm_job_env_variable is None:
+		slurm_job_env_variable = os.getenv('SLURM_JOB_NODELIST')
+	if slurm_job_env_variable is None:
+		raise ValueError('Environment variable does not exist.')
+
+	solo_node_pattern = r'hpc-\d\d-[\w]+'
+	cluster_node_pattern = r'hpc-\d\d-\[.*?\]'
+	solo_nodes = re.findall(solo_node_pattern, slurm_job_env_variable)
+	cluster_nodes = re.findall(cluster_node_pattern, slurm_job_env_variable)
+	inner_bracket_pattern = r'\[(.*?)\]'
+
+	output_arr = solo_nodes
+	for cluster_node in cluster_nodes:
+		prefix = cluster_node.split('[')[0]
+		inside_brackets = re.findall(inner_bracket_pattern, cluster_node)[0]
+		# Split at commas and iterate through results
+		for group in inside_brackets.split(','):
+			# Split at hypen. Get first and last number. Create string in range
+			# from first to last.
+			node_clump_split = group.split('-')
+			starting_number = int(node_clump_split[0])
+			try:
+				ending_number = int(node_clump_split[1])
+			except IndexError:
+				ending_number = starting_number
+			for i in range(starting_number, ending_number+1):
+				# Can use print("{:02d}".format(1)) to turn a 1 into a '01'
+				# string. 111 -> 111 still, in case nodes hit triple-digits.
+				output_arr.append(prefix + "{:02d}".format(i))
+	return output_arr
+
+
+#
+# Code from Conner // END
+#
 
 #
 # Create FDTD hook
 #
-fdtd_hook = lumapi.FDTD()
+fdtd_hook = lumapi.FDTD( hide=True )
+
+num_nodes_to_use = 3
+num_cpus_per_node = 8
+slurm_list = get_slurm_node_list()
+configure_resources_for_cluster( fdtd_hook, slurm_list, N_resources=num_nodes_to_use, N_threads_per_resource=num_cpus_per_node )
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + project_name
+# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+# projects_directory_location += "/" + project_name
+
+projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+projects_directory_location += "/" + project_name + '_parallel'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
+
+log_file = open( projects_directory_location + "/log.txt", 'w' )
+log_file.write( "Log\n" )
+log_file.close()
 
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
@@ -227,48 +320,81 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
 #
 def disable_all_sources():
-	fdtd_hook.switchtolayout()
+	# fdtd_hook.switchtolayout()
+	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 	for xy_idx in range(0, 2):
-		(forward_sources[xy_idx]).enabled = 0
+		fdtd_hook.select( forward_sources[xy_idx]['name'] )
+		fdtd_hook.set( 'enabled', 0 )
+		# (forward_sources[xy_idx]).enabled = 0
 
 	for adj_src_idx in range(0, num_adjoint_sources):
 		for xy_idx in range(0, 2):
-			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
+			fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
+			fdtd_hook.set( 'enabled', 0 )
+			# (adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
 # python process.  This is much faster than going through Lumerical's interop library
 #
-def get_monitor_data(monitor_name, monitor_field):
-	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
-	extracted_data_name = lumerical_data_name + "_data"
-	data_transfer_filename = projects_directory_location + "/data_transfer_" + monitor_name + "_" + monitor_field
+# def get_monitor_data(monitor_name, monitor_field):
+# 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
+# 	extracted_data_name = lumerical_data_name + "_data"
+# 	data_transfer_filename = projects_directory_location + "/data_transfer_" + monitor_name + "_" + monitor_field
 
-	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
-	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
-	command_save_data_to_file = "matlabsave(\'" + data_transfer_filename + "\', " + extracted_data_name + ");"
+# 	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
+# 	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
+# 	command_save_data_to_file = "matlabsave(\'" + data_transfer_filename + "\', " + extracted_data_name + ");"
 
-	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
-	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
+# 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
+# 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
 
-	# start_time = time.time()
+# 	# start_time = time.time()
 
-	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
-	monitor_data = {}
-	load_file = h5py.File(data_transfer_filename + ".mat")
+# 	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
+# 	monitor_data = {}
+# 	load_file = h5py.File(data_transfer_filename + ".mat")
 
-	monitor_data = np.array(load_file[extracted_data_name])
+# 	monitor_data = np.array(load_file[extracted_data_name])
 
-	# end_time = time.time()
+# 	# end_time = time.time()
 
-	# print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
+# 	# print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
 
-	return monitor_data
+# 	return monitor_data
 
-def get_complex_monitor_data(monitor_name, monitor_field):
-	data = get_monitor_data(monitor_name, monitor_field)
-	return (data['real'] + np.complex(0, 1) * data['imag'])
+# def get_complex_monitor_data(monitor_name, monitor_field):
+# 	data = get_monitor_data(monitor_name, monitor_field)
+# 	return (data['real'] + np.complex(0, 1) * data['imag'])
+
+def get_efield( monitor_name ):
+	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
+	data_xfer_size_MB = 0
+
+	start = time.time()
+
+	Epol_0 = fdtd_hook.getdata( monitor_name, field_polariations[ 0 ] )
+	data_xfer_size_MB += Epol_0.nbytes / ( 1024. * 1024. )
+
+	total_efield = np.zeros( [ len (field_polariations ) ] + list( Epol_0.shape ), dtype=np.complex )
+	total_efield[ 0 ] = Epol_0
+
+	for pol_idx in range( 1, len( field_polariations ) ):
+		Epol = fdtd_hook.getdata( monitor_name, field_polariations[ pol_idx ] )
+		data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
+
+		total_efield[ pol_idx ] = Epol
+
+	elapsed = time.time() - start
+
+	date_xfer_rate_MB_sec = data_xfer_size_MB / elapsed
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Transferred " + str( data_xfer_size_MB ) + " MB\n" )
+	log_file.write( "Data rate = " + str( date_xfer_rate_MB_sec ) + " MB/sec\n\n" )
+	log_file.close()
+
+	return total_efield
 
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
@@ -289,6 +415,7 @@ if start_epoch > 0:
 	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
 	bayer_filter.set_design_variable( design_variable_reload )
 
+fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
 #
 # Run the optimization
@@ -298,6 +425,10 @@ for epoch in range(start_epoch, num_epochs):
 
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
+
+		job_names = {}
+
+		fdtd_hook.load( projects_directory_location + "/optimization.fsp" )
 
 		fdtd_hook.switchtolayout()
 		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
@@ -312,23 +443,62 @@ for epoch in range(start_epoch, num_epochs):
 		Qyx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 		Qyy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 
+
 		for xy_idx in range(0, 2):
 			disable_all_sources()
-			(forward_sources[xy_idx]).enabled = 1
-			fdtd_hook.run()
 
-			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+			fdtd_hook.select( forward_sources[xy_idx]['name'] )
+			fdtd_hook.set( 'enabled', 1 )
+
+			job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
+			job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
+			job_names[ ( 'forward', xy_idx ) ] = job_name
+
+			fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+			fdtd_hook.save( projects_directory_location + "/" + job_name )
+			fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+
+			fdtd_hook.addjob( job_name )
+
+
+		for adj_src_idx in range(0, num_adjoint_sources):
+
+			for xy_idx in range(0, 2):
+				disable_all_sources()
+				fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
+				fdtd_hook.set( 'enabled', 1 )
+
+				job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
+				job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
+				job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
+
+				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+				fdtd_hook.save( projects_directory_location + "/" + job_name )
+				fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+				fdtd_hook.addjob( job_name )
+
+		fdtd_hook.runjobs()
+
+		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+
+
+		for xy_idx in range(0, 2):
+			fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
+
+			# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+			forward_e_fields[xy_names[xy_idx]] = get_efield(design_efield_monitor['name'])
 
 			focal_data[xy_names[xy_idx]] = []
 			for focal_idx in range( 0, num_focal_spots ):
-				focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
+				# focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
+				focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ], 'E' )
 
 				if xy_idx == 0:
-					Qxx[ focal_idx, : ] = focal_monitor_data[ 0, :, 0, 0, 0 ]
-					Qxy[ focal_idx, : ] = focal_monitor_data[ 1, :, 0, 0, 0 ]
+					Qxx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
+					Qxy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
 				else:
-					Qyy[ focal_idx, : ] = focal_monitor_data[ 1, :, 0, 0, 0 ]
-					Qyx[ focal_idx, : ] = focal_monitor_data[ 0, :, 0, 0, 0 ]
+					Qyy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
+					Qyx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
 
 
 		fom_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
@@ -367,9 +537,8 @@ for epoch in range(start_epoch, num_epochs):
 		adjoint_ey_fields = []
 		for adj_src_idx in range(0, num_adjoint_sources):
 			for xy_idx in range(0, 2):
-				disable_all_sources()
-				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
-				fdtd_hook.run()
+				job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
+				fdtd_hook.load( job_name )
 
 				if xy_idx == 0:
 					adjoint_ex_fields.append(
@@ -392,8 +561,8 @@ for epoch in range(start_epoch, num_epochs):
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
-						create_forward_e_fields[ :, wl_idx ] *
-						adjoint_ex_fields[ focal_idx ][ :, wl_idx ]
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ]
 					),
 				axis=0 )
 
@@ -401,8 +570,8 @@ for epoch in range(start_epoch, num_epochs):
 					np.real(
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
-						create_forward_e_fields[ :, wl_idx ] *
-						adjoint_ey_fields[ focal_idx ][ :, wl_idx ]
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ]
 					),
 				axis=0 )
 
@@ -412,7 +581,7 @@ for epoch in range(start_epoch, num_epochs):
 		device_gradient = -maximization_gradient
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
-		device_gradient = np.swapaxes(device_gradient, 0, 2)
+		# device_gradient = np.swapaxes(device_gradient, 0, 2)
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
@@ -486,8 +655,9 @@ for epoch in range(start_epoch, num_epochs):
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
-		fdtd_hook.switchtolayout()
-		fdtd_hook.save()
+		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+
+		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
 		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
@@ -498,7 +668,8 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
 
 	fdtd_hook.switchtolayout()
-	fdtd_hook.save()
+	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+	fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 	shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_end_epoch_" + str( epoch ) + ".fsp" )
 
 
