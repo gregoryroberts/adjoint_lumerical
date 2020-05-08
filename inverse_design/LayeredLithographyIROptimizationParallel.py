@@ -449,7 +449,7 @@ def add_job( job_name, queue ):
 	fdtd_hook.save( full_name )
 	queue.append( full_name )
 
-	return job_name
+	return full_name
 
 def run_jobs( queue ):
 	proccesses = []
