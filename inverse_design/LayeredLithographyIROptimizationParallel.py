@@ -445,8 +445,9 @@ fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 jobs_queue = []
 
 def add_job( job_name, queue ):
-	fdtd_hook.save( job_name )
-	queue.append( job_name )
+	full_name = projects_directory_location + "/" + job_name
+	fdtd_hook.save( full_name )
+	queue.append( full_name )
 
 	return job_name
 
