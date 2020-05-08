@@ -515,7 +515,14 @@ for epoch in range(start_epoch, num_epochs):
 			reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
 
 			parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
-			reflected_fom_by_wavelength = np.maximum( 0, 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength ) )
+			reflected_fom_by_wavelength = 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength )
+
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( str( parallel_fom_by_wavelength ) + "\n" )
+			log_file.write( str( reflected_fom_by_wavelength ) + "\n" )
+			log_file.close()
+
+			reflected_fom_by_wavelength = np.maximum( 0, reflected_fom_by_wavelength )
 
 			fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
 
