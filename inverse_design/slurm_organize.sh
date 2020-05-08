@@ -11,7 +11,7 @@ NUM_WORKERS=3
 
 worker_slurm_ids=()
 
-for WORKER_ID in {1..$NUM_WORKERS}
+for WORKER_ID in $(seq 1 $NUM_WORKERS)
 do	
 	SLURM_ID=$(sbatch launch_worker.sh $WORKER_ID | tr -dc '0-9')
 	worker_slurm_ids+=( $SLURM_ID )
@@ -21,9 +21,9 @@ while true; do
 	NUM_WORKERS_STARTED=0
 	declare -i NUM_WORKERS_STARTED
 
-	for WORKER_ID in  {1..$NUM_WORKERS}
+	for WORKER_ID in $(seq 1 $NUM_WORKERS)
 	do
-		if grep ${worker_slurm_ids[$WORKER_ID]} $(squeue -u gdrobert --state=running)
+		if $(squeue -u gdrobert --state=running) | grep ${worker_slurm_ids[$WORKER_ID]}
 		then
 			$NUM_WORKERS_STARTED+=1
 		fi
