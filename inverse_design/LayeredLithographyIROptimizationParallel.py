@@ -455,6 +455,7 @@ def run_jobs( queue ):
 	proccesses = []
 	# for job_idx in range( 0, len( queue ) ):
 	# really should protect against number of available engines here
+	job_idx = 0
 	while not queue.empty():
 		get_job_path = queue.get()
 
@@ -466,6 +467,8 @@ def run_jobs( queue ):
 			]
 		)
 		proccesses.append( process )
+
+		job_idx += 1
 	
 	completed_jobs = [ 0 for i in range( 0, len( processes ) ) ]
 	while np.sum( completed_jobs ) < len( processes ):
