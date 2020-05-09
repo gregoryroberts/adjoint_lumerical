@@ -8,7 +8,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'single_layer_circular_pol_splitter_3p2x1p6xp64um_f9p6'
+project_name = 'single_layer_circular_pol_splitter_4p8x2p4xp64um_f4p8'
 
 #
 # Optical
@@ -29,7 +29,8 @@ max_device_permittivity = max_device_index**2
 init_permittivity_0_1_scale = 0.25
 
 # focal_length_um = 9.6
-focal_length_um = 3.2
+# focal_length_um = 3.2
+focal_length_um = 4.8
 
 #
 # Device
@@ -40,10 +41,10 @@ mesh_spacing_um = 0.032
 # device_width_um = 9.6
 # device_height_um = 4.8
 
-device_width_um = 3.2
-device_height_um = 1.6
-# device_width_um = 2.4
-# device_height_um = 1.2
+# device_width_um = 3.2
+# device_height_um = 1.6
+# device_width_um = 4.8
+# device_height_um = 2.4
 
 device_size_vertical_um = 0.64
 
@@ -128,8 +129,8 @@ adjoint_y_positions_um = [ 0, 0 ]
 #
 # Optimization
 #
-start_epoch = 8
-num_epochs = 12
+start_epoch = 0
+num_epochs = 8
 num_iterations_per_epoch = 60
 binarization_start_epoch = 2
 max_binarize_movement = 0.01
