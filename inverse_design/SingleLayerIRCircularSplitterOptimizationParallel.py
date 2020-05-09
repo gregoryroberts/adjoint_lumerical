@@ -413,7 +413,7 @@ def add_job( job_name, queue ):
 	return full_name
 
 def run_jobs( queue ):
-	proccesses = []
+	processes = []
 	# for job_idx in range( 0, len( queue ) ):
 	# really should protect against number of available engines here
 	job_idx = 0
@@ -427,16 +427,16 @@ def run_jobs( queue ):
 				get_job_path
 			]
 		)
-		proccesses.append( process )
+		processes.append( process )
 
 		job_idx += 1
 	
-	completed_jobs = [ 0 for i in range( 0, len( proccesses ) ) ]
-	while np.sum( completed_jobs ) < len( proccesses ):
-		for job_idx in range( 0, len( proccesses ) ):
+	completed_jobs = [ 0 for i in range( 0, len( processes ) ) ]
+	while np.sum( completed_jobs ) < len( processes ):
+		for job_idx in range( 0, len( processes ) ):
 			if completed_jobs[ job_idx ] == 0:
 
-				poll_result = proccesses[ job_idx ].poll()
+				poll_result = processes[ job_idx ].poll()
 				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
 

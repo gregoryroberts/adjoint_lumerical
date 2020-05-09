@@ -128,8 +128,8 @@ adjoint_y_positions_um = [ 0, 0 ]
 #
 # Optimization
 #
-start_epoch = 5
-num_epochs = 8
+start_epoch = 8
+num_epochs = 12
 num_iterations_per_epoch = 60
 binarization_start_epoch = 2
 max_binarize_movement = 0.01
