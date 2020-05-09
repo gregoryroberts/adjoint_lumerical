@@ -43,8 +43,8 @@ mesh_spacing_um = 0.032
 
 # device_width_um = 3.2
 # device_height_um = 1.6
-# device_width_um = 4.8
-# device_height_um = 2.4
+device_width_um = 4.8
+device_height_um = 2.4
 
 device_size_vertical_um = 0.64
 
