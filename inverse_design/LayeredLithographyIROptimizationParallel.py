@@ -442,19 +442,21 @@ if start_epoch > 0:
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
 
-jobs_queue = []
+jobs_queue = queue.Queue()
 
 def add_job( job_name, queue ):
 	full_name = projects_directory_location + "/" + job_name
 	fdtd_hook.save( full_name )
-	queue.append( full_name )
+	queue.put( full_name )
 
 	return full_name
 
 def run_jobs( queue ):
 	proccesses = []
-	for job_idx in range( 0, len( queue ) ):
-		get_job_path = queue[ job_idx ]
+	# for job_idx in range( 0, len( queue ) ):
+	# really should protect against number of available engines here
+	while not queue.empty()
+		get_job_path = queue.get()
 
 		process = subprocess.Popen(
 			[
@@ -465,18 +467,17 @@ def run_jobs( queue ):
 		)
 		proccesses.append( process )
 	
-	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
-	while np.sum( completed_jobs ) < len( queue ):
-		for job_idx in range( 0, len( queue ) ):
+	completed_jobs = [ 0 for i in range( 0, len( processes ) ) ]
+	while np.sum( completed_jobs ) < len( processes ):
+		for job_idx in range( 0, len( processes ) ):
 			if completed_jobs[ job_idx ] == 0:
 
 				poll_result = proccesses[ job_idx ].poll()
 				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
 
-		time.sleep( 10 )
+		time.sleep( 1 )
 
-	queue = []
 
 
 #
@@ -563,7 +564,7 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		start = time.time()
 		# fdtd_hook.runjobs()
-		run_jobs( jobs_queue )
+		jobs_queue = run_jobs( jobs_queue )
 		elapsed = time.time() - start
 
 		log_file = open( projects_directory_location + "/log.txt", 'a' )

@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+import queue
+
 import subprocess
 
 import platform
@@ -401,19 +403,21 @@ def get_efield( monitor_name ):
 
 	return total_efield
 
-jobs_queue = []
+jobs_queue = queue.Queue()
 
 def add_job( job_name, queue ):
 	full_name = projects_directory_location + "/" + job_name
 	fdtd_hook.save( full_name )
-	queue.append( full_name )
+	queue.put( full_name )
 
 	return full_name
 
 def run_jobs( queue ):
 	proccesses = []
-	for job_idx in range( 0, len( queue ) ):
-		get_job_path = queue[ job_idx ]
+	# for job_idx in range( 0, len( queue ) ):
+	# really should protect against number of available engines here
+	while not queue.empty():
+		get_job_path = queue.get()
 
 		process = subprocess.Popen(
 			[
@@ -424,18 +428,16 @@ def run_jobs( queue ):
 		)
 		proccesses.append( process )
 	
-	completed_jobs = [ 0 for i in range( 0, len( queue ) ) ]
-	while np.sum( completed_jobs ) < len( queue ):
-		for job_idx in range( 0, len( queue ) ):
+	completed_jobs = [ 0 for i in range( 0, len( proccesses ) ) ]
+	while np.sum( completed_jobs ) < len( proccesses ):
+		for job_idx in range( 0, len( proccesses ) ):
 			if completed_jobs[ job_idx ] == 0:
 
 				poll_result = proccesses[ job_idx ].poll()
 				if not( poll_result is None ):
 					completed_jobs[ job_idx ] = 1
 
-		time.sleep( 10 )
-
-	queue = []
+		time.sleep( 1 )
 
 
 

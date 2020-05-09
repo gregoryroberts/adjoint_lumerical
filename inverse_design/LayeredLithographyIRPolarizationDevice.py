@@ -77,7 +77,6 @@ class LayeredLithographyIRPolarizationDevice(device.Device):
 		y_dimension_idx = 1
 		z_dimension_idx = 2
 
-		z_voxel_layers = self.size[2]
 		self.layering_z_0 = layering.Layering(z_dimension_idx, self.num_z_layers, [0, 1], self.spacer_height_voxels, 0.0)
 
 		alpha = 8
