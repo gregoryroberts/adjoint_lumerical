@@ -651,7 +651,7 @@ for epoch in range(start_epoch, num_epochs):
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_reflected_parallel_response_x[ wl_idx ] ) *
 						create_forward_e_fields[ :, :, :, :, wl_idx ] *
-						adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+						adjoint_ex_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
 					),
 				axis=0 )
 
@@ -671,7 +671,7 @@ for epoch in range(start_epoch, num_epochs):
 						fom_weightings[ focal_idx, wl_idx ] *
 						np.conj( create_reflected_parallel_response_x[ wl_idx ] ) *
 						create_forward_e_fields[ :, :, :, :, wl_idx ] *
-						adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+						adjoint_ey_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
 					),
 				axis=0 )
 
