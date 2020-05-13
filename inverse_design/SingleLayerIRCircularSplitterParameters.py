@@ -129,12 +129,12 @@ adjoint_y_positions_um = [ 0, 0 ]
 #
 # Optimization
 #
-start_epoch = 10
-num_epochs = 13#8
+start_epoch = 13
+num_epochs = 16#8
 num_iterations_per_epoch = 60
 binarization_start_epoch = 2
 max_binarize_movement = 0.01
-desired_binarize_change = 2 * 0.005 / 2
+desired_binarize_change = 3 * 2 * 0.005 / 2
 
 epoch_start_permittivity_change_max = 0.025
 epoch_end_permittivity_change_max = 0.01
