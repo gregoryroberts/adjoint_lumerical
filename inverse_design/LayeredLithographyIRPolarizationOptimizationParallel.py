@@ -314,7 +314,7 @@ def gradient(
 	# Renormalize, so they add to 1
 	fom_weightings /= np.sum( fom_weightings )
 
-	gradient_shape = Ex_forward_fields[ 0, 0 ].shape
+	gradient_shape = Ex_forward_fields[ 0, :, :, :, 0 ].shape
 	gradient = np.zeros( gradient_shape )
 
 	for focal_spot_idx in range( 0, num_focal_spots ):
