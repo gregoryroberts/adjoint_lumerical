@@ -145,7 +145,7 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 		product_fom = parallel_fom * orthogonal_fom
 
 		# total_fom += ( 1 / num_focal_spots ) * np.mean( orthogonal_cancel_x + orthogonal_cancel_y + parallel )
-		total_fom += ( 1 / num_focal_spots ) * np.mean( parallel )
+		# total_fom += ( 1 / num_focal_spots ) * np.mean( parallel )
 		total_fom += ( 1. / num_focal_spots ) * np.mean( product_fom )
 
 		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 0, : ] = orthogonal_cancel_x
