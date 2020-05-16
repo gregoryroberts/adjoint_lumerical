@@ -47,7 +47,8 @@ num_vertical_layers = 3#4
 
 device_size_lateral_um = 4.2#3.6
 device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
-amorphous_silicon_height_per_layer_um = 0.52#0.8
+# amorphous_silicon_height_per_layer_um = 0.52#0.8
+amorphous_silicon_height_per_layer_um = 0.72
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
@@ -170,7 +171,7 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 7#0
+start_epoch = 0#0
 num_epochs = 10
 num_iterations_per_epoch = 60
 binarization_start_epoch = 1
