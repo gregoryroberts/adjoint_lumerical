@@ -828,7 +828,8 @@ def run_jobs( queue_in ):
 
 	while not queue_in.empty():
 		for node_idx in range( 0, num_nodes_available ):
-			small_queue.put( queue_in.get() )
+			if queue_in.qsize() > 0:
+				small_queue.put( queue_in.get() )
 
 		run_jobs_inner( small_queue )
 
