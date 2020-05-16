@@ -145,7 +145,7 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 		product_fom = parallel_fom * orthogonal_fom
 
 		# total_fom += ( 1 / num_focal_spots ) * np.mean( orthogonal_cancel_x + orthogonal_cancel_y + parallel )
-		# total_fom += ( 1 / num_focal_spots ) * np.mean( parallel )
+		# total_fom += ( 1 / num_focal_spots ) * np.mean( parallel_fom )
 		total_fom += ( 1. / num_focal_spots ) * np.mean( product_fom )
 
 		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 0, : ] = orthogonal_cancel_x
@@ -303,6 +303,7 @@ def gradient(
 
 	fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
 	fom_weightings = np.maximum( fom_weightings, 0 )
+	fom_weightings *= weighting_mask
 	fom_weightings /= np.sum( fom_weightings )
 
 	#
@@ -480,6 +481,7 @@ def gradient(
 
 					if parallel_fom[ wl_idx ] < parallel_fom_bound:
 						gradient += orthogonal_fom[ wl_idx ] * ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
+						# gradient += ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
 
 					gradient += parallel_fom[ wl_idx ] * ( gradient_component_2_xx_prime + gradient_component_2_yx_prime + gradient_component_2_xy_prime + gradient_component_2_yy_prime )
 
