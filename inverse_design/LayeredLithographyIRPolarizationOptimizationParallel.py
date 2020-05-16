@@ -813,29 +813,29 @@ if start_epoch > 0:
 
 jobs_queue = queue.Queue()
 
-def add_job( job_name, queue ):
+def add_job( job_name, queue_in ):
 	full_name = projects_directory_location + "/" + job_name
 	fdtd_hook.save( full_name )
-	queue.put( full_name )
+	queue_in.put( full_name )
 
 	return full_name
 
-def run_jobs( queue ):
+def run_jobs( queue_in ):
 	small_queue = queue.Queue()
 
-	while not queue.empty():
+	while not queue_in.empty():
 		for node_idx in range( 0, num_nodes_available ):
-			small_queue.put( queue.get() )
+			small_queue.put( queue_in.get() )
 
 		run_jobs_inner( small_queue )
 
-def run_jobs_inner( queue ):
+def run_jobs_inner( queue_in ):
 	processes = []
-	# for job_idx in range( 0, len( queue ) ):
+	# for job_idx in range( 0, len( queue_in ) ):
 	# really should protect against number of available engines here
 	job_idx = 0
-	while not queue.empty():
-		get_job_path = queue.get()
+	while not queue_in.empty():
+		get_job_path = queue_in.get()
 
 		process = subprocess.Popen(
 			[
