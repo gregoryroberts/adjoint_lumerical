@@ -309,10 +309,10 @@ def gradient(
 	# This is because we are actually minimizing all three figures of merit, so we would like to flip the orientation
 	# of the weightings (i.e. - a small figure of merit means you are doing well in this optimization)
 	#
-	fom_weightings = 1 - fom_weightings
-	fom_weightings *= weighting_mask
+	# fom_weightings = 1 - fom_weightings
+	# fom_weightings *= weighting_mask
 	# Renormalize, so they add to 1
-	fom_weightings /= np.sum( fom_weightings )
+	# fom_weightings /= np.sum( fom_weightings )
 
 	gradient_shape = Ex_forward_fields[ 0, :, :, :, 0 ].shape
 	gradient = np.zeros( gradient_shape )
@@ -479,9 +479,9 @@ def gradient(
 
 
 					if parallel_fom[ wl_idx ] < parallel_fom_bound:
-						gradient += ( -1 ) * orthogonal_fom * ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
+						gradient += ( -1 ) * orthogonal_fom[ wl_idx ] * ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
 
-					gradient += ( -1 ) * parallel_fom * ( gradient_component_2_xx_prime + gradient_component_2_yx_prime + gradient_component_2_xy_prime + gradient_component_2_yy_prime )
+					gradient += ( -1 ) * parallel_fom[ wl_idx ] * ( gradient_component_2_xx_prime + gradient_component_2_yx_prime + gradient_component_2_xy_prime + gradient_component_2_yy_prime )
 
 
 					# if fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, fom_type_idx, wl_idx ] > 0:
@@ -500,8 +500,11 @@ fdtd_hook = lumapi.FDTD()
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + project_name + "_parallel"
+# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+# projects_directory_location += "/" + project_name + "_parallel"
+
+projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+projects_directory_location += "/" + project_name + '_parallel'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
