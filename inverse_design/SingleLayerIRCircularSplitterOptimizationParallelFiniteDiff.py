@@ -566,6 +566,7 @@ all_fom = fom_by_focal_spot_by_wavelength.flatten()
 fom_weightings = np.ones( all_fom.shape )
 fom_weightings /= np.sum( fom_weightings )
 fom_start = np.mean( fom_weightings * all_fom )
+fom_weightings = np.reshape( fom_weightings, fom_by_focal_spot_by_wavelength.shape )
 
 #
 # Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
