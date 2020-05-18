@@ -687,6 +687,8 @@ for fd_pt in range( 0, num_fd_points ):
 	next_permittivity = cur_permittivity.copy()
 	next_permittivity[ x_pt, y_pt, z_pt ] += h
 
+	fdtd_hook.load( projects_directory_location + "/optimization.fsp" )
+	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 	fdtd_hook.select("design_import")
 	fdtd_hook.importnk2(np.sqrt(next_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
@@ -775,6 +777,6 @@ for fd_pt in range( 0, num_fd_points ):
 
 	finite_difference[ fd_pt ] = ( fom_fd - fom_start ) / h
 
-np.save( projects_directory_location + '/finite_difference.npy', finite_difference )
+	np.save( projects_directory_location + '/finite_difference.npy', finite_difference )
 
 
