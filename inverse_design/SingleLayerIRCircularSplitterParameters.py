@@ -8,7 +8,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'single_layer_circular_pol_splitter_4p8x2p4xp64um_f4p8'
+project_name = 'single_layer_circular_pol_splitter_4p8x2p4xp64um_f4p8_v2'
 
 #
 # Optical
