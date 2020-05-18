@@ -450,22 +450,8 @@ def run_jobs( queue ):
 forward_e_fields = {}
 focal_data = {}
 
-figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-figure_of_merit_by_focal_spot_by_wavelength_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, 3, num_design_frequency_points))
-
-step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-
-step_size_start = 0.001
-
-if start_epoch > 0:
-	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
-	bayer_filter.set_design_variable( design_variable_reload )
 
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-
-print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
 job_names = {}
 
@@ -574,8 +560,6 @@ for focal_idx in range( 0, num_focal_spots ):
 
 	fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
 
-	# fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
-	figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration, focal_idx, : ] = fom_by_wavelength
 	fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
 
 all_fom = fom_by_focal_spot_by_wavelength.flatten()
@@ -777,8 +761,6 @@ for fd_pt in range( 0, num_fd_points ):
 
 		fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
 
-		# fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
-		figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration, focal_idx, : ] = fom_by_wavelength
 		fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
 
 	all_fom = fom_by_focal_spot_by_wavelength.flatten()
