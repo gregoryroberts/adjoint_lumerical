@@ -126,7 +126,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location += "/" + project_name
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location += "/" + project_name + '_parallel'
+projects_directory_location += "/" + project_name + '_parallel_finite_difference'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -465,313 +465,333 @@ if start_epoch > 0:
 
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
+print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
+
+job_names = {}
+
+fdtd_hook.load( projects_directory_location + "/optimization.fsp" )
+
+fdtd_hook.switchtolayout()
+cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+fdtd_hook.select("design_import")
+fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+
 #
-# Run the optimization
+# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 #
-for epoch in range(start_epoch, num_epochs):
-	bayer_filter.update_filters(epoch)
+Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+Qyx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+Qyy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 
-	for iteration in range(0, num_iterations_per_epoch):
-		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
-		job_names = {}
+for xy_idx in range(0, 2):
+	disable_all_sources()
 
-		fdtd_hook.load( projects_directory_location + "/optimization.fsp" )
+	fdtd_hook.select( forward_sources[xy_idx]['name'] )
+	fdtd_hook.set( 'enabled', 1 )
 
-		fdtd_hook.switchtolayout()
-		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
-		fdtd_hook.select("design_import")
-		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+	job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
+	# job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
+	# job_names[ ( 'forward', xy_idx ) ] = job_name
 
-		#
-		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
-		#
-		Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
-		Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
-		Qyx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
-		Qyy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
-
-
-		for xy_idx in range(0, 2):
-			disable_all_sources()
-
-			fdtd_hook.select( forward_sources[xy_idx]['name'] )
-			fdtd_hook.set( 'enabled', 1 )
-
-			job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
-			# job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
-			# job_names[ ( 'forward', xy_idx ) ] = job_name
-
-			fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-			# fdtd_hook.save( projects_directory_location + "/" + job_name )
-			# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
-			job_names[ ( 'forward', xy_idx ) ] = add_job( job_name, jobs_queue )
-
-			# fdtd_hook.addjob( job_name )
-
-
-		for adj_src_idx in range(0, num_adjoint_sources):
-
-			for xy_idx in range(0, 2):
-				disable_all_sources()
-				fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
-				fdtd_hook.set( 'enabled', 1 )
-
-				job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
-				# job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
-				# job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
-
-				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-				# fdtd_hook.save( projects_directory_location + "/" + job_name )
-				# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
-				job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = add_job( job_name, jobs_queue )
-				
-				# fdtd_hook.addjob( job_name )
-
-
-		run_jobs( jobs_queue )
-		# fdtd_hook.runjobs()
-
-		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-
-
-		for xy_idx in range(0, 2):
-			fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
-
-			# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-			forward_e_fields[xy_names[xy_idx]] = get_efield(design_efield_monitor['name'])
-
-			focal_data[xy_names[xy_idx]] = []
-			for focal_idx in range( 0, num_focal_spots ):
-				# focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
-				focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ])
-
-				if xy_idx == 0:
-					Qxx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
-					Qxy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
-				else:
-					Qyy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
-					Qyx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
-
-
-		fom_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
-		for focal_idx in range( 0, num_focal_spots ):
-			analyzer_vector = jones_polarizations[ focal_idx ]
-
-			create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
-			create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
-
-			create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
-			create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
-
-			parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
-			reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
-
-			parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
-			reflected_intensity_by_wavelength = reflected_parallel_intensity / max_intensity_by_wavelength
-			reflected_fom_by_wavelength = 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength )
-
-			log_file = open( projects_directory_location + "/log.txt", 'a' )
-			log_file.write( str( parallel_fom_by_wavelength ) + "\n" )
-			log_file.write( str( reflected_fom_by_wavelength ) + "\n\n" )
-			log_file.write( str( reflected_intensity_by_wavelength ) + "\n\n" )
-			log_file.close()
-
-			reflected_fom_by_wavelength = np.maximum( 0, reflected_fom_by_wavelength )
-
-			fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
-
-			# fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
-			figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration, focal_idx, : ] = fom_by_wavelength
-			fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
-
-		all_fom = fom_by_focal_spot_by_wavelength.flatten()
-		fom_weightings = ( 2. / len( all_fom ) ) - all_fom**2 / np.sum( all_fom**2 )
-		fom_weightings = np.maximum( fom_weightings, 0 )
-		fom_weightings /= np.sum( fom_weightings )
-		fom_weightings = np.reshape( fom_weightings, fom_by_focal_spot_by_wavelength.shape )
-
-		current_figure_of_merit = np.mean( fom_by_focal_spot_by_wavelength )
-
-		figure_of_merit_evolution[ epoch, iteration ] = current_figure_of_merit
-
-		print( 'The current figure of merit = ' + str( current_figure_of_merit ) )
-
-		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
-		np.save(projects_directory_location + "/figure_of_merit_by_focal_spot_by_wavelength_evolution.npy", figure_of_merit_by_focal_spot_by_wavelength_evolution)
-
-		#
-		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
-		# gradients for x- and y-polarized forward sources.
-		#
-		adjoint_ex_fields = []
-		adjoint_ey_fields = []
-		for adj_src_idx in range(0, num_adjoint_sources):
-			for xy_idx in range(0, 2):
-				job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
-				fdtd_hook.load( job_name )
-
-				if xy_idx == 0:
-					adjoint_ex_fields.append(
-						get_efield(design_efield_monitor['name']))
-				else:
-					adjoint_ey_fields.append(
-						get_efield(design_efield_monitor['name']))
-
-		maximization_gradient = np.zeros( forward_e_fields[ 'x' ][ 0, :, :, :, 0 ].shape )
-		for focal_idx in range( 0, num_focal_spots ):
-			analyzer_vector = jones_polarizations[ focal_idx ]
-
-			create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
-			create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
-
-			create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
-			create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
-
-			parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
-			reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
-
-			parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
-			reflected_fom_by_wavelength = np.maximum( 0, 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength ) )
-
-			create_forward_e_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
-
-			for wl_idx in range( 0, num_design_frequency_points ):
-				maximization_gradient += 2 * np.sum(
-					np.real(
-						reflected_fom_by_wavelength[ wl_idx ] *
-						fom_weightings[ focal_idx, wl_idx ] *
-						np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
-						create_forward_e_fields[ :, :, :, :, wl_idx ] *
-						adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ]
-					),
-				axis=0 )
-
-				maximization_gradient -= 2 * np.sum(
-					np.real(
-						parallel_fom_by_wavelength[ wl_idx ] *
-						fom_weightings[ focal_idx, wl_idx ] *
-						np.conj( create_reflected_parallel_response_x[ wl_idx ] ) *
-						create_forward_e_fields[ :, :, :, :, wl_idx ] *
-						adjoint_ex_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
-					),
-				axis=0 )
-
-				maximization_gradient += 2 * np.sum(
-					np.real(
-						reflected_fom_by_wavelength[ wl_idx ] *
-						fom_weightings[ focal_idx, wl_idx ] *
-						np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
-						create_forward_e_fields[ :, :, :, :, wl_idx ] *
-						adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ]
-					),
-				axis=0 )
-
-				maximization_gradient -= 2 * np.sum(
-					np.real(
-						parallel_fom_by_wavelength[ wl_idx ] *
-						fom_weightings[ focal_idx, wl_idx ] *
-						np.conj( create_reflected_parallel_response_y[ wl_idx ] ) *
-						create_forward_e_fields[ :, :, :, :, wl_idx ] *
-						adjoint_ey_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
-					),
-				axis=0 )
-
-		#
-		# Step 4: Step the design variable.
-		#
-		device_gradient = -maximization_gradient
-		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
-		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
-		# device_gradient = np.swapaxes(device_gradient, 0, 2)
-
-		design_gradient = bayer_filter.backpropagate(device_gradient)
-
-		max_change_design = epoch_start_permittivity_change_max
-		min_change_design = epoch_start_permittivity_change_min
-
-		if num_iterations_per_epoch > 1:
-
-			max_change_design = (
-				epoch_end_permittivity_change_max +
-				(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
-			)
-
-			min_change_design = (
-				epoch_end_permittivity_change_min +
-				(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
-			)
-
-
-		cur_design_variable = bayer_filter.get_design_variable()
-
-		step_size = step_size_start
-
-		check_last = False
-		last = 0
-
-		while True:
-			proposed_design_variable = cur_design_variable - step_size * design_gradient
-			proposed_design_variable = np.maximum(
-										np.minimum(
-											proposed_design_variable,
-											1.0),
-										0.0)
-
-			difference = np.abs(proposed_design_variable - cur_design_variable)
-			max_difference = np.max(difference)
-
-			if (max_difference <= max_change_design) and (max_difference >= min_change_design):
-				break
-			elif (max_difference <= max_change_design):
-				step_size *= 2
-				if (last ^ 1) and check_last:
-					break
-				check_last = True
-				last = 1
-			else:
-				step_size /= 2
-				if (last ^ 0) and check_last:
-					break
-				check_last = True
-				last = 0
-
-		step_size_start = step_size
-
-		last_design_variable = cur_design_variable.copy()
-		#
-		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
-		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
-		#
-		enforce_binarization = False
-		if epoch >= binarization_start_epoch:
-			enforce_binarization = True
-		device_gradient = np.flip( device_gradient, axis=2 )
-		bayer_filter.step(device_gradient, step_size, enforce_binarization, projects_directory_location)
-		cur_design_variable = bayer_filter.get_design_variable()
-
-		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
-		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
-
-		step_size_evolution[epoch][iteration] = step_size
-		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
-		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
-
-		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
-
-		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
-		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
-		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
-		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
-		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
-		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
-		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
-		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", cur_design_variable)
-
-	fdtd_hook.switchtolayout()
-	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 	fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-	shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_end_epoch_" + str( epoch ) + ".fsp" )
+	# fdtd_hook.save( projects_directory_location + "/" + job_name )
+	# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+	job_names[ ( 'forward', xy_idx ) ] = add_job( job_name, jobs_queue )
+
+	# fdtd_hook.addjob( job_name )
+
+
+for adj_src_idx in range(0, num_adjoint_sources):
+
+	for xy_idx in range(0, 2):
+		disable_all_sources()
+		fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
+		fdtd_hook.set( 'enabled', 1 )
+
+		job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
+		# job_name_review = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_review.fsp'
+		# job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = job_name
+
+		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+		# fdtd_hook.save( projects_directory_location + "/" + job_name )
+		# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+		job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] = add_job( job_name, jobs_queue )
+		
+		# fdtd_hook.addjob( job_name )
+
+
+run_jobs( jobs_queue )
+# fdtd_hook.runjobs()
+
+fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+
+
+for xy_idx in range(0, 2):
+	fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
+
+	# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+	forward_e_fields[xy_names[xy_idx]] = get_efield(design_efield_monitor['name'])
+
+	focal_data[xy_names[xy_idx]] = []
+	for focal_idx in range( 0, num_focal_spots ):
+		# focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
+		focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ])
+
+		if xy_idx == 0:
+			Qxx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
+			Qxy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
+		else:
+			Qyy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
+			Qyx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
+
+
+fom_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
+for focal_idx in range( 0, num_focal_spots ):
+	analyzer_vector = jones_polarizations[ focal_idx ]
+
+	create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
+	create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
+
+	create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
+	create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
+
+	parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
+	reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
+
+	parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+	reflected_intensity_by_wavelength = reflected_parallel_intensity / max_intensity_by_wavelength
+	reflected_fom_by_wavelength = 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength )
+
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( str( parallel_fom_by_wavelength ) + "\n" )
+	log_file.write( str( reflected_fom_by_wavelength ) + "\n\n" )
+	log_file.write( str( reflected_intensity_by_wavelength ) + "\n\n" )
+	log_file.close()
+
+	reflected_fom_by_wavelength = np.maximum( 0, reflected_fom_by_wavelength )
+
+	fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
+
+	# fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+	figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration, focal_idx, : ] = fom_by_wavelength
+	fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
+
+all_fom = fom_by_focal_spot_by_wavelength.flatten()
+fom_weightings = np.ones( all_fom.shape )
+fom_weightings /= np.sum( fom_weightings )
+fom_start = np.mean( fom_weightings * all_fom )
+
+#
+# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
+# gradients for x- and y-polarized forward sources.
+#
+adjoint_ex_fields = []
+adjoint_ey_fields = []
+for adj_src_idx in range(0, num_adjoint_sources):
+	for xy_idx in range(0, 2):
+		job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '.fsp'
+		fdtd_hook.load( job_name )
+
+		if xy_idx == 0:
+			adjoint_ex_fields.append(
+				get_efield(design_efield_monitor['name']))
+		else:
+			adjoint_ey_fields.append(
+				get_efield(design_efield_monitor['name']))
+
+maximization_gradient = np.zeros( forward_e_fields[ 'x' ][ 0, :, :, :, 0 ].shape )
+for focal_idx in range( 0, num_focal_spots ):
+	analyzer_vector = jones_polarizations[ focal_idx ]
+
+	create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
+	create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
+
+	create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
+	create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
+
+	parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
+	reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
+
+	parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+	reflected_fom_by_wavelength = np.maximum( 0, 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength ) )
+
+	create_forward_e_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
+
+	for wl_idx in range( 0, num_design_frequency_points ):
+		maximization_gradient += 2 * np.sum(
+			np.real(
+				reflected_fom_by_wavelength[ wl_idx ] *
+				fom_weightings[ focal_idx, wl_idx ] *
+				np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
+				create_forward_e_fields[ :, :, :, :, wl_idx ] *
+				adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+			),
+		axis=0 )
+
+		maximization_gradient -= 2 * np.sum(
+			np.real(
+				parallel_fom_by_wavelength[ wl_idx ] *
+				fom_weightings[ focal_idx, wl_idx ] *
+				np.conj( create_reflected_parallel_response_x[ wl_idx ] ) *
+				create_forward_e_fields[ :, :, :, :, wl_idx ] *
+				adjoint_ex_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
+			),
+		axis=0 )
+
+		maximization_gradient += 2 * np.sum(
+			np.real(
+				reflected_fom_by_wavelength[ wl_idx ] *
+				fom_weightings[ focal_idx, wl_idx ] *
+				np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
+				create_forward_e_fields[ :, :, :, :, wl_idx ] *
+				adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+			),
+		axis=0 )
+
+		maximization_gradient -= 2 * np.sum(
+			np.real(
+				parallel_fom_by_wavelength[ wl_idx ] *
+				fom_weightings[ focal_idx, wl_idx ] *
+				np.conj( create_reflected_parallel_response_y[ wl_idx ] ) *
+				create_forward_e_fields[ :, :, :, :, wl_idx ] *
+				adjoint_ey_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
+			),
+		axis=0 )
+
+#
+# Step 4: Step the design variable.
+#
+device_gradient = -maximization_gradient
+device_gradient = np.flip( device_gradient, axis=2 )
+
+np.save( projects_directory_location + '/device_gradient.npy', device_gradient )
+
+
+fd_z = int( 0.5 * device_voxels_vertical )
+fd_y_mid = int( 0.5 * device_height_voxels )
+fd_x_mid = int( 0.5 * device_width_voxels )
+
+num_fd_points = 20
+
+fd_y_low = fd_y_mid - int( 0.5 * num_fd_points )
+fd_x_low = fd_x_mid - num_fd_points
+
+fd_y_range = np.linspace( fd_y_low, fd_y_low + num_fd_points, num_fd_points )
+fd_x_range = np.linspace( fd_x_low, fd_x_low + 2 * num_fd_points, num_fd_points )
+
+fd_points = np.zeros( ( num_fd_points, 3 ) )
+for fd_pt in range( 0, num_fd_points ):
+	fd_points[ fd_pt ] = [ int( fd_x_range[ fd_pt ] ), int( fd_y_range[ fd_pt ] ), fd_z ]
+
+np.save( projects_directory_location + "/fd_points.npy", fd_points )
+
+h = 1e-3
+
+cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+
+finite_difference = np.zeros( num_fd_points )
+
+for fd_pt in range( 0, num_fd_points ):
+	get_pt = fd_points[ fd_pt ]
+	x_pt = int( get_pt[ 0 ] )
+	y_pt = int( get_pt[ 1 ] )
+	z_pt = int( get_pt[ 2 ] )
+
+	next_permittivity = cur_permittivity.copy()
+	next_permittivity[ x_pt, y_pt, z_pt ] += h
+
+	fdtd_hook.select("design_import")
+	fdtd_hook.importnk2(np.sqrt(next_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+
+	#
+	# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
+	#
+	Qxx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+	Qxy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+	Qyx = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+	Qyy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+
+
+	for xy_idx in range(0, 2):
+		disable_all_sources()
+
+		fdtd_hook.select( forward_sources[xy_idx]['name'] )
+		fdtd_hook.set( 'enabled', 1 )
+
+		job_name = 'forward_job_' + str( xy_idx ) + '.fsp'
+		# job_name_review = 'forward_job_' + str( xy_idx ) + '_review.fsp'
+		# job_names[ ( 'forward', xy_idx ) ] = job_name
+
+		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+		# fdtd_hook.save( projects_directory_location + "/" + job_name )
+		# fdtd_hook.save( projects_directory_location + "/" + job_name_review )
+		job_names[ ( 'forward', xy_idx ) ] = add_job( job_name, jobs_queue )
+
+		# fdtd_hook.addjob( job_name )
+
+	run_jobs( jobs_queue )
+	# fdtd_hook.runjobs()
+
+	fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+
+
+	for xy_idx in range(0, 2):
+		fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
+
+		# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+		forward_e_fields[xy_names[xy_idx]] = get_efield(design_efield_monitor['name'])
+
+		focal_data[xy_names[xy_idx]] = []
+		for focal_idx in range( 0, num_focal_spots ):
+			# focal_monitor_data = get_complex_monitor_data( focal_monitors[ focal_idx ][ 'name' ], 'E' )
+			focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ])
+
+			if xy_idx == 0:
+				Qxx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
+				Qxy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
+			else:
+				Qyy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
+				Qyx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
+
+
+	fom_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
+	for focal_idx in range( 0, num_focal_spots ):
+		analyzer_vector = jones_polarizations[ focal_idx ]
+
+		create_forward_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ focal_idx, : ]
+		create_forward_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ focal_idx, : ]
+
+		create_reflected_parallel_response_x = analyzer_vector[ 0 ] * Qxx[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyx[ 1 - focal_idx, : ]
+		create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - focal_idx, : ] + analyzer_vector[ 1 ] * Qyy[ 1 - focal_idx, : ]
+
+		parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
+		reflected_parallel_intensity = np.abs( create_reflected_parallel_response_x )**2 + np.abs( create_reflected_parallel_response_y )**2
+
+		parallel_fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+		reflected_intensity_by_wavelength = reflected_parallel_intensity / max_intensity_by_wavelength
+		reflected_fom_by_wavelength = 1 - ( reflected_parallel_intensity / max_intensity_by_wavelength )
+
+		reflected_fom_by_wavelength = np.maximum( 0, reflected_fom_by_wavelength )
+
+		fom_by_wavelength = parallel_fom_by_wavelength * reflected_fom_by_wavelength
+
+		# fom_by_wavelength = parallel_intensity / max_intensity_by_wavelength
+		figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration, focal_idx, : ] = fom_by_wavelength
+		fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
+
+	all_fom = fom_by_focal_spot_by_wavelength.flatten()
+	fom_weightings = np.ones( all_fom.shape )
+	fom_weightings /= np.sum( fom_weightings )
+	fom_fd = np.mean( fom_weightings * all_fom )
+
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( 'Cur fd for idx = ' + str( fd_pt ) + ' is ' + str( ( fom_fd - fom_start ) / h ) + "\n\n" )
+	log_file.close()
+
+	finite_difference[ fd_pt ] = ( fom_fd - fom_start ) / h
+
+np.save( projects_directory_location + '/finite_difference.npy', finite_difference )
 
 
