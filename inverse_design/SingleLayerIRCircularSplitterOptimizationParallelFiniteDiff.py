@@ -126,7 +126,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location += "/" + project_name
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location += "/" + project_name + '_parallel_single_finite_difference'
+projects_directory_location += "/" + project_name + '_parallel_single_finite_difference_staircase'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -152,6 +152,7 @@ fdtd['mesh type'] = 'uniform'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
+fdtd['mesh refinement'] = 'staircase'
 fdtd['mesh cells x'] = fdtd_region_minimum_width_voxels
 fdtd['mesh cells y'] = fdtd_region_minimum_height_voxels
 fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
