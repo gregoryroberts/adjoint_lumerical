@@ -126,7 +126,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location += "/" + project_name
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location += "/" + project_name + '_parallel_finite_difference'
+projects_directory_location += "/" + project_name + '_parallel_single_finite_difference'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -563,10 +563,13 @@ for focal_idx in range( 0, num_focal_spots ):
 	fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
 
 all_fom = fom_by_focal_spot_by_wavelength.flatten()
-fom_weightings = np.ones( all_fom.shape )
-fom_weightings /= np.sum( fom_weightings )
-fom_start = np.mean( fom_weightings * all_fom )
-fom_weightings = np.reshape( fom_weightings, fom_by_focal_spot_by_wavelength.shape )
+# fom_weightings /= np.sum( fom_weightings )
+# fom_weightings = np.reshape( fom_weightings, fom_by_focal_spot_by_wavelength.shape )
+
+fom_weightings = np.zeros( fom_by_focal_spot_by_wavelength.shape )
+fom_weightings[ 0, 3 ] = 0.5
+fom_weightings[ 1, 3 ] = 0.5
+fom_start = np.sum( fom_weightings.flatten() * all_fom )
 
 #
 # Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
@@ -658,13 +661,13 @@ fd_z = int( 0.5 * device_voxels_vertical )
 fd_y_mid = int( 0.5 * device_height_voxels )
 fd_x_mid = int( 0.5 * device_width_voxels )
 
-num_fd_points = 20
+num_fd_points = 50
 
 fd_y_low = fd_y_mid - int( 0.5 * num_fd_points )
-fd_x_low = fd_x_mid - num_fd_points
+fd_x_low = fd_x_mid - int( 0.5 * num_fd_points )
 
-fd_y_range = np.linspace( fd_y_low, fd_y_low + num_fd_points, num_fd_points )
-fd_x_range = np.linspace( fd_x_low, fd_x_low + 2 * num_fd_points, num_fd_points )
+fd_y_range = np.linspace( fd_y_low, fd_y_low + num_fd_points - 1, num_fd_points )
+fd_x_range = np.linspace( fd_x_low, fd_x_low + num_fd_points - 1, num_fd_points )
 
 fd_points = np.zeros( ( num_fd_points, 3 ) )
 for fd_pt in range( 0, num_fd_points ):
@@ -767,9 +770,13 @@ for fd_pt in range( 0, num_fd_points ):
 		fom_by_focal_spot_by_wavelength[ focal_idx, : ] = fom_by_wavelength
 
 	all_fom = fom_by_focal_spot_by_wavelength.flatten()
-	fom_weightings = np.ones( all_fom.shape )
-	fom_weightings /= np.sum( fom_weightings )
-	fom_fd = np.mean( fom_weightings * all_fom )
+	# fom_weightings = np.ones( all_fom.shape )
+	# fom_weightings /= np.sum( fom_weightings )
+
+	fom_weightings = np.zeros( fom_by_focal_spot_by_wavelength.shape )
+	fom_weightings[ 0, 3 ] = 0.5
+	fom_weightings[ 1, 3 ] = 0.5
+	fom_fd = np.sum( fom_weightings.flatten() * all_fom )
 
 	log_file = open( projects_directory_location + "/log.txt", 'a' )
 	log_file.write( 'Cur fd for idx = ' + str( fd_pt ) + ' is ' + str( ( fom_fd - fom_start ) / h ) + "\n\n" )
