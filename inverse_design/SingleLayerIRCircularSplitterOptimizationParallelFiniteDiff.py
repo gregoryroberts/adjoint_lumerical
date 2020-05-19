@@ -126,7 +126,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location += "/" + project_name
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location += "/" + project_name + '_parallel_single_finite_difference_staircase'
+projects_directory_location += "/" + project_name + '_parallel_single_finite_difference_thick'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -152,7 +152,7 @@ fdtd['mesh type'] = 'uniform'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
-fdtd['mesh refinement'] = 'staircase'
+# fdtd['mesh refinement'] = 'staircase'
 fdtd['mesh cells x'] = fdtd_region_minimum_width_voxels
 fdtd['mesh cells y'] = fdtd_region_minimum_height_voxels
 fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
@@ -662,7 +662,7 @@ fd_z = int( 0.5 * device_voxels_vertical )
 fd_y_mid = int( 0.5 * device_height_voxels )
 fd_x_mid = int( 0.5 * device_width_voxels )
 
-num_fd_points = 50
+num_fd_points = 20
 
 fd_y_low = fd_y_mid - int( 0.5 * num_fd_points )
 fd_x_low = fd_x_mid - int( 0.5 * num_fd_points )
@@ -689,7 +689,7 @@ for fd_pt in range( 0, num_fd_points ):
 	z_pt = int( get_pt[ 2 ] )
 
 	next_permittivity = cur_permittivity.copy()
-	next_permittivity[ x_pt, y_pt, z_pt ] += h
+	next_permittivity[ (x_pt - 1) : (x_pt + 2), (y_pt - 1) : (y_pt + 2), (z_pt - 1) : ( z_pt + 2 ) ] += h
 
 	fdtd_hook.load( projects_directory_location + "/optimization.fsp" )
 	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
