@@ -19,6 +19,9 @@ import matplotlib.pylab as plt
 #
 # Electromagnetics
 #
+run_on_cluster = True
+if run_on_cluster:
+	sys.path.append( '/central/home/gdrobert/Develompent/ceviche' )
 import ceviche
 
 
