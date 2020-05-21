@@ -55,7 +55,8 @@ device_size_verical_um = num_vertical_layers * ( 3.168 / num_vertical_layers )
 amorphous_silicon_height_per_layer_um = 0.704
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
-device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
+device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
+# device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
 # device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
 spacer_size_voxels = 1 + int(spacer_size_um / mesh_spacing_um)
