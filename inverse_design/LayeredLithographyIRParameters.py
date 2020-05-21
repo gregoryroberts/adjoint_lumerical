@@ -7,7 +7,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6p08x6p08x3p168um_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3'
 
 #
@@ -36,19 +37,22 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-mesh_spacing_um = 0.04
+# mesh_spacing_um = 0.04
+mesh_spacing_um = 0.032
 
 #
 # Pesky size to get the number of voxels to be a multiple of 3
 #
 num_vertical_layers = 3
 
-device_size_lateral_um = 2.0 * 3.0#3.06#3.6
-device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
+# device_size_lateral_um = 2.0 * 3.0#3.06#3.6
+device_size_lateral_um = 6.08
+device_size_verical_um = num_vertical_layers * ( 3.168 / num_vertical_layers )
+# device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
 # device_size_verical_um = num_vertical_layers * ( 4.32 / num_vertical_layers )
 # amorphous_silicon_height_per_layer_um = 0.52#0.8
 # amorphous_silicon_height_per_layer_um = 0.72
-amorphous_silicon_height_per_layer_um = 0.72
+amorphous_silicon_height_per_layer_um = 0.704
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
