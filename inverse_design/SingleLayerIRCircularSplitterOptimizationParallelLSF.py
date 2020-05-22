@@ -314,12 +314,12 @@ design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 
 bayer_filter_size_voxels = np.array([device_width_voxels, device_height_voxels, device_voxels_vertical])
-# bayer_filter = SingleLayerIRCircularSplitterDevice.SingleLayerIRCircularSplitterDevice(
-# 	bayer_filter_size_voxels,
-# 	[min_device_permittivity, max_device_permittivity],
-# 	init_permittivity_0_1_scale,
-# 	max_binarize_movement,
-# 	desired_binarize_change)
+bayer_filter = SingleLayerIRCircularSplitterDevice.SingleLayerIRCircularSplitterDevice(
+	bayer_filter_size_voxels,
+	[min_device_permittivity, max_device_permittivity],
+	init_permittivity_0_1_scale,
+	max_binarize_movement,
+	desired_binarize_change)
 
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_width_um, 0.5 * device_width_um, device_width_voxels)
@@ -462,10 +462,12 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 0.001
 
-design_variable_reload = np.real( np.flip(
-	np.load( projects_init_design_directory + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' ),
-	axis=2 ) )
-# bayer_filter.set_design_variable( design_variable_reload )
+bayer_filter.update_filters(start_epoch - 1)
+bayer_filter.set_design_variable( np.load( projects_init_design_directory + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' ) )
+bayer_filter_permittivity = bayer_filter.get_permittivity()
+permittivity_to_density = ( bayer_filter_permittivity - min_device_permittivity ) / ( max_device_permittivity - min_device_permittivity )
+
+design_variable_reload = np.real( np.flip( permittivity_to_density, axis=2 ) )
 
 ####
 rbf_sigma = 1
