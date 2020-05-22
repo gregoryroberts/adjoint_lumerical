@@ -655,7 +655,7 @@ for epoch in range(start_epoch, num_epochs):
 			net_alpha_gradients = np.zeros( level_set_alpha.shape )
 
 			for wl_idx in range( 0, num_design_frequency_points ):
-				net_alpha_gradients += 2 * compute_lsf_gradient(
+				net_alpha_gradients += 2 * alpha_perturbations(
 					reflected_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
 					np.conj( create_forward_parallel_response_x[ wl_idx ] ) * adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ],
 					level_set_function,
@@ -666,7 +666,7 @@ for epoch in range(start_epoch, num_epochs):
 					min_device_permittivity
 				)
 
-				net_alpha_gradients -= 2 * compute_lsf_gradient(
+				net_alpha_gradients -= 2 * alpha_perturbations(
 					parallel_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
 					np.conj( create_reflected_parallel_response_x[ wl_idx ] ) * adjoint_ex_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ],
 					level_set_function,
@@ -677,7 +677,7 @@ for epoch in range(start_epoch, num_epochs):
 					min_device_permittivity
 				)
 
-				net_alpha_gradients += 2 * compute_lsf_gradient(
+				net_alpha_gradients += 2 * alpha_perturbations(
 					reflected_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
 					np.conj( create_forward_parallel_response_y[ wl_idx ] ) * adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ],
 					level_set_function,
@@ -688,7 +688,7 @@ for epoch in range(start_epoch, num_epochs):
 					min_device_permittivity
 				)
 
-				net_alpha_gradients -= 2 * compute_lsf_gradient(
+				net_alpha_gradients -= 2 * alpha_perturbations(
 					parallel_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
 					np.conj( create_reflected_parallel_response_y[ wl_idx ] ) * adjoint_ey_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ],
 					level_set_function,
