@@ -440,6 +440,8 @@ step_size_start = 0.001
 if start_epoch > 0:
 	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
 	bayer_filter.set_design_variable( design_variable_reload )
+	figure_of_merit_evolution = np.load( projects_directory_location + "/figure_of_merit.npy" )
+
 
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
