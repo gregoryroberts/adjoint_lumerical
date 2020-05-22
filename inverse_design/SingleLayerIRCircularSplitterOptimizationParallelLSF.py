@@ -484,7 +484,7 @@ fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 # Run the optimization
 #
 for epoch in range(start_epoch, num_epochs):
-	bayer_filter.update_filters(epoch)
+	# bayer_filter.update_filters(epoch)
 
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
