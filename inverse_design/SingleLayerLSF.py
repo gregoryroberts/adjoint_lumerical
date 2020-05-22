@@ -4,7 +4,7 @@ def read_density_into_alpha( density ):
 	return ( density - 0.5 )
 
 def read_lsf_into_density( lsf ):
-	return 1.0 * np.greater( lsf, 0.5 )
+	return 1.0 * np.greater( lsf, 0 )
 
 def gaussian_rbf( x0, y0, x, y, sigma ):
 	return np.exp( -0.5 * ( ( x - x0 )**2 + ( y - y0 )**2 ) / sigma**2 )
@@ -155,7 +155,7 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 
 						sum_gradient_components = parallel_gradient_component + perpendicular_gradient_component
 
-						sum_gradient_components *= 1. / grad_mag
+						sum_gradient_components *= 1. / ( grad_mag * ( 2 * rbf_eval_cutoff + 1 )**2 )
 						# Sum over the vertical direction
 						sum_gradient_components = np.real( np.sum( sum_gradient_components ) )
 
@@ -174,7 +174,7 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 							for sweep_y in range( y_bottom, y_top ):
 								# The alpha's are just scales on the basis functions so their gradient is just equal to the value of the basis function
 								# at a given point
-								alpha_gradients[ sweep_x, sweep_y ] += sum_gradient_components * gaussian_rbf( sweep_x, sweep_y, adjust_x, adjust_y, rbf_sigma ):
+								alpha_gradients[ sweep_x, sweep_y ] += sum_gradient_components * gaussian_rbf( sweep_x, sweep_y, adjust_x, adjust_y, rbf_sigma )
 
 	return alpha_gradients
 
