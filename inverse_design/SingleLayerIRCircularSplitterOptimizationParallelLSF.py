@@ -472,10 +472,13 @@ rbf_sigma = 1
 rbf_eval_cutoff = 5
 
 level_set_alpha = read_density_into_alpha( design_variable_reload )
+level_set_alpha = level_set_alpha[ :, :, int( level_set_alpha.shape[ 2 ] ) ]
 level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
 
 binary_design = read_lsf_into_density( level_set_function )
-device_permittivity = min_device_permittivity + ( max_device_permittivity - min_device_permittivity ) * binary_design
+device_permittivity = np.ones( ( device_width_voxels, device_height_voxels, device_voxels_vertical ) )
+for voxel_vertical in range( 0, device_voxels_vertical ):
+	device_permittivity[ :, :, voxel_vertical ] = min_device_permittivity + ( max_device_permittivity - min_device_permittivity ) * binary_design
 ####
 
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
@@ -494,7 +497,8 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.load( projects_directory_location + "/optimization.fsp" )
 
 		fdtd_hook.switchtolayout()
-		device_permittivity = min_device_permittivity + ( max_device_permittivity - min_device_permittivity ) * binary_design
+		for voxel_vertical in range( 0, device_voxels_vertical ):
+			device_permittivity[ :, :, voxel_vertical ] = min_device_permittivity + ( max_device_permittivity - min_device_permittivity ) * binary_design
 		# cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 		fdtd_hook.select("design_import")
 		fdtd_hook.importnk2(np.sqrt(device_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
