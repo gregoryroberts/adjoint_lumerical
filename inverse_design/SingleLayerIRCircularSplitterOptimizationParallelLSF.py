@@ -472,7 +472,7 @@ rbf_sigma = 1
 rbf_eval_cutoff = 5
 
 level_set_alpha = read_density_into_alpha( design_variable_reload )
-level_set_alpha = level_set_alpha[ :, :, int( level_set_alpha.shape[ 2 ] ) ]
+level_set_alpha = level_set_alpha[ :, :, int( 0.5 * level_set_alpha.shape[ 2 ] ) ]
 level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
 
 binary_design = read_lsf_into_density( level_set_function )
