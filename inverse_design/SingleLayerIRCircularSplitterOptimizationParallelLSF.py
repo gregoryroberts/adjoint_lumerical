@@ -478,6 +478,7 @@ level_set_alpha = level_set_alpha[ :, :, int( 0.5 * level_set_alpha.shape[ 2 ] )
 level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
 
 binary_design = read_lsf_into_density( level_set_function )
+np.save(projects_directory_location + "/init_binary_design.npy", binary_design)
 device_permittivity = np.ones( ( device_width_voxels, device_height_voxels, device_voxels_vertical ) )
 for voxel_vertical in range( 0, device_voxels_vertical ):
 	device_permittivity[ :, :, voxel_vertical ] = min_device_permittivity + ( max_device_permittivity - min_device_permittivity ) * binary_design
@@ -717,8 +718,8 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 
-		np.save(projects_directory_location + "/cur_design_variable.npy", binary_design)
-		np.save(projects_directory_location + "/cur_design_variable_" + str( epoch ) + ".npy", binary_design)
+		np.save(projects_directory_location + "/cur_binary_design.npy", binary_design)
+		np.save(projects_directory_location + "/cur_binary_design_" + str( epoch ) + ".npy", binary_design)
 		np.save(projects_directory_location + "/level_set_function.npy", level_set_function)
 		np.save(projects_directory_location + "/level_set_alpha.npy", level_set_alpha)
 
