@@ -89,17 +89,17 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 				for direction in range( 0, len( directional_checks_x ) ):
 					direction_x = directional_checks_x[ direction ]
 					direction_y = directional_checks_y[ direction ]
-					check_lsf = current_lsf[ direction_x, direction_y ]
+					check_lsf = lsf_region[ direction_x, direction_y ]
 					check_lsf_sign = np.sign( check_lsf ) < 0
 
 					if check_lsf_sign:
 						# We will consider this a border point.  Let's find the interpolated edge point.
 
-						m_x = direction_x / ( check_lsf - current_lsf_value )
-						b_x = direction_x - m_x * check_lsf
+						m_x = ( direction_x - 1 ) / ( check_lsf - current_lsf_value )
+						b_x = 1 - m_x * current_lsf_value
 
-						m_y = direction_y / ( check_lsf - current_lsf_value )
-						b_y = direction_y - m_y * check_lsf
+						m_y = ( direction_y - 1 ) / ( check_lsf - current_lsf_value )
+						b_y = 1 - m_y * current_lsf_value
 
 						normalized_distance_coord_to_direction = (
 							np.sqrt( ( b_x - direction_x )**2 + ( b_y - direction_y )**2 ) / np.sqrt( direction_x**2 + direction_y**2 )
