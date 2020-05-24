@@ -623,11 +623,11 @@ np.save( projects_directory_location + '/adjoint_grad_alpha.npy', init_grad )
 
 
 fd_x = int( 0.5 * device_width_voxels )
-alpha_spread = 2
+alpha_spread = 3
 num_fd_pts = 20
 fd_y = np.arange( alpha_spread, alpha_spread + num_fd_pts )
 finite_diff_alpha = np.zeros( len( fd_y ) )
-fd_delta = 0.02
+fd_delta = 0.05
 
 for fd_y_idx in range( 0, len( fd_y ) ):
 
@@ -635,7 +635,7 @@ for fd_y_idx in range( 0, len( fd_y ) ):
 	fd_alpha[ ( fd_x - alpha_spread ) : ( fd_x + alpha_spread + 1 ), ( fd_y_idx - alpha_spread ) : ( fd_y_idx + alpha_spread + 1 ) ] += fd_delta
 
 
-	log_file = open( projects_directory_location + "/log.txt", 'w' )
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
 	log_file.write( "Working on fd idx = " + str( fd_y_idx ) + " out of " + str( num_fd_pts ) + "\n" )
 	log_file.close()
 
