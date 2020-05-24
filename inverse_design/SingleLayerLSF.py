@@ -134,8 +134,10 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 						parallel_direction = gs_input_vector - np.dot( perpendicular_direction, gs_input_vector ) * perpendicular_direction
 						parallel_direction /= np.sqrt( np.sum( parallel_direction**2 ) )
 
-						E_field_fwd_project_parallel = E_field_fwd_interpolate[ 2, : ]
-						E_field_adj_project_parallel = E_field_adj_interpolate[ 2, : ]
+
+						E_field_fwd_project_parallel = np.zeros( E_field_fwd_interpolate[ 0 ].shape, dtype=np.complex )
+						E_field_adj_project_parallel = np.zeros( E_field_adj_interpolate[ 0 ].shape, dtype=np.complex )
+
 
 						for pol_idx in range( 0, 2 ):
 							E_field_fwd_project_parallel += parallel_direction[ pol_idx ] * E_field_fwd_interpolate[ pol_idx ]
@@ -143,10 +145,11 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 
 
 						parallel_gradient_component = ( eps_material - eps_void ) * E_field_fwd_project_parallel * E_field_adj_project_parallel
+						z_gradient_component = ( eps_material - eps_void ) * E_field_fwd_interpolate[ 2 ] * E_field_adj_interpolate[ 2 ]
 
 
-						D_field_fwd_project_perpendicular = np.zeros( D_field_fwd_interpolate[ 0, : ].shape, dtype=np.complex )
-						D_field_adj_project_perpendicular = np.zeros( D_field_adj_interpolate[ 0, : ].shape, dtype=np.complex )
+						D_field_fwd_project_perpendicular = np.zeros( D_field_fwd_interpolate[ 0 ].shape, dtype=np.complex )
+						D_field_adj_project_perpendicular = np.zeros( D_field_adj_interpolate[ 0 ].shape, dtype=np.complex )
 
 						for pol_idx in range( 0, 2 ):
 							D_field_fwd_project_perpendicular += perpendicular_direction[ pol_idx ] * D_field_fwd_interpolate[ pol_idx ]
@@ -154,7 +157,7 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 
 						perpendicular_gradient_component = ( ( 1. / eps_void ) - ( 1. / eps_material ) ) * D_field_fwd_project_perpendicular * D_field_adj_project_perpendicular
 
-						sum_gradient_components = parallel_gradient_component + perpendicular_gradient_component
+						sum_gradient_components = parallel_gradient_component + z_gradient_component + perpendicular_gradient_component
 
 						sum_gradient_components *= 1. / ( grad_mag * ( 2 * rbf_eval_cutoff + 1 )**2 )
 						# Sum over the vertical direction
