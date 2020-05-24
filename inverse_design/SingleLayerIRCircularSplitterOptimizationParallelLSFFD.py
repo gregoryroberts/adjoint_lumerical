@@ -530,7 +530,7 @@ def compute_figure_of_merit( binary_structure, level_set_alpha, level_set_functi
 	create_reflected_parallel_response_y = analyzer_vector[ 0 ] * Qxy[ 1 - choose_focal_spot, choose_wl ] + analyzer_vector[ 1 ] * Qyy[ 1 - choose_focal_spot, choose_wl ]
 
 	parallel_intensity = np.abs( create_forward_parallel_response_x )**2 + np.abs( create_forward_parallel_response_y )**2
-	parallel_fom = parallel_intensity / max_intensity_by_wavelength
+	parallel_fom = parallel_intensity / max_intensity_by_wavelength[ choose_wl ]
 
 	figure_of_merit = parallel_fom
 
