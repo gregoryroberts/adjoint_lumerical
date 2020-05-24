@@ -128,26 +128,27 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 						# This is the normal vector pointing from a material region to void region
 						n_hat = -np.array( [ grad_x, grad_y ] ) / np.sqrt( grad_x**2 + grad_y**2 )
 
-						perpendicular_direction = np.array( list( n_hat ) + [ 0 ] )
+						perpendicular_direction = n_hat
 
-						gs_input_vector = np.ones( 3 ) / np.sqrt( 3 )
+						gs_input_vector = np.ones( 2 ) / np.sqrt( 2 )
 						parallel_direction = gs_input_vector - np.dot( perpendicular_direction, gs_input_vector ) * perpendicular_direction
 						parallel_direction /= np.sqrt( np.sum( parallel_direction**2 ) )
 
-						E_field_fwd_project_parallel = np.zeros( E_field_fwd_interpolate[ 1, : ].shape, dtype=np.complex )
-						E_field_adj_project_parallel = np.zeros( E_field_adj_interpolate[ 1, : ].shape, dtype=np.complex )
+						E_field_fwd_project_parallel = E_field_fwd_interpolate[ 2, : ]
+						E_field_adj_project_parallel = E_field_adj_interpolate[ 2, : ]
 
-						for pol_idx in range( 0, 3 ):
+						for pol_idx in range( 0, 2 ):
 							E_field_fwd_project_parallel += parallel_direction[ pol_idx ] * E_field_fwd_interpolate[ pol_idx ]
 							E_field_adj_project_parallel += parallel_direction[ pol_idx ] * E_field_adj_interpolate[ pol_idx ]
+
 
 						parallel_gradient_component = ( eps_material - eps_void ) * E_field_fwd_project_parallel * E_field_adj_project_parallel
 
 
-						D_field_fwd_project_perpendicular = np.zeros( D_field_fwd_interpolate[ 1, : ].shape, dtype=np.complex )
-						D_field_adj_project_perpendicular = np.zeros( D_field_adj_interpolate[ 1, : ].shape, dtype=np.complex )
+						D_field_fwd_project_perpendicular = np.zeros( D_field_fwd_interpolate[ 0, : ].shape, dtype=np.complex )
+						D_field_adj_project_perpendicular = np.zeros( D_field_adj_interpolate[ 0, : ].shape, dtype=np.complex )
 
-						for pol_idx in range( 0, 3 ):
+						for pol_idx in range( 0, 2 ):
 							D_field_fwd_project_perpendicular += perpendicular_direction[ pol_idx ] * D_field_fwd_interpolate[ pol_idx ]
 							D_field_adj_project_perpendicular += perpendicular_direction[ pol_idx ] * D_field_adj_interpolate[ pol_idx ]
 
