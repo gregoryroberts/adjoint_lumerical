@@ -631,8 +631,10 @@ fd_delta = 0.1
 
 for fd_y_idx in range( 0, len( fd_y ) ):
 
+	y_idx = fd_y[ fd_y_idx ]
+
 	fd_alpha = level_set_alpha.copy()
-	fd_alpha[ ( fd_x - alpha_spread ) : ( fd_x + alpha_spread + 1 ), ( fd_y_idx - alpha_spread ) : ( fd_y_idx + alpha_spread + 1 ) ] += fd_delta
+	fd_alpha[ ( fd_x - alpha_spread ) : ( fd_x + alpha_spread + 1 ), ( y_idx - alpha_spread ) : ( y_idx + alpha_spread + 1 ) ] += fd_delta
 
 
 	log_file = open( projects_directory_location + "/log.txt", 'a' )
