@@ -632,7 +632,7 @@ fd_delta = 0.01
 for fd_y_idx in range( 0, len( fd_y ) ):
 
 	fd_alpha = level_set_alpha.copy()
-	fd_alpha[ ( fd_x - alpha_spread ) : ( fd_x + alpha_spread + 1 ), ( fd_y_idx - alpha_spread ) : ( fd_y_idx + alpha_spread + 1 ), : ] += fd_delta
+	fd_alpha[ ( fd_x - alpha_spread ) : ( fd_x + alpha_spread + 1 ), ( fd_y_idx - alpha_spread ) : ( fd_y_idx + alpha_spread + 1 ) ] += fd_delta
 
 	level_set_function_step = compute_lsf( fd_alpha, rbf_sigma, rbf_eval_cutoff )
 	binary_design_step = read_lsf_into_density( level_set_function_step )
