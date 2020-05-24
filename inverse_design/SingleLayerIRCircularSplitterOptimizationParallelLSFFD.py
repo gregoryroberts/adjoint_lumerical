@@ -627,12 +627,18 @@ alpha_spread = 2
 num_fd_pts = 20
 fd_y = np.arange( alpha_spread, alpha_spread + num_fd_pts )
 finite_diff_alpha = np.zeros( len( fd_y ) )
-fd_delta = 0.01
+fd_delta = 0.02
 
 for fd_y_idx in range( 0, len( fd_y ) ):
 
 	fd_alpha = level_set_alpha.copy()
 	fd_alpha[ ( fd_x - alpha_spread ) : ( fd_x + alpha_spread + 1 ), ( fd_y_idx - alpha_spread ) : ( fd_y_idx + alpha_spread + 1 ) ] += fd_delta
+
+
+	log_file = open( projects_directory_location + "/log.txt", 'w' )
+	log_file.write( "Working on fd idx = " + str( fd_y_idx ) + " out of " + str( num_fd_pts ) + "\n" )
+	log_file.close()
+
 
 	level_set_function_step = compute_lsf( fd_alpha, rbf_sigma, rbf_eval_cutoff )
 	binary_design_step = read_lsf_into_density( level_set_function_step )
