@@ -627,7 +627,7 @@ alpha_spread = 3
 num_fd_pts = 20
 fd_y = np.arange( alpha_spread, alpha_spread + num_fd_pts )
 finite_diff_alpha = np.zeros( len( fd_y ) )
-fd_delta = 0.05
+fd_delta = 0.1
 
 for fd_y_idx in range( 0, len( fd_y ) ):
 
@@ -642,6 +642,8 @@ for fd_y_idx in range( 0, len( fd_y ) ):
 
 	level_set_function_step = compute_lsf( fd_alpha, rbf_sigma, rbf_eval_cutoff )
 	binary_design_step = read_lsf_into_density( level_set_function_step )
+
+	np.save( projects_directory_location + "/binary_step_" + str( fd_y_idx ) + ".npy", binary_design_step )
 
 	fom_up, none_grad = compute_figure_of_merit( binary_design_step, fd_alpha, level_set_function_step, compute_gradient=False )
 
