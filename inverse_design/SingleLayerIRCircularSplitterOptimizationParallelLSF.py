@@ -129,7 +129,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
 projects_init_design_directory = projects_directory_location + "/" + project_name + '_parallel'
 
-projects_directory_location += "/" + project_name + '_parallel_lsf'
+projects_directory_location += "/" + project_name + '_parallel_symmetric_lsf'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -465,6 +465,10 @@ step_size_start = 0.001
 bayer_filter.update_filters(start_epoch - 1)
 bayer_filter.set_design_variable( np.load( projects_init_design_directory + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' ) )
 bayer_filter_permittivity = bayer_filter.get_permittivity()
+
+# Let's ensure the design has the given symmetry
+bayer_filter_permittivity = 0.5 * ( bayer_filter_permittivity + np.flip( bayer_filter_permittivity, axis=0 ) )
+
 permittivity_to_density = ( bayer_filter_permittivity - min_device_permittivity ) / ( max_device_permittivity - min_device_permittivity )
 
 design_variable_reload = np.real( np.flip( permittivity_to_density, axis=2 ) )
@@ -476,6 +480,9 @@ rbf_eval_cutoff = 5
 level_set_alpha = read_density_into_alpha( design_variable_reload )
 level_set_alpha = level_set_alpha[ :, :, int( 0.5 * level_set_alpha.shape[ 2 ] ) ]
 level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
+
+np.save(projects_directory_location + "/init_alpha.npy", level_set_alpha)
+np.save(projects_directory_location + "/init_level_set_function.npy", level_set_function)
 
 binary_design = read_lsf_into_density( level_set_function )
 np.save(projects_directory_location + "/init_binary_design.npy", binary_design)
@@ -707,8 +714,9 @@ for epoch in range(start_epoch, num_epochs):
 				)
 
 		net_alpha_gradients /= np.max( np.abs( net_alpha_gradients ) )
-		fixed_alpha_step_size_relative = 0.05
-		level_set_alpha += fixed_alpha_step_size_relative * net_alpha_gradients
+		symmetric_net_alpha_gradients = 0.5 * ( net_alpha_gradients + np.flip( net_alpha_gradients, axis=0 ) )
+		fixed_alpha_step_size_relative = 0.025
+		level_set_alpha += fixed_alpha_step_size_relative * symmetric_net_alpha_gradients
 
 		level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
 		binary_design = read_lsf_into_density( level_set_function )
@@ -718,6 +726,8 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 
+		np.save(projects_directory_location + "/alpha_grad.npy", net_alpha_gradients)
+		np.save(projects_directory_location + "/alpha_grad_symmetric.npy", symmetric_net_alpha_gradients)
 		np.save(projects_directory_location + "/cur_binary_design.npy", binary_design)
 		np.save(projects_directory_location + "/cur_binary_design_" + str( epoch ) + ".npy", binary_design)
 		np.save(projects_directory_location + "/level_set_function.npy", level_set_function)
