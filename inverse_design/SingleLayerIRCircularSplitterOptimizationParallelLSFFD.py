@@ -129,7 +129,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
 projects_init_design_directory = projects_directory_location + "/" + project_name + '_parallel'
 
-projects_directory_location += "/" + project_name + '_parallel_lsf_fd'
+projects_directory_location += "/" + project_name + '_parallel_lsf_fd_v2'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -605,7 +605,8 @@ def compute_figure_of_merit( binary_structure, level_set_alpha, level_set_functi
 
 		np.save( projects_directory_location + "/fwd_e_fields.npy", create_forward_e_fields[ :, :, :, :, choose_wl ] )
 		np.save( projects_directory_location + "/conj_weighting.npy", np.conj( create_forward_parallel_response_y[ choose_wl ] ) )
-		np.save( projects_directory_location + "/adj_e_fields.npy", adjoint_ey_fields[ choose_focal_spot ][ :, :, :, :, choose_wl ] )
+		np.save( projects_directory_location + "/adj_ex_fields.npy", adjoint_ex_fields[ choose_focal_spot ][ :, :, :, :, choose_wl ] )
+		np.save( projects_directory_location + "/adj_ey_fields.npy", adjoint_ey_fields[ choose_focal_spot ][ :, :, :, :, choose_wl ] )
 		np.save( projects_directory_location + "/grad_level_set_function.npy", level_set_function )
 		np.save( projects_directory_location + "/grad_level_set_alpha.npy", level_set_alpha )
 		np.save( projects_directory_location + "/rbf_sigma.npy", np.array( rbf_sigma ) )
@@ -627,7 +628,7 @@ alpha_spread = 3
 num_fd_pts = 20
 fd_y = np.arange( alpha_spread, alpha_spread + num_fd_pts )
 finite_diff_alpha = np.zeros( len( fd_y ) )
-fd_delta = 0.1
+fd_delta = 0.025
 
 for fd_y_idx in range( 0, len( fd_y ) ):
 
