@@ -628,7 +628,7 @@ alpha_spread = 3
 num_fd_pts = 20
 fd_y = np.arange( alpha_spread, alpha_spread + num_fd_pts )
 finite_diff_alpha = np.zeros( len( fd_y ) )
-fd_delta = 0.025
+fd_delta = 0.05
 
 for fd_y_idx in range( 0, len( fd_y ) ):
 
