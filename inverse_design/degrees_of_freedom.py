@@ -231,6 +231,7 @@ for sim_idx in range( 0, num_simulations ):
 		figures_of_merit[ wl_idx ] = figure_of_merit
 		gradients[ wl_idx ] = gradient[ device_width_start : device_width_end, device_height_start : device_height_end ]
 
+	np.save( save_location + '/device_permittivity_' + str( sim_idx ) + '.npy', device_permittivity )
 	np.save( save_location + '/figures_of_merit_' + str( sim_idx ) + '.npy', figures_of_merit )
 	np.save( save_location + '/gradients_' + str( sim_idx ) + '.npy', gradients )
 
