@@ -146,7 +146,7 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 						grad_x, grad_y = compute_lsf_gradient( alpha, x_idx - 1, y_idx - 1, rbf_sigma, rbf_eval_cutoff )
 						grad_mag = np.sqrt( grad_x**2 + grad_y**2 )
 
-						perpendicular_direction = np.array( [ direction_x - 1, direction_y - 1 ] )
+						perpendicular_direction = np.array( [ direction_x - 1, direction_y - 1 ], dtype=np.float64 )
 						perpendicular_direction /= np.sqrt( np.sum( perpendicular_direction**2 ) )
 
 						gs_input_vector = np.ones( 2 ) / np.sqrt( 2 )
