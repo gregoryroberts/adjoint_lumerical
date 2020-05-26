@@ -212,6 +212,8 @@ for adj_src_idx in range( 0, num_adjoint_sources ):
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
 # the adjoint gradient
 #
+# todo: We may want to be doing the other type of field monitor to get interpolated fields instead of
+# exact positions
 design_efield_monitor = fdtd_hook.addprofile()
 design_efield_monitor['name'] = 'design_efield_monitor'
 design_efield_monitor['monitor type'] = '3D'
