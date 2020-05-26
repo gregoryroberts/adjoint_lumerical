@@ -75,20 +75,31 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 
 	alpha_gradients = np.zeros( lsf_shape )
 
-	for x_idx in range( 1, lsf_shape[ 0 ] - 1 ):
-		for y_idx in range( 1, lsf_shape[ 1 ] - 1 ):
-			current_lsf_value = current_lsf[ x_idx, y_idx ]
+	for x_idx in range( 1, pad_lsf.shape[ 0 ] - 1 ):
+		for y_idx in range( 1, pad_lsf.shape[ 1 ] - 1 ):
+			current_lsf_value = pad_lsf[ x_idx, y_idx ]
 			# This means we are in the material region
 			if current_lsf_value >= 0:
 
-				lsf_region = current_lsf[ ( x_idx - 1 ) : ( x_idx + 2 ), ( y_idx - 1 ) : ( y_idx + 2 ) ]
+				lsf_region = pad_lsf[ ( x_idx - 1 ) : ( x_idx + 2 ), ( y_idx - 1 ) : ( y_idx + 2 ) ]
 
 				directional_checks_x = [ 0, 2, 1, 1 ]
 				directional_checks_y = [ 1, 1, 0, 2 ]
 
+				# perpendicular_directions = [ np.array( [ -1, 0 ] ), np.array( [ 1, 0 ] ), np.array( [ 0, -1 ] ), np.array( [ 0, 1 ] ) ]
+
 				for direction in range( 0, len( directional_checks_x ) ):
 					direction_x = directional_checks_x[ direction ]
 					direction_y = directional_checks_y[ direction ]
+
+					if not (
+						( ( x_idx - 2 + direction_x ) >= 0 ) and
+						( ( x_idx - 2 + direction_x ) < lsf_shape[ 0 ] ) and
+						( ( y_idx - 2 + direction_y ) >= 0 ) and
+						( ( y_idx - 2 + direction_y ) < lsf_shape[ 1 ] ) ):
+
+						continue
+
 					check_lsf = lsf_region[ direction_x, direction_y ]
 					check_lsf_sign = np.sign( check_lsf ) < 0
 
@@ -107,22 +118,23 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 
 						E_field_fwd_interpolate = (
 							normalized_distance_coord_to_direction * E_field_fwd[ :, x_idx - 1, y_idx - 1, : ] +
-							( 1 - normalized_distance_coord_to_direction ) * E_field_fwd[ :, x_idx - 1 + direction_x, y_idx - 1 + direction_y, : ] )
+							( 1 - normalized_distance_coord_to_direction ) * E_field_fwd[ :, x_idx - 2 + direction_x, y_idx - 2 + direction_y, : ] )
 
 						E_field_adj_interpolate = (
 							normalized_distance_coord_to_direction * E_field_adj[ :, x_idx - 1, y_idx - 1, : ] +
-							( 1 - normalized_distance_coord_to_direction ) * E_field_adj[ :, x_idx - 1 + direction_x, y_idx - 1 + direction_y, : ] )
+							( 1 - normalized_distance_coord_to_direction ) * E_field_adj[ :, x_idx - 2 + direction_x, y_idx - 2 + direction_y, : ] )
 
 						D_field_fwd_interpolate = (
 							normalized_distance_coord_to_direction * eps_material * E_field_fwd[ :, x_idx - 1, y_idx - 1, : ] +
-							( 1 - normalized_distance_coord_to_direction ) * eps_void * E_field_fwd[ :, x_idx - 1 + direction_x, y_idx - 1 + direction_y, : ] )
+							( 1 - normalized_distance_coord_to_direction ) * eps_void * E_field_fwd[ :, x_idx - 2 + direction_x, y_idx - 2 + direction_y, : ] )
 
 						D_field_adj_interpolate = (
 							normalized_distance_coord_to_direction * eps_material * E_field_adj[ :, x_idx - 1, y_idx - 1, : ] +
-							( 1 - normalized_distance_coord_to_direction ) * eps_void * E_field_adj[ :, x_idx - 1 + direction_x, y_idx - 1 + direction_y, : ] )
+							( 1 - normalized_distance_coord_to_direction ) * eps_void * E_field_adj[ :, x_idx - 2 + direction_x, y_idx - 2 + direction_y, : ] )
 
 						# Let's get the gradient of the LSF at this point
-						grad_x, grad_y = compute_lsf_gradient( alpha, b_x, b_y, rbf_sigma, rbf_eval_cutoff )
+						grad_x, grad_y = compute_lsf_gradient( alpha, ( x_idx - 2 ) + b_x, ( y_idx - 2 ) + b_y, rbf_sigma, rbf_eval_cutoff )
+						# grad_x, grad_y = compute_lsf_gradient( alpha, b_x, b_y, rbf_sigma, rbf_eval_cutoff )
 						grad_mag = np.sqrt( grad_x**2 + grad_y**2 )
 
 						# This is the normal vector pointing from a material region to void region
@@ -159,7 +171,7 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 
 						sum_gradient_components = parallel_gradient_component + z_gradient_component + perpendicular_gradient_component
 
-						sum_gradient_components *= 1. / ( grad_mag * ( 2 * rbf_eval_cutoff + 1 )**2 )
+						sum_gradient_components *= ( 1. / grad_mag )
 						# Sum over the vertical direction
 						sum_gradient_components = np.real( np.sum( sum_gradient_components ) )
 
