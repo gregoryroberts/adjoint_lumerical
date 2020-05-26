@@ -143,6 +143,12 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 						perpendicular_direction = n_hat
 						'''
 
+						E_field_fwd_interpolate = E_field_fwd[ :, x_idx - 1, y_idx - 1, : ]
+						E_field_adj_interpolate = E_field_adj[ :, x_idx - 1, y_idx - 1, : ]
+
+						D_field_fwd_interpolate = eps_material * E_field_fwd[ :, x_idx - 1, y_idx - 1, : ]
+						D_field_adj_interpolate = eps_material * E_field_adj[ :, x_idx - 1, y_idx - 1, : ]
+
 						grad_x, grad_y = compute_lsf_gradient( alpha, x_idx - 1, y_idx - 1, rbf_sigma, rbf_eval_cutoff )
 						grad_mag = np.sqrt( grad_x**2 + grad_y**2 )
 
