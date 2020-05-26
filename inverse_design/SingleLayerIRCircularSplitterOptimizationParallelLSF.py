@@ -129,7 +129,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
 projects_init_design_directory = projects_directory_location + "/" + project_name + '_parallel'
 
-projects_directory_location += "/" + project_name + '_parallel_symmetric_lsf'
+projects_directory_location += "/" + project_name + '_parallel_symmetric_lsf_v2'
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -212,7 +212,7 @@ for adj_src_idx in range( 0, num_adjoint_sources ):
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
 # the adjoint gradient
 #
-design_efield_monitor = fdtd_hook.addprofile()
+design_efield_monitor = fdtd_hook.addpower()
 design_efield_monitor['name'] = 'design_efield_monitor'
 design_efield_monitor['monitor type'] = '3D'
 design_efield_monitor['x span'] = device_width_um * 1e-6
