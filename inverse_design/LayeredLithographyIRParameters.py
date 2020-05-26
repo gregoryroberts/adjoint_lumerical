@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6p08x6p08x3p168um_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6p08x6p08x3p168um_no_spacer_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3'
 
@@ -53,13 +53,13 @@ device_size_verical_um = num_vertical_layers * ( 3.168 / num_vertical_layers )
 # amorphous_silicon_height_per_layer_um = 0.52#0.8
 # amorphous_silicon_height_per_layer_um = 0.72
 amorphous_silicon_height_per_layer_um = 0.704
-spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
+spacer_size_um = 0#( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
 # device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
 # device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
-spacer_size_voxels = 1 + int(spacer_size_um / mesh_spacing_um)
+spacer_size_voxels = 0#1 + int(spacer_size_um / mesh_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
@@ -142,10 +142,10 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 #
 # Optimization
 #
-start_epoch = 1#12#7#6
+start_epoch = 0#12#7#6
 num_epochs = 14#8
 num_iterations_per_epoch = 50#35#50#25
-binarization_start_epoch = 2
+binarization_start_epoch = 3
 max_binarize_movement = 0.01
 desired_binarize_change = 3 * 0.005 / 2
 
