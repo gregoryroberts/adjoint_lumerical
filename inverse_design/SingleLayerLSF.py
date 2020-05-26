@@ -106,6 +106,7 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 					if check_lsf_sign:
 						# We will consider this a border point.  Let's find the interpolated edge point.
 
+						'''
 						m_x = ( direction_x - 1 ) / ( check_lsf - current_lsf_value )
 						b_x = 1 - m_x * current_lsf_value
 
@@ -139,11 +140,21 @@ def alpha_perturbations( E_field_fwd, E_field_adj, current_lsf, alpha, rbf_sigma
 
 						# This is the normal vector pointing from a material region to void region
 						n_hat = -np.array( [ grad_x, grad_y ] ) / np.sqrt( grad_x**2 + grad_y**2 )
-
 						perpendicular_direction = n_hat
+						'''
+
+						grad_x, grad_y = compute_lsf_gradient( alpha, x_idx - 1, y_idx - 1, rbf_sigma, rbf_eval_cutoff )
+						grad_mag = np.sqrt( grad_x**2 + grad_y**2 )
+
+						perpendicular_direction = np.array( [ direction_x - 1, direction_y - 1 ] )
+						perpendicular_direction /= np.sqrt( np.sum( perpendicular_direction**2 ) )
 
 						gs_input_vector = np.ones( 2 ) / np.sqrt( 2 )
 						parallel_direction = gs_input_vector - np.dot( perpendicular_direction, gs_input_vector ) * perpendicular_direction
+						if np.sqrt( np.sum( parallel_direction**2 ) ) == 0:
+							gs_input_vector = np.ones( 2 ) / np.sqrt( 2 )
+							gs_input_vector[ 0 ] = -1
+							parallel_direction = gs_input_vector - np.dot( perpendicular_direction, gs_input_vector ) * perpendicular_direction							
 						parallel_direction /= np.sqrt( np.sum( parallel_direction**2 ) )
 
 

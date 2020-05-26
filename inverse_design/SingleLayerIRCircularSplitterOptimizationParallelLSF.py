@@ -127,7 +127,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location += "/" + project_name
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_init_design_directory = projects_directory_location + "/" + project_name + '_parallel'
+projects_init_design_directory = projects_directory_location + "/" + project_name + '_parallel_symmetric_lsf'
 
 projects_directory_location += "/" + project_name + '_parallel_symmetric_lsf_v2'
 
@@ -212,7 +212,7 @@ for adj_src_idx in range( 0, num_adjoint_sources ):
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
 # the adjoint gradient
 #
-design_efield_monitor = fdtd_hook.addpower()
+design_efield_monitor = fdtd_hook.addprofile()
 design_efield_monitor['name'] = 'design_efield_monitor'
 design_efield_monitor['monitor type'] = '3D'
 design_efield_monitor['x span'] = device_width_um * 1e-6
@@ -462,6 +462,7 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 0.001
 
+'''
 bayer_filter.update_filters(start_epoch - 1)
 bayer_filter.set_design_variable( np.load( projects_init_design_directory + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' ) )
 bayer_filter_permittivity = bayer_filter.get_permittivity()
@@ -472,13 +473,14 @@ bayer_filter_permittivity = 0.5 * ( bayer_filter_permittivity + np.flip( bayer_f
 permittivity_to_density = ( bayer_filter_permittivity - min_device_permittivity ) / ( max_device_permittivity - min_device_permittivity )
 
 design_variable_reload = np.real( np.flip( permittivity_to_density, axis=2 ) )
-
+'''
 ####
 rbf_sigma = 1
 rbf_eval_cutoff = 5
 
-level_set_alpha = read_density_into_alpha( design_variable_reload )
-level_set_alpha = level_set_alpha[ :, :, int( 0.5 * level_set_alpha.shape[ 2 ] ) ]
+# level_set_alpha = read_density_into_alpha( design_variable_reload )
+# level_set_alpha = level_set_alpha[ :, :, int( 0.5 * level_set_alpha.shape[ 2 ] ) ]
+level_set_alpha = np.load( projects_init_design_directory + "/level_set_alpha.npy" )
 level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
 
 np.save(projects_directory_location + "/init_alpha.npy", level_set_alpha)
