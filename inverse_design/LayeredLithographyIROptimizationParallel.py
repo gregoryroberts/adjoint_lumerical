@@ -643,7 +643,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 4: Compute the figure of merit
 		#
 		figure_of_merit_per_focal_spot = []
-		figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
+		figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
 		for focal_idx in range(0, num_focal_spots):
 			compute_fom = 0
 
@@ -661,7 +661,7 @@ for epoch in range(start_epoch, num_epochs):
 							total_weighting[spectral_idx]
 					)
 
-					figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_focal_plane_map[focal_idx][0] + spectral_idx ] += get_fom_by_wl
+					figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_idx ] += get_fom_by_wl
 
 					compute_fom += get_fom_by_wl
 
@@ -670,7 +670,7 @@ for epoch in range(start_epoch, num_epochs):
 		figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
 
 		flatten_fom_by_focal_wl = figure_of_merit_by_focal_spot_by_wavelength.flatten()
-		performance_weighting_with_wl = ( 2. / ( num_focal_spots * num_design_frequency_points ) ) - flatten_fom_by_focal_wl**2 / np.sum( flatten_fom_by_focal_wl**2 )
+		performance_weighting_with_wl = ( 2. / ( num_focal_spots * num_points_per_band ) ) - flatten_fom_by_focal_wl**2 / np.sum( flatten_fom_by_focal_wl**2 )
 		performance_weighting_with_wl = np.maximum( performance_weighting_with_wl, 0 )
 		performance_weighting_with_wl /= np.sum( performance_weighting_with_wl )
 		performance_weighting_with_wl = np.reshape( performance_weighting_with_wl, figure_of_merit_by_focal_spot_by_wavelength.shape )
@@ -746,7 +746,7 @@ for epoch in range(start_epoch, num_epochs):
 						# 	axis=0)
 
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
-							(source_weight[spectral_idx] * gradient_performance_weight[ spectral_indices[0] + spectral_idx ] * total_weighting[spectral_idx]) *
+							(source_weight[spectral_idx] * gradient_performance_weight[ spectral_idx ] * total_weighting[spectral_idx]) *
 							adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][ :, :, :, :, spectral_indices[0] + spectral_idx ] *
 							forward_e_fields[ pol_name ][ :, :, :, :, spectral_indices[0] + spectral_idx ],
 							axis=0 )
