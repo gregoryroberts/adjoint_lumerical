@@ -71,7 +71,7 @@ validation_permittivities = []
 validation_gradients = []
 validation_foms = []
 
-while num_collected_data_points_validation < num_total_data_points:
+while num_collected_data_points_validation < num_data_points_for_validation:
 
 	if collection_simulation >= sims_per_block:
 		collection_block += 1
