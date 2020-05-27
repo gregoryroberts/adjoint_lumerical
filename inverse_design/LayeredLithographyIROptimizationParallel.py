@@ -756,20 +756,20 @@ for epoch in range(start_epoch, num_epochs):
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
-		max_change_design = epoch_start_permittivity_change_max
-		min_change_design = epoch_start_permittivity_change_min
+		# max_change_design = epoch_start_permittivity_change_max
+		# min_change_design = epoch_start_permittivity_change_min
 
-		if num_iterations_per_epoch > 1:
+		# if num_iterations_per_epoch > 1:
 
-			max_change_design = (
-				epoch_end_permittivity_change_max +
-				(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
-			)
+		# 	max_change_design = (
+		# 		epoch_end_permittivity_change_max +
+		# 		(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_max / (num_iterations_per_epoch - 1))
+		# 	)
 
-			min_change_design = (
-				epoch_end_permittivity_change_min +
-				(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
-			)
+		# 	min_change_design = (
+		# 		epoch_end_permittivity_change_min +
+		# 		(num_iterations_per_epoch - 1 - iteration) * (epoch_range_permittivity_change_min / (num_iterations_per_epoch - 1))
+		# 	)
 
 
 		cur_design_variable = bayer_filter.get_design_variable()
