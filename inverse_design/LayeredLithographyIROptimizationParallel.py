@@ -666,9 +666,11 @@ for epoch in range(start_epoch, num_epochs):
 
 		figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
 
+		# We are currenty only doing weighting per focal spot and not doing anything that is wavelength dependent in each focal spot.. just a note
 		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
-		performance_weighting -= np.min(performance_weighting)
-		performance_weighting /= np.sum(performance_weighting)
+		# performance_weighting -= np.min(performance_weighting)
+		performance_weighting = np.maximum( performance_weighting, 0 )
+		performance_weighting /= np.sum( performance_weighting )
 
 		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
