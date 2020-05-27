@@ -43,8 +43,6 @@ num_collected_data_points_validation = 0
 collection_block = sim_start_id
 collection_simulation = 0
 
-cur_permittivity_block = np.load( save_location_base + '/device_permittivity_' + str( collection_block ) + '.npy' )
-
 training_permittivities = []
 training_gradients = []
 training_foms = []
