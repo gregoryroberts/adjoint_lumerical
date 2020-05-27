@@ -1085,7 +1085,7 @@ for epoch in range(start_epoch, num_epochs):
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
 		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
 
-		step_size_evolution[epoch][iteration] = step_size
+		step_size_evolution[epoch][iteration] = step_size_density
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
