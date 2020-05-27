@@ -79,13 +79,13 @@ while num_collected_data_points_validation < num_total_data_points:
 		continue
 
 	validation_permittivities.append(
-		np.load( save_location_base + str( collection_block ) + '/device_permittivity_' + ( collection_simulation ) + '.npy' ) )
+		np.load( save_location_base + str( collection_block ) + '/device_permittivity_' + str( collection_simulation ) + '.npy' ) )
 
 	validation_gradients.append(
-		np.load( save_location_base + str( collection_block ) + '/gradients_' + ( collection_simulation ) + '.npy' ) )
+		np.load( save_location_base + str( collection_block ) + '/gradients_' + str( collection_simulation ) + '.npy' ) )
 
 	validation_foms.append(
-		np.load( save_location_base + str( collection_block ) + '/figures_of_merit_' + ( collection_simulation ) + '.npy' ) )
+		np.load( save_location_base + str( collection_block ) + '/figures_of_merit_' + str( collection_simulation ) + '.npy' ) )
 
 	collection_simulation += 1
 	num_collected_data_points_validation += 1
