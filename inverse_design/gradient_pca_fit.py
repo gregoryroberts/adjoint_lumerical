@@ -97,7 +97,7 @@ def list_to_directions( list_in ):
 		matrix = list_in[ idx ]
 
 		flatten_matrix = matrix.flatten()
-		matrix_direction = flatten_matrix / ( np.sqrt( np.sum( flatten_matrix**2 ) ) + 1e-12 )
+		matrix_direction = flatten_matrix / np.sqrt( np.sum( flatten_matrix**2 ) )
 
 		directions.append( matrix_direction )
 
@@ -109,6 +109,10 @@ training_gradient_directions = np.array( list_to_directions( training_gradients 
 
 validation_permittivity_directions = np.array( list_to_directions( validation_permittivities ) )
 validation_gradient_directions = np.array( list_to_directions( validation_gradients ) )
+
+for idx in range( 0, num_data_points_for_training ):
+	if np.isnan( np.sum( training_permittivity_directions[ idx ] ) ):
+		print( training_permittivities[ idx ] )
 
 num_components = 100
 pca = PCA( n_components=num_components )
