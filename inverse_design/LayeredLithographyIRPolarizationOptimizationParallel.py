@@ -301,10 +301,30 @@ def gradient(
 						wl_idx ] = 1
 
 
-	fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
-	fom_weightings = np.maximum( fom_weightings, 0 )
-	fom_weightings *= weighting_mask
-	fom_weightings /= np.sum( fom_weightings )
+	select_fom = []
+	for idx in range( 0, num_total_fom ):
+		if weighting_mask[ idx ] > 0:
+			select_fom.append( rearrange_figures_of_merit[ idx ] )
+	num_important_fom = len( select_fom )
+	select_fom = np.array( select_fom )
+
+	selected_weightings = ( 2. / num_important_fom ) - select_fom**2 / np.sum( select_fom**2 )
+	selected_weightings = np.maximum( selected_weightings, 0 )
+	selected_weightings /= np.sum( selected_weightings )
+
+	fom_weightings = np.zeros( num_total_fom )
+	cur_weighting_idx = 0
+	for idx in range( 0, num_total_fom ):
+		if weighting_mask[ idx ] > 0:
+			fom_weightings[ idx ] = selected_weightings[ cur_weighting_idx ]
+			cur_weighting_idx += 1
+
+
+
+	# fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
+	# fom_weightings = np.maximum( fom_weightings, 0 )
+	# fom_weightings *= weighting_mask
+	# fom_weightings /= np.sum( fom_weightings )
 
 	#
 	# This is because we are actually minimizing all three figures of merit, so we would like to flip the orientation
