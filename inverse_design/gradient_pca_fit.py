@@ -111,8 +111,8 @@ validation_permittivity_directions = np.array( list_to_directions( validation_pe
 validation_gradient_directions = np.array( list_to_directions( validation_gradients ) )
 
 for idx in range( 0, num_data_points_for_training ):
-	if np.isnan( np.sum( training_permittivity_directions[ idx ] ) ):
-		print( training_permittivities[ idx ] )
+	if np.isnan( np.sum( training_gradient_directions[ idx ] ) ):
+		print( training_gradients[ idx ] )
 
 num_components = 100
 pca = PCA( n_components=num_components )
