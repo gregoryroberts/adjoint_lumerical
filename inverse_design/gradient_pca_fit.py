@@ -38,6 +38,8 @@ fraction_data_validation = 0.10
 num_data_points_for_training = int( fraction_data_training * num_total_data_points )
 num_data_points_for_validation = int( fraction_data_validation * num_total_data_points )
 
+choose_lambda_value = 2
+
 num_collected_data_points_training = 0
 num_collected_data_points_validation = 0
 collection_block = sim_start_id
@@ -57,8 +59,9 @@ while num_collected_data_points_training < num_data_points_for_training:
 	training_permittivities.append(
 		np.load( save_location_base + str( collection_block ) + '/device_permittivity_' + str( collection_simulation ) + '.npy' ) )
 
-	training_gradients.append(
-		np.load( save_location_base + str( collection_block ) + '/gradients_' + str( collection_simulation ) + '.npy' ) )
+	get_gradient = np.load( save_location_base + str( collection_block ) + '/gradients_' + str( collection_simulation ) + '.npy' )
+
+	training_gradients.append( get_gradient[ choose_lambda_value ] )
 
 	training_foms.append(
 		np.load( save_location_base + str( collection_block ) + '/figures_of_merit_' + str( collection_simulation ) + '.npy' ) )
@@ -81,8 +84,9 @@ while num_collected_data_points_validation < num_data_points_for_validation:
 	validation_permittivities.append(
 		np.load( save_location_base + str( collection_block ) + '/device_permittivity_' + str( collection_simulation ) + '.npy' ) )
 
-	validation_gradients.append(
-		np.load( save_location_base + str( collection_block ) + '/gradients_' + str( collection_simulation ) + '.npy' ) )
+	get_gradient = np.load( save_location_base + str( collection_block ) + '/gradients_' + str( collection_simulation ) + '.npy' )
+
+	validation_gradients.append( get_gradient[ choose_lambda_value ] )
 
 	validation_foms.append(
 		np.load( save_location_base + str( collection_block ) + '/figures_of_merit_' + str( collection_simulation ) + '.npy' ) )
@@ -117,7 +121,7 @@ validation_gradient_directions = np.array( list_to_directions( validation_gradie
 # 	if np.isnan( np.sum( training_gradient_directions[ idx ] ) ):
 # 		print( training_gradients[ idx ] )
 
-num_components = 1000
+num_components = 100
 pca = PCA( n_components=num_components )
 pca.fit( training_gradient_directions )
 
