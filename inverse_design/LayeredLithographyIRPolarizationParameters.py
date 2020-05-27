@@ -10,7 +10,7 @@ import numpy as np
 #
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_rcp_45_lcp_m45_v1_4p2x4p2x3p12um_f2p6'
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_4p2x4p2x3p12um_f2p6'
-project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_finer_4p8x4p8x3p12um_f2p72'
+project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_finer_reduce_bw_4p8x4p8x3p12um_f2p72'
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_4layer_v1_4p2x4p2x3p12um_f2p6'
 
 #
@@ -66,12 +66,12 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 0.9
-lambda_max_um = 1.1
+lambda_min_um = 0.95#0.9
+lambda_max_um = 1.05#1.1
 
 # num_bands = 3
 # num_points_per_band = 10
-num_design_frequency_points = 10#num_bands * num_points_per_band
+num_design_frequency_points = 5#10#num_bands * num_points_per_band
 num_eval_frequency_points = 60
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
@@ -176,18 +176,21 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 2#0
+start_epoch = 0#0
 num_epochs = 10
 num_iterations_per_epoch = 60
 binarization_start_epoch = 1
 max_binarize_movement = 0.01
 desired_binarize_change = 3 * 0.005 / 2
 
-epoch_start_permittivity_change_max = 0.025
-epoch_end_permittivity_change_max = 0.01
-epoch_range_permittivity_change_max = epoch_start_permittivity_change_max - epoch_end_permittivity_change_max
+design_change_start_epoch = 0.025
+design_change_end_epoch = 0.01
 
-epoch_start_permittivity_change_min = 0.01
-epoch_end_permittivity_change_min = 0
-epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
+# epoch_start_permittivity_change_max = 0.025
+# epoch_end_permittivity_change_max = 0.01
+# epoch_range_permittivity_change_max = epoch_start_permittivity_change_max - epoch_end_permittivity_change_max
+
+# epoch_start_permittivity_change_min = 0.01
+# epoch_end_permittivity_change_min = 0
+# epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
 
