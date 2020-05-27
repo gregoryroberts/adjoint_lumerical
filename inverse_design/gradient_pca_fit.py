@@ -121,9 +121,9 @@ validation_gradient_directions = np.array( list_to_directions( validation_gradie
 # 	if np.isnan( np.sum( training_gradient_directions[ idx ] ) ):
 # 		print( training_gradients[ idx ] )
 
-num_components = 400
+num_components = 200
 pca = PCA( n_components=num_components )
-pca.fit( training_gradient_directions )
+pca.fit( training_permittivity_directions )
 
 component_directions = pca.components_
 normalized_directions = []
@@ -132,8 +132,8 @@ for direction in component_directions:
 	normalized_directions.append( direction / np.sqrt( np.sum( direction**2 ) ) )
 
 validation_remaining_lengths = []
-for validation_idx in range( 0, validation_gradient_directions.shape[ 0 ] ):
-	get_direction = validation_gradient_directions[ validation_idx ]
+for validation_idx in range( 0, validation_permittivity_directions.shape[ 0 ] ):
+	get_direction = validation_permittivity_directions[ validation_idx ]
 
 	for component_idx in range( 0, num_components ):
 		get_direction -= np.dot( component_directions[ component_idx ], get_direction ) * component_directions[ component_idx ]
