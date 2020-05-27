@@ -97,7 +97,7 @@ def list_to_directions( list_in ):
 		matrix = list_in[ idx ]
 
 		flatten_matrix = matrix.flatten()
-		matrix_direction = flatten_matrix / np.sqrt( np.sum( flatten_matrix**2 ) )
+		matrix_direction = flatten_matrix / ( np.sqrt( np.sum( flatten_matrix**2 ) ) + 1e-12 )
 
 		directions.append( matrix_direction )
 
