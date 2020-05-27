@@ -117,7 +117,7 @@ validation_gradient_directions = np.array( list_to_directions( validation_gradie
 # 	if np.isnan( np.sum( training_gradient_directions[ idx ] ) ):
 # 		print( training_gradients[ idx ] )
 
-num_components = 100
+num_components = 1000
 pca = PCA( n_components=num_components )
 pca.fit( training_gradient_directions )
 
