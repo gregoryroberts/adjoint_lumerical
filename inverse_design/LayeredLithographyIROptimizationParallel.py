@@ -774,38 +774,41 @@ for epoch in range(start_epoch, num_epochs):
 
 		cur_design_variable = bayer_filter.get_design_variable()
 
-		step_size = step_size_start
+		# step_size = step_size_start
 
-		check_last = False
-		last = 0
+		step_size_density = design_change_start_epoch + ( iteration / ( num_iterations_per_epoch - 1 ) ) * ( design_change_end_epoch - design_change_start_epoch )
+		step_size_density /= np.max( np.abs( design_gradient ) )
 
-		while True:
-			proposed_design_variable = cur_design_variable + step_size * design_gradient
-			proposed_design_variable = np.maximum(
-										np.minimum(
-											proposed_design_variable,
-											1.0),
-										0.0)
+		# check_last = False
+		# last = 0
 
-			difference = np.abs(proposed_design_variable - cur_design_variable)
-			max_difference = np.max(difference)
+		# while True:
+		# 	proposed_design_variable = cur_design_variable + step_size * design_gradient
+		# 	proposed_design_variable = np.maximum(
+		# 								np.minimum(
+		# 									proposed_design_variable,
+		# 									1.0),
+		# 								0.0)
 
-			if (max_difference <= max_change_design) and (max_difference >= min_change_design):
-				break
-			elif (max_difference <= max_change_design):
-				step_size *= 2
-				if (last ^ 1) and check_last:
-					break
-				check_last = True
-				last = 1
-			else:
-				step_size /= 2
-				if (last ^ 0) and check_last:
-					break
-				check_last = True
-				last = 0
+		# 	difference = np.abs(proposed_design_variable - cur_design_variable)
+		# 	max_difference = np.max(difference)
 
-		step_size_start = step_size
+		# 	if (max_difference <= max_change_design) and (max_difference >= min_change_design):
+		# 		break
+		# 	elif (max_difference <= max_change_design):
+		# 		step_size *= 2
+		# 		if (last ^ 1) and check_last:
+		# 			break
+		# 		check_last = True
+		# 		last = 1
+		# 	else:
+		# 		step_size /= 2
+		# 		if (last ^ 0) and check_last:
+		# 			break
+		# 		check_last = True
+		# 		last = 0
+
+		# step_size_start = step_size
 
 		last_design_variable = cur_design_variable.copy()
 		#
@@ -816,13 +819,13 @@ for epoch in range(start_epoch, num_epochs):
 		if epoch >= binarization_start_epoch:
 			enforce_binarization = True
 		device_gradient = np.flip( device_gradient, axis=2 )
-		bayer_filter.step(-device_gradient, step_size, enforce_binarization, projects_directory_location)
+		bayer_filter.step(-device_gradient, step_size_density, enforce_binarization, projects_directory_location)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
 		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
 
-		step_size_evolution[epoch][iteration] = step_size
+		step_size_evolution[epoch][iteration] = step_size_density
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 

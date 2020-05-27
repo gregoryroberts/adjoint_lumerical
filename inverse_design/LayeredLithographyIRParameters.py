@@ -143,18 +143,21 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 #
 # Optimization
 #
-start_epoch = 0#12#7#6
+start_epoch = 1#12#7#6
 num_epochs = 14#8
 num_iterations_per_epoch = 50#35#50#25
 binarization_start_epoch = 3
 max_binarize_movement = 0.01
 desired_binarize_change = 3 * 0.005 / 2
 
-epoch_start_permittivity_change_max = 0.05#0.1
-epoch_end_permittivity_change_max = 0.01#0.02
-epoch_range_permittivity_change_max = epoch_start_permittivity_change_max - epoch_end_permittivity_change_max
+design_change_start_epoch = 0.025
+design_change_end_epoch = 0.01
 
-epoch_start_permittivity_change_min = 0.025#0.05
-epoch_end_permittivity_change_min = 0
-epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
+# epoch_start_permittivity_change_max = 0.05#0.1
+# epoch_end_permittivity_change_max = 0.01#0.02
+# epoch_range_permittivity_change_max = epoch_start_permittivity_change_max - epoch_end_permittivity_change_max
+
+# epoch_start_permittivity_change_min = 0.025#0.05
+# epoch_end_permittivity_change_min = 0
+# epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
 
