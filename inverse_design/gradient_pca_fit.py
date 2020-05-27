@@ -104,11 +104,11 @@ def list_to_directions( list_in ):
 	return directions
 
 
-training_permittivity_directions = list_to_directions( training_permittivities )
-training_gradient_directions = list_to_directions( training_gradients )
+training_permittivity_directions = np.array( list_to_directions( training_permittivities ) )
+training_gradient_directions = np.array( list_to_directions( training_gradients ) )
 
-validation_permittivity_directions = list_to_directions( validation_permittivities )
-validation_gradient_directions = list_to_directions( validation_gradients )
+validation_permittivity_directions = np.array( list_to_directions( validation_permittivities ) )
+validation_gradient_directions = np.array( list_to_directions( validation_gradients ) )
 
 num_components = 100
 pca = PCA( n_components=num_components )
