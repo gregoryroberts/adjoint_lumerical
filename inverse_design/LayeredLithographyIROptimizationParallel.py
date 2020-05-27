@@ -643,6 +643,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 4: Compute the figure of merit
 		#
 		figure_of_merit_per_focal_spot = []
+		figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
 		for focal_idx in range(0, num_focal_spots):
 			compute_fom = 0
 
@@ -655,22 +656,30 @@ for epoch in range(start_epoch, num_epochs):
 				total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
 
 				for spectral_idx in range(0, total_weighting.shape[0]):
-					compute_fom += np.sum(
-						(
-							np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
+					get_fom_by_wl = np.sum(
+						np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
 							total_weighting[spectral_idx]
-						)
 					)
+
+					figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_focal_plane_map[focal_idx][0] + spectral_idx ] += get_fom_by_wl
+
+					compute_fom += get_fom_by_wl
 
 			figure_of_merit_per_focal_spot.append(compute_fom)
 
 		figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
 
+		flatten_fom_by_focal_wl = figure_of_merit_by_focal_spot_by_wavelength.flatten()
+		performance_weighting_with_wl = ( 2. / ( num_focal_spots * num_design_frequency_points ) ) - flatten_fom_by_focal_wl**2 / np.sum( flatten_fom_by_focal_wl**2 )
+		performance_weighting_with_wl = np.maximum( performance_weighting_with_wl, 0 )
+		performance_weighting_with_wl /= np.sum( performance_weighting_with_wl )
+		performance_weighting_with_wl = np.reshape( performance_weighting_with_wl, figure_of_merit_by_focal_spot_by_wavelength.shape )
+
 		# We are currenty only doing weighting per focal spot and not doing anything that is wavelength dependent in each focal spot.. just a note
-		performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
+		# performance_weighting = (2. / num_focal_spots) - figure_of_merit_per_focal_spot**2 / np.sum(figure_of_merit_per_focal_spot**2)
 		# performance_weighting -= np.min(performance_weighting)
-		performance_weighting = np.maximum( performance_weighting, 0 )
-		performance_weighting /= np.sum( performance_weighting )
+		# performance_weighting = np.maximum( performance_weighting, 0 )
+		# performance_weighting /= np.sum( performance_weighting )
 
 		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
@@ -692,7 +701,8 @@ for epoch in range(start_epoch, num_epochs):
 
 			adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
 
-			gradient_performance_weight = performance_weighting[adj_src_idx]
+			# gradient_performance_weight = performance_weighting[adj_src_idx]
+			gradient_performance_weight = performance_weighting_with_wl[adj_src_idx]
 
 			for xy_idx in range(0, 2):
 				get_adj_symmetry_fields = adjoint_e_fields[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
@@ -736,7 +746,7 @@ for epoch in range(start_epoch, num_epochs):
 						# 	axis=0)
 
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
-							(source_weight[spectral_idx] * gradient_performance_weight * total_weighting[spectral_idx]) *
+							(source_weight[spectral_idx] * gradient_performance_weight[ spectral_indices[0] + spectral_idx ] * total_weighting[spectral_idx]) *
 							adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][ :, :, :, :, spectral_indices[0] + spectral_idx ] *
 							forward_e_fields[ pol_name ][ :, :, :, :, spectral_indices[0] + spectral_idx ],
 							axis=0 )
