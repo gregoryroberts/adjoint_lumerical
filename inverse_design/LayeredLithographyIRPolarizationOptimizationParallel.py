@@ -296,9 +296,10 @@ def gradient(
 				] = fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, fom_type_idx, wl_idx ]
 
 				if fom_type_idx == 2:
-					weighting_mask[ focal_spot_idx * 3 * num_design_frequency_points +
-						fom_type_idx * num_design_frequency_points +
-						wl_idx ] = 1
+					if focal_spot_idx in optimized_focal_spots:
+						weighting_mask[ focal_spot_idx * 3 * num_design_frequency_points +
+							fom_type_idx * num_design_frequency_points +
+							wl_idx ] = 1
 
 
 	select_fom = []

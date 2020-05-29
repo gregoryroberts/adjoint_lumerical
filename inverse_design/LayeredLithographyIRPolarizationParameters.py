@@ -10,8 +10,10 @@ import numpy as np
 #
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_rcp_45_lcp_m45_v1_4p2x4p2x3p12um_f2p6'
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_4p2x4p2x3p12um_f2p6'
-project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_finer_reduce_bw_4p8x4p8x3p12um_f2p72'
+project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_finer_reduce_bw_only_circular_4p8x4p8x3p12um_f2p72'
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_4layer_v1_4p2x4p2x3p12um_f2p6'
+
+optimized_focal_spots = [ 0 ]
 
 #
 # Optical
