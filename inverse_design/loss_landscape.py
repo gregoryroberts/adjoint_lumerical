@@ -185,8 +185,10 @@ for iter_idx in range( 0, num_iterations ):
 			fwd_src_y,
 			focal_points_x[ wl_idx ], focal_point_y )
 
+		device_grad = get_grad[ device_width_start : device_width_end, device_height_start : device_height_end ]
+
 		scale_fom_for_wl = get_fom * wavelength_intensity_scaling[ wl_idx ]
-		scale_gradient_for_wl = get_fom * wavelength_intensity_scaling[ wl_idx ]
+		scale_gradient_for_wl = device_grad * wavelength_intensity_scaling[ wl_idx ]
 
 		gradient_by_wl.append( scale_gradient_for_wl )
 		fom_by_wl.append( scale_fom_for_wl )
@@ -195,7 +197,7 @@ for iter_idx in range( 0, num_iterations ):
 	net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
 
 	for wl_idx in range( 0, num_lambda_values ):
-		wl_gradient = gradient_by_wl[ wl_idx ]
+		wl_gradient = ( max_relative_permittivity - min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
 		weighting = net_fom / fom_by_wl[ wl_idx ]
 
 		net_gradient += ( weighting * wl_gradient )
