@@ -88,7 +88,7 @@ omega_values = 2 * np.pi * c / ( 1e-9 * lambda_values_nm )
 
 pml_voxels = 20
 device_width_voxels = 101
-device_height_voxels = 51
+device_height_voxels = 81
 mid_width_voxel = int( 0.5 * device_width_voxels )
 mid_height_voxel = int( 0.5 * device_height_voxels )
 width_gap_voxels = 50
@@ -155,7 +155,7 @@ focal_points_x = [
 	int( device_width_start + 0.75 * device_width_voxels )
 ]
 
-num_iterations = 1000
+num_iterations = 250
 
 max_density_change_per_iteration_start = 0.05
 max_density_change_per_iteration_end = 0.005
