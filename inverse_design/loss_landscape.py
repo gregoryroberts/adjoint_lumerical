@@ -155,7 +155,7 @@ focal_points_x = [
 	int( device_width_start + 0.75 * device_width_voxels )
 ]
 
-num_iterations = 250
+num_iterations = 1000
 
 max_density_change_per_iteration_start = 0.05
 max_density_change_per_iteration_end = 0.005
