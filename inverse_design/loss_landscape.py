@@ -215,7 +215,7 @@ for iter_idx in range( 0, num_iterations ):
 		( iter_idx / ( num_iterations - 1 ) ) * ( max_density_change_per_iteration_end - max_density_change_per_iteration_start )
 	)
 
-	device_density += max_density_change * norm_scaled_gradient
+	device_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
 	device_density = np.maximum( 0, np.minimum( device_density, 1 ) )
 
 	np.save( save_folder + "/figure_of_merit.npy", fom_evolution )
