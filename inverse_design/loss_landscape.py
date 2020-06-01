@@ -209,6 +209,11 @@ def density_to_permittivity( density_in ):
 
 rel_eps_simulation = np.ones( ( simluation_width_voxels, simulation_height_voxels ) )
 
+focal_points_x = [
+	int( device_width_start + 0.25 * device_width_voxels ),
+	int( device_width_start + 0.75 * device_width_voxels )
+]
+
 if use_previous_opt:
 	device_density = np.load( save_folder + "/device_density.npy" )
 else:
@@ -219,11 +224,6 @@ else:
 
 	np.save( save_folder + "/init_device_dense_density.npy", device_dense_density )
 	np.save( save_folder + "/init_device_density.npy", device_density )
-
-	focal_points_x = [
-		int( device_width_start + 0.25 * device_width_voxels ),
-		int( device_width_start + 0.75 * device_width_voxels )
-	]
 
 	num_iterations = 250
 
