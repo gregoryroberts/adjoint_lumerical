@@ -20,7 +20,7 @@ import matplotlib.pylab as plt
 # Electromagnetics
 #
 run_on_cluster = True
-use_previous_opt = False
+use_previous_opt = True
 
 if run_on_cluster:
 	sys.path.append( '/central/home/gdrobert/Develompent/ceviche' )
@@ -32,9 +32,13 @@ if len( sys.argv ) < 3:
 
 random_seed = int( sys.argv[ 1 ] )
 save_folder = sys.argv[ 2 ]
-np.random.seed( random_seed )
 
-np.save( save_folder + '/random_seed.npy', np.array( random_seed ) )
+if use_previous_opt:
+	random_seed = np.load( save_folder + '/random_seed.npy' )[ 0 ]
+else:
+	np.save( save_folder + '/random_seed.npy', np.array( random_seed ) )
+
+np.random.seed( random_seed )
 
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 shutil.copy2(
@@ -309,10 +313,16 @@ direction_eta /= vector_norm( direction_eta )
 np.save( save_folder + "/direction_delta.npy", direction_delta )
 np.save( save_folder + "/direction_eta.npy", direction_eta )
 
-num_steps_per_direction = 51
+num_steps_per_direction = 75#51
 
-alpha = np.linspace( -1, 1, num_steps_per_direction )
-beta = np.linspace( -1, 1, num_steps_per_direction )
+# alpha = np.linspace( -1, 1, num_steps_per_direction )
+# beta = np.linspace( -1, 1, num_steps_per_direction )
+
+alpha = np.linspace( -5, 5, num_steps_per_direction )
+beta = np.linspace( -5, 5, num_steps_per_direction )
+
+np.save( save_folder + "/alpha.npy", alpha )
+np.save( save_folder + "/beta.npy", beta )
 
 landscape = np.zeros( ( num_steps_per_direction, num_steps_per_direction ) )
 landscape_valid = np.ones( ( num_steps_per_direction, num_steps_per_direction ) )
