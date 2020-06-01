@@ -220,7 +220,7 @@ else:
 		int( device_width_start + 0.75 * device_width_voxels )
 	]
 
-	num_iterations = 3#250
+	num_iterations = 250
 
 	max_density_change_per_iteration_start = 0.05
 	max_density_change_per_iteration_end = 0.005
@@ -309,7 +309,7 @@ direction_eta /= vector_norm( direction_eta )
 np.save( save_folder + "/direction_delta.npy", direction_delta )
 np.save( save_folder + "/direction_eta.npy", direction_eta )
 
-num_steps_per_direction = 3#101
+num_steps_per_direction = 51
 
 alpha = np.linspace( -1, 1, num_steps_per_direction )
 beta = np.linspace( -1, 1, num_steps_per_direction )
