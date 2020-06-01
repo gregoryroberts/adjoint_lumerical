@@ -332,7 +332,7 @@ for landscape_x in range( 0, num_steps_per_direction ):
 	for landscape_y in range( 0, num_steps_per_direction ):
 
 		landscape_density_flattened = device_density_flattened + alpha[ landscape_x ] * direction_delta + beta[ landscape_y ] * direction_eta
-		landscape_density = np.reshae( landscape_density_flattened, device_density.shape )
+		landscape_density = np.reshape( landscape_density_flattened, device_density.shape )
 
 		if ( np.min( landscape_density ) < density_min_landscape ) or ( np.max( landscape_density ) > density_max_landscape ):
 			landscape[ landscape_x, landscape_y ] = -1
@@ -361,8 +361,8 @@ for landscape_x in range( 0, num_steps_per_direction ):
 			landscape[ landscape_x, landscape_y ] = np.product( fom_by_wl )
 
 
-np.save( save_folder + "/landscape.npy", landscape )
-np.save( save_folder + "/landscape_valid.npy", landscape_valid )
+		np.save( save_folder + "/landscape.npy", landscape )
+		np.save( save_folder + "/landscape_valid.npy", landscape_valid )
 
 
 
