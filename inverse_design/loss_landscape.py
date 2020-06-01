@@ -95,12 +95,11 @@ def compute_fom( omega, mesh_size_m, relative_permittivity, pml_cells, fwd_src_y
 	
 	return fom
 
-mesh_size_nm = 10
-density_coarsen_factor = 5
-min_feature_size = 2 * mesh_size_nm
+mesh_size_nm = 15
+density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
-lambda_min_nm = 450
-lambda_max_nm = 550
+lambda_min_nm = 500
+lambda_max_nm = 600
 num_lambda_values = 2
 
 min_relative_permittivity = 1.5**2
@@ -109,16 +108,16 @@ max_relative_permittivity = 2.5**2
 lambda_values_nm = np.linspace( lambda_min_nm, lambda_max_nm, num_lambda_values )
 omega_values = 2 * np.pi * c / ( 1e-9 * lambda_values_nm )
 
-pml_voxels = 55
-device_width_voxels = 200
-device_height_voxels = 160
+pml_voxels = 40
+device_width_voxels = 140
+device_height_voxels = 100
 device_voxels_total = device_width_voxels * device_height_voxels
 mid_width_voxel = int( 0.5 * device_width_voxels )
 mid_height_voxel = int( 0.5 * device_height_voxels )
-width_gap_voxels = 100
-height_gap_voxels_top = 180
-height_gap_voxels_bottom = 100
-focal_length_voxels = 150
+width_gap_voxels = 50
+height_gap_voxels_top = 100
+height_gap_voxels_bottom = 50
+focal_length_voxels = 100
 simluation_width_voxels = device_width_voxels + 2 * width_gap_voxels + 2 * pml_voxels
 simulation_height_voxels = device_height_voxels + focal_length_voxels + height_gap_voxels_bottom + height_gap_voxels_top + 2 * pml_voxels
 
@@ -178,7 +177,7 @@ def reinterpolate_average( input_block, factor ):
 		for y_idx in range( 0, output_block_size[ 1 ] ):
 			start_y = int( factor * y_idx )
 			end_y = start_y + factor
-			
+
 			average = 0.0
 
 			for sweep_x in range( start_x, end_x ):
@@ -212,7 +211,6 @@ else:
 	init_density = 0.5
 	device_dense_density = init_density * np.ones( ( device_width_voxels, device_height_voxels ) )
 	device_density = reinterpolate_average( device_dense_density, density_coarsen_factor )
-	import_density = upsample( device_density, density_coarsen_factor )
 
 	np.save( save_folder + "/init_device_dense_density.npy", device_dense_density )
 	np.save( save_folder + "/init_device_density.npy", device_density )
@@ -237,6 +235,7 @@ else:
 
 	for iter_idx in range( 0, num_iterations ):
 		
+		import_density = upsample( device_density, density_coarsen_factor )
 		device_permittivity = density_to_permittivity( import_density )
 
 		rel_eps_simulation[ device_width_start : device_width_end, device_height_start : device_height_end ] = device_permittivity
@@ -301,10 +300,10 @@ device_density_flattened = device_density.flatten()
 # Should also eventually consider feature size in here! Maybe just do this whole thing on a coarser grid including the optimization
 #
 
-direction_delta = np.random.normal( loc=random_direction_mean, scale=random_direction_sigma, size=[ int( device_voxels_total / factor**2 ) ] )
+direction_delta = np.random.normal( loc=random_direction_mean, scale=random_direction_sigma, size=[ int( device_voxels_total / density_coarsen_factor**2 ) ] )
 direction_delta /= vector_norm( direction_delta )
 
-direction_eta = np.random.normal( loc=random_direction_mean, scale=random_direction_sigma, size=[ int( device_voxels_total / factor**2 ) ] )
+direction_eta = np.random.normal( loc=random_direction_mean, scale=random_direction_sigma, size=[ int( device_voxels_total / density_coarsen_factor**2 ) ] )
 direction_eta /= vector_norm( direction_eta )
 
 np.save( save_folder + "/direction_delta.npy", direction_delta )
