@@ -333,7 +333,7 @@ for landscape_x in range( 0, num_steps_per_direction ):
 
 		landscape_density = device_density_flattened + alpha[ landscape_x ] * direction_delta + beta[ landscape_y ] * direction_eta
 
-		if ( np.min( density ) < density_min_landscape ) or ( np.max( density ) > density_max_landscape ):
+		if ( np.min( landscape_density ) < density_min_landscape ) or ( np.max( landscape_density ) > density_max_landscape ):
 			landscape[ landscape_x, landscape_y ] = -1
 			landscape_valid[ landscape_x, landscape_y ] = 0
 
