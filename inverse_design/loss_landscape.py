@@ -110,12 +110,12 @@ omega_values = 2 * np.pi * c / ( 1e-9 * lambda_values_nm )
 
 pml_voxels = 40
 device_width_voxels = 140
-device_height_voxels = 100
+device_height_voxels = 80
 device_voxels_total = device_width_voxels * device_height_voxels
 mid_width_voxel = int( 0.5 * device_width_voxels )
 mid_height_voxel = int( 0.5 * device_height_voxels )
 width_gap_voxels = 50
-height_gap_voxels_top = 100
+height_gap_voxels_top = 75
 height_gap_voxels_bottom = 50
 focal_length_voxels = 100
 simluation_width_voxels = device_width_voxels + 2 * width_gap_voxels + 2 * pml_voxels
@@ -126,7 +126,7 @@ device_width_end = device_width_start + device_width_voxels
 device_height_start = int( pml_voxels + height_gap_voxels_bottom + focal_length_voxels )
 device_height_end = device_height_start + device_height_voxels
 
-fwd_src_y = int( pml_voxels + height_gap_voxels_bottom + focal_length_voxels + device_height_voxels + 0.5 * height_gap_voxels_top )
+fwd_src_y = int( pml_voxels + height_gap_voxels_bottom + focal_length_voxels + device_height_voxels + 0.75 * height_gap_voxels_top )
 focal_point_y = int( pml_voxels + height_gap_voxels_bottom )
 
 #
@@ -331,7 +331,8 @@ density_min_landscape = density_bound_from_eps( eps_min_landscape )
 for landscape_x in range( 0, num_steps_per_direction ):
 	for landscape_y in range( 0, num_steps_per_direction ):
 
-		landscape_density = device_density_flattened + alpha[ landscape_x ] * direction_delta + beta[ landscape_y ] * direction_eta
+		landscape_density_flattened = device_density_flattened + alpha[ landscape_x ] * direction_delta + beta[ landscape_y ] * direction_eta
+		landscape_density = np.reshae( landscape_density_flattened, device_density.shape )
 
 		if ( np.min( landscape_density ) < density_min_landscape ) or ( np.max( landscape_density ) > density_max_landscape ):
 			landscape[ landscape_x, landscape_y ] = -1
