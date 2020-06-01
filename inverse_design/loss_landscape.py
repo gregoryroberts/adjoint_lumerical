@@ -34,7 +34,7 @@ random_seed = int( sys.argv[ 1 ] )
 save_folder = sys.argv[ 2 ]
 
 if use_previous_opt:
-	random_seed = np.load( save_folder + '/random_seed.npy' )[ 0 ]
+	random_seed = int( np.load( save_folder + '/random_seed.npy' ) )
 else:
 	np.save( save_folder + '/random_seed.npy', np.array( random_seed ) )
 
