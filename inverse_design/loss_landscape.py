@@ -214,6 +214,8 @@ focal_points_x = [
 	int( device_width_start + 0.75 * device_width_voxels )
 ]
 
+wavelength_intensity_scaling = lambda_max_nm**2 / lambda_values_nm**2
+
 if use_previous_opt:
 	device_density = np.load( save_folder + "/device_density.npy" )
 else:
@@ -229,8 +231,6 @@ else:
 
 	max_density_change_per_iteration_start = 0.05
 	max_density_change_per_iteration_end = 0.005
-
-	wavelength_intensity_scaling = lambda_max_nm**2 / lambda_values_nm**2
 
 	gradient_norm_evolution = np.zeros( num_iterations )
 	fom_evolution = np.zeros( num_iterations )
