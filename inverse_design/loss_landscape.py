@@ -175,9 +175,10 @@ def reinterpolate_average( input_block, factor ):
 	for x_idx in range( 0, output_block_size[ 0 ] ):
 		start_x = int( factor * x_idx )
 		end_x = start_x + factor
-		start_y = int( factor * y_idx )
-		end_y = start_y + factor
 		for y_idx in range( 0, output_block_size[ 1 ] ):
+			start_y = int( factor * y_idx )
+			end_y = start_y + factor
+			
 			average = 0.0
 
 			for sweep_x in range( start_x, end_x ):
