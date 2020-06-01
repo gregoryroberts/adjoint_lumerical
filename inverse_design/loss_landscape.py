@@ -208,7 +208,6 @@ def density_to_permittivity( density_in ):
 	return ( min_relative_permittivity + ( max_relative_permittivity - min_relative_permittivity ) * density_in )
 
 if use_previous_opt:
-	device_dense_density = np.load( save_folder + "/device_dense_density.npy" )
 	device_density = np.load( save_folder + "/device_density.npy" )
 else:
 
