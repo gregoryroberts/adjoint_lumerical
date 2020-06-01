@@ -207,6 +207,8 @@ def upsample( input_block, factor ):
 def density_to_permittivity( density_in ):
 	return ( min_relative_permittivity + ( max_relative_permittivity - min_relative_permittivity ) * density_in )
 
+rel_eps_simulation = np.ones( ( simluation_width_voxels, simulation_height_voxels ) )
+
 if use_previous_opt:
 	device_density = np.load( save_folder + "/device_density.npy" )
 else:
@@ -227,8 +229,6 @@ else:
 
 	max_density_change_per_iteration_start = 0.05
 	max_density_change_per_iteration_end = 0.005
-
-	rel_eps_simulation = np.ones( ( simluation_width_voxels, simulation_height_voxels ) )
 
 	wavelength_intensity_scaling = lambda_max_nm**2 / lambda_values_nm**2
 
