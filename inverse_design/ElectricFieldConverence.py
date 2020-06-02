@@ -5,9 +5,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from LayeredLithographyIRPolarizationParameters import *
-import LayeredLithographyIRPolarizationDevice
-
 import lumapi
 
 import functools
@@ -45,7 +42,7 @@ def get_efield( monitor_name ):
 	return total_efield
 
 
-project_name = 'e_field_convergence'
+project_name = 'e_field_convergence_finer'
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 projects_directory_location += "/" + project_name
@@ -64,7 +61,7 @@ num_observed_frequency_points = 10
 num_index_values = 5
 block_indices = np.linspace( 1.5, 3.5, num_index_values )
 
-R_min_um = 0.25 * lambda_min_um
+R_min_um = 0.1 * lambda_min_um# 0.25 * lambda_min_um
 R_max_um = 1.0 * lambda_max_um
 block_width_um = 0.5 * lambda_min_um
 
@@ -87,7 +84,7 @@ simulation_vertical_max_um = ( vertical_gap_um + tfsf_top_gap_um + block_height_
 mesh_fractions = np.array( [ 1. / ( 4 * ( 6 - k ) ) for k in range( 0, 5 ) ] )
 num_mesh_sizes = len( mesh_fractions )
 
-num_R_values = 5
+num_R_values = 6
 R_values_um = np.linspace( R_min_um, R_max_um, num_R_values )
 
 fdtd_simulation_time_fs = 4 * 700
