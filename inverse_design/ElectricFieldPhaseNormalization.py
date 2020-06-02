@@ -158,6 +158,6 @@ for index_idx in range( 0, num_index_values ):
 		fdtd_hook.run()
 
 		E_data_phase_correction = get_efield( E_monitor_x[ 'name' ] )
-		phase_correction[ index_idx, mesh_idx, :, : ] = E_data_phase_correction
+		phase_correction[ index_idx, mesh_idx, :, : ] = E_data_phase_correction[ :, 0, 0, 0, : ]
 
 np.save( projects_directory_location + "/phase_correction.npy", phase_correction )
