@@ -118,8 +118,8 @@ E_monitor_x = fdtd_hook.addpower()
 E_monitor_x['name'] = 'focal_monitor_x'
 E_monitor_x['monitor type'] = 'point'
 E_monitor_x['spatial interpolation'] = 'specified position'
-E_monitor_x['x'] = ( 0.5 * block_width_um ) * 1e-6
-E_monitor_x['y'] = ( 0.5 * block_width_um ) * 1e-6
+E_monitor_x['x'] = 0 * 1e-6
+E_monitor_x['y'] = 0 * 1e-6
 E_monitor_x['z'] = block_height_um * 1e-6
 E_monitor_x['override global monitor settings'] = 1
 E_monitor_x['use wavelength spacing'] = 1
@@ -135,7 +135,6 @@ for index_idx in range( 0, num_index_values ):
 	print( 'Currently working on index ' + str( index_idx ) + ' out of ' + str( num_index_values - 1 ) )
 
 	block_index = block_indices[ index_idx ]
-	import_block = block_index * np.ones( ( len( block_x_um ), len( block_y_um ), len( block_z_um ) ) )
 
 	mesh_sizes_um = ( 1. / block_index ) * mesh_fractions * lambda_min_um
 
