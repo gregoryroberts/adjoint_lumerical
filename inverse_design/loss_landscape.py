@@ -20,7 +20,7 @@ import matplotlib.pylab as plt
 # Electromagnetics
 #
 run_on_cluster = True
-use_previous_opt = True
+use_previous_opt = False
 
 if run_on_cluster:
 	sys.path.append( '/central/home/gdrobert/Develompent/ceviche' )
@@ -114,7 +114,8 @@ omega_values = 2 * np.pi * c / ( 1e-9 * lambda_values_nm )
 
 pml_voxels = 40
 device_width_voxels = 140
-device_height_voxels = 80
+# device_height_voxels = 80
+device_height_voxels = 40
 device_voxels_total = device_width_voxels * device_height_voxels
 mid_width_voxel = int( 0.5 * device_width_voxels )
 mid_height_voxel = int( 0.5 * device_height_voxels )
