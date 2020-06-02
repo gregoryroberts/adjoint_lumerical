@@ -128,7 +128,7 @@ E_monitors_y = []
 for R_idx in range( 0, num_R_values ):
 	R_um = R_values_um[ R_idx ]
 
-	E_monitor_x = fdtd_hook.power()
+	E_monitor_x = fdtd_hook.addpower()
 	E_monitor_x['name'] = 'focal_monitor_' + str( R_idx ) + "_x"
 	E_monitor_x['monitor type'] = 'point'
 	E_monitor_x['spatial interpolation'] = 'specified position'
@@ -142,7 +142,7 @@ for R_idx in range( 0, num_R_values ):
 
 	E_monitors_x.append( E_monitor_x )
 
-	E_monitor_y = fdtd_hook.power()
+	E_monitor_y = fdtd_hook.addpower()
 	E_monitor_y['name'] = 'focal_monitor_' + str( R_idx ) + "_y"
 	E_monitor_y['monitor type'] = 'point'
 	E_monitor_y['spatial interpolation'] = 'specified position'
