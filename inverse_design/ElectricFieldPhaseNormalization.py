@@ -115,7 +115,7 @@ excitation['wavelength stop'] = lambda_max_um * 1e-6
 
 
 E_monitor_x = fdtd_hook.addpower()
-E_monitor_x['name'] = 'focal_monitor_' + str( R_idx ) + "_x"
+E_monitor_x['name'] = 'focal_monitor_x'
 E_monitor_x['monitor type'] = 'point'
 E_monitor_x['spatial interpolation'] = 'specified position'
 E_monitor_x['x'] = ( 0.5 * block_width_um + R_um ) * 1e-6
