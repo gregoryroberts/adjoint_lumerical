@@ -128,7 +128,7 @@ E_monitor_x['frequency points'] = num_observed_frequency_points
 
 
 
-phase_correction = np.zeros( ( num_index_values, num_mesh_sizes, 3, num_observed_frequency_points ) )
+phase_correction = np.zeros( ( num_index_values, num_mesh_sizes, 3, num_observed_frequency_points ), dtype=np.complex )
 
 for index_idx in range( 0, num_index_values ):
 
