@@ -138,8 +138,6 @@ for index_idx in range( 0, num_index_values ):
 
 	mesh_sizes_um = ( 1. / block_index ) * mesh_fractions * lambda_min_um
 
-	mesh_sizes_all_um[ index_idx, : ] = mesh_sizes_um
-
 	for mesh_idx in range( 0, num_mesh_sizes ):
 		print( 'Currently mesh ' + str( mesh_idx ) + ' out of ' + str( num_mesh_sizes - 1 ) )
 
