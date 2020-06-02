@@ -13,7 +13,7 @@ import numpy as np
 project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_finer_reduce_bw_only_circular_4p8x4p8x3p12um_f2p72'
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_4layer_v1_4p2x4p2x3p12um_f2p6'
 
-optimized_focal_spots = [ 0 ]
+optimized_focal_spots = [ 0, 1, 2, 3 ]
 
 #
 # Optical
@@ -178,10 +178,10 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 0
-num_epochs = 10
+start_epoch = 7
+num_epochs = 12
 num_iterations_per_epoch = 60
-binarization_start_epoch = 1
+binarization_start_epoch = 9#1
 max_binarize_movement = 0.01
 desired_binarize_change = 3 * 0.005 / 2
 
