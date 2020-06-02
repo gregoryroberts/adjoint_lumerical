@@ -163,9 +163,9 @@ block_import['y span'] = block_width_um * 1e-6
 block_import['z max'] = block_height_um * 1e-6
 block_import['z min'] = 0 * 1e-6
 
-block_x_um = 1e-6 * ( -0.5 * block_width_um, 0.5 * block_width_um, 2 )
-block_y_um = 1e-6 * ( -0.5 * block_width_um, 0.5 * block_width_um, 2 )
-block_z_um = 1e-6 * ( 0, block_height_um, 2 )
+block_x_um = 1e-6 * np.linspace( -0.5 * block_width_um, 0.5 * block_width_um, 2 )
+block_y_um = 1e-6 * np.linspace( -0.5 * block_width_um, 0.5 * block_width_um, 2 )
+block_z_um = 1e-6 * np.linspace( 0, block_height_um, 2 )
 
 electric_fields_scan_x = np.zeros( ( num_index_values, num_mesh_sizes, num_R_values, 3, num_observed_frequency_points ), dtype=np.complex )
 electric_fields_scan_y = np.zeros( ( num_index_values, num_mesh_sizes, num_R_values, 3, num_observed_frequency_points ), dtype=np.complex )
