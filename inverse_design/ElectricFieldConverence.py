@@ -42,7 +42,7 @@ def get_efield( monitor_name ):
 	return total_efield
 
 
-project_name = 'e_field_convergence_finer'
+project_name = 'e_field_convergence_finer_volume'
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 projects_directory_location += "/" + project_name
@@ -95,6 +95,7 @@ fdtd['y span'] = simulation_lateral_size_um * 1e-6
 fdtd['z max'] = simulation_vertical_max_um * 1e-6
 fdtd['z min'] = simulation_vertical_min_um * 1e-6
 fdtd['mesh type'] = 'uniform'
+fdtd['mesh refinement'] = 'volume average'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
