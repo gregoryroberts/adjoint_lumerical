@@ -188,11 +188,12 @@ for index_idx in range( 0, num_index_values ):
 		fdtd_region_minimum_vertical_voxels = int( np.ceil( simulation_vertical_size_um / mesh_size_um ) )
 		fdtd_region_minimum_lateral_voxels = int( np.ceil( simulation_lateral_size_um / mesh_size_um ) )
 
+		fdtd_hook.switchtolayout()
+
 		fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
 		fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
 		fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 
-		fdtd_hook.switchtolayout()
 		fdtd_hook.select( block_import['name'] )
 		fdtd_hook.importnk2( import_block, block_x_um, block_y_um, block_z_um )
 
