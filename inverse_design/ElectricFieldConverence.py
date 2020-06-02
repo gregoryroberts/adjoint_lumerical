@@ -42,12 +42,6 @@ def get_efield( monitor_name ):
 
 	elapsed = time.time() - start
 
-	date_xfer_rate_MB_sec = data_xfer_size_MB / elapsed
-	log_file = open( projects_directory_location + "/log.txt", 'a' )
-	log_file.write( "Transferred " + str( data_xfer_size_MB ) + " MB\n" )
-	log_file.write( "Data rate = " + str( date_xfer_rate_MB_sec ) + " MB/sec\n\n" )
-	log_file.close()
-
 	return total_efield
 
 
