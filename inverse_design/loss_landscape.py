@@ -103,8 +103,8 @@ mesh_size_nm = 15
 density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_nm = 500
-lambda_max_nm = 600
-num_lambda_values = 2
+lambda_max_nm = 700
+num_lambda_values = 6
 
 min_relative_permittivity = 1.5**2
 max_relative_permittivity = 2.5**2
@@ -114,8 +114,8 @@ omega_values = 2 * np.pi * c / ( 1e-9 * lambda_values_nm )
 
 pml_voxels = 40
 device_width_voxels = 140
-# device_height_voxels = 80
-device_height_voxels = 40
+device_height_voxels = 80
+# device_height_voxels = 40
 device_voxels_total = device_width_voxels * device_height_voxels
 mid_width_voxel = int( 0.5 * device_width_voxels )
 mid_height_voxel = int( 0.5 * device_height_voxels )
@@ -248,12 +248,15 @@ else:
 		fom_by_wl = []
 
 		for wl_idx in range( 0, num_lambda_values ):
+			get_focal_point = focal_points_x[ 0 ]
+			if wl_idx >= int( 0.5 * num_lambda_values ):
+				get_focal_point = focal_points_x[ 1 ]
 			get_fom, get_grad = compute_fom_and_gradient(
 				omega_values[ wl_idx ],
 				mesh_size_m, rel_eps_simulation,
 				[ pml_voxels, pml_voxels ],
 				fwd_src_y,
-				focal_points_x[ wl_idx ], focal_point_y )
+				get_focal_point, focal_point_y )
 
 			device_grad = get_grad[ device_width_start : device_width_end, device_height_start : device_height_end ]
 
@@ -358,12 +361,15 @@ for landscape_x in range( 0, num_steps_per_direction ):
 			fom_by_wl = []
 
 			for wl_idx in range( 0, num_lambda_values ):
+				get_focal_point = focal_points_x[ 0 ]
+				if wl_idx >= int( 0.5 * num_lambda_values ):
+					get_focal_point = focal_points_x[ 1 ]
 				get_fom = compute_fom(
 					omega_values[ wl_idx ],
 					mesh_size_m, rel_eps_simulation,
 					[ pml_voxels, pml_voxels ],
 					fwd_src_y,
-					focal_points_x[ wl_idx ], focal_point_y )
+					get_focal_point, focal_point_y )
 
 				scale_fom_for_wl = get_fom * wavelength_intensity_scaling[ wl_idx ]
 				fom_by_wl.append( scale_fom_for_wl )
