@@ -58,7 +58,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 	def backpropagate(self, gradient):
 		get_last_layer_gradient = gradient[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ]
 
-		gradient = self.scale_2.chain_rule(gradient, self.w[2], self.w[1])
+		gradient = self.scale_1.chain_rule(gradient, self.w[2], self.w[1])
 		gradient[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ] = ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_gradient
 
 		gradient = self.layering_z_0.chain_rule(gradient, self.w[1], self.w[0])
@@ -96,7 +96,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		self.scale_1 = scale.Scale([scale_min, scale_max])
 
 		# Initialize the filter chain
-		self.filters = [self.layering_z_0, self.scale_2]
+		self.filters = [self.layering_z_0, self.scale_1]
 
 		self.init_variables()
 
