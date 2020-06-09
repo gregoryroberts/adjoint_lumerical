@@ -625,7 +625,7 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		start = time.time()
 		# fdtd_hook.runjobs()
-		# run_jobs( jobs_queue )
+		run_jobs( jobs_queue )
 		elapsed = time.time() - start
 
 		log_file = open( projects_directory_location + "/log.txt", 'a' )
