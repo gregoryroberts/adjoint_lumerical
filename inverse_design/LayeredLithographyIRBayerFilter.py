@@ -2,7 +2,7 @@ import device as device
 import layering as layering
 import scale as scale
 import sigmoid as sigmoid
-import square_blur as square_blur
+# import square_blur as square_blur
 
 import scipy.optimize
 
@@ -39,17 +39,17 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		var1 = self.layering_z_0.forward(var0)
 		self.w[1] = var1
 
-		var2 = self.max_blur_xy_1.forward(var1)
-		self.w[2] = var2
+		# var2 = self.max_blur_xy_1.forward(var1)
+		# self.w[2] = var2
 
-		var3 = self.scale_2.forward(var2)
-		get_last_layer_var2 = var2[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ]
-		var3[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ] = (
+		var2 = self.scale_1.forward(var1)
+		get_last_layer_var2 = var1[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ]
+		var2[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ] = (
 			self.last_layer_permittivity[ 0 ] + ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_var2
 		)
-		var3[ :, :, self.layering_z_0.last_layer_end : var3.shape[ 2 ] ] = self.last_layer_permittivity[ 0 ]
+		var2[ :, :, self.layering_z_0.last_layer_end : var2.shape[ 2 ] ] = self.last_layer_permittivity[ 0 ]
 
-		self.w[3] = var3
+		self.w[2] = var2
 
 
 	#
@@ -58,10 +58,9 @@ class LayeredLithographyIRBayerFilter(device.Device):
 	def backpropagate(self, gradient):
 		get_last_layer_gradient = gradient[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ]
 
-		gradient = self.scale_2.chain_rule(gradient, self.w[3], self.w[2])
+		gradient = self.scale_2.chain_rule(gradient, self.w[2], self.w[1])
 		gradient[ :, :, self.layering_z_0.last_layer_start : self.layering_z_0.last_layer_end ] = ( self.last_layer_permittivity[ 1 ] - self.last_layer_permittivity[ 0 ] ) * get_last_layer_gradient
 
-		gradient = self.max_blur_xy_1.chain_rule(gradient, self.w[2], self.w[1])
 		gradient = self.layering_z_0.chain_rule(gradient, self.w[1], self.w[0])
 
 		return gradient
@@ -70,7 +69,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		return
 
 	def init_filters_and_variables(self):
-		self.num_filters = 3
+		self.num_filters = 2
 		self.num_variables = 1 + self.num_filters
 
 		x_dimension_idx = 0
@@ -80,24 +79,24 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		z_voxel_layers = self.size[2]
 		self.layering_z_0 = layering.Layering(z_dimension_idx, self.num_z_layers, [0, 1], self.spacer_height_voxels, 0.0)
 
-		alpha = 8
-		self.blur_half_width = blur_half_width_voxels
+		# alpha = 8
+		# self.blur_half_width = blur_half_width_voxels
 		#
 		# This notation is slightly confusing, but it is meant to be the
 		# direction you blur when you are on the layer corresponding to x-
 		# or y-layering.  So, if you are layering in x, then you blur in y
 		# and vice versa.
 		#
-		self.max_blur_xy_1 = square_blur.SquareBlur(
-			alpha,
-			[self.blur_half_width, self.blur_half_width, 0])
+		# self.max_blur_xy_1 = square_blur.SquareBlur(
+		# 	alpha,
+		# 	[self.blur_half_width, self.blur_half_width, 0])
 
 		scale_min = self.permittivity_bounds[0]
 		scale_max = self.permittivity_bounds[1]
-		self.scale_2 = scale.Scale([scale_min, scale_max])
+		self.scale_1 = scale.Scale([scale_min, scale_max])
 
 		# Initialize the filter chain
-		self.filters = [self.layering_z_0, self.max_blur_xy_1, self.scale_2]
+		self.filters = [self.layering_z_0, self.scale_2]
 
 		self.init_variables()
 
@@ -115,24 +114,15 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			#
 			# This is after the feature size blurring
 			#
-			density_for_binarizing = np.real( self.w[2] )
-
+			density_for_binarizing = np.real( self.w[0] )
 
 			get_binarization_gradient = compute_binarization_gradient( density_for_binarizing )
-			backprop_binarization_gradient = self.max_blur_xy_1.chain_rule(get_binarization_gradient, self.w[2], self.w[1])
-			backprop_binarization_gradient = self.layering_z_0.chain_rule(backprop_binarization_gradient, self.w[1], self.w[0])
-
-			backprop_beta = self.max_blur_xy_1.chain_rule( self.max_binarize_movement * np.ones( self.w[0].shape ), self.w[2], self.w[1] )
-			backprop_beta = self.layering_z_0.chain_rule( backprop_beta, self.w[1], self.w[0] )
-
-			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
-
 			backprop_photonic_gradient = self.backpropagate( gradient )
 
 			extract_layers = []
 			extract_photonic_gradient = []
 			extract_binarization_gradient = []
-			extract_w2_init = []
+			# extract_w2_init = []
 			extract_beta = []
 			layer_lengths = []
 			original_shapes = []
@@ -149,25 +139,20 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				original_shapes.append( self.w[0][ :, :, layer_start ].shape )
 
 				extract_photonic_gradient.extend( np.real( backprop_photonic_gradient[ :, :, layer_start ].flatten() ) )
-				extract_binarization_gradient.extend( np.real( backprop_binarization_gradient[ :, :, layer_start ].flatten() ) )
+				extract_binarization_gradient.extend( np.real( get_binarization_gradient[ :, :, layer_start ].flatten() ) )
 
-				extract_w2_init.extend( np.real( self.w[2][ :, :, layer_start ].flatten() ) )
-
-				extract_beta.extend( np.real( backprop_beta[ :, :, layer_start ].flatten() ) )
-
-			beta_factor = 1#np.mean( np.abs( extract_beta ) )
 
 			flatten_design_cuts = np.real( extract_layers )
 			flatten_fom_gradients = np.real( extract_photonic_gradient )
 
-			beta = self.max_binarize_movement / beta_factor
+			beta = self.max_binarize_movement
 			print( 'beta factor = ' + str( beta ) )
 			projected_binarization_increase = 0
 
 			c = flatten_fom_gradients
 			dim = len(c)
 
-			initial_binarization = compute_binarization( np.array( extract_w2_init ) )
+			initial_binarization = compute_binarization( np.array( flatten_design_cuts ) )
 			print( "Starting binarization = " + str( initial_binarization ) )
 
 			b = np.real( extract_binarization_gradient )
@@ -183,15 +168,6 @@ class LayeredLithographyIRBayerFilter(device.Device):
 				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
 				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
 
-			# plt.plot( extract_beta, color='r' )
-			# plt.plot( upper_bounds, color='g', linestyle='--' )
-			# plt.plot( lower_bounds, color='b', linestyle='--' )
-			# plt.show()
-
-			# import matplotlib.pyplot as plt
-			# plt.plot( extract_beta, color='g', linewidth=2 )
-			# plt.plot( beta * np.ones( len( extract_beta ) ), color='b', linewidth=2, linestyle='--' )
-			# plt.show()
 
 			np.save( save_location + '/lower_bounds.npy', lower_bounds )
 			np.save( save_location + '/upper_bounds.npy', upper_bounds )
@@ -247,7 +223,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 					reassemble[ :, :, internal ] = pull_design.reshape( original_shapes[ layer_start_idx ] )
 
 			if enforce_xy_symmetry:
-				# Note: with this way of enforcing the symmetry, if the two symmetric voxels are attemptinv to move in opposite directions, then
+				# Note: with this way of enforcing the symmetry, if the two symmetric voxels are attempting to move in opposite directions, then
 				# this will not move that voxel.  We can revisit this if it seems to be a problem.  The changes may very likely come out symmetric
 				# anyway.
 				reassemble = 0.5 * ( reassemble + np.swapaxes( reassemble, 0, 1 ) )
@@ -255,14 +231,14 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			self.w[0] = reassemble
 			self.update_permittivity()
 
-			extract_w2_final = []
+			extract_layers_final = []
 
 			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
 			for layer_start_idx in range( 0, len( layer_start_idxs ) ):
 				layer_start = layer_start_idxs[ layer_start_idx ]
-				extract_w2_final.extend( np.real( self.w[2][ :, :, layer_start ].flatten() ) )
+				extract_layers_final.extend( np.real( self.w[0][ :, :, layer_start ].flatten() ) )
 
-			final_binarization = compute_binarization( np.array( extract_w2_final ) )
+			final_binarization = compute_binarization( np.array( extract_layers_final ) )
 
 			print( "Ending binarization = " + str( final_binarization ) )
 

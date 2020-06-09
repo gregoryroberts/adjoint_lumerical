@@ -25,6 +25,8 @@ import platform
 
 import re
 
+import reinterpolate
+
 
 #
 # Code from Conner // START
@@ -361,39 +363,6 @@ def disable_all_sources():
 			fdtd_hook.set( 'enabled', 0 )
 			# (adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
-#
-# Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
-# python process.  This is much faster than going through Lumerical's interop library
-#
-# def get_monitor_data(monitor_name, monitor_field):
-# 	lumerical_data_name = "monitor_data_" + monitor_name + "_" + monitor_field
-# 	extracted_data_name = lumerical_data_name + "_data"
-# 	data_transfer_filename = projects_directory_location + "/data_transfer_" + monitor_name + "_" + monitor_field
-
-# 	command_read_monitor = lumerical_data_name + " = getresult(\'" + monitor_name + "\', \'" + monitor_field + "\');"
-# 	command_extract_data = extracted_data_name + " = " + lumerical_data_name + "." + monitor_field + ";"
-# 	command_save_data_to_file = "matlabsave(\'" + data_transfer_filename + "\', " + extracted_data_name + ");"
-
-# 	lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
-# 	lumapi.evalScript(fdtd_hook.handle, command_extract_data)
-
-# 	# start_time = time.time()
-
-# 	lumapi.evalScript(fdtd_hook.handle, command_save_data_to_file)
-# 	monitor_data = {}
-# 	load_file = h5py.File(data_transfer_filename + ".mat")
-
-# 	monitor_data = np.array(load_file[extracted_data_name])
-
-# 	# end_time = time.time()
-
-# 	# print("\nIt took " + str(end_time - start_time) + " seconds to transfer the monitor data\n")
-
-# 	return monitor_data
-
-# def get_complex_monitor_data(monitor_name, monitor_field):
-# 	data = get_monitor_data(monitor_name, monitor_field)
-# 	return (data['real'] + np.complex(0, 1) * data['imag'])
 
 def get_efield( monitor_name ):
 	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
@@ -691,7 +660,9 @@ for epoch in range(start_epoch, num_epochs):
 		# gradients for x- and y-polarized forward sources.
 		#
 		cur_permittivity_shape = cur_permittivity.shape
-		xy_polarized_gradients = [ np.zeros(cur_permittivity_shape, dtype=np.complex), np.zeros(cur_permittivity_shape, dtype=np.complex) ]
+		xy_polarized_gradients = [
+			np.zeros((simulated_device_voxels_lateral, simulated_device_voxels_lateral, simulated_device_voxels_vertical), dtype=np.complex),
+			np.zeros((simulated_device_voxels_lateral, simulated_device_voxels_lateral, simulated_device_voxels_vertical), dtype=np.complex) ]
 
 		adjoint_e_fields = [ {} for i in range( 0, num_adjoint_sources ) ]
 
@@ -761,10 +732,12 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# Step 4: Step the design variable.
 		#
-		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		device_gradient_simulation_mesh = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		# device_gradient = np.swapaxes(device_gradient, 0, 2)
+
+		device_gradient = reinterpolate.reinterpolate( device_gradient_simulation_mesh, cur_permittivity.shape )
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 
