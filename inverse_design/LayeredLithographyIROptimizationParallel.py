@@ -371,7 +371,7 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 	start = time.time()
 
 	for coord_idx in range( 0, len( spatial_limits_um ) ):
-		command_setup_new_coord = "new_coord_space_" + str( coord_idx ) + " = 1e-6 * linspace( " + spatial_limits_um[ coord_idx ][ 0 ] + ", " + spatial_limits_um[ coord_idx ][ 1 ] + ", " + new_size[ coord_idx ] + " ):"
+		command_setup_new_coord = "new_coord_space_" + str( coord_idx ) + " = 1e-6 * linspace( " + spatial_limits_um[ coord_idx ][ 0 ] + ", " + spatial_limits_um[ coord_idx ][ 1 ] + ", " + str( new_size[ coord_idx ] ) + " ):"
 		lumapi.evalScript(fdtd_hook.handle, command_setup_new_coord)
 
 	total_efield = np.zeros( [ len (field_polariations ) ] + list( new_size ), dtype=np.complex )
@@ -622,7 +622,7 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		start = time.time()
 		# fdtd_hook.runjobs()
-		run_jobs( jobs_queue )
+		# run_jobs( jobs_queue )
 		elapsed = time.time() - start
 
 		log_file = open( projects_directory_location + "/log.txt", 'a' )
