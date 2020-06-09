@@ -67,7 +67,7 @@ device_voxels_lateral = 2 + int(device_size_lateral_um / design_spacing_um)
 # device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 2 + int(device_size_verical_um / design_spacing_um)
 # device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
-spacer_size_voxels = 0#1 + int(spacer_size_um / mesh_spacing_um)
+spacer_size_voxels = 1 + int(spacer_size_um / design_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
