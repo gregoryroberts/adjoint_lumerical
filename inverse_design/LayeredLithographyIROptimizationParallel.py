@@ -380,7 +380,7 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 		lumerical_data_name = "monitor_data_" + monitor_name + "_E"
 		command_make_interpolated_array = "interpolated_data = zeros( "
 		for coord_idx in range( 0, len( spatial_limits_um ) ):
-			command_make_interpolated_array += str( new_size[ 0 ] ) + ", " + str( new_size[ 1 ] ) + ", " + str( new_size[ 2 ] ) + ", "
+			command_make_interpolated_array += str( new_size[ coord_idx ] ) + ", "
 		command_make_interpolated_array += str( num_design_frequency_points ) + " );"
 
 		lumapi.evalScript(fdtd_hook.handle, command_make_interpolated_array)
