@@ -79,7 +79,7 @@ lambda_min_um = 0.9
 lambda_max_um = 1.6
 
 num_bands = 3
-num_points_per_band = 10
+num_points_per_band = 5
 num_design_frequency_points = num_bands * num_points_per_band
 num_eval_frequency_points = 60
 
