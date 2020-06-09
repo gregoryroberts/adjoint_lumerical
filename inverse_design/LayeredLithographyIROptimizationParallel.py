@@ -145,25 +145,25 @@ fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
-fdtd['mesh type'] = 'uniform'
-fdtd['define x mesh by'] = 'number of mesh cells'
-fdtd['define y mesh by'] = 'number of mesh cells'
-fdtd['define z mesh by'] = 'number of mesh cells'
-fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
+# fdtd['mesh type'] = 'uniform'
+# fdtd['define x mesh by'] = 'number of mesh cells'
+# fdtd['define y mesh by'] = 'number of mesh cells'
+# fdtd['define z mesh by'] = 'number of mesh cells'
+# fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
+# fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
+# fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
-# design_mesh = fdtd_hook.addmesh()
-# design_mesh['name'] = 'design_override_mesh'
-# design_mesh['x span'] = device_size_lateral_um * 1e-6
-# design_mesh['y span'] = device_size_lateral_um * 1e-6
-# design_mesh['z max'] = device_vertical_maximum_um * 1e-6
-# design_mesh['z min'] = device_vertical_minimum_um * 1e-6
-# design_mesh['dx'] = mesh_spacing_um * 1e-6
-# design_mesh['dy'] = mesh_spacing_um * 1e-6
-# design_mesh['dz'] = mesh_spacing_um * 1e-6
+design_mesh = fdtd_hook.addmesh()
+design_mesh['name'] = 'design_override_mesh'
+design_mesh['x span'] = device_size_lateral_um * 1e-6
+design_mesh['y span'] = device_size_lateral_um * 1e-6
+design_mesh['z max'] = device_vertical_maximum_um * 1e-6
+design_mesh['z min'] = device_vertical_minimum_um * 1e-6
+design_mesh['dx'] = mesh_spacing_um * 1e-6
+design_mesh['dy'] = mesh_spacing_um * 1e-6
+design_mesh['dz'] = mesh_spacing_um * 1e-6
 
 
 #
@@ -364,6 +364,78 @@ def disable_all_sources():
 			# (adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
 
 
+def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
+	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
+	data_xfer_size_MB = 0
+
+	start = time.time()
+
+	for coord_idx in range( 0, len( spatial_limits_um ) ):
+		command_setup_new_coord = "new_coord_space_" + str( coord_idx ) + " = 1e-6 * linspace( " + spatial_limits_um[ coord_idx ][ 0 ] + ", " + spatial_limits_um[ coord_idx ][ 1 ] + ", " + new_size[ coord_idx ] + " ):"
+		lumapi.evalScript(fdtd_hook.handle, command_setup_new_coord)
+
+	total_efield = np.zeros( [ len (field_polariations ) ] + list( new_size ), dtype=np.complex )
+
+	for pol_idx in range( 0, len( field_polariations ) ):
+		lumerical_data_name = "monitor_data_" + monitor_name + "_E"
+		command_make_interpolated_array = "interpolated_data = zeros( "
+		for coord_idx in range( 0, len( spatial_limits_um ) ):
+			command_make_interpolated_array += str( new_size[ 0 ] ) + ", " + str( new_size[ 1 ] ) + ", " + str( new_size[ 2 ] ) + ", "
+		command_make_interpolated_array += str( num_design_frequency_points ) + " );"
+
+		lumapi.evalScript(fdtd_hook.handle, command_make_interpolated_array)
+
+		command_read_monitor = lumerical_data_name + " = getdata(\'" + monitor_name + "\', \'" + field_polariations[ pol_idx ] + "\');"
+		lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
+
+		for wl_idx in range( 0, num_design_frequency_points ):
+			command_data_by_wavelength = "wl_data = pinch( " + lumerical_data_name + "( :, :, :, " + str( wl_idx ) + " );"
+			command_reassemble_by_wavelength = "interpolated_data( :, :, :, " + str( wl_idx ) + " ) = interpolated;"
+
+			command_interpolate = "interpolated = interp( wl_data, "
+
+			for coord_idx in range( 0, len( spatial_limits_um ) ):
+				command_interpolate += "new_coord_space_" + str( coord_idx )
+
+				if coord_idx < ( len( spatial_limits_um ) - 1 ):
+					command_interpolate += ", "
+
+			command_interpolate += " );"
+
+			lumapi.evalScript(fdtd_hook.handle, command_data_by_wavelength)
+			lumapi.evalScript(fdtd_hook.handle, command_interpolate)
+			lumapi.evalScript(fdtd_hook.handle, command_reassemble_by_wavelength)
+
+
+		Epol = fdtd_hook.getv( "interpolated_data" )
+		data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
+
+		total_efield[ pol_idx ] = Epol
+
+
+	# Epol_0 = fdtd_hook.getdata( monitor_name, field_polariations[ 0 ] )
+	# data_xfer_size_MB += Epol_0.nbytes / ( 1024. * 1024. )
+
+	# total_efield = np.zeros( [ len (field_polariations ) ] + list( Epol_0.shape ), dtype=np.complex )
+	# total_efield[ 0 ] = Epol_0
+
+	# for pol_idx in range( 1, len( field_polariations ) ):
+	# 	Epol = fdtd_hook.getdata( monitor_name, field_polariations[ pol_idx ] )
+	# 	data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
+
+	# 	total_efield[ pol_idx ] = Epol
+
+	elapsed = time.time() - start
+
+	date_xfer_rate_MB_sec = data_xfer_size_MB / elapsed
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Transferred " + str( data_xfer_size_MB ) + " MB\n" )
+	log_file.write( "Data rate = " + str( date_xfer_rate_MB_sec ) + " MB/sec\n\n" )
+	log_file.close()
+
+	return total_efield
+
+
 def get_efield( monitor_name ):
 	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
 	data_xfer_size_MB = 0
@@ -453,6 +525,16 @@ def run_jobs( queue ):
 					completed_jobs[ job_idx ] = 1
 
 		time.sleep( 1 )
+
+
+
+spatial_limits_device_um = [
+	[ -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um ],
+	[ -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um ],
+	[ device_vertical_minimum_um, device_vertical_maximum_um ]
+]
+
+interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ]
 
 
 
@@ -598,7 +680,13 @@ for epoch in range(start_epoch, num_epochs):
 				fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
 
 				# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-				forward_e_fields[xy_names[xy_idx]] = get_efield( design_efield_monitor['name' ] )
+				# forward_e_fields[xy_names[xy_idx]] = get_efield( design_efield_monitor['name' ] )
+				forward_e_fields[xy_names[xy_idx]] = get_efield_interpolated(
+					design_efield_monitor['name' ],
+					spatial_limits_device_um,
+					interpolated_size
+				)
+
 
 				for adj_src_idx in range(0, num_adjoint_sources):
 					# pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
@@ -661,8 +749,8 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		cur_permittivity_shape = cur_permittivity.shape
 		xy_polarized_gradients = [
-			np.zeros((simulated_device_voxels_lateral, simulated_device_voxels_lateral, simulated_device_voxels_vertical), dtype=np.complex),
-			np.zeros((simulated_device_voxels_lateral, simulated_device_voxels_lateral, simulated_device_voxels_vertical), dtype=np.complex) ]
+			np.zeros((device_voxels_lateral, device_voxels_lateral, device_voxels_vertical), dtype=np.complex),
+			np.zeros((device_voxels_lateral, device_voxels_lateral, device_voxels_vertical), dtype=np.complex) ]
 
 		adjoint_e_fields = [ {} for i in range( 0, num_adjoint_sources ) ]
 
@@ -693,7 +781,11 @@ for epoch in range(start_epoch, num_epochs):
 					fdtd_hook.load( job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] )
 
 					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
-					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_efield( design_efield_monitor['name'] )
+					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_efield( design_efield_monitor['name'] )
+					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_efield_interpolated(
+						design_efield_monitor['name'],
+						spatial_limits_device_um,
+						interpolated_size )
 
 			for pol_idx in range(0, len(polarizations)):
 				pol_name = polarizations[pol_idx]
@@ -732,12 +824,13 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# Step 4: Step the design variable.
 		#
-		device_gradient_simulation_mesh = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		# device_gradient_simulation_mesh = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		# device_gradient = np.swapaxes(device_gradient, 0, 2)
 
-		device_gradient = reinterpolate.reinterpolate( device_gradient_simulation_mesh, cur_permittivity.shape )
+		# device_gradient = reinterpolate.reinterpolate( device_gradient_simulation_mesh, cur_permittivity.shape )
 
 		design_gradient = bayer_filter.backpropagate(device_gradient)
 

@@ -10,8 +10,9 @@ import numpy as np
 #
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_rcp_45_lcp_m45_v1_4p2x4p2x3p12um_f2p6'
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_4p2x4p2x3p12um_f2p6'
-project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_finer_reduce_bw_only_circular_4p8x4p8x3p12um_f2p72'
+# project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_finer_reduce_bw_only_circular_4p8x4p8x3p12um_f2p72'
 # project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_4layer_v1_4p2x4p2x3p12um_f2p6'
+project_name = 'layered_infrared_3layers_pol_splitter_parallel_fom_v1_20nm_reduce_bw_4p8x4p8x3p12um_f2p72'
 
 optimized_focal_spots = [ 0, 1, 2, 3 ]
 
@@ -21,7 +22,7 @@ optimized_focal_spots = [ 0, 1, 2, 3 ]
 # averaging between the part where we dip into the infrared/red part of the spectrum
 # and where we are in the telecom ranges
 #
-index_silicon = 0.5 * ( 3.47 + 3.86 )
+index_silicon = 0.5 * ( 3.47 + 3.68 )
 index_su8 = 1.575
 index_air = 1.0
 index_sio2 = 1.45
@@ -43,7 +44,8 @@ focal_plane_center_vertical_um = -focal_length_um
 # Device
 #
 # mesh_spacing_um = 0.04
-mesh_spacing_um = 0.032
+# mesh_spacing_um = 0.032
+mesh_spacing_um = 0.02
 
 #
 # Pesky size to get the number of voxels to be a multiple of 3
@@ -52,10 +54,12 @@ num_vertical_layers = 3#4
 
 device_size_lateral_um = 4.8#4.2#3.6
 # device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
-device_size_verical_um = num_vertical_layers * ( 3.168 / num_vertical_layers )
+# device_size_verical_um = num_vertical_layers * ( 3.168 / num_vertical_layers )
+device_size_verical_um = num_vertical_layers * ( 3.6 / num_vertical_layers )
 # amorphous_silicon_height_per_layer_um = 0.52#0.8
-amorphous_silicon_height_per_layer_um = 0.704
+# amorphous_silicon_height_per_layer_um = 0.704
 # amorphous_silicon_height_per_layer_um = 0.72
+amorphous_silicon_height_per_layer_um = 0.6
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
@@ -73,7 +77,7 @@ lambda_max_um = 1.05#1.1
 
 # num_bands = 3
 # num_points_per_band = 10
-num_design_frequency_points = 5#10#num_bands * num_points_per_band
+num_design_frequency_points = 10#10#num_bands * num_points_per_band
 num_eval_frequency_points = 60
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
