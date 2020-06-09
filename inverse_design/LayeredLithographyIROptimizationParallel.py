@@ -365,7 +365,7 @@ def disable_all_sources():
 
 
 def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
-	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
+	field_polarizations = [ 'Ex', 'Ey', 'Ez' ]
 	data_xfer_size_MB = 0
 
 	start = time.time()
@@ -374,9 +374,9 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 		command_setup_new_coord = "new_coord_space_" + str( coord_idx ) + " = 1e-6 * linspace( " + str( spatial_limits_um[ coord_idx ][ 0 ] ) + ", " + str( spatial_limits_um[ coord_idx ][ 1 ] ) + ", " + str( new_size[ coord_idx ] ) + " ):"
 		lumapi.evalScript(fdtd_hook.handle, command_setup_new_coord)
 
-	total_efield = np.zeros( [ len (field_polariations ) ] + list( new_size ), dtype=np.complex )
+	total_efield = np.zeros( [ len (field_polarizations ) ] + list( new_size ), dtype=np.complex )
 
-	for pol_idx in range( 0, len( field_polariations ) ):
+	for pol_idx in range( 0, len( field_polarizations ) ):
 		lumerical_data_name = "monitor_data_" + monitor_name + "_E"
 		command_make_interpolated_array = "interpolated_data = zeros( "
 		for coord_idx in range( 0, len( spatial_limits_um ) ):
@@ -385,7 +385,10 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 
 		lumapi.evalScript(fdtd_hook.handle, command_make_interpolated_array)
 
-		command_read_monitor = lumerical_data_name + " = getdata(\'" + monitor_name + "\', \'" + field_polariations[ pol_idx ] + "\');"
+		command_read_monitor = lumerical_data_name + " = getdata(\'" + monitor_name + "\', \'" + field_polarizations[ pol_idx ] + "\');"
+		log_file = open( projects_directory_location + "/log.txt", 'a' )
+		log_file.write( command_read_monitor + "\n" )
+		log_file.close()
 		lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
 
 		for wl_idx in range( 0, num_design_frequency_points ):
@@ -413,14 +416,14 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 		total_efield[ pol_idx ] = Epol
 
 
-	# Epol_0 = fdtd_hook.getdata( monitor_name, field_polariations[ 0 ] )
+	# Epol_0 = fdtd_hook.getdata( monitor_name, field_polarizations[ 0 ] )
 	# data_xfer_size_MB += Epol_0.nbytes / ( 1024. * 1024. )
 
-	# total_efield = np.zeros( [ len (field_polariations ) ] + list( Epol_0.shape ), dtype=np.complex )
+	# total_efield = np.zeros( [ len (field_polarizations ) ] + list( Epol_0.shape ), dtype=np.complex )
 	# total_efield[ 0 ] = Epol_0
 
-	# for pol_idx in range( 1, len( field_polariations ) ):
-	# 	Epol = fdtd_hook.getdata( monitor_name, field_polariations[ pol_idx ] )
+	# for pol_idx in range( 1, len( field_polarizations ) ):
+	# 	Epol = fdtd_hook.getdata( monitor_name, field_polarizations[ pol_idx ] )
 	# 	data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
 
 	# 	total_efield[ pol_idx ] = Epol
@@ -437,19 +440,19 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 
 
 def get_efield( monitor_name ):
-	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
+	field_polarizations = [ 'Ex', 'Ey', 'Ez' ]
 	data_xfer_size_MB = 0
 
 	start = time.time()
 
-	Epol_0 = fdtd_hook.getdata( monitor_name, field_polariations[ 0 ] )
+	Epol_0 = fdtd_hook.getdata( monitor_name, field_polarizations[ 0 ] )
 	data_xfer_size_MB += Epol_0.nbytes / ( 1024. * 1024. )
 
-	total_efield = np.zeros( [ len (field_polariations ) ] + list( Epol_0.shape ), dtype=np.complex )
+	total_efield = np.zeros( [ len (field_polarizations ) ] + list( Epol_0.shape ), dtype=np.complex )
 	total_efield[ 0 ] = Epol_0
 
-	for pol_idx in range( 1, len( field_polariations ) ):
-		Epol = fdtd_hook.getdata( monitor_name, field_polariations[ pol_idx ] )
+	for pol_idx in range( 1, len( field_polarizations ) ):
+		Epol = fdtd_hook.getdata( monitor_name, field_polarizations[ pol_idx ] )
 		data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
 
 		total_efield[ pol_idx ] = Epol
