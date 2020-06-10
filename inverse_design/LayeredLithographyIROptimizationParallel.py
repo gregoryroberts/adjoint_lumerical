@@ -383,7 +383,7 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 		log_file.write( command_setup_new_coord + "\n" )
 
 
-	total_efield = np.zeros( [ len (field_polarizations ) ] + list( new_size ), dtype=np.complex )
+	total_efield = np.zeros( [ len (field_polarizations ) ] + list( new_size ) + [ num_design_frequency_points ], dtype=np.complex )
 
 	for pol_idx in range( 0, len( field_polarizations ) ):
 		lumerical_data_name = "monitor_data_" + monitor_name + "_E"
