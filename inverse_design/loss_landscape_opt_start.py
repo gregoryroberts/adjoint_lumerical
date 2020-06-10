@@ -228,7 +228,7 @@ else:
 	np.save( save_folder + "/init_device_dense_density.npy", device_dense_density )
 	np.save( save_folder + "/init_device_density.npy", device_density )
 
-	num_iterations = 0#250
+	num_iterations = 30#0#250
 
 	max_density_change_per_iteration_start = 0.05
 	max_density_change_per_iteration_end = 0.005
