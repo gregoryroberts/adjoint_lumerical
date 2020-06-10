@@ -395,14 +395,12 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 		lumapi.evalScript(fdtd_hook.handle, command_make_interpolated_array)
 
 		command_read_monitor = lumerical_data_name + " = getdata(\'" + monitor_name + "\', \'" + field_polarizations[ pol_idx ] + "\');"
-		log_file = open( projects_directory_location + "/log.txt", 'a' )
 		log_file.write( command_read_monitor + "\n" )
-		log_file.close()
 		lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
 
 
-		log_file.write( command_make_interpolated_array + "\n" )
-		log_file.write( command_read_monitor + "\n" )
+		log_file.write( command_setup_old_coord + "\n" )
+		log_file.write( command_setup_new_coord + "\n" )
 
 
 		for wl_idx in range( 0, num_design_frequency_points ):
