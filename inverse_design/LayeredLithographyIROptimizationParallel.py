@@ -393,7 +393,7 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 
 		for wl_idx in range( 0, num_design_frequency_points ):
 			command_data_by_wavelength = "wl_data = pinch( " + lumerical_data_name + "( :, :, :, " + str( wl_idx + 1 ) + " ) );"
-			command_reassemble_by_wavelength = "interpolated_data( :, :, :, " + str( wl_idx ) + " ) = interpolated;"
+			command_reassemble_by_wavelength = "interpolated_data( :, :, :, " + str( wl_idx + 1 ) + " ) = interpolated;"
 
 			command_interpolate = "interpolated = interp( wl_data, "
 
