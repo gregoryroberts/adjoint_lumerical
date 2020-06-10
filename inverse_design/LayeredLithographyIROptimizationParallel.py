@@ -371,11 +371,17 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 
 	start = time.time()
 
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+
 	for coord_idx in range( 0, len( spatial_limits_um ) ):
 		command_setup_old_coord = "old_coord_space_" + str( coord_idx ) + " = getdata(\'" + monitor_name + "\', \'" + spatial_components[ coord_idx ] + "\');"
 		command_setup_new_coord = "new_coord_space_" + str( coord_idx ) + " = 1e-6 * linspace( " + str( spatial_limits_um[ coord_idx ][ 0 ] ) + ", " + str( spatial_limits_um[ coord_idx ][ 1 ] ) + ", " + str( new_size[ coord_idx ] ) + " ):"
 		lumapi.evalScript(fdtd_hook.handle, command_setup_old_coord)
 		lumapi.evalScript(fdtd_hook.handle, command_setup_new_coord)
+
+		log_file.write( command_setup_old_coord + "\n" )
+		log_file.write( command_setup_new_coord + "\n" )
+
 
 	total_efield = np.zeros( [ len (field_polarizations ) ] + list( new_size ), dtype=np.complex )
 
@@ -393,6 +399,11 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 		log_file.write( command_read_monitor + "\n" )
 		log_file.close()
 		lumapi.evalScript(fdtd_hook.handle, command_read_monitor)
+
+
+		log_file.write( command_make_interpolated_array + "\n" )
+		log_file.write( command_read_monitor + "\n" )
+
 
 		for wl_idx in range( 0, num_design_frequency_points ):
 			command_data_by_wavelength = "wl_data = pinch( " + lumerical_data_name + "( :, :, :, " + str( wl_idx + 1 ) + " ) );"
@@ -412,7 +423,6 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 			command_interpolate += " );"
 
 
-			log_file = open( projects_directory_location + "/log.txt", 'a' )
 			log_file.write( command_data_by_wavelength + "\n" )
 			log_file.write( command_interpolate + "\n" )
 			log_file.write( command_reassemble_by_wavelength + "\n" )
