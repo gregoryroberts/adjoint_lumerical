@@ -366,12 +366,15 @@ def disable_all_sources():
 
 def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 	field_polarizations = [ 'Ex', 'Ey', 'Ez' ]
+	spatial_components = [ 'x', 'y', 'z' ]
 	data_xfer_size_MB = 0
 
 	start = time.time()
 
 	for coord_idx in range( 0, len( spatial_limits_um ) ):
+		command_setup_old_coord = "old_coord_space_" + str( coord_idx ) + " = getdata(\'" + monitor_name + "\', \'" + spatial_components[ pol_idx ] + "\');"
 		command_setup_new_coord = "new_coord_space_" + str( coord_idx ) + " = 1e-6 * linspace( " + str( spatial_limits_um[ coord_idx ][ 0 ] ) + ", " + str( spatial_limits_um[ coord_idx ][ 1 ] ) + ", " + str( new_size[ coord_idx ] ) + " ):"
+		lumapi.evalScript(fdtd_hook.handle, command_setup_old_coord)
 		lumapi.evalScript(fdtd_hook.handle, command_setup_new_coord)
 
 	total_efield = np.zeros( [ len (field_polarizations ) ] + list( new_size ), dtype=np.complex )
@@ -396,6 +399,9 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 			command_reassemble_by_wavelength = "interpolated_data( :, :, :, " + str( wl_idx + 1 ) + " ) = interpolated;"
 
 			command_interpolate = "interpolated = interp( wl_data, "
+
+			for coord_idx in range( 0, len( spatial_limits_um ) ):
+				command_interpolate += "old_coord_space_" + str( coord_idx ) + ", "
 
 			for coord_idx in range( 0, len( spatial_limits_um ) ):
 				command_interpolate += "new_coord_space_" + str( coord_idx )
