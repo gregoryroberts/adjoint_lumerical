@@ -424,11 +424,11 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 			log_file.write( command_data_by_wavelength + "\n" )
 			log_file.write( command_interpolate + "\n" )
 			log_file.write( command_reassemble_by_wavelength + "\n" )
-			log_file.close()
 			lumapi.evalScript(fdtd_hook.handle, command_data_by_wavelength)
 			lumapi.evalScript(fdtd_hook.handle, command_interpolate)
 			lumapi.evalScript(fdtd_hook.handle, command_reassemble_by_wavelength)
 
+	log_file.close()
 
 		Epol = fdtd_hook.getv( "interpolated_data" )
 		data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
