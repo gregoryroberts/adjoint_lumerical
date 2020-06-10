@@ -236,6 +236,7 @@ else:
 	gradient_norm_evolution = np.zeros( num_iterations )
 	fom_evolution = np.zeros( num_iterations )
 	fom_by_wl_evolution = np.zeros( ( num_iterations, num_lambda_values ) )
+	gradient_directions = np.zeros( ( num_iterations, device_density.shape[ 0 ], device_density.shape[ 1 ] ) )
 
 	for iter_idx in range( 0, num_iterations ):
 		
@@ -285,6 +286,8 @@ else:
 
 		norm_scaled_gradient = net_gradient / gradient_norm
 
+		gradient_directions[ iter_idx ] = norm_scaled_gradient
+
 		max_density_change = (
 			max_density_change_per_iteration_start +
 			( iter_idx / ( num_iterations - 1 ) ) * ( max_density_change_per_iteration_end - max_density_change_per_iteration_start )
@@ -294,6 +297,7 @@ else:
 		device_density = np.maximum( 0, np.minimum( device_density, 1 ) )
 
 		np.save( save_folder + "/figure_of_merit.npy", fom_evolution )
+		np.save( save_folder + "/gradient_directions.npy", gradient_norm_evolution )
 		np.save( save_folder + "/figure_of_merit_by_wavelength.npy", fom_by_wl_evolution )
 		np.save( save_folder + "/device_density.npy", device_density )
 
