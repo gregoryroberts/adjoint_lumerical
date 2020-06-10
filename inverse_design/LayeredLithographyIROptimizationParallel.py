@@ -372,7 +372,7 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 	start = time.time()
 
 	for coord_idx in range( 0, len( spatial_limits_um ) ):
-		command_setup_old_coord = "old_coord_space_" + str( coord_idx ) + " = getdata(\'" + monitor_name + "\', \'" + spatial_components[ pol_idx ] + "\');"
+		command_setup_old_coord = "old_coord_space_" + str( coord_idx ) + " = getdata(\'" + monitor_name + "\', \'" + spatial_components[ coord_idx ] + "\');"
 		command_setup_new_coord = "new_coord_space_" + str( coord_idx ) + " = 1e-6 * linspace( " + str( spatial_limits_um[ coord_idx ][ 0 ] ) + ", " + str( spatial_limits_um[ coord_idx ][ 1 ] ) + ", " + str( new_size[ coord_idx ] ) + " ):"
 		lumapi.evalScript(fdtd_hook.handle, command_setup_old_coord)
 		lumapi.evalScript(fdtd_hook.handle, command_setup_new_coord)
