@@ -405,6 +405,12 @@ def get_efield_interpolated( monitor_name, spatial_limits_um, new_size ):
 
 			command_interpolate += " );"
 
+
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( command_data_by_wavelength + "\n" )
+			log_file.write( command_interpolate + "\n" )
+			log_file.write( command_reassemble_by_wavelength + "\n" )
+			log_file.close()
 			lumapi.evalScript(fdtd_hook.handle, command_data_by_wavelength)
 			lumapi.evalScript(fdtd_hook.handle, command_interpolate)
 			lumapi.evalScript(fdtd_hook.handle, command_reassemble_by_wavelength)
