@@ -129,7 +129,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location += "/" + project_name
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_init_design_directory = projects_directory_location + "/" + project_name# + '_parallel_symmetric_lsf_v2'
+projects_init_design_directory = projects_directory_location + "/" + project_name + '_parallel'# + '_parallel_symmetric_lsf_v2'
 
 projects_directory_location += "/" + project_name + '_parallel_symmetric_lsf_v3'
 
