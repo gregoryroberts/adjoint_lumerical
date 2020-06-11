@@ -318,7 +318,7 @@ class LevelSet():
 		D_y2 = np.zeros( self.level_set_function.shape )
 
 		#delta_t = 20#1.0
-		delta_t = 5
+		delta_t = 2.5
 		num_steps = 1#5
 
 		c_iso = 0#1e-3
