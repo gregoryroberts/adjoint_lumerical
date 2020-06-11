@@ -731,7 +731,7 @@ for epoch in range(start_epoch, num_epochs):
 
 
 		# level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
-		level_set.update( -average_gradient )
+		level_set.update( average_gradient )
 		level_set.signed_distance_reinitialization()
 		binary_design = level_set.binarize()
 
