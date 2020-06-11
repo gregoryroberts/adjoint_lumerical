@@ -34,6 +34,11 @@ class LevelSet():
 
 		self.boundary_smoothing_width = boundary_smoothing_width
 
+		# self.padded_meshgrid = np.meshgrid(
+		# 	np.arange( 0, self.padded_dimension[ 0 ] ),
+		# 	np.arange( 0, self.padded_dimension[ 1 ] )
+		# )
+
 	def init_with_holes( self, init_hole_centers, init_hole_widths ):
 		print( init_hole_centers )
 		self.init_hole_centers = [ [ ( loc + 2 ) for loc in hole ] for hole in init_hole_centers ]
@@ -68,14 +73,11 @@ class LevelSet():
 		self.level_set_function = np.pad( density - 0.5, ( ( 2, 2 ), ( 2, 2 ) ), mode='edge' )
 		self.signed_distance_reinitialization()
 
+	def init_with_level_set_function( self, lsf ):
+		self.level_set_function = lsf.copy()
 
 	def signed_distance_reinitialization( self ):
 		border_points_x, border_points_y = self.find_border_points()
-
-		# import matplotlib.pyplot as plt
-		# plt.scatter( border_points_x, border_points_y )
-		# plt.show()
-		# sdf
 
 		# print( "Number of border points is " + str( len( border_points_x ) ) )
 		for x_idx in range( 0, self.padded_dimension[ 0 ] ):
@@ -316,7 +318,7 @@ class LevelSet():
 		D_y2 = np.zeros( self.level_set_function.shape )
 
 		#delta_t = 20#1.0
-		delta_t = 10
+		delta_t = 5
 		num_steps = 1#5
 
 		c_iso = 0#1e-3

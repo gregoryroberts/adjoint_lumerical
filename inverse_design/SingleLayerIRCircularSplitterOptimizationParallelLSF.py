@@ -496,7 +496,7 @@ level_set.init_with_density( design_variable_reload[ :, :, int( 0.5 * design_var
 binary_design = level_set.binarize()
 
 
-np.save(projects_directory_location + "init_density.npy", design_variable_reload[ :, :, int( 0.5 * design_variable_reload.shape[ 2 ] ) ] )
+np.save(projects_directory_location + "/init_density.npy", design_variable_reload[ :, :, int( 0.5 * design_variable_reload.shape[ 2 ] ) ] )
 np.save(projects_directory_location + "/init_binary_design.npy", binary_design)
 device_permittivity = np.ones( ( device_width_voxels, device_height_voxels, device_voxels_vertical ) )
 for voxel_vertical in range( 0, device_voxels_vertical ):
@@ -749,7 +749,7 @@ for epoch in range(start_epoch, num_epochs):
 		np.save(projects_directory_location + "/device_gradient.npy", device_gradient)
 		np.save(projects_directory_location + "/average_gradient.npy", average_gradient)
 		# np.save(projects_directory_location + "/level_set_alpha.npy", level_set_alpha)
-		sys.exit(0)
+		# sys.exit(0)
 
 
 	fdtd_hook.switchtolayout()
