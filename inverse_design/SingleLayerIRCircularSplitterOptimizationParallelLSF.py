@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from SingleLayerIRCircularSplitterParameters import *
 import SingleLayerIRCircularSplitterDevice
-from SingleLayerLSF import *
+# from SingleLayerLSF import *
 
 import imp
 imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
@@ -27,6 +27,8 @@ import subprocess
 import platform
 
 import re
+
+from LevelSet import LevelSet
 
 
 #
@@ -462,7 +464,7 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 
 step_size_start = 0.001
 
-'''
+
 bayer_filter.update_filters(start_epoch - 1)
 bayer_filter.set_design_variable( np.load( projects_init_design_directory + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' ) )
 bayer_filter_permittivity = bayer_filter.get_permittivity()
@@ -473,20 +475,27 @@ bayer_filter_permittivity = 0.5 * ( bayer_filter_permittivity + np.flip( bayer_f
 permittivity_to_density = ( bayer_filter_permittivity - min_device_permittivity ) / ( max_device_permittivity - min_device_permittivity )
 
 design_variable_reload = np.real( np.flip( permittivity_to_density, axis=2 ) )
-'''
+
 ####
-rbf_sigma = 1
-rbf_eval_cutoff = 5
+# rbf_sigma = 1
+# rbf_eval_cutoff = 5
 
 # level_set_alpha = read_density_into_alpha( design_variable_reload )
 # level_set_alpha = level_set_alpha[ :, :, int( 0.5 * level_set_alpha.shape[ 2 ] ) ]
-level_set_alpha = np.load( projects_init_design_directory + "/level_set_alpha.npy" )
-level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
+# level_set_alpha = np.load( projects_init_design_directory + "/level_set_alpha.npy" )
+# level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
 
-np.save(projects_directory_location + "/init_alpha.npy", level_set_alpha)
-np.save(projects_directory_location + "/init_level_set_function.npy", level_set_function)
+# np.save(projects_directory_location + "/init_alpha.npy", level_set_alpha)
+# np.save(projects_directory_location + "/init_level_set_function.npy", level_set_function)
 
-binary_design = read_lsf_into_density( level_set_function )
+# binary_design = read_lsf_into_density( level_set_function )
+
+
+level_set = LevelSet.LevelSet( [ design_variable_reload.shape[ 0 ], design_variable_reload.shape[ 1 ] ], 1 )
+level_set.init_with_density( design_variable_reload[ :, :, int( 0.5 * design_variable_reload.shape[ 2 ] ) ] )
+binary_design = level_set.binarize()
+
+
 np.save(projects_directory_location + "/init_binary_design.npy", binary_design)
 device_permittivity = np.ones( ( device_width_voxels, device_height_voxels, device_voxels_vertical ) )
 for voxel_vertical in range( 0, device_voxels_vertical ):
@@ -668,72 +677,75 @@ for epoch in range(start_epoch, num_epochs):
 
 			create_forward_e_fields = analyzer_vector[ 0 ] * forward_e_fields[ 'x' ] + analyzer_vector[ 1 ] * forward_e_fields[ 'y' ]
 
-			net_alpha_gradients = np.zeros( level_set_alpha.shape )
-
 			for wl_idx in range( 0, num_design_frequency_points ):
-				net_alpha_gradients += 2 * alpha_perturbations(
-					reflected_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
-					np.conj( create_forward_parallel_response_x[ wl_idx ] ) * adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ],
-					level_set_function,
-					level_set_alpha,
-					rbf_sigma,
-					rbf_eval_cutoff,
-					max_device_permittivity,
-					min_device_permittivity
-				)
+				maximization_gradient += 2 * np.sum(
+					np.real(
+						reflected_fom_by_wavelength[ wl_idx ] *
+						fom_weightings[ focal_idx, wl_idx ] *
+						np.conj( create_forward_parallel_response_x[ wl_idx ] ) *
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ex_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+					),
+				axis=0 )
 
-				net_alpha_gradients -= 2 * alpha_perturbations(
-					parallel_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
-					np.conj( create_reflected_parallel_response_x[ wl_idx ] ) * adjoint_ex_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ],
-					level_set_function,
-					level_set_alpha,
-					rbf_sigma,
-					rbf_eval_cutoff,
-					max_device_permittivity,
-					min_device_permittivity
-				)
+				maximization_gradient -= 2 * np.sum(
+					np.real(
+						parallel_fom_by_wavelength[ wl_idx ] *
+						fom_weightings[ focal_idx, wl_idx ] *
+						np.conj( create_reflected_parallel_response_x[ wl_idx ] ) *
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ex_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
+					),
+				axis=0 )
 
-				net_alpha_gradients += 2 * alpha_perturbations(
-					reflected_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
-					np.conj( create_forward_parallel_response_y[ wl_idx ] ) * adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ],
-					level_set_function,
-					level_set_alpha,
-					rbf_sigma,
-					rbf_eval_cutoff,
-					max_device_permittivity,
-					min_device_permittivity
-				)
+				maximization_gradient += 2 * np.sum(
+					np.real(
+						reflected_fom_by_wavelength[ wl_idx ] *
+						fom_weightings[ focal_idx, wl_idx ] *
+						np.conj( create_forward_parallel_response_y[ wl_idx ] ) *
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ey_fields[ focal_idx ][ :, :, :, :, wl_idx ]
+					),
+				axis=0 )
 
-				net_alpha_gradients -= 2 * alpha_perturbations(
-					parallel_fom_by_wavelength[ wl_idx ] * fom_weightings[ focal_idx, wl_idx ] * create_forward_e_fields[ :, :, :, :, wl_idx ],
-					np.conj( create_reflected_parallel_response_y[ wl_idx ] ) * adjoint_ey_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ],
-					level_set_function,
-					level_set_alpha,
-					rbf_sigma,
-					rbf_eval_cutoff,
-					max_device_permittivity,
-					min_device_permittivity
-				)
+				maximization_gradient -= 2 * np.sum(
+					np.real(
+						parallel_fom_by_wavelength[ wl_idx ] *
+						fom_weightings[ focal_idx, wl_idx ] *
+						np.conj( create_reflected_parallel_response_y[ wl_idx ] ) *
+						create_forward_e_fields[ :, :, :, :, wl_idx ] *
+						adjoint_ey_fields[ 1 - focal_idx ][ :, :, :, :, wl_idx ]
+					),
+				axis=0 )
 
-		net_alpha_gradients /= np.max( np.abs( net_alpha_gradients ) )
-		symmetric_net_alpha_gradients = 0.5 * ( net_alpha_gradients + np.flip( net_alpha_gradients, axis=0 ) )
-		fixed_alpha_step_size_relative = 0.025
-		level_set_alpha += fixed_alpha_step_size_relative * symmetric_net_alpha_gradients
+		#
+		# Step 4: Step the design variable.
+		#
+		device_gradient = -maximization_gradient
+		average_gradient = np.mean( device_gradient, axis=2 )
 
-		level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
-		binary_design = read_lsf_into_density( level_set_function )
+		# net_alpha_gradients /= np.max( np.abs( net_alpha_gradients ) )
+		# symmetric_net_alpha_gradients = 0.5 * ( net_alpha_gradients + np.flip( net_alpha_gradients, axis=0 ) )
+		# fixed_alpha_step_size_relative = 0.025
+		# level_set_alpha += fixed_alpha_step_size_relative * symmetric_net_alpha_gradients
+
+
+		# level_set_function = compute_lsf( level_set_alpha, rbf_sigma, rbf_eval_cutoff )
+		level_set.update( device_gradient )
+		level_set.signed_distance_reinitialization()
+		binary_design = level_set.binarize()
 
 		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 
-		np.save(projects_directory_location + "/alpha_grad.npy", net_alpha_gradients)
-		np.save(projects_directory_location + "/alpha_grad_symmetric.npy", symmetric_net_alpha_gradients)
+		# np.save(projects_directory_location + "/alpha_grad.npy", net_alpha_gradients)
+		# np.save(projects_directory_location + "/alpha_grad_symmetric.npy", symmetric_net_alpha_gradients)
 		np.save(projects_directory_location + "/cur_binary_design.npy", binary_design)
 		np.save(projects_directory_location + "/cur_binary_design_" + str( epoch ) + ".npy", binary_design)
-		np.save(projects_directory_location + "/level_set_function.npy", level_set_function)
-		np.save(projects_directory_location + "/level_set_alpha.npy", level_set_alpha)
+		np.save(projects_directory_location + "/level_set_function.npy", level_set.level_set_function)
+		# np.save(projects_directory_location + "/level_set_alpha.npy", level_set_alpha)
 
 
 	fdtd_hook.switchtolayout()
