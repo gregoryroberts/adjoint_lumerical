@@ -722,7 +722,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 4: Step the design variable.
 		#
 		device_gradient = -maximization_gradient
-		average_gradient = np.squeze( np.mean( device_gradient, axis=2 ) )
+		average_gradient = np.squeeze( np.mean( device_gradient, axis=2 ) )
 
 		# net_alpha_gradients /= np.max( np.abs( net_alpha_gradients ) )
 		# symmetric_net_alpha_gradients = 0.5 * ( net_alpha_gradients + np.flip( net_alpha_gradients, axis=0 ) )
