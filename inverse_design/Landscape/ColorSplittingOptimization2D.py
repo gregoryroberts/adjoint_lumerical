@@ -90,7 +90,7 @@ class ColorSplittingOptimization2D():
 		self.focal_spots_x_relative = focal_spots_x_relative
 		self.focal_length_y_voxels = focal_length_y_voxels
 		self.wavelengths_um = wavelengths_um
-		self.wavelength_intensity_scaling = np.maximum( self.wavelengths_um )**2 / self.wavelengths_um**2
+		self.wavelength_intensity_scaling = np.max( self.wavelengths_um )**2 / self.wavelengths_um**2
 
 		self.num_wavelengths = len( wavelengths_um )
 
@@ -104,7 +104,7 @@ class ColorSplittingOptimization2D():
 		self.setup_simulation()
 
 	def init_density_with_random( self, mean_density, sigma_density ):
-		num_values = self.design_width_voxels * self.device_height_voxels
+		num_values = self.design_width_voxels * self.design_height_voxels
 
 		random_array_normal_distribution = np.random.normal(
 			loc=mean_density,
@@ -127,32 +127,32 @@ class ColorSplittingOptimization2D():
 		self.init_density_directly( this_class.design_density )
 
 	def setup_simulation( self ):
-		self.width_gap_voxels = int( 1.5 * np.maximum( wavelengths_um ) / self.mesh_size_um )
-		self.height_gap_voxels_top = int( 2.0 * np.maximum( wavelengths_um ) / self.mesh_size_um )
+		self.width_gap_voxels = int( 1.5 * np.max( self.wavelengths_um ) / self.mesh_size_um )
+		self.height_gap_voxels_top = int( 2.0 * np.max( self.wavelengths_um ) / self.mesh_size_um )
 		self.height_gap_voxels_bottom = self.width_gap_voxels
-		self.pml_voxels = int( 1.5 * np.maximum( wavelengths_um ) / self.mesh_size_um )
+		self.pml_voxels = int( 1.5 * np.max( self.wavelengths_um ) / self.mesh_size_um )
 
-		self.simluation_width_voxels = self.device_width_voxels + 2 * self.width_gap_voxels + 2 * self.pml_voxels
+		self.simulation_width_voxels = self.device_width_voxels + 2 * self.width_gap_voxels + 2 * self.pml_voxels
 		self.simulation_height_voxels = self.device_height_voxels + self.focal_length_y_voxels + self.height_gap_voxels_bottom + self.height_gap_voxels_top + 2 * self.pml_voxels
 
-		self.device_width_start = int( 0.5 * ( self.simluation_width_voxels - self.device_width_voxels ) )
+		self.device_width_start = int( 0.5 * ( self.simulation_width_voxels - self.device_width_voxels ) )
 		self.device_width_end = self.device_width_start + self.device_width_voxels
 		self.device_height_start = int( self.pml_voxels + self.height_gap_voxels_bottom + self.focal_length_y_voxels )
 		self.device_height_end = self.device_height_start + self.device_height_voxels
 
 		self.focal_spots_x_voxels = [
-			int( self.device_width_start + self.focal_spots_x_relative[ idx ] * self.device_width_voxels for idx in range( 0, len( self.focal_spots_x_relative ) ) )
+			int( self.device_width_start + self.focal_spots_x_relative[ idx ] * self.device_width_voxels ) for idx in range( 0, len( self.focal_spots_x_relative ) )
 		]
 
 		self.fwd_src_y = int( self.pml_voxels + self.height_gap_voxels_bottom + self.focal_length_y_voxels + self.device_height_voxels + 0.75 * self.height_gap_voxels_top )
 		self.focal_point_y = int( self.pml_voxels + self.height_gap_voxels_bottom )
 
-		self.rel_eps_simulation = np.ones( ( self.simluation_width_voxels, self.simulation_height_voxels ) )
+		self.rel_eps_simulation = np.ones( ( self.simulation_width_voxels, self.simulation_height_voxels ) )
 
-		self.fwd_src_x_range = np.arange( 0, self.simulation_width_cells )
-		self.fwd_src_y_range = self.fwd_src_y * np.ones( self.fwd_src_x_range.shape, dtype=int )
+		fwd_src_x_range = np.arange( 0, self.simulation_width_voxels )
+		fwd_src_y_range = self.fwd_src_y * np.ones( fwd_src_x_range.shape, dtype=int )
 
-		self.fwd_source = np.zeros( ( self.simulation_width_cells, self.simulation_height_cells ), dtype=np.complex )
+		self.fwd_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 		self.fwd_source[ fwd_src_x_range, fwd_src_y_range ] = 1
 
 	def compute_forward_fields( self, omega, device_permittivity ):
@@ -173,9 +173,10 @@ class ColorSplittingOptimization2D():
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
 		fom = np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
 		
-		adj_source = np.zeros( ( self.simulation_width_cells, self.simulation_height_cells ), dtype=np.complex )
+		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 		adj_source[ focal_point_x_loc, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
 
+		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
 
 		gradient = 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
@@ -186,9 +187,12 @@ class ColorSplittingOptimization2D():
 	def compute_net_fom( self ):
 		fom_by_wl = []
 
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+
 		for wl_idx in range( 0, self.num_wavelengths ):
 			get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
-			get_fom, get_grad = self.compute_fom( self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ] )
+			get_fom = self.compute_fom( self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ] )
 			scale_fom_for_wl = get_fom * self.wavelength_intensity_scaling[ wl_idx ]
 			fom_by_wl.append( scale_fom_for_wl )
 
@@ -198,7 +202,7 @@ class ColorSplittingOptimization2D():
 
 
 	def verify_adjoint_against_finite_difference( self ):
-		fd_x = int( 0.5 * self.simluation_width_voxels )
+		fd_x = int( 0.5 * self.simulation_width_voxels )
 		fd_y = np.arange( 0, self.device_height_voxels )
 		compute_fd = np.zeros( len( fd_y ) )
 		fd_omega = self.omega_values[ int( 0.5 * len( self.omega_values ) ) ]
@@ -232,11 +236,10 @@ class ColorSplittingOptimization2D():
 
 		self.gradient_norm_evolution = np.zeros( num_iterations )
 		self.fom_evolution = np.zeros( num_iterations )
-		self.fom_by_wl_evolution = np.zeros( ( num_iterations, num_wavelengths ) )
+		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
 		self.gradient_directions = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
 
 		for iter_idx in range( 0, num_iterations ):
-		
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
 
@@ -251,7 +254,7 @@ class ColorSplittingOptimization2D():
 				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 
 				scale_fom_for_wl = get_fom * self.wavelength_intensity_scaling[ wl_idx ]
-				scale_gradient_for_wl = device_grad * self.wavelength_intensity_scaling[ wl_idx ]
+				scale_gradient_for_wl = upsampled_device_grad * self.wavelength_intensity_scaling[ wl_idx ]
 
 				gradient_by_wl.append( scale_gradient_for_wl )
 				fom_by_wl.append( scale_fom_for_wl )
