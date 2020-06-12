@@ -55,14 +55,21 @@ density_min_landscape = density_bound_from_eps( eps_min_landscape )
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 
 device_width_voxels = 140
-device_height_voxels = 60
+# device_height_voxels = 60
+device_height_voxels = 100
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
 
-num_layers = 3
+# num_layers = 3
+num_layers = 5
 spacer_permittivity = 1.5**2
-designable_layer_indicators = [ True for idx in range( 0, num_layers ) ]
+designable_layer_indicators = [ None for idx in range( 0, num_layers ) ]
+for idx in range( 0, num_layers ):
+	if ( idx % 2 ) == 0:
+		designable_layer_indicators[ idx ] = True
+	else:
+		designable_layer_indicators[ idx ] = False
 non_designable_permittivity = [ spacer_permittivity for idx in range( 0, num_layers ) ]
 
 mean_densities = np.linspace( 0.2, 0.8, number_of_optimizations )
