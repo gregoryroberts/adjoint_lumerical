@@ -62,7 +62,7 @@ class ColorSplittingOptimization2D():
 
 	def __init__( self,
 		device_size_voxels, coarsen_factor, mesh_size_nm,
-		permittivity_bounds, focal_spots_x_voxels, focal_length_y_voxels,
+		permittivity_bounds, focal_spots_x_relative, focal_length_y_voxels,
 		wavelengths_um, wavelength_idx_to_focal_idx, random_seed ):
 		
 		self.device_width_voxels = device_size_voxels[ 0 ]
@@ -86,7 +86,8 @@ class ColorSplittingOptimization2D():
 		self.permittivity_bounds = permittivity_bounds
 		self.min_relative_permittivity = permittivity_bounds[ 0 ]
 		self.max_relative_permittivity = permittivity_bounds[ 1 ]
-		self.focal_spots_x_voxels = focal_spots_x_voxels
+
+		self.focal_spots_x_relative = focal_spots_x_relative
 		self.focal_length_y_voxels = focal_length_y_voxels
 		self.wavelengths_um = wavelengths_um
 		self.wavelength_intensity_scaling = np.maximum( self.wavelengths_um )**2 / self.wavelengths_um**2
@@ -138,6 +139,10 @@ class ColorSplittingOptimization2D():
 		self.device_width_end = self.device_width_start + self.device_width_voxels
 		self.device_height_start = int( self.pml_voxels + self.height_gap_voxels_bottom + self.focal_length_y_voxels )
 		self.device_height_end = self.device_height_start + self.device_height_voxels
+
+		self.focal_spots_x_voxels = [
+			int( self.device_width_start + self.focal_spots_x_relative[ idx ] * self.device_width_voxels for idx in range( 0, len( self.focal_spots_x_relative ) ) )
+		]
 
 		self.fwd_src_y = int( self.pml_voxels + self.height_gap_voxels_bottom + self.focal_length_y_voxels + self.device_height_voxels + 0.75 * self.height_gap_voxels_top )
 		self.focal_point_y = int( self.pml_voxels + self.height_gap_voxels_bottom )

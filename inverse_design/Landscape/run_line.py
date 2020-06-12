@@ -48,11 +48,7 @@ device_width_voxels = 140
 device_height_voxels = 60
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
-
-focal_points_x = [
-	int( device_width_start + 0.25 * device_width_voxels ),
-	int( device_width_start + 0.75 * device_width_voxels )
-]
+focal_points_x_relative = [ 0.25, 0.75 ]
 
 mean_densities = np.linspace( 0.2, 0.8, number_of_optimizations )
 sigma_density = 0.2
@@ -68,7 +64,7 @@ for opt_idx in range( 0, number_of_optimizations ):
 		[ device_width_voxels, device_height_voxels ],
 		density_coarsen_factor, mesh_size_nm,
 		[ min_relative_permittivity, max_relative_permittivity ],
-		focal_points_x, focal_length_voxels,
+		focal_points_x_relative, focal_length_voxels,
 		lambda_values_um, [ 0, 1 ], random_seeds[ opt_idx ] )
 
 	make_optimizer.init_density_with_random( mean_densities[ opt_idx ], sigma_density )
