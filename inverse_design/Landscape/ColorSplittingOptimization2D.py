@@ -63,7 +63,8 @@ class ColorSplittingOptimization2D():
 	def __init__( self,
 		device_size_voxels, coarsen_factor, mesh_size_nm,
 		permittivity_bounds, focal_spots_x_relative, focal_length_y_voxels,
-		wavelengths_um, wavelength_idx_to_focal_idx, random_seed ):
+		wavelengths_um, wavelength_idx_to_focal_idx, random_seed,
+		num_layers, designable_layer_indicators, non_designable_permittivity ):
 		
 		self.device_width_voxels = device_size_voxels[ 0 ]
 		self.device_height_voxels = device_size_voxels[ 1 ]
@@ -101,15 +102,44 @@ class ColorSplittingOptimization2D():
 		self.random_seed = random_seed
 		np.random.seed( self.random_seed )
 
+		assert( self.design_height_voxels % num_layers ) == 0, "Expected the number of layers to evenly divide the design region"
+
+		self.num_layers = num_layers
+		self.design_voxels_per_layer = int( self.design_height_voxels / num_layers )
+
+		assert ( len( designable_layer_indicators ) == self.num_layers ), "The layer designability indicator length does not make sense!"
+		assert ( len( non_designable_permittivity ) == len( designable_layer_indicators ) ), "Expected a different length for the non designable permittivity "
+
+		self.designable_layer_indicators = np.array( designable_layer_indicators )
+		self.non_designable_permittivity = np.array( non_designable_permittivity )
+		self.non_designable_density = ( self.non_designable_permittivity - self.min_relative_permittivity ) / ( self.max_relative_permittivity - self.min_relative_permittivity )
+
+
 		self.setup_simulation()
 
 	def init_density_with_random( self, mean_density, sigma_density ):
-		num_values = self.design_width_voxels * self.design_height_voxels
+		num_random_values = self.design_width_voxels * self.num_layers
 
 		random_array_normal_distribution = np.random.normal(
 			loc=mean_density,
-			scale=sigma_density, size=[ num_values ] )
-		self.design_density = np.reshape( random_array_normal_distribution, [ self.design_width_voxels, self.design_height_voxels ] )
+			scale=sigma_density, size=[ num_random_values ] )
+
+		self.design_density = np.ones( [ self.design_width_voxels, self.design_height_voxels ] )
+
+		for layer_idx in range( 0, self.num_layers ):
+			layer_start = layer_idx * self.design_voxels_per_layer
+			layer_end = layer_start + self.design_voxels_per_layer
+
+			random_values_start = layer_idx * self.design_width_voxels
+			random_values_end = random_values_start + self.design_width_voxels
+
+			fill_data = self.non_designable_density[ layer_idx ] * np.ones( self.design_width_voxels )
+
+			if self.designable_layer_indicators[ layer_idx ]:
+				fill_random_data = random_array_normal_distribution[ random_values_start : random_values_end ]
+
+			for internal_layer_idx in range( layer_start, layer_end ):
+				self.design_density[ :, internal_layer_idx ] = fill_random_data
 
 		self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
 
@@ -234,6 +264,23 @@ class ColorSplittingOptimization2D():
 	def density_to_permittivity( self, density ):
 		return ( self.min_relative_permittivity + ( self.max_relative_permittivity - self.min_relative_permittivity ) * density )
 
+	def layer_spacer_averaging( self, gradient_input ):
+		gradient_output = np.zeros( gradient_input.shape )
+
+		for layer_idx in range( 0, self.num_layers ):
+			layer_start = layer_idx * self.design_voxels_per_layer
+			layer_end = layer_start + self.design_voxels_per_layer
+
+			fill_gradient = np.zeros( self.design_width_voxels )
+
+			if self.designable_layer_indicators[ layer_idx ]:
+				fill_gradient = np.mean( gradient_input[ :, layer_start : layer_end ], axis=1 )
+
+			for internal_layer_idx in range( layer_start, layer_end ):
+				gradient_output[ :, internal_layer_idx ] = fill_gradient
+
+		return gradient_output
+
 	def optimize( self, num_iterations ):
 		self.max_density_change_per_iteration_start = 0.05
 		self.max_density_change_per_iteration_end = 0.005
@@ -273,6 +320,11 @@ class ColorSplittingOptimization2D():
 				net_gradient += ( weighting * wl_gradient )
 
 			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
+
+			#
+			# Now, we should zero out non-designable regions and average over designable layers
+			#
+			net_gradient = self.layer_spacer_averaging( net_gradient )
 
 			gradient_norm = vector_norm( net_gradient )
 

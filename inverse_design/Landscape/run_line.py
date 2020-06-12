@@ -39,6 +39,7 @@ lambda_min_um = 0.45
 lambda_max_um = 0.60
 num_lambda_values = 2
 
+
 min_relative_permittivity = 1.5**2
 max_relative_permittivity = 2.5**2
 
@@ -59,6 +60,11 @@ device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
 
+num_layers = 3
+spacer_permittivity = 1.5**2
+designable_layer_indicators = [ True for idx in range( 0, num_layers ) ]
+non_designable_permittivity = [ spacer_permittivity for idx in range( 0, num_layers ) ]
+
 mean_densities = np.linspace( 0.2, 0.8, number_of_optimizations )
 sigma_density = 0.2
 
@@ -74,7 +80,8 @@ for opt_idx in range( 0, number_of_optimizations ):
 		density_coarsen_factor, mesh_size_nm,
 		[ min_relative_permittivity, max_relative_permittivity ],
 		focal_points_x_relative, focal_length_voxels,
-		lambda_values_um, [ 0, 1 ], random_seeds[ opt_idx ] )
+		lambda_values_um, [ 0, 1 ], random_seeds[ opt_idx ],
+		num_layers, designable_layer_indicators, non_designable_permittivity )
 
 	make_optimizer.init_density_with_random( mean_densities[ opt_idx ], sigma_density )
 
@@ -87,7 +94,6 @@ for opt_idx in range( 0, number_of_optimizations ):
 
 	optimizers.append( make_optimizer )
 
-
 num_alpha = 60
 alpha = np.linspace( -0.5, 1.5, num_alpha )
 
@@ -96,7 +102,8 @@ test_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	density_coarsen_factor, mesh_size_nm,
 	[ min_relative_permittivity, max_relative_permittivity ],
 	focal_points_x_relative, focal_length_voxels,
-	lambda_values_um, [ 0, 1 ], random_seeds[ opt_idx ] )
+	lambda_values_um, [ 0, 1 ], random_seeds[ opt_idx ],
+	num_layers, designable_layer_indicators, non_designable_permittivity )
 
 num_searches = int( math.factorial( number_of_optimizations ) / ( math.factorial( 2 ) * math.factorial( number_of_optimizations - 2 ) ) )
 fom_line_searches = np.zeros( ( num_searches, num_alpha ) )
