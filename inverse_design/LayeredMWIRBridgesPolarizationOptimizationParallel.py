@@ -1077,9 +1077,9 @@ for epoch in range(start_epoch, num_epochs):
 		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
 		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
 		#
-		enforce_binarization = False
-		if epoch >= binarization_start_epoch:
-			enforce_binarization = True
+		# enforce_binarization = False
+		# if epoch >= binarization_start_epoch:
+		# 	enforce_binarization = True
 		# device_gradient = np.flip( device_gradient, axis=2 )
 		bayer_filter.step(device_gradient, step_size_density)
 		#(, enforce_binarization, projects_directory_location)
