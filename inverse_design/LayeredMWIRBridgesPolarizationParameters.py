@@ -118,6 +118,10 @@ start_epoch = 0
 use_fixed_step_size = False
 fixed_step_size = 2.0
 
+design_change_start_epoch = 0.025
+design_change_end_epoch = 0.01
+
+
 epoch_start_permittivity_change_max = 0.15
 epoch_end_permittivity_change_max = 0.05
 epoch_range_permittivity_change_max = epoch_start_permittivity_change_max - epoch_end_permittivity_change_max
