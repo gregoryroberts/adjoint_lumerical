@@ -1091,7 +1091,7 @@ for epoch in range(start_epoch, num_epochs):
 			enforce_binarization = True
 		# device_gradient = np.flip( device_gradient, axis=2 )
 		bayer_filter.step(device_gradient, step_size_density)
-		(#, enforce_binarization, projects_directory_location)
+		#(, enforce_binarization, projects_directory_location)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
