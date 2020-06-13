@@ -686,7 +686,7 @@ sio2_top['x span'] = fdtd_region_size_lateral_um * 1e-6
 sio2_top['y span'] = fdtd_region_size_lateral_um * 1e-6
 sio2_top['z min'] = device_vertical_maximum_um * 1e-6
 sio2_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-sio2_top['index'] = index_sio2
+sio2_top['index'] = max_device_index
 
 air_bottom = fdtd_hook.addrect()
 air_bottom['name'] = 'air_bottom'
