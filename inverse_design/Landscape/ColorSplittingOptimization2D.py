@@ -136,17 +136,32 @@ class ColorSplittingOptimization2D():
 			fill_data = self.non_designable_density[ layer_idx ] * np.ones( self.design_width_voxels )
 
 			if self.designable_layer_indicators[ layer_idx ]:
-				fill_random_data = random_array_normal_distribution[ random_values_start : random_values_end ]
+				fill_data = random_array_normal_distribution[ random_values_start : random_values_end ]
 
 			for internal_layer_idx in range( layer_start, layer_end ):
-				self.design_density[ :, internal_layer_idx ] = fill_random_data
+				self.design_density[ :, internal_layer_idx ] = fill_data
 
 		self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
 
 	def init_density_with_uniform( self, density_value ):
 		assert ( ( density_value <= 1.0 ) and ( density_value >= 0.0 ) ), "Invalid density value specified!"
 
-		self.design_density = density_value * np.ones( [ self.design_width_voxels, self.design_height_voxels ] )
+		self.design_density = np.ones( [ self.design_width_voxels, self.design_height_voxels ] )
+
+		for layer_idx in range( 0, self.num_layers ):
+			layer_start = layer_idx * self.design_voxels_per_layer
+			layer_end = layer_start + self.design_voxels_per_layer
+
+			random_values_start = layer_idx * self.design_width_voxels
+			random_values_end = random_values_start + self.design_width_voxels
+
+			choose_density = self.non_designable_density[ layer_idx ]
+
+			if self.designable_layer_indicators[ layer_idx ]:
+				choose_density = density_value
+
+			for internal_layer_idx in range( layer_start, layer_end ):
+				self.design_density[ :, internal_layer_idx ] = choose_density
 
 	def init_density_directly( self, input_density ):
 		assert ( ( input_density.shape[ 0 ] == self.design_width_voxels ) and ( input_density.shape[ 1 ] == self.design_height_voxels ) ), "Specified design has the wrong shape"
@@ -197,9 +212,9 @@ class ColorSplittingOptimization2D():
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
 		fom = np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
 		
-		# import matplotlib.pyplot as plt
-		# plt.imshow( np.abs( fwd_Ez )**2 )
-		# plt.show()
+		import matplotlib.pyplot as plt
+		plt.imshow( np.abs( fwd_Ez )**2 )
+		plt.show()
 
 		return fom
 
@@ -282,8 +297,8 @@ class ColorSplittingOptimization2D():
 		return gradient_output
 
 	def optimize( self, num_iterations ):
-		self.max_density_change_per_iteration_start = 0.05
-		self.max_density_change_per_iteration_end = 0.005
+		self.max_density_change_per_iteration_start = 0.03#0.05
+		self.max_density_change_per_iteration_end = 0.01#0.005
 
 		self.gradient_norm_evolution = np.zeros( num_iterations )
 		self.fom_evolution = np.zeros( num_iterations )

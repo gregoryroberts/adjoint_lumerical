@@ -149,6 +149,7 @@ for opt1_idx in range( 0, number_of_optimizations ):
 
 
 np.save( save_folder + "/fom_line_searches.npy", fom_line_searches )
+np.save( save_folder + "/fome_line_search_valid.npy", fome_line_search_valid )
 
 
 
