@@ -7,7 +7,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6x6x3p84um_weighting_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thicker_high_mean_init_6x6x3p84um_weighting_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3'
 
@@ -28,7 +29,7 @@ max_device_index = index_silicon
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
 
-init_permittivity_0_1_scale = 0.25
+init_permittivity_0_1_scale = 0.75
 
 focal_length_um = 4.0
 focal_plane_center_lateral_um = 0
@@ -108,7 +109,7 @@ fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
 
-fdtd_simulation_time_fs = 4 * 700
+fdtd_simulation_time_fs = 8 * 700
 
 #
 # Forward Source
@@ -150,7 +151,7 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 #
 # Optimization
 #
-start_epoch = 1#0#12#7#6
+start_epoch = 0#0#12#7#6
 num_epochs = 14#8
 num_iterations_per_epoch = 50#35#50#25
 binarization_start_epoch = 4
