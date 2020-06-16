@@ -115,6 +115,8 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 def transmission_performance( parallel_transmission, orthogonal_transmission ):
 	return ( parallel_transmission * np.maximum( 1 - orthogonal_transmission, 0 ) )
 
+# this figure of merit won't be capturing the orthogonal effect very well near the later part of the optimization, something
+# keep in mind
 def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 
 	total_fom = 0
@@ -428,7 +430,7 @@ if not os.path.isdir(projects_directory_location):
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/LayeredLithographyIRPolarizationParameters.py", projects_directory_location + "/LayeredLithographyIRPolarizationParameters.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesPolarizationParameters.py", projects_directory_location + "/LayeredMWIRBridgesPolarizationParameters.py")
 
 log_file = open( projects_directory_location + "/log.txt", 'w' )
 log_file.write( "Log\n" )
@@ -701,7 +703,7 @@ def get_hfield( monitor_name ):
 def get_efield( monitor_name ):
 	return get_afield( monitor_name, 'E' )
 
-def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_wl ):
+def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_wl, width_spatial_units, height_spatial_units ):
 	xpol = 0
 	ypol = 1
 
@@ -717,11 +719,15 @@ def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_w
 
 	assert len( power_z.shape ) == 3, "We expected a differently shaped power matrix for the transmission computation"
 
+	voxel_size_normalization = width_spatial_units * height_spatial_units / ( power_z.shape[ 0 ] * power_z.shape[ 1 ] )
+
 	num_wl = E_field_focal.shape[ 3 ]
 	transmission_by_wl = np.zeros( num_wl )
 
 	for wl_idx in range( 0, num_wl ):
 		transmission_by_wl[ wl_idx ] = np.sum( power_z[ :, :, wl_idx ] ) / power_normalization_by_wl[ wl_idx ]
+
+	transmission_by_wl *= voxel_size_normalization
 
 	return transmission_by_wl
 
@@ -829,7 +835,10 @@ fdtd_hook.run()
 E_focal_normalization = get_efield( transmission_focal[ 'name' ] )
 H_focal_normalization = get_hfield( transmission_focal[ 'name' ] )
 
-transmission_normalization_by_wl = compute_transmission( E_focal_normalization, H_focal_normalization, 1.0 * np.ones( num_design_frequency_points ) )
+transmission_normalization_by_wl = compute_transmission(
+	E_focal_normalization, H_focal_normalization, 1.0 * np.ones( num_design_frequency_points ),
+	transmission_focal[ 'x span' ], transmission_focal[ 'y span' ] )
+
 
 fdtd_hook.switchtolayout()
 
@@ -954,9 +963,11 @@ for epoch in range(start_epoch, num_epochs):
 			H_focal_orthogonal_transmission_measurement = orthogonal_vector[ 0 ] * H_focal_transmission[ 0, focal_idx ] + orthogonal_vector[ 1 ] * H_focal_transmission[ 1, focal_idx ]
 
 			analyzer_transmission_by_wl = compute_transmission(
-				E_focal_analyzer_transmission_measurement, H_focal_analyzer_transmission_measurement, transmission_normalization_by_wl )
+				E_focal_analyzer_transmission_measurement, H_focal_analyzer_transmission_measurement, transmission_normalization_by_wl,
+				transmission_focal_monitors[ focal_idx ][ 'x span' ], transmission_focal_monitors[ focal_idx ][ 'y span' ] )
 			orthogonal_transmission_by_wl = compute_transmission(
-				E_focal_orthogonal_transmission_measurement, H_focal_orthogonal_transmission_measurement, transmission_normalization_by_wl )
+				E_focal_orthogonal_transmission_measurement, H_focal_orthogonal_transmission_measurement, transmission_normalization_by_wl,
+				transmission_focal_monitors[ focal_idx ][ 'x span' ], transmission_focal_monitors[ focal_idx ][ 'y span' ] )
 
 			transmission_contrast = ( analyzer_transmission_by_wl - orthogonal_transmission_by_wl ) / ( analyzer_transmission_by_wl + orthogonal_transmission_by_wl )
 
