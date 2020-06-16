@@ -282,7 +282,7 @@ def gradient(
 	num_total_fom = num_focal_spots * num_design_frequency_points
 	rearrange_performance = performance_for_weighting_by_focal_spot_by_weighting.flatten()
 
-	fom_weightings = ( 2. / num_important_fom ) - rearrange_performance**2 / np.sum( rearrange_performance**2 )
+	fom_weightings = ( 2. / num_total_fom ) - rearrange_performance**2 / np.sum( rearrange_performance**2 )
 	fom_weightings = np.maximum( fom_weightings, 0 )
 	fom_weightings /= np.sum( fom_weightings )
 
@@ -429,6 +429,10 @@ fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
 shutil.copy2(python_src_directory + "/LayeredLithographyIRPolarizationParameters.py", projects_directory_location + "/LayeredLithographyIRPolarizationParameters.py")
+
+log_file = open( projects_directory_location + "/log.txt", 'w' )
+log_file.write( "Log\n" )
+log_file.close()
 
 #
 # Set up the FDTD region and mesh
