@@ -112,10 +112,13 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 	return total_fom, fom_by_focal_spot_by_type_by_wavelength
 '''
 
+def transmission_performance( parallel_transmission, orthogonal_transmission ):
+	return ( parallel_transmission * np.maximum( 1 - orthogonal_transmission, 0 ) )
+
 def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 
 	total_fom = 0
-	fom_by_focal_spot_by_type_by_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ) )
+	fom_by_focal_spot_by_type_by_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
 
 	for focal_spot_idx in range( 0, num_focal_spots ):
 		alpha = jones_sorting_vectors[ focal_spot_idx ][ 0 ]
@@ -127,9 +130,6 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 		Qxy_focal_spot = Qxy[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
 		Qyx_focal_spot = Qyx[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
 		Qyy_focal_spot = Qyy[ focal_spot_idx, : ] / np.sqrt( max_intensity_by_wavelength )
-
-		orthogonal_cancel_x = np.abs( Qyx_focal_spot + ( alpha_prime / beta_prime ) * Qxx_focal_spot )**2
-		orthogonal_cancel_y = np.abs( Qxy_focal_spot + ( beta_prime / alpha_prime ) * Qyy_focal_spot )**2
 
 		parallel_x_term = np.abs( alpha * Qxx_focal_spot + beta * Qyx_focal_spot )**2
 		parallel_y_term = np.abs( alpha * Qxy_focal_spot + beta * Qyy_focal_spot )**2
@@ -145,14 +145,9 @@ def figure_of_merit( Qxx, Qxy, Qyx, Qyy ):
 		orthogonal_fom = np.maximum( 1 - orthogonal_intensity, 0 )
 		product_fom = parallel_fom * orthogonal_fom
 
-		# total_fom += ( 1 / num_focal_spots ) * np.mean( orthogonal_cancel_x + orthogonal_cancel_y + parallel )
-		# total_fom += ( 1 / num_focal_spots ) * np.mean( parallel_fom )
 		total_fom += ( 1. / num_focal_spots ) * np.mean( product_fom )
 
-		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 0, : ] = orthogonal_cancel_x
-		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 1, : ] = orthogonal_cancel_y
-		# fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 2, : ] = parallel
-		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, 2, : ] = product_fom
+		fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, : ] = product_fom
 
 	return total_fom, fom_by_focal_spot_by_type_by_wavelength
 
@@ -278,69 +273,27 @@ def gradient(
 '''
 
 def gradient(
-	fom_by_focal_spot_by_type_by_wavelength,
+	# fom_by_focal_spot_by_wavelength,
+	performance_for_weighting_by_focal_spot_by_weighting,
 	Ex_forward_fields, Ey_forward_fields,
 	Ex_adjoint_fields_by_focal_spot, Ey_adjoint_fields_by_focal_spot,
 	Qxx, Qxy, Qyx, Qyy ):
 
-	num_total_fom = num_focal_spots * 3 * num_design_frequency_points
-	rearrange_figures_of_merit = np.zeros( num_total_fom )
-	weighting_mask = np.zeros( num_total_fom )
+	num_total_fom = num_focal_spots * num_design_frequency_points
+	rearrange_performance = performance_for_weighting_by_focal_spot_by_weighting.flatten()
 
-	for focal_spot_idx in range( 0, num_focal_spots ):
-		for fom_type_idx in range( 0, 3 ):
-			for wl_idx in range( 0, num_design_frequency_points ):
-				rearrange_figures_of_merit[
-					focal_spot_idx * 3 * num_design_frequency_points +
-					fom_type_idx * num_design_frequency_points +
-					wl_idx
-				] = fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, fom_type_idx, wl_idx ]
-
-				if fom_type_idx == 2:
-					if focal_spot_idx in optimized_focal_spots:
-						weighting_mask[ focal_spot_idx * 3 * num_design_frequency_points +
-							fom_type_idx * num_design_frequency_points +
-							wl_idx ] = 1
-
-
-	select_fom = []
-	for idx in range( 0, num_total_fom ):
-		if weighting_mask[ idx ] > 0:
-			select_fom.append( rearrange_figures_of_merit[ idx ] )
-	num_important_fom = len( select_fom )
-	select_fom = np.array( select_fom )
-
-	selected_weightings = ( 2. / num_important_fom ) - select_fom**2 / np.sum( select_fom**2 )
-	selected_weightings = np.maximum( selected_weightings, 0 )
-	selected_weightings /= np.sum( selected_weightings )
-
-	fom_weightings = np.zeros( num_total_fom )
-	cur_weighting_idx = 0
-	for idx in range( 0, num_total_fom ):
-		if weighting_mask[ idx ] > 0:
-			fom_weightings[ idx ] = selected_weightings[ cur_weighting_idx ]
-			cur_weighting_idx += 1
-
-
-
-	# fom_weightings = ( 2. / num_total_fom ) - rearrange_figures_of_merit**2 / np.sum( rearrange_figures_of_merit )
-	# fom_weightings = np.maximum( fom_weightings, 0 )
-	# fom_weightings *= weighting_mask
-	# fom_weightings /= np.sum( fom_weightings )
-
-	#
-	# This is because we are actually minimizing all three figures of merit, so we would like to flip the orientation
-	# of the weightings (i.e. - a small figure of merit means you are doing well in this optimization)
-	#
-	# fom_weightings = 1 - fom_weightings
-	# fom_weightings *= weighting_mask
-	# Renormalize, so they add to 1
-	# fom_weightings /= np.sum( fom_weightings )
+	fom_weightings = ( 2. / num_important_fom ) - rearrange_performance**2 / np.sum( rearrange_performance**2 )
+	fom_weightings = np.maximum( fom_weightings, 0 )
+	fom_weightings /= np.sum( fom_weightings )
 
 	gradient_shape = Ex_forward_fields[ 0, :, :, :, 0 ].shape
 	gradient = np.zeros( gradient_shape )
 
 	for focal_spot_idx in range( 0, num_focal_spots ):
+		weighting_start_idx = focal_spot_idx * num_design_frequency_points
+		weighting_end_idx = weighting_start_idx + num_design_frequency_points
+
+		get_weightings = fom_weightings[ weighting_start_idx : weighting_end_idx ]
 
 		alpha = jones_sorting_vectors[ focal_spot_idx ][ 0 ]
 		beta = jones_sorting_vectors[ focal_spot_idx ][ 1 ]
@@ -364,151 +317,91 @@ def gradient(
 		parallel_fom = np.minimum( parallel_fom_bound, parallel_intensity )
 		orthogonal_fom = np.maximum( 1 - orthogonal_intensity, 0 )
 
-		for fom_type_idx in range( 0, 3 ):
-			weighting_start_idx = focal_spot_idx * 3 * num_design_frequency_points + fom_type_idx * num_design_frequency_points
-			weighting_end_idx = weighting_start_idx + num_design_frequency_points
 
-			get_weightings = fom_weightings[ weighting_start_idx : weighting_end_idx ]
+		d_dQxx_2 = -( np.abs( alpha )**2 * np.conj( Qxx_focal_spot ) + alpha * np.conj( beta ) * np.conj( Qyx_focal_spot ) )
+		d_dQyx_2 = -( np.abs( beta )**2 * np.conj( Qyx_focal_spot ) + np.conj( alpha ) * beta * np.conj( Qxx_focal_spot ) )
 
-			if fom_type_idx == 0:
-				d_dQxx_0 = np.abs( alpha_prime / beta_prime )**2 * np.conj( Qxx_focal_spot ) + ( alpha_prime / beta_prime ) * np.conj( Qyx_focal_spot )
-				d_dQyx_0 = np.conj( Qyx_focal_spot ) + np.conj( alpha_prime / beta_prime ) * np.conj( Qxx_focal_spot )
-
-				for wl_idx in range( 0, num_design_frequency_points ):
-					gradient_component_0_xx = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQxx_0[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-					gradient_component_0_yx = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQyx_0[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-					gradient += ( gradient_component_0_xx + gradient_component_0_yx )
-
-			elif fom_type_idx == 1:
-				d_dQyy_1 = np.abs( beta_prime / alpha_prime )**2 * np.conj( Qyy_focal_spot ) + ( beta_prime / alpha_prime ) * np.conj( Qxy_focal_spot )
-				d_dQxy_1 = np.conj( Qxy_focal_spot ) + np.conj( beta_prime / alpha_prime ) * np.conj( Qyy_focal_spot )
-
-				for wl_idx in range( 0, num_design_frequency_points ):
-					gradient_component_1_yy = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQyy_1[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-					gradient_component_1_xy = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQxy_1[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-					gradient += ( gradient_component_1_yy + gradient_component_1_xy )
-
-			else:
-				d_dQxx_2 = -( np.abs( alpha )**2 * np.conj( Qxx_focal_spot ) + alpha * np.conj( beta ) * np.conj( Qyx_focal_spot ) )
-				d_dQyx_2 = -( np.abs( beta )**2 * np.conj( Qyx_focal_spot ) + np.conj( alpha ) * beta * np.conj( Qxx_focal_spot ) )
-
-				d_dQxy_2 = -( np.abs( alpha )**2 * np.conj( Qxy_focal_spot ) + alpha * np.conj( beta  ) * np.conj( Qyy_focal_spot ) )
-				d_dQyy_2 = -( np.abs( beta )**2 * np.conj( Qyy_focal_spot ) + np.conj( alpha ) * beta * np.conj( Qxy_focal_spot ) )
+		d_dQxy_2 = -( np.abs( alpha )**2 * np.conj( Qxy_focal_spot ) + alpha * np.conj( beta  ) * np.conj( Qyy_focal_spot ) )
+		d_dQyy_2 = -( np.abs( beta )**2 * np.conj( Qyy_focal_spot ) + np.conj( alpha ) * beta * np.conj( Qxy_focal_spot ) )
 
 
-				d_dQxx_2_prime = -( np.abs( alpha_prime )**2 * np.conj( Qxx_focal_spot ) + alpha_prime * np.conj( beta_prime ) * np.conj( Qyx_focal_spot ) )
-				d_dQyx_2_prime = -( np.abs( beta_prime )**2 * np.conj( Qyx_focal_spot ) + np.conj( alpha_prime ) * beta_prime * np.conj( Qxx_focal_spot ) )
+		d_dQxx_2_prime = -( np.abs( alpha_prime )**2 * np.conj( Qxx_focal_spot ) + alpha_prime * np.conj( beta_prime ) * np.conj( Qyx_focal_spot ) )
+		d_dQyx_2_prime = -( np.abs( beta_prime )**2 * np.conj( Qyx_focal_spot ) + np.conj( alpha_prime ) * beta_prime * np.conj( Qxx_focal_spot ) )
 
-				d_dQxy_2_prime = -( np.abs( alpha_prime )**2 * np.conj( Qxy_focal_spot ) + alpha_prime * np.conj( beta_prime  ) * np.conj( Qyy_focal_spot ) )
-				d_dQyy_2_prime = -( np.abs( beta_prime )**2 * np.conj( Qyy_focal_spot ) + np.conj( alpha_prime ) * beta_prime * np.conj( Qxy_focal_spot ) )
-
-
-				for wl_idx in range( 0, num_design_frequency_points ):
-					gradient_component_2_xx = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQxx_2[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-					gradient_component_2_yx = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQyx_2[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-					gradient_component_2_xy = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQxy_2[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-					gradient_component_2_yy = 2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQyy_2[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
+		d_dQxy_2_prime = -( np.abs( alpha_prime )**2 * np.conj( Qxy_focal_spot ) + alpha_prime * np.conj( beta_prime  ) * np.conj( Qyy_focal_spot ) )
+		d_dQyy_2_prime = -( np.abs( beta_prime )**2 * np.conj( Qyy_focal_spot ) + np.conj( alpha_prime ) * beta_prime * np.conj( Qxy_focal_spot ) )
 
 
-					gradient_component_2_xx_prime = -2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQxx_2_prime[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
+		for wl_idx in range( 0, num_design_frequency_points ):
+			gradient_component_2_xx = 2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQxx_2[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
 
-					gradient_component_2_yx_prime = -2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQyx_2_prime[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
+			gradient_component_2_yx = 2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQyx_2[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
 
-					gradient_component_2_xy_prime = -2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQxy_2_prime[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
+			gradient_component_2_xy = 2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQxy_2[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
 
-					gradient_component_2_yy_prime = -2 * np.real(
-						np.sum(
-							get_weightings[ wl_idx ] *
-							d_dQyy_2_prime[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
-							axis=0
-						)
-					)
-
-
-
-
-					if parallel_fom[ wl_idx ] < parallel_fom_bound:
-						gradient += orthogonal_fom[ wl_idx ] * ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
-						# gradient += ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
-
-					gradient += parallel_fom[ wl_idx ] * ( gradient_component_2_xx_prime + gradient_component_2_yx_prime + gradient_component_2_xy_prime + gradient_component_2_yy_prime )
+			gradient_component_2_yy = 2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQyy_2[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
 
 
-					# if fom_by_focal_spot_by_type_by_wavelength[ focal_spot_idx, fom_type_idx, wl_idx ] > 0:
-					# 	gradient += ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
+			gradient_component_2_xx_prime = -2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQxx_2_prime[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
+
+			gradient_component_2_yx_prime = -2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQyx_2_prime[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ex_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
+
+			gradient_component_2_xy_prime = -2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQxy_2_prime[ wl_idx ] * Ex_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
+
+			gradient_component_2_yy_prime = -2 * np.real(
+				np.sum(
+					get_weightings[ wl_idx ] *
+					d_dQyy_2_prime[ wl_idx ] * Ey_forward_fields[ :, :, :, :, wl_idx ] * Ey_adjoint_fields_by_focal_spot[ focal_spot_idx ][ :, :, :, :, wl_idx ],
+					axis=0
+				)
+			)
+
+			if parallel_fom[ wl_idx ] < parallel_fom_bound:
+				gradient += orthogonal_fom[ wl_idx ] * ( gradient_component_2_xx + gradient_component_2_yx + gradient_component_2_xy + gradient_component_2_yy )
+
+			gradient += parallel_fom[ wl_idx ] * ( gradient_component_2_xx_prime + gradient_component_2_yx_prime + gradient_component_2_xy_prime + gradient_component_2_yy_prime )
 
 	return gradient
 
@@ -658,7 +551,10 @@ for adj_src in range(0, num_adjoint_sources):
 	transmission_focal_monitor['use wavelength spacing'] = 1
 	transmission_focal_monitor['use source limits'] = 1
 	transmission_focal_monitor['frequency points'] = num_eval_frequency_points
-	transmission_focal_monitor.enabled = 0
+	transmission_focal_monitor['output Hx'] = 1
+	transmission_focal_monitor['output Hy'] = 1
+	transmission_focal_monitor['output Hz'] = 1
+	transmission_focal_monitor.enabled = 1
 
 	transmission_focal_monitors.append(transmission_focal_monitor)
 
@@ -674,7 +570,10 @@ transmission_focal['override global monitor settings'] = 1
 transmission_focal['use wavelength spacing'] = 1
 transmission_focal['use source limits'] = 1
 transmission_focal['frequency points'] = num_eval_frequency_points
-transmission_focal.enabled = 0
+transmission_focal['output Hx'] = 1
+transmission_focal['output Hy'] = 1
+transmission_focal['output Hz'] = 1
+transmission_focal.enabled = 1
 
 
 #
@@ -764,23 +663,23 @@ def disable_all_sources():
 # 	data = get_monitor_data(monitor_name, monitor_field)
 # 	return (data['real'] + np.complex(0, 1) * data['imag'])
 
-def get_efield( monitor_name ):
-	field_polariations = [ 'Ex', 'Ey', 'Ez' ]
+def get_afield( monitor_name, field_indicator ):
+	field_polariations = [ field_indicator + 'x', field_indicator + 'y', field_indicator + 'z' ]
 	data_xfer_size_MB = 0
 
 	start = time.time()
 
-	Epol_0 = fdtd_hook.getdata( monitor_name, field_polariations[ 0 ] )
-	data_xfer_size_MB += Epol_0.nbytes / ( 1024. * 1024. )
+	field_pol_0 = fdtd_hook.getdata( monitor_name, field_polariations[ 0 ] )
+	data_xfer_size_MB += field_pol_0.nbytes / ( 1024. * 1024. )
 
-	total_efield = np.zeros( [ len (field_polariations ) ] + list( Epol_0.shape ), dtype=np.complex )
-	total_efield[ 0 ] = Epol_0
+	total_field = np.zeros( [ len (field_polariations ) ] + list( field_pol_0.shape ), dtype=np.complex )
+	total_field[ 0 ] = field_pol_0
 
 	for pol_idx in range( 1, len( field_polariations ) ):
-		Epol = fdtd_hook.getdata( monitor_name, field_polariations[ pol_idx ] )
-		data_xfer_size_MB += Epol.nbytes / ( 1024. * 1024. )
+		field_pol = fdtd_hook.getdata( monitor_name, field_polariations[ pol_idx ] )
+		data_xfer_size_MB += field_pol.nbytes / ( 1024. * 1024. )
 
-		total_efield[ pol_idx ] = Epol
+		total_field[ pol_idx ] = field_pol
 
 	elapsed = time.time() - start
 
@@ -790,7 +689,38 @@ def get_efield( monitor_name ):
 	log_file.write( "Data rate = " + str( date_xfer_rate_MB_sec ) + " MB/sec\n\n" )
 	log_file.close()
 
-	return total_efield
+	return total_field
+
+def get_hfield( monitor_name ):
+	return get_afield( monitor_name, 'H' )
+
+def get_efield( monitor_name ):
+	return get_afield( monitor_name, 'E' )
+
+def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_wl ):
+	xpol = 0
+	ypol = 1
+
+	E_field_focal = np.squeeze( E_field_focal )
+	H_field_focal = np.squeeze( H_field_focal )
+
+	assert len( E_field_focal.shape ) == 4, "We expected a differently shaped E field for the transmission computation"
+	assert len( E_field_focal.shape ) == 4, "We expected a differently shaped E field for the transmission computation"
+
+	power_z = np.squeeze(
+		np.real( E_field_focal[ ypol ] * np.conj( H_field_focal[ xpol ] ) - E_field_focal[ xpol ] * np.conj( H_field_focal[ ypol ] ) )
+	)
+
+	assert len( power_z.shape ) == 3, "We expected a differently shaped power matrix for the transmission computation"
+
+	num_wl = E_field_focal.shape[ 3 ]
+	transmission_by_wl = np.zeros( num_wl )
+
+	for wl_idx in range( 0, num_wl ):
+		transmission_by_wl[ wl_idx ] = np.sum( power_z[ :, :, wl_idx ] ) / power_normalization_by_wl[ wl_idx ]
+
+	return transmission_by_wl
+
 
 #
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
@@ -799,10 +729,15 @@ forward_e_fields = {}
 focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
-figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, 3, num_design_frequency_points))
+figure_of_merit_by_focal_spot_by_wavelength_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
 contrast_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
 parallel_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
 orthogonal_intensity_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
+
+transmission_contrast_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
+parallel_transmission_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
+orthogonal_transmission_per_focal_spot_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
+
 
 step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
@@ -814,12 +749,10 @@ if start_epoch > 0:
 	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
 	bayer_filter.set_design_variable( design_variable_reload )
 	figure_of_merit_evolution = np.load( projects_directory_location + "/figure_of_merit.npy" )
-	figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution = np.load( projects_directory_location + "/figure_of_merit_by_focal_spot_by_type_by_wavelength.npy" )
+	figure_of_merit_by_focal_spot_by_wavelength_evolution = np.load( projects_directory_location + "/figure_of_merit_by_focal_spot_by_type_by_wavelength.npy" )
 	contrast_per_focal_spot_evolution = np.load( projects_directory_location + "/contrast_per_focal_spot.npy" )
 	parallel_intensity_per_focal_spot_evolution = np.load( projects_directory_location + "/parallel_intensity.npy" )
 	orthogonal_intensity_per_focal_spot_evolution = np.load( projects_directory_location + "/orthogonal_intensity.npy" )
-
-
 
 
 jobs_queue = queue.Queue()
@@ -873,6 +806,38 @@ def run_jobs_inner( queue_in ):
 
 
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+
+#
+# Let's get a transmission normalization
+#
+disable_all_sources()
+fdtd_hook.select( forward_sources[0]['name' ])
+fdtd_hook.set( 'enabled', 1 )
+
+fdtd_hook.select( design_import['name'] )
+fdtd_hook.set( 'enabled', 0 )
+
+fdtd_hook.select( sio2_top['name'] )
+fdtd_hook.set( 'enabled', 0 )
+
+fdtd_hook.run()
+
+E_focal_normalization = get_efield( transmission_focal[ 'name' ] )
+H_focal_normalization = get_hfield( transmission_focal[ 'name' ] )
+
+transmission_normalization_by_wl = compute_transmission( E_focal_normalization, H_focal_normalization, 1.0 * np.ones( num_design_frequency_points ) )
+
+fdtd_hook.switchtolayout()
+
+fdtd_hook.select( design_import['name'] )
+fdtd_hook.set( 'enabled', 0 )
+
+fdtd_hook.select( sio2_top['name'] )
+fdtd_hook.set( 'enabled', 0 )
+
+#
+#
+#
 
 #
 # Run the optimization
@@ -930,6 +895,8 @@ for epoch in range(start_epoch, num_epochs):
 
 
 ####
+		E_focal_transmission = None
+		H_focal_transmission = None
 		for xy_idx in range(0, 2):
 			fdtd_hook.load( job_names[ ( 'forward', xy_idx ) ] )
 
@@ -945,9 +912,18 @@ for epoch in range(start_epoch, num_epochs):
 				else:
 					Qyy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
 					Qyx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
+
+
+				E_focal = get_efield( transmission_focal_monitors[ focal_idx ][ 'name' ] )
+				H_focal = get_hfield( transmission_focal_monitors[ focal_idx ][ 'name' ] )
+				if ( xy_idx == 0 ) and ( focal_idx == 0 ):
+					# This feels a bit hacky!
+					E_focal_transmission = np.zeros( ( [ 2, num_focal_spots ] + list( E_focal.shape ) ), dtype=np.complex )
+					H_focal_transmission = np.zeros( ( [ 2, num_focal_spots ] + list( H_focal.shape ) ), dtype=np.complex )
+
+				E_focal_transmission[ xy_idx, focal_idx ] = E_focal
+				H_focal_transmission[ xy_idx, focal_idx ] = H_focal
 ####
-
-
 		
 		for focal_idx in range( 0, num_focal_spots ):
 			analyzer_vector = jones_sorting_vectors[ focal_idx ]
@@ -967,19 +943,43 @@ for epoch in range(start_epoch, num_epochs):
 			orthogonal_intensity_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = orthogonal_intensity / max_intensity_by_wavelength
 			contrast_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = contrast
 
+			E_focal_analyzer_transmission_measurement = analyzer_vector[ 0 ] * E_focal_transmission[ 0, focal_idx ] + analyzer_vector[ 1 ] * E_focal_transmission[ 1, focal_idx ]
+			E_focal_orthogonal_transmission_measurement = orthogonal_vector[ 0 ] * E_focal_transmission[ 0, focal_idx ] + orthogonal_vector[ 1 ] * E_focal_transmission[ 1, focal_idx ]
 
-		current_figure_of_merit, fom_by_focal_spot_by_type_by_wavelength = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
+			H_focal_analyzer_transmission_measurement = analyzer_vector[ 0 ] * H_focal_transmission[ 0, focal_idx ] + analyzer_vector[ 1 ] * H_focal_transmission[ 1, focal_idx ]
+			H_focal_orthogonal_transmission_measurement = orthogonal_vector[ 0 ] * H_focal_transmission[ 0, focal_idx ] + orthogonal_vector[ 1 ] * H_focal_transmission[ 1, focal_idx ]
 
-		figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution[ epoch, iteration ] = fom_by_focal_spot_by_type_by_wavelength
+			analyzer_transmission_by_wl = compute_transmission(
+				E_focal_analyzer_transmission_measurement, H_focal_analyzer_transmission_measurement, transmission_normalization_by_wl )
+			orthogonal_transmission_by_wl = compute_transmission(
+				E_focal_orthogonal_transmission_measurement, H_focal_orthogonal_transmission_measurement, transmission_normalization_by_wl )
+
+			transmission_contrast = ( analyzer_transmission_by_wl - orthogonal_transmission_by_wl ) / ( analyzer_transmission_by_wl + orthogonal_transmission_by_wl )
+
+			parallel_transmission_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = analyzer_transmission_by_wl
+			orthogonal_transmission_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = orthogonal_transmission_by_wl
+			transmission_contrast_per_focal_spot_evolution[ epoch, iteration, focal_idx, : ] = transmission_contrast
+
+
+		current_figure_of_merit, fom_by_focal_spot_by_wavelength = figure_of_merit( Qxx, Qxy, Qyx, Qyy )
+
+		transmission_performance_by_focal_spot_by_wavelength = transmission_performance(
+			parallel_transmission_per_focal_spot_evolution[ epoch, iteration ],
+			orthogonal_transmission_per_focal_spot_evolution[ epoch, iteration ]
+		)
+		figure_of_merit_by_focal_spot_by_wavelength_evolution[ epoch, iteration ] = fom_by_focal_spot_by_wavelength
 		figure_of_merit_evolution[ epoch, iteration ] = current_figure_of_merit
 
 		print( 'The current figure of merit = ' + str( current_figure_of_merit ) )
 
 		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
-		np.save(projects_directory_location + "/figure_of_merit_by_focal_spot_by_type_by_wavelength.npy", figure_of_merit_by_focal_spot_by_type_by_wavelength_evolution)
+		np.save(projects_directory_location + "/figure_of_merit_by_focal_spot_by_wavelength.npy", figure_of_merit_by_focal_spot_by_wavelength_evolution)
 		np.save(projects_directory_location + "/contrast_per_focal_spot.npy", contrast_per_focal_spot_evolution)
 		np.save(projects_directory_location + "/parallel_intensity.npy", parallel_intensity_per_focal_spot_evolution)
 		np.save(projects_directory_location + "/orthogonal_intensity.npy", orthogonal_intensity_per_focal_spot_evolution)
+		np.save(projects_directory_location + "/transmission_contrast_per_focal_spot.npy", transmission_contrast_per_focal_spot_evolution)
+		np.save(projects_directory_location + "/parallel_transmission.npy", parallel_transmission_per_focal_spot_evolution)
+		np.save(projects_directory_location + "/orthogonal_transmission.npy", orthogonal_transmission_per_focal_spot_evolution)
 
 		#
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
@@ -999,7 +999,8 @@ for epoch in range(start_epoch, num_epochs):
 						get_efield( design_efield_monitor['name'] ) )
 
 		minimization_gradient = gradient(
-			fom_by_focal_spot_by_type_by_wavelength,
+			# fom_by_focal_spot_by_type_by_wavelength,
+			transmission_performance_by_focal_spot_by_wavelength,
 			forward_e_fields[ 'x' ], forward_e_fields[ 'y' ],
 			adjoint_ex_fields, adjoint_ey_fields,
 			Qxx, Qxy, Qyx, Qyy )

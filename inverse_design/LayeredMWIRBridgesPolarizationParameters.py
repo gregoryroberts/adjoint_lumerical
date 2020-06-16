@@ -8,7 +8,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_polarization_10layers_4p5to5um_fixed_step_addcage_25x25x25um'
+project_name = 'layered_mwir_2d_lithography_bridges_polarization_10layers_4p5to5um_fixed_step_addcage_30x30x25um_f24um'
 
 
 optimized_focal_spots = [ 0, 1, 2, 3 ]
@@ -16,7 +16,8 @@ optimized_focal_spots = [ 0, 1, 2, 3 ]
 
 init_permittivity_0_1_scale = 0.5
 
-focal_length_um = 20
+# focal_length_um = 20
+focal_length_um = 24
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
@@ -25,7 +26,8 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 mesh_spacing_um = 0.25
 
-device_size_lateral_um = 25
+# device_size_lateral_um = 25
+device_size_lateral_um = 30
 device_size_verical_um = 25
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
@@ -180,7 +182,7 @@ for jones_idx in range( 0, len( jones_sorting_vectors ) ):
 	jones_orthogonal_vectors.append( find_orthogonal( jones_sorting_vectors[ jones_idx ] ) )
 
 
-expected_parallel_max_efficiency = 0.8
+expected_parallel_max_efficiency = 1.0
 parallel_fom_bound = 0.5 * expected_parallel_max_efficiency
 
 
