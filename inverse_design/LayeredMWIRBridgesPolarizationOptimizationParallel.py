@@ -834,10 +834,10 @@ transmission_normalization_by_wl = compute_transmission( E_focal_normalization, 
 fdtd_hook.switchtolayout()
 
 fdtd_hook.select( design_import['name'] )
-fdtd_hook.set( 'enabled', 0 )
+fdtd_hook.set( 'enabled', 1 )
 
 fdtd_hook.select( sio2_top['name'] )
-fdtd_hook.set( 'enabled', 0 )
+fdtd_hook.set( 'enabled', 1 )
 
 #
 #
