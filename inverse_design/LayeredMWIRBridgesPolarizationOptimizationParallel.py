@@ -713,6 +713,12 @@ def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_w
 
 	assert len( power_z.shape ) == 3, "We expected a differently shaped power matrix for the transmission computation"
 
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( str( E_field_focal.shape ) + "\n" )
+	log_file.write( str( H_field_focal.shape ) + "\n" )
+	log_file.write( str( power_z.shape ) + "\n" )
+	log_file.close()
+
 	num_wl = E_field_focal.shape[ 3 ]
 	transmission_by_wl = np.zeros( num_wl )
 
