@@ -550,7 +550,7 @@ for adj_src in range(0, num_adjoint_sources):
 	transmission_focal_monitor['override global monitor settings'] = 1
 	transmission_focal_monitor['use wavelength spacing'] = 1
 	transmission_focal_monitor['use source limits'] = 1
-	transmission_focal_monitor['frequency points'] = num_eval_frequency_points
+	transmission_focal_monitor['frequency points'] = num_design_frequency_points
 	transmission_focal_monitor['output Hx'] = 1
 	transmission_focal_monitor['output Hy'] = 1
 	transmission_focal_monitor['output Hz'] = 1
@@ -569,7 +569,7 @@ transmission_focal['z'] = adjoint_vertical_um * 1e-6
 transmission_focal['override global monitor settings'] = 1
 transmission_focal['use wavelength spacing'] = 1
 transmission_focal['use source limits'] = 1
-transmission_focal['frequency points'] = num_eval_frequency_points
+transmission_focal['frequency points'] = num_design_frequency_points
 transmission_focal['output Hx'] = 1
 transmission_focal['output Hy'] = 1
 transmission_focal['output Hz'] = 1
@@ -712,12 +712,6 @@ def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_w
 	)
 
 	assert len( power_z.shape ) == 3, "We expected a differently shaped power matrix for the transmission computation"
-
-	log_file = open( projects_directory_location + "/log.txt", 'a' )
-	log_file.write( str( E_field_focal.shape ) + "\n" )
-	log_file.write( str( H_field_focal.shape ) + "\n" )
-	log_file.write( str( power_z.shape ) + "\n" )
-	log_file.close()
 
 	num_wl = E_field_focal.shape[ 3 ]
 	transmission_by_wl = np.zeros( num_wl )
