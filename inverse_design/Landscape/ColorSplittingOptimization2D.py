@@ -187,10 +187,10 @@ class ColorSplittingOptimization2D():
 		self.init_density_directly( this_class.design_density )
 
 	def setup_simulation( self ):
-		self.width_gap_voxels = int( 1.5 * np.max( self.wavelengths_um ) / self.mesh_size_um )
-		self.height_gap_voxels_top = int( 2.0 * np.max( self.wavelengths_um ) / self.mesh_size_um )
+		self.width_gap_voxels = int( 1.0 * np.max( self.wavelengths_um ) / self.mesh_size_um )
+		self.height_gap_voxels_top = int( 1.5 * np.max( self.wavelengths_um ) / self.mesh_size_um )
 		self.height_gap_voxels_bottom = self.width_gap_voxels
-		self.pml_voxels = int( 1.5 * np.max( self.wavelengths_um ) / self.mesh_size_um )
+		self.pml_voxels = int( 1.0 * np.max( self.wavelengths_um ) / self.mesh_size_um )
 
 		self.simulation_width_voxels = self.device_width_voxels + 2 * self.width_gap_voxels + 2 * self.pml_voxels
 		self.simulation_height_voxels = self.device_height_voxels + self.focal_length_y_voxels + self.height_gap_voxels_bottom + self.height_gap_voxels_top + 2 * self.pml_voxels

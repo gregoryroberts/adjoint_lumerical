@@ -38,8 +38,8 @@ mesh_size_nm = 8
 density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
-lambda_max_um = 0.65
-num_lambda_values = 10
+lambda_max_um = 0.55
+num_lambda_values = 8
 
 min_relative_permittivity = 1.0**2
 max_relative_permittivity = max_index**2
