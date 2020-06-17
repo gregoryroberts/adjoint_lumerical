@@ -2,6 +2,7 @@
 # Math
 #
 import numpy as np
+import scipy.optimize
 
 #
 # System
@@ -19,6 +20,20 @@ import ceviche
 
 eps_nought = 8.854 * 1e-12
 c = 3.0 * 1e8
+
+# def compute_binarization( input_variable ):
+# 	total_shape = np.product( input_variable.shape )
+# 	return ( 2 / np.sqrt( total_shape ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
+# def compute_binarization_gradient( input_variable ):
+# 	total_shape = np.product( input_variable.shape )
+# 	return ( 4 / np.sqrt( total_shape ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
+
+def compute_binarization( input_variable ):
+	total_shape = np.product( input_variable.shape )
+	return ( 1. / total_shape ) * np.sum( np.sqrt( ( input_variable - 0.5 )**2 ) )
+def compute_binarization_gradient( input_variable ):
+	total_shape = np.product( input_variable.shape )
+	return ( 1. / total_shape ) * ( input_variable - 0.5 ) / np.sqrt( ( input_variable - 0.5 )**2 )	
 
 def vector_norm( v_in ):
 	return np.sqrt( np.sum( np.abs( v_in )**2 ) )
@@ -296,16 +311,84 @@ class ColorSplittingOptimization2D():
 
 		return gradient_output
 
-	def optimize( self, num_iterations ):
+	def step_binarize( self, gradient, binarize_amount, binarize_max_movement ):
+
+		density_for_binarizing = self.design_density.flatten()
+		flatten_gradient = gradient.flatten()
+
+		flatten_design_cuts = density_for_binarizing.copy()
+		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts )
+		flatten_fom_gradients = flatten_gradient.copy()
+
+		beta = binarize_max_movement
+		projected_binarization_increase = 0
+
+		c = flatten_fom_gradients
+
+		initial_binarization = compute_binarization( flatten_design_cuts )
+
+		b = np.real( extract_binarization_gradient )
+
+		lower_bounds = np.zeros( len( c ) )
+		upper_bounds = np.zeros( len( c ) )
+
+		for idx in range( 0, len( c ) ):
+			upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+			lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+
+		max_possible_binarization_change = 0
+		for idx in range( 0, len( c ) ):
+			if b[ idx ] > 0:
+				max_possible_binarization_change += b[ idx ] * upper_bounds[ idx ]
+			else:
+				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
+		
+		# Try this! Not sure how well it will work
+		alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
+
+		def ramp( x ):
+			return np.maximum( x, 0 )
+
+		def opt_function( nu ):
+			lambda_1 = ramp( nu * b - c )
+			lambda_2 = c + lambda_1 - nu * b
+
+			return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
+
+		tolerance = 1e-12
+		optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance )
+
+		nu_star = optimization_solution_nu.x
+		lambda_1_star = ramp( nu_star * b - c )
+		lambda_2_star = c + lambda_1_star - nu_star * b
+		x_star = np.zeros( len( c ) )
+
+		for idx in range( 0, len( c ) ):
+			if lambda_1_star[ idx ] > 0:
+				x_star[ idx ] = upper_bounds[ idx ]
+			else:
+				x_star[ idx ] = lower_bounds[ idx ]
+
+		proposed_design_variable = flatten_design_cuts + x_star
+		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
+
+		print( initial_binarization )
+		print( compute_binarization( proposed_design_variable.flatten() ) )
+
+		return np.reshape( proposed_design_variable, self.design_density.shape )
+
+	def optimize( self, num_iterations, binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025 ):
 		self.max_density_change_per_iteration_start = 0.03#0.05
 		self.max_density_change_per_iteration_end = 0.01#0.005
 
 		self.gradient_norm_evolution = np.zeros( num_iterations )
 		self.fom_evolution = np.zeros( num_iterations )
+		self.binarization_evolution = np.zeros( num_iterations )
 		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
 		self.gradient_directions = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
 
 		for iter_idx in range( 0, num_iterations ):
+			print( "iter idx = " + str( iter_idx ) )
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
 
@@ -356,12 +439,18 @@ class ColorSplittingOptimization2D():
 				( iter_idx / ( num_iterations - 1 ) ) * ( self.max_density_change_per_iteration_end - self.max_density_change_per_iteration_start )
 			)
 
-			self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
-			self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
+			self.binarization_evolution[ iter_idx ] = compute_binarization( self.design_density.flatten() )
+
+			if binarize:
+				self.design_density = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel )
+			else:
+				self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
+				self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
 
 	def save_optimization_data( self, file_base ):
 		np.save( file_base + "_gradient_norm_evolution.npy", self.gradient_norm_evolution )
 		np.save( file_base + "_fom_evolution.npy", self.fom_evolution )
+		np.save( file_base + "_binarization_evolution.npy", self.binarization_evolution )
 		np.save( file_base + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 		np.save( file_base + "_gradient_directions.npy", self.gradient_directions )
 		np.save( file_base + "_optimized_density.npy", self.design_density )
