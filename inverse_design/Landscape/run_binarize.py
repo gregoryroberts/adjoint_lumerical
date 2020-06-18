@@ -23,7 +23,7 @@ import matplotlib.pylab as plt
 import ColorSplittingOptimization2D
 
 if len( sys.argv ) < 3:
-	print( "Usage: python " + sys.argv[ 0 ] + " { save folder } { max index } " )
+	print( "Usage: python " + sys.argv[ 0 ] + " { save folder } { max index }" )
 	sys.exit( 1 )
 
 save_folder = sys.argv[ 1 ]
@@ -67,7 +67,7 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 mean_density = 0.5
 sigma_density = 0.2
 
-num_iterations = 150
+num_iterations = 5#150
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],

@@ -227,9 +227,9 @@ class ColorSplittingOptimization2D():
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
 		fom = np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
 		
-		import matplotlib.pyplot as plt
-		plt.imshow( np.abs( fwd_Ez )**2 )
-		plt.show()
+		# import matplotlib.pyplot as plt
+		# plt.imshow( np.abs( fwd_Ez )**2 )
+		# plt.show()
 
 		return fom
 
