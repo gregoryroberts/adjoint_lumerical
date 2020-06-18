@@ -65,7 +65,7 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 	focal_map[ idx ] = 1
 
 get_density_1 = np.load( opt_folder_base + "/" + opt1_name + "/opt_optimized_density.npy" )
-get_density_2 = np.load( opt_folder_base + "/" + opt1_name + "/opt_optimized_density.npy" )
+get_density_2 = np.load( opt_folder_base + "/" + opt2_name + "/opt_optimized_density.npy" )
 
 min_relative_permittivity = 1.0**2
 max_relative_permittivity1 = max_index1**2
@@ -76,7 +76,7 @@ max_relative_permittivity_both_opts = np.maximum( max_relative_permittivity1, ma
 get_permittivity_1 = min_relative_permittivity + ( max_relative_permittivity1 - min_relative_permittivity ) * get_density_1
 get_permittivity_2 = min_relative_permittivity + ( max_relative_permittivity2 - min_relative_permittivity ) * get_density_2
 
-num_alpha = 50
+num_alpha = 80
 alpha = np.linspace( 0.0, 1.0, num_alpha )
 fom_values = np.zeros( num_alpha )
 
