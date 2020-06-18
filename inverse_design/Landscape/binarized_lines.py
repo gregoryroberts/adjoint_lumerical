@@ -84,7 +84,7 @@ permittivities = np.zeros( [ num_alpha ] + list( get_permittivity_1.shape ) )
 densities = np.zeros( [ num_alpha ] + list( get_permittivity_1.shape ) )
 
 for alpha_idx in range( 0, num_alpha ):
-	middle_permittivity = ( 1. - alpha ) * get_permittivity_1 + alpha * get_permittivity_2
+	middle_permittivity = ( 1. - alpha[ alpha_idx ] ) * get_permittivity_1 + alpha[ alpha_idx ] * get_permittivity_2
 
 	make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 		[ device_width_voxels, device_height_voxels ],
