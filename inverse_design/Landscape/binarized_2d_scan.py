@@ -94,7 +94,6 @@ search_eta = pick_search_direction( get_eta )
 max_abs_direction = np.max( np.abs( search_delta ), np.abs( search_eta ) )
 
 search_limits = [ 0, 0.01 * search_dim / max_abs_direction ]
-search_limits =
 search_weights = np.linspace( search_limits[ 0 ], search_limits[ 1 ], search_dim )
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
