@@ -89,7 +89,7 @@ def pick_search_direction( binary_density ):
 	return np.reshape( search_direction, binary_density.shape )
 
 search_delta = pick_search_direction( get_density )
-search_eta = pick_search_direction( get_eta )
+search_eta = pick_search_direction( get_density )
 
 max_abs_direction = np.max( np.abs( search_delta ), np.abs( search_eta ) )
 
