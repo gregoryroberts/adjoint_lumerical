@@ -91,7 +91,7 @@ def pick_search_direction( binary_density ):
 search_delta = pick_search_direction( get_density )
 search_eta = pick_search_direction( get_density )
 
-max_abs_direction = np.max( np.abs( search_delta ), np.abs( search_eta ) )
+max_abs_direction = np.maximum( np.max( np.abs( search_delta ) ), np.max( np.abs( search_eta ) ) )
 
 search_limits = [ 0, 0.01 * search_dim / max_abs_direction ]
 search_weights = np.linspace( search_limits[ 0 ], search_limits[ 1 ], search_dim )
