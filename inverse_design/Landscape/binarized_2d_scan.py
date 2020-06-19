@@ -110,7 +110,7 @@ for delta_idx in range( 0, search_dim ):
 	for eta_idx in range( 0, search_dim ):
 		test_density = get_density + search_weights[ delta_idx ] * search_delta + search_weights[ eta_idx ] * search_eta
 
-		make_optimizer.init_density_directly( middle_density )
+		make_optimizer.init_density_directly( test_density )
 
 		fom_values[ delta_idx, eta_idx ] = make_optimizer.compute_net_fom()
 		np.save( save_folder + "/fom_2d.npy", fom_values )
