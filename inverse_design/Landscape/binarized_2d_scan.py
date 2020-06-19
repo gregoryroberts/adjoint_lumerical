@@ -33,7 +33,7 @@ random_seed = int( sys.argv[ 4 ] )
 
 np.random.seed( random_seed )
 
-save_folder = opt_folder_base + "/" + opt_name
+save_folder = opt_folder_base + "/" + opt_name + "_2d_scan/"
 
 np.save( save_folder + "/random_seed.npy", np.array( random_seed ) )
 
@@ -91,7 +91,10 @@ def pick_search_direction( binary_density ):
 search_delta = pick_search_direction( get_density )
 search_eta = pick_search_direction( get_eta )
 
-search_limits = [ 0, 0.5 ]
+max_abs_direction = np.max( np.abs( search_delta ), np.abs( search_eta ) )
+
+search_limits = [ 0, 0.01 * search_dim / max_abs_direction ]
+search_limits =
 search_weights = np.linspace( search_limits[ 0 ], search_limits[ 1 ], search_dim )
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
