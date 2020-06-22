@@ -26,8 +26,8 @@ lambda_values_nm = np.linspace( lambda_min_nm, lambda_max_nm, num_lambda_values 
 omega_values = 2 * np.pi * c / ( 1e-9 * lambda_values_nm )
 
 pml_voxels = 40
-device_width_voxels = 140
-device_height_voxels = 40
+device_width_voxels = 140 * 2
+device_height_voxels = 40 * 2
 device_voxels_total = device_width_voxels * device_height_voxels
 mid_width_voxel = int( 0.5 * device_width_voxels )
 mid_height_voxel = int( 0.5 * device_height_voxels )
