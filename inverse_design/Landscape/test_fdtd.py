@@ -1,3 +1,9 @@
+import sys
+
+run_on_cluster = True
+if run_on_cluster:
+	sys.path.append( '/central/home/gdrobert/Develompent/ceviche' )
+
 import ceviche
 import matplotlib.pyplot as plt
 import numpy as np
