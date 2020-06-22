@@ -107,7 +107,7 @@ class ColorSplittingOptimization2D():
 		self.focal_spots_x_relative = focal_spots_x_relative
 		self.focal_length_y_voxels = focal_length_y_voxels
 		self.wavelengths_um = wavelengths_um
-		self.wavelength_intensity_scaling = self.wavelengths_um**2 / ( np.max( self.wavelengths_um )**2 )
+		self.wavelength_intensity_scaling = self.wavelengths_um**2 / ( eps_nought * np.max( self.wavelengths_um )**2 )
 
 		self.num_wavelengths = len( wavelengths_um )
 
@@ -412,8 +412,8 @@ class ColorSplittingOptimization2D():
 
 				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 
-				scale_fom_for_wl = get_fom * self.wavelength_intensity_scaling[ wl_idx ]
-				scale_gradient_for_wl = upsampled_device_grad * self.wavelength_intensity_scaling[ wl_idx ]
+				scale_fom_for_wl = get_fom
+				scale_gradient_for_wl = upsampled_device_grad
 
 				gradient_by_wl.append( scale_gradient_for_wl )
 				fom_by_wl.append( scale_fom_for_wl )
