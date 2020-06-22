@@ -107,7 +107,13 @@ fwd_src_y_line = fwd_src_y * np.ones( fwd_src_x.shape, dtype=int )
 fwd_source = np.zeros( ( simulation_width_voxels, simulation_height_voxels ), dtype=np.complex )
 fwd_source[ fwd_src_x, fwd_src_y_line ] = 1
 
+import time
+
+start = time.time()
 fwd_Hx, fwd_Hy, fwd_Ez = simulation.solve( fwd_source )
+elapsed = time.time() - start
+
+print( "The elapsed time was " + str( elapsed ) )
 
 # plt.imshow( np.abs( fwd_Ez )**2, cmap='Blues' )
 # plt.show()
