@@ -1,12 +1,13 @@
 import sys
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 run_on_cluster = True
 if run_on_cluster:
 	sys.path.append( '/central/home/gdrobert/Develompent/ceviche' )
 
 import ceviche
-import matplotlib.pyplot as plt
-import numpy as np
 
 eps_nought = 8.854 * 1e-12
 c = 3.0 * 1e8
