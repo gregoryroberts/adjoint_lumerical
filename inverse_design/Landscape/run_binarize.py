@@ -67,7 +67,11 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 mean_density = 0.5
 sigma_density = 0.2
 
-num_iterations = 5#150
+num_iterations = 300
+
+log_file = open( save_folder + "/log.txt", 'w' )
+log_file.write( "Log\n" )
+log_file.close()
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],
@@ -75,13 +79,16 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ min_relative_permittivity, max_relative_permittivity ],
 	focal_points_x_relative, focal_length_voxels,
 	lambda_values_um, focal_map, random_seed,
-	num_layers, designable_layer_indicators, non_designable_permittivity )
+	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder )
 
 make_optimizer.init_density_with_random( mean_density, sigma_density )
 
 np.save( save_folder + "/opt_init_random_density.npy", make_optimizer.design_density )
 np.save( save_folder + "/opt_random_seed.npy", make_optimizer.random_seed )
 
-make_optimizer.optimize( num_iterations, True )
+binarize = True
+binarize_movement_per_step=0.005
+binarize_max_movement_per_voxel=0.005
+make_optimizer.optimize( num_iterations, binarize, binarize_movement_per_step, binarize_max_movement_per_voxel )
 
 make_optimizer.save_optimization_data( save_folder + "/opt" )
