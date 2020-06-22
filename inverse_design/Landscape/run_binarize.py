@@ -67,7 +67,7 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 mean_density = 0.5
 sigma_density = 0.2
 
-num_iterations = 5#300
+num_iterations = 300
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
