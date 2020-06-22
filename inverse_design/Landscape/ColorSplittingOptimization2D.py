@@ -107,7 +107,7 @@ class ColorSplittingOptimization2D():
 		self.focal_spots_x_relative = focal_spots_x_relative
 		self.focal_length_y_voxels = focal_length_y_voxels
 		self.wavelengths_um = wavelengths_um
-		self.wavelength_intensity_scaling = self.wavelengths_um**2 / ( eps_nought * np.max( self.wavelengths_um )**2 )
+		self.wavelength_intensity_scaling = self.wavelengths_um**2 / ( np.max( self.wavelengths_um )**2 )
 
 		self.num_wavelengths = len( wavelengths_um )
 
