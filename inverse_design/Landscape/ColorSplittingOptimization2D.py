@@ -107,7 +107,7 @@ class ColorSplittingOptimization2D():
 		self.focal_spots_x_relative = focal_spots_x_relative
 		self.focal_length_y_voxels = focal_length_y_voxels
 		self.wavelengths_um = wavelengths_um
-		self.wavelength_intensity_scaling = self.wavelengths_um**2 / np.max( self.wavelengths_um )**2
+		self.wavelength_intensity_scaling = self.wavelengths_um**2 / ( eps_nought * np.max( self.wavelengths_um )**2 )
 
 		self.num_wavelengths = len( wavelengths_um )
 
@@ -391,9 +391,11 @@ class ColorSplittingOptimization2D():
 		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
 		self.gradient_directions = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
 
-		log_file = open( self.save_folder + "/log.txt", 'a' )
 		for iter_idx in range( 0, num_iterations ):
-			log_file.write( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) + "\n")
+			if ( iter_idx % 10 ) == 0:
+				log_file = open( self.save_folder + "/log.txt", 'a' )
+				log_file.write( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) + "\n")
+				log_file.close()
 
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
@@ -455,8 +457,6 @@ class ColorSplittingOptimization2D():
 			else:
 				self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
 				self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
-
-		log_file.close()
 
 	def save_optimization_data( self, file_base ):
 		np.save( file_base + "_gradient_norm_evolution.npy", self.gradient_norm_evolution )
