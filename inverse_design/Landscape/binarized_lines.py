@@ -92,7 +92,8 @@ for alpha_idx in range( 0, num_alpha ):
 		[ min_relative_permittivity, max_relative_permittivity_both_opts ],
 		focal_points_x_relative, focal_length_voxels,
 		lambda_values_um, focal_map, 0,
-		num_layers, designable_layer_indicators, non_designable_permittivity )
+		num_layers, designable_layer_indicators, non_designable_permittivity,
+		save_folder )
 
 	middle_density = density_bound_from_eps( middle_permittivity, min_relative_permittivity, max_relative_permittivity_both_opts )
 	make_optimizer.init_density_directly( middle_density )
