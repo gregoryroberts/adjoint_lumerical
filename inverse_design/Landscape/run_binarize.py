@@ -68,7 +68,7 @@ mean_density = 0.5
 sigma_density = 0.2
 init_from_old = True
 
-num_iterations = 20#300
+num_iterations = 150#300
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
