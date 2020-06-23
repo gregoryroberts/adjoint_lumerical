@@ -229,10 +229,6 @@ class ColorSplittingOptimization2D():
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
 		fom = fom_scaling * np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
 		
-		# import matplotlib.pyplot as plt
-		# plt.imshow( np.abs( fwd_Ez )**2 )
-		# plt.show()
-
 		return fom
 
 	def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
@@ -261,7 +257,7 @@ class ColorSplittingOptimization2D():
 			get_fom = self.compute_fom(
 				self.omega_values[ wl_idx ], device_permittivity,
 				self.focal_spots_x_voxels[ get_focal_point_idx ], self.wavelength_intensity_scaling[ wl_idx ] )
-			fom_by_wl.append( scale_fom_for_wl )
+			fom_by_wl.append( get_fom )
 
 		net_fom = np.product( fom_by_wl )
 
