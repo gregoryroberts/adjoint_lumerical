@@ -76,7 +76,7 @@ max_relative_permittivity_both_opts = np.maximum( max_relative_permittivity1, ma
 get_permittivity_1 = min_relative_permittivity + ( max_relative_permittivity1 - min_relative_permittivity ) * get_density_1
 get_permittivity_2 = min_relative_permittivity + ( max_relative_permittivity2 - min_relative_permittivity ) * get_density_2
 
-num_alpha = 80
+num_alpha = 200
 alpha = np.linspace( 0.0, 1.0, num_alpha )
 fom_values = np.zeros( num_alpha )
 
