@@ -4,6 +4,8 @@
 import numpy as np
 import scipy.optimize
 
+from scipy.ndimage import gaussian_filter
+
 #
 # System
 #
@@ -80,7 +82,7 @@ class ColorSplittingOptimization2D():
 		permittivity_bounds, focal_spots_x_relative, focal_length_y_voxels,
 		wavelengths_um, wavelength_idx_to_focal_idx, random_seed,
 		num_layers, designable_layer_indicators, non_designable_permittivity,
-		save_folder ):
+		save_folder, field_blur=False, field_blur_size_voxels=0.0 ):
 		
 		self.device_width_voxels = device_size_voxels[ 0 ]
 		self.device_height_voxels = device_size_voxels[ 1 ]
@@ -131,6 +133,9 @@ class ColorSplittingOptimization2D():
 		self.non_designable_density = ( self.non_designable_permittivity - self.min_relative_permittivity ) / ( self.max_relative_permittivity - self.min_relative_permittivity )
 
 		self.save_folder = save_folder
+
+		self.field_blur = field_blur
+		self.field_blur_size_voxels = field_blur_size_voxels
 
 		self.setup_simulation()
 
@@ -242,6 +247,18 @@ class ColorSplittingOptimization2D():
 		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
 
 		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
+
+		if self.field_blur:
+			blur_fwd_Ez_real = gaussian_filter( np.real( fwd_Ez ), sigma=self.field_blur_size_voxels )
+			blur_fwd_Ez_imag = gaussian_filter( np.imag( fwd_Ez ), sigma=self.field_blur_size_voxels )
+
+			blur_adj_Ez_real = gaussian_filter( np.real( fwd_Ez ), sigma=self.field_blur_size_voxels )
+			blur_adj_Ez_imag = gaussian_filter( np.imag( fwd_Ez ), sigma=self.field_blur_size_voxels )
+
+			blur_fwd_Ez = blur_fwd_Ez_real + 1j * blur_fwd_Ez_imag
+			blur_adj_Ez = blur_adj_Ez_real + 1j * blur_adj_Ez_imag
+
+			gradient = fom_scaling * 2 * np.real( omega * eps_nought * blur_fwd_Ez * blur_adj_Ez / 1j )
 
 		return fom, gradient
 
@@ -376,6 +393,12 @@ class ColorSplittingOptimization2D():
 		print( compute_binarization( proposed_design_variable.flatten() ) )
 
 		return np.reshape( proposed_design_variable, self.design_density.shape )
+
+	def get_device_permittivity( self ):
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+
+		return device_permittivity
 
 	def optimize( self, num_iterations, binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025 ):
 		self.max_density_change_per_iteration_start = 0.03#0.05

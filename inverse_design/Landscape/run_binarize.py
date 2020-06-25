@@ -66,9 +66,12 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 
 mean_density = 0.5
 sigma_density = 0.2
-init_from_old = True
+init_from_old = False#True
 
-num_iterations = 150#300
+blur_fields_size_voxels = 2
+blur_fields = True
+
+num_iterations = 450#150#300
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
@@ -80,7 +83,8 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ min_relative_permittivity, max_relative_permittivity ],
 	focal_points_x_relative, focal_length_voxels,
 	lambda_values_um, focal_map, random_seed,
-	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder )
+	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
+	blur_fields, blur_fields_size_voxels )
 
 if init_from_old:
 	old_density = np.load( save_folder + "/opt_optimized_density.npy" )
