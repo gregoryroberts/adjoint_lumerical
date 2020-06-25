@@ -252,8 +252,8 @@ class ColorSplittingOptimization2D():
 			blur_fwd_Ez_real = gaussian_filter( np.real( fwd_Ez ), sigma=self.field_blur_size_voxels )
 			blur_fwd_Ez_imag = gaussian_filter( np.imag( fwd_Ez ), sigma=self.field_blur_size_voxels )
 
-			blur_adj_Ez_real = gaussian_filter( np.real( fwd_Ez ), sigma=self.field_blur_size_voxels )
-			blur_adj_Ez_imag = gaussian_filter( np.imag( fwd_Ez ), sigma=self.field_blur_size_voxels )
+			blur_adj_Ez_real = gaussian_filter( np.real( adj_Ez ), sigma=self.field_blur_size_voxels )
+			blur_adj_Ez_imag = gaussian_filter( np.imag( adj_Ez ), sigma=self.field_blur_size_voxels )
 
 			blur_fwd_Ez = blur_fwd_Ez_real + 1j * blur_fwd_Ez_imag
 			blur_adj_Ez = blur_adj_Ez_real + 1j * blur_adj_Ez_imag
