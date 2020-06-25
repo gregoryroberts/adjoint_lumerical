@@ -68,7 +68,7 @@ mean_density = 0.5
 sigma_density = 0.2
 init_from_old = False#True
 
-blur_fields_size_voxels = 2
+blur_fields_size_voxels = 3
 blur_fields = True
 
 num_iterations = 450#150#300
