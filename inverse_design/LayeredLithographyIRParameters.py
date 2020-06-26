@@ -27,9 +27,9 @@ index_sio2 = 1.45
 # background_index = index_su8
 background_index = index_sio2
 # min_device_index = index_su8
-min_device_index = index_air
+min_device_index = index_sio2
 # max_device_index = index_silicon
-max_device_index = index_sio2
+max_device_index = index_air
 
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
