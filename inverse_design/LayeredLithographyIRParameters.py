@@ -7,7 +7,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84um_weighting_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_tio2_zep_init_6x6x3p84um_weighting_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_high_random_mean_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_high_mean_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6x6x3p84um_weighting_f4'
@@ -22,14 +23,18 @@ project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84u
 #
 index_silicon = 0.5 * ( 3.47 + 3.86 )
 index_su8 = 1.575
+index_tio2 = 2.1
+index_zep = 1.54
 index_air = 1.0
 index_sio2 = 1.45
 # background_index = index_su8
-background_index = index_sio2
+background_index = index_tio2
 # min_device_index = index_su8
-min_device_index = index_sio2
+# min_device_index = index_sio2
+min_device_index = index_tio2
 # max_device_index = index_silicon
-max_device_index = index_air
+# max_device_index = index_air
+max_device_index = index_zep
 
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
@@ -44,10 +49,12 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-mesh_spacing_um = 0.04
+mesh_spacing_um = 0.03
 # mesh_spacing_um = 0.032
 # mesh_spacing_um = 0.02
-design_spacing_um = 0.12
+# design_spacing_um = 0.08
+# design_spacing_um = 0.12
+design_spacing_um = 0.24
 
 #
 # Pesky size to get the number of voxels to be a multiple of 3
@@ -60,7 +67,8 @@ device_size_lateral_um = 6.0
 # device_size_verical_um = num_vertical_layers * 0.704
 
 # device_size_verical_um = num_vertical_layers * 1.28
-device_size_verical_um = num_vertical_layers * 0.72
+# device_size_verical_um = num_vertical_layers * 0.72
+device_size_verical_um = num_vertical_layers * 0.9
 
 # device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
 # device_size_verical_um = num_vertical_layers * ( 4.32 / num_vertical_layers )
