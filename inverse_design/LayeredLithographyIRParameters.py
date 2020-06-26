@@ -7,7 +7,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_thicker_high_random_mean_init_6x6x3p84um_weighting_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84um_weighting_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_thicker_high_random_mean_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_high_mean_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
@@ -23,9 +24,12 @@ index_silicon = 0.5 * ( 3.47 + 3.86 )
 index_su8 = 1.575
 index_air = 1.0
 index_sio2 = 1.45
-background_index = index_su8
-min_device_index = index_su8
-max_device_index = index_silicon
+# background_index = index_su8
+background_index = index_sio2
+# min_device_index = index_su8
+min_device_index = index_air
+# max_device_index = index_silicon
+max_device_index = index_sio2
 
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
@@ -40,10 +44,10 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-# mesh_spacing_um = 0.04
+mesh_spacing_um = 0.04
 # mesh_spacing_um = 0.032
-mesh_spacing_um = 0.02
-design_spacing_um = 0.08
+# mesh_spacing_um = 0.02
+design_spacing_um = 0.12
 
 #
 # Pesky size to get the number of voxels to be a multiple of 3
@@ -54,13 +58,18 @@ num_vertical_layers = 3
 device_size_lateral_um = 6.0
 # device_size_verical_um = num_vertical_layers * ( 3.168 / num_vertical_layers )
 # device_size_verical_um = num_vertical_layers * 0.704
-device_size_verical_um = num_vertical_layers * 1.28
+
+# device_size_verical_um = num_vertical_layers * 1.28
+device_size_verical_um = num_vertical_layers * 0.72
+
 # device_size_verical_um = num_vertical_layers * ( 3.12 / num_vertical_layers )
 # device_size_verical_um = num_vertical_layers * ( 4.32 / num_vertical_layers )
 # amorphous_silicon_height_per_layer_um = 0.52#0.8
 # amorphous_silicon_height_per_layer_um = 0.72
 # amorphous_silicon_height_per_layer_um = 0.704
-amorphous_silicon_height_per_layer_um = 0.64
+
+# amorphous_silicon_height_per_layer_um = 0.64
+amorphous_silicon_height_per_layer_um = 0.6#0.64
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
 simulated_device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
@@ -153,10 +162,10 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 #
 # Optimization
 #
-start_epoch = 2#0#12#7#6
-num_epochs = 14#8
+start_epoch = 0#12#7#6
+num_epochs = 10#14
 num_iterations_per_epoch = 50#35#50#25
-binarization_start_epoch = 4
+binarization_start_epoch = 2#4
 max_binarize_movement = 0.01
 desired_binarize_change = 0.01
 
