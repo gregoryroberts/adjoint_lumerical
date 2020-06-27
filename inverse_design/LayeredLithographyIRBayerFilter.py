@@ -127,7 +127,7 @@ class LayeredLithographyIRBayerFilter(device.Device):
 			layer_lengths = []
 			original_shapes = []
 
-			import matplotlib.pyplot as plt
+			layer_start_idxs = self.layering_z_0.get_layer_idxs( self.w[0].shape )
 
 			for layer_start_idx in range( 0, len( layer_start_idxs ) ):
 				layer_start = layer_start_idxs[ layer_start_idx ]
