@@ -174,7 +174,7 @@ start_epoch = 0#12#7#6
 num_epochs = 10#14
 num_iterations_per_epoch = 50#35#50#25
 binarization_start_epoch = 2#4
-max_binarize_movement = 0.01
+max_binarize_movement = 0.0025
 desired_binarize_change = 0.01
 
 # Probably need to taper this over the epochs!

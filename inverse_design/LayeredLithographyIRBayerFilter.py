@@ -104,12 +104,14 @@ class LayeredLithographyIRBayerFilter(device.Device):
 	def step(self, gradient, step_size, enforce_binarization=False, save_location=None, enforce_xy_symmetry=True):
 		if enforce_binarization:
 
+			#
+			# todo: consider a differently shaped binarization function here
 			def compute_binarization( input_variable ):
 				total_shape = np.product( input_variable.shape )
 				return ( 2 / np.sqrt( total_shape ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
 			def compute_binarization_gradient( input_variable ):
 				total_shape = np.product( input_variable.shape )
-				return ( 4 / np.sqrt( total_shape ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
+				return ( 4 / total_shape ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
 			#
 			# This is after the feature size blurring
