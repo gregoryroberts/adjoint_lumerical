@@ -325,7 +325,8 @@ bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
 	init_permittivity_0_1_scale,
 	num_vertical_layers,
 	spacer_size_voxels,
-	[index_air**2, index_silicon**2],
+	last_layer_permittivities,
+	# [index_air**2, index_silicon**2],
 	max_binarize_movement,
 	desired_binarize_change)
 
