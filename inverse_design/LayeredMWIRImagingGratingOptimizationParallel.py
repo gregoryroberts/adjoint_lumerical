@@ -129,12 +129,10 @@ fdtd['background index'] = background_index
 xy_names = ['x', 'y']
 
 
-#
 # Add a TFSF plane wave forward source at normal incidence
 #
 forward_sources = []
 
-for xy_idx in range(0, 2):
 for fwd_src_idx in range( 0, num_forward_sources ):
 	forward_src = fdtd_hook.addtfsf()
 	forward_src['name'] = 'forward_src_' + str( fwd_src_idx )
