@@ -386,10 +386,6 @@ if start_epoch > 0:
 	bayer_filter.set_design_variable( design_variable_reload )
 	figure_of_merit_evolution = np.load( projects_directory_location + "/figure_of_merit.npy" )
 	figure_of_merit_by_focal_spot_by_wavelength_evolution = np.load( projects_directory_location + "/figure_of_merit_by_focal_spot_by_type_by_wavelength.npy" )
-	contrast_per_focal_spot_evolution = np.load( projects_directory_location + "/contrast_per_focal_spot.npy" )
-	parallel_intensity_per_focal_spot_evolution = np.load( projects_directory_location + "/parallel_intensity.npy" )
-	orthogonal_intensity_per_focal_spot_evolution = np.load( projects_directory_location + "/orthogonal_intensity.npy" )
-
 
 jobs_queue = queue.Queue()
 
