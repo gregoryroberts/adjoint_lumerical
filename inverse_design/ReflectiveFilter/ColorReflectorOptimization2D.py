@@ -204,7 +204,8 @@ class ColorReflectorOptimization2D():
 		sapphire_substrate_index = 1.55
 		self.sapphire_substrate_permittivity = sapphire_substrate_index**2
 
-		self.gsst_thickness_um = 0.12
+		# self.gsst_thickness_um = 0.12
+		self.gsst_thickness_um = 0.48
 		self.gsst_thickness_voxels = int( self.gsst_thickness_um / self.mesh_size_um )
 
 		gsst_index_values = [ 3.25, 4.5 ]
