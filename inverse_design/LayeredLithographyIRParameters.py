@@ -36,6 +36,8 @@ min_device_index = index_tio2
 # max_device_index = index_air
 max_device_index = index_zep
 
+last_layer_permittivities = [ index_tio2**2, index_zep**2 ]
+
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
 
