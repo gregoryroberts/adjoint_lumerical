@@ -88,42 +88,42 @@ make_optimizer = ColorReflectorOptimization2D.ColorReflectorOptimization2D(
 	lambda_values_um, focal_map, random_seed,
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder )
 
-# make_optimizer.load_optimization_data( save_folder + "/output" )
+make_optimizer.load_optimization_data( save_folder + "/output" )
 
 # plt.subplot( 1, 2, 1 )
-# plt.imshow( make_optimizer.design_density, cmap='Greens' )
-# plt.colorbar()
+plt.imshow( make_optimizer.design_density, cmap='Greens' )
+plt.colorbar()
 # plt.subplot( 1, 2, 2 )
 # plt.imshow( np.load( save_folder + '/output_optimized_density.npy' ), cmap='Greens' )
 # plt.colorbar()
-# plt.savefig( save_folder + '/figures/plot_density.png' )
+plt.savefig( save_folder + '/figures/plot_density.png' )
 # plt.show()
 
-# for state in range( 0, 2 ):
-# 	make_optimizer.set_gsst_state( state )
-# 	for idx in range( 0, num_lambda_values ):
-# 		omega_value = 3.0 * 1e8 / ( lambda_values_um[ idx ] * 1e-6 )
-# 		Hx, Hy, Ez = make_optimizer.get_current_fields_ez( idx )#make_optimizer.omega_values[ 1 ] )
-# 		Hx, Hy, Ez = make_optimizer.get_source_subtracted_fields_ez( idx )#make_optimizer.omega_values[ 1 ] )
+for state in range( 0, 2 ):
+	make_optimizer.set_gsst_state( state )
+	for idx in range( 0, num_lambda_values ):
+		omega_value = 3.0 * 1e8 / ( lambda_values_um[ idx ] * 1e-6 )
+		Hx, Hy, Ez = make_optimizer.get_current_fields_ez( idx )#make_optimizer.omega_values[ 1 ] )
+		Hx, Hy, Ez = make_optimizer.get_source_subtracted_fields_ez( idx )#make_optimizer.omega_values[ 1 ] )
 
-# 		get_fom = make_optimizer.get_current_fom_ez( idx )
-# 		if not focal_map[ state, idx ]:
-# 			get_fom = np.maximum( 1 - get_fom, 0 )
+		get_fom = make_optimizer.get_current_fom_ez( idx )
+		if not focal_map[ state, idx ]:
+			get_fom = np.maximum( 1 - get_fom, 0 )
 
-# 		print( 'fom = ' + str( get_fom ) )
-# 		print( 'state = ' + str( state ) )
+		print( 'fom = ' + str( get_fom ) )
+		print( 'state = ' + str( state ) )
 
-# 		plt.clf()
-# 		plt.subplot( 1, 2, 1 )
-# 		plt.imshow( np.abs( Ez )**2, cmap='Reds' )
-# 		plt.colorbar()
-# 		plt.subplot( 1, 2, 2 )
-# 		plt.imshow( np.real( Ez ), cmap='Blues' )
-# 		plt.savefig( save_folder + '/figures/plot_' + str( state ) + '_' + str( idx ) + '_Ez.png' )
+		plt.clf()
+		plt.subplot( 1, 2, 1 )
+		plt.imshow( np.abs( Ez )**2, cmap='Reds' )
+		plt.colorbar()
+		plt.subplot( 1, 2, 2 )
+		plt.imshow( np.real( Ez ), cmap='Blues' )
+		plt.savefig( save_folder + '/figures/plot_' + str( state ) + '_' + str( idx ) + '_Ez.png' )
 
-		# plt.show()
+		plt.show()
 
-# sys.exit( 0 )
+sys.exit( 0 )
 
 # make_optimizer.verify_adjoint_against_finite_difference()
 make_optimizer.init_density_with_random( 0.5, 0.2 )
