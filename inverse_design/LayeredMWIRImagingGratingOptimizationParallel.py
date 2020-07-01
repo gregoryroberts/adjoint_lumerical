@@ -125,7 +125,7 @@ fdtd['background index'] = background_index
 #
 # General polarized source information
 #
-# xy_phi_rotations = [0, 90]
+xy_phi_rotations = [0, 90]
 xy_names = ['x', 'y']
 
 
