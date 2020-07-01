@@ -88,7 +88,7 @@ make_optimizer = ColorReflectorOptimization2D.ColorReflectorOptimization2D(
 	lambda_values_um, focal_map, random_seed,
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder )
 
-make_optimizer.load_optimization_data( save_folder + "/figures/output" )
+make_optimizer.load_optimization_data( save_folder + "/output" )
 
 # plt.subplot( 1, 2, 1 )
 plt.imshow( make_optimizer.design_density, cmap='Greens' )
@@ -96,7 +96,7 @@ plt.colorbar()
 # plt.subplot( 1, 2, 2 )
 # plt.imshow( np.load( save_folder + '/output_optimized_density.npy' ), cmap='Greens' )
 # plt.colorbar()
-plt.savefig( save_folder + '/plot_density.png' )
+plt.savefig( save_folder + '/figures/plot_density.png' )
 # plt.show()
 
 for state in range( 0, 2 ):
