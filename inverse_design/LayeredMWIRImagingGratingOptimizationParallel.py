@@ -394,10 +394,18 @@ def add_job( job_name, queue_in ):
 	fdtd_hook.save( full_name )
 	queue_in.put( full_name )
 
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Adding job " + str( job_name ) + "\n" )
+	log_file.close()
+
 	return full_name
 
 def run_jobs( queue_in ):
 	small_queue = queue.Queue()
+
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Running jobs\n" )
+	log_file.close()
 
 	while not queue_in.empty():
 		for node_idx in range( 0, num_nodes_available ):
