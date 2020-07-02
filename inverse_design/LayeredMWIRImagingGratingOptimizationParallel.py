@@ -504,7 +504,7 @@ for epoch in range(start_epoch, num_epochs):
 				Qy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
 ####
 		
-		focal_intensity = np.zoers( ( num_focal_spots, num_design_frequency_points ) )
+		focal_intensity = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
 		for focal_idx in range( 0, num_focal_spots ):
 			focal_intensity[ focal_idx, : ] = ( np.abs( Qx[ focal_idx, : ] )**2 + np.abs( Qy[ focal_idx, : ] )**2 ) / max_intensity_by_wavelength
 
