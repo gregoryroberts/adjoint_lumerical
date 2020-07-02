@@ -295,7 +295,7 @@ class LayeredMWIRPolarizationBayerFilter(device.Device):
 
 
 	# In the step function, we should update the permittivity with update_permittivity
-	def step(self, gradient, step_size):
+	def step(self, gradient, step_size, require_xy_symmetry=False):
 		mask_out_restrictions = gradient * self.restrictions
 
 		self.w[0] = self.proposed_design_step(mask_out_restrictions, step_size)
@@ -303,6 +303,8 @@ class LayeredMWIRPolarizationBayerFilter(device.Device):
 		self.current_iteration += 1
 
 		if ( self.current_iteration % self.num_free_iterations_between_patches ) > 0:
+			if require_xy_symmetry:
+				self.w[0] = 0.5 * ( self.w[0] + np.swapaxes( self.w[0], 0, 1 ) )
 			# Update the variable stack including getting the permittivity at the w[-1] position
 			self.update_permittivity()
 			return
@@ -337,6 +339,10 @@ class LayeredMWIRPolarizationBayerFilter(device.Device):
 			for sublayer_idx in range( 1 + get_layer_idx, next_layer_idx ):
 				self.w[0][ :, :, sublayer_idx ] = self.w[0][ :, :, get_layer_idx ]
 				self.restrictions[ :, :, sublayer_idx ] = self.restrictions[ :, :, sublayer_idx ]
+
+		if require_xy_symmetry:
+			self.w[0] = 0.5 * ( self.w[0] + np.swapaxes( self.w[0], 0, 1 ) )
+			self.restrictions = 1.0 * np.greater( 0.5 * ( self.restrictions + np.swapaxes( self.restrictions, 0, 1 ) ), 0.5 )
 
 		topological_patch_elapsed = time.time() - topological_patch_start
 		# Update the variable stack including getting the permittivity at the w[-1] position
