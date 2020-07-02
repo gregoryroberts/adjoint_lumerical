@@ -146,6 +146,9 @@ epoch_start_permittivity_change_min = 0.05
 epoch_end_permittivity_change_min = 0
 epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoch_end_permittivity_change_min
 
+design_change_start_epoch = 0.05#0.025
+design_change_end_epoch = 0.02#0.01
+
 #
 # Topology
 #
