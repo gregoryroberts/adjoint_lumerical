@@ -475,6 +475,11 @@ fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Starting first epoch\n" )
+	log_file.close()
+
+
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
@@ -486,6 +491,9 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.select("design_import")
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
+		log_file = open( projects_directory_location + "/log.txt", 'a' )
+		log_file.write( "Imported filter\n" )
+		log_file.close()
 
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
@@ -494,14 +502,37 @@ for epoch in range(start_epoch, num_epochs):
 		Qy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 
 		for fwd_src_idx in range( 0, num_forward_sources ):
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( "Pre source disable\n" )
+			log_file.close()
+
 			disable_all_sources()
+
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( "Post source disable\n" )
+			log_file.close()
+
 
 			fdtd_hook.select( forward_sources[ fwd_src_idx ][ 'name' ] )
 			fdtd_hook.set( 'enabled', 1 )
 
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( "post source enable\n" )
+			log_file.close()
+
+
 			job_name = 'forward_job_' + str( fwd_src_idx ) + '.fsp'
 			fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( "Pre file save\n" )
+			log_file.close()
+
 			job_names[ ( 'forward', fwd_src_idx ) ] = add_job( job_name, jobs_queue )
+
+
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( "Post add job\n" )
+			log_file.close()
 
 
 
