@@ -370,7 +370,6 @@ def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_w
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
 forward_e_fields = {}
-focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 figure_of_merit_by_focal_spot_by_wavelength_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
@@ -498,7 +497,6 @@ for epoch in range(start_epoch, num_epochs):
 
 			forward_e_fields[ fwd_src_idx ] = get_efield( design_efield_monitor['name'] )
 
-			focal_data[xy_names[fwd_src_idx]] = []
 			for focal_idx in range( 0, num_focal_spots ):
 				focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
 
