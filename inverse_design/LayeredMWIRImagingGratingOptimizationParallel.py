@@ -497,11 +497,11 @@ for epoch in range(start_epoch, num_epochs):
 
 			forward_e_fields[ fwd_src_idx ] = get_efield( design_efield_monitor['name'] )
 
-			for focal_idx in range( 0, num_focal_spots ):
-				focal_monitor_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
+			# for focal_idx in range( 0, num_focal_spots ):
+			focal_monitor_data = get_efield( focal_monitors[ fwd_src_idx ][ 'name' ] )
 
-				Qx[ focal_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
-				Qy[ focal_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
+			Qx[ fwd_src_idx, : ] = focal_monitor_data[ 0, 0, 0, 0, : ]
+			Qy[ fwd_src_idx, : ] = focal_monitor_data[ 1, 0, 0, 0, : ]
 ####
 		
 		focal_intensity = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
