@@ -9,12 +9,14 @@ import numpy as np
 #
 project_name = 'layered_mwir_2d_lithography_bridges_imaging_grating_10layers_4to6um_fixed_step_addcage_25x25x25um'
 
+
 #
 # Optical
 #
-background_index = 1.0
+# background_index = 1.0
 min_device_index = 1.0
 max_device_index = 1.5
+background_index = max_device_index
 
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
@@ -68,7 +70,7 @@ num_vertical_layers = 10
 #
 vertical_gap_size_um = 12
 # Periodic device
-lateral_gap_size_um = 0
+lateral_gap_size_um = 4#0
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
@@ -83,7 +85,8 @@ fdtd_simulation_time_fs = 3000
 #
 # Forward Source
 #
-lateral_aperture_um = 1.1 * device_size_lateral_um
+# lateral_aperture_um = 1.1 * device_size_lateral_um
+lateral_aperture_um = device_size_lateral_um + 2 * lateral_gap_size_um / 4.
 src_maximum_vertical_um = device_size_verical_um + 0.8 * vertical_gap_size_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 

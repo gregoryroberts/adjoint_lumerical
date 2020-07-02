@@ -84,6 +84,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location += "/" + project_name + "_parallel"
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+# projects_directory_location = "/Users/gregory/Development/Photonics/adjoint_lumerical/projects"
 projects_directory_location += "/" + project_name + '_parallel'
 
 if not os.path.isdir(projects_directory_location):
@@ -114,10 +115,10 @@ fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
 fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
 fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 
-fdtd['x min bc'] = 'Bloch'
-fdtd['x max bc'] = 'Bloch'
-fdtd['y min bc'] = 'Bloch'
-fdtd['y max bc'] = 'Bloch'
+# fdtd['x min bc'] = 'Bloch'
+# fdtd['x max bc'] = 'Bloch'
+# fdtd['y min bc'] = 'Bloch'
+# fdtd['y max bc'] = 'Bloch'
 
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
@@ -141,7 +142,8 @@ log_file.close()
 for fwd_src_idx in range( 0, num_forward_sources ):
 	forward_src = fdtd_hook.addplane()
 	forward_src['name'] = 'forward_src_' + str( fwd_src_idx )
-	forward_src['plane wave type'] = 'Bloch/periodic'
+	# forward_src['plane wave type'] = 'Bloch/periodic'
+	forward_src['plane wave type'] = 'Diffracting'
 	forward_src['polarization angle'] = 0
 	forward_src['angle phi'] = forward_sources_phi_angles_degrees[ fwd_src_idx ]
 	forward_src['angle theta'] = forward_sources_theta_angle_degrees
@@ -267,15 +269,15 @@ transmission_focal.enabled = 1
 
 
 #
-# Add IP-Dip at the bottom
+# Add Air at the top
 #
-ip_dip_bottom = fdtd_hook.addrect()
-ip_dip_bottom['name'] = 'ip_dip_bottom'
-ip_dip_bottom['x span'] = fdtd_region_size_lateral_um * 1e-6
-ip_dip_bottom['y span'] = fdtd_region_size_lateral_um * 1e-6
-ip_dip_bottom['z min'] = fdtd_region_minimum_vertical_um * 1e-6
-ip_dip_bottom['z max'] = device_vertical_minimum_um * 1e-6
-ip_dip_bottom['index'] = max_device_index
+air_top = fdtd_hook.addrect()
+air_top['name'] = 'air_top'
+air_top['x span'] = fdtd_region_size_lateral_um * 1e-6
+air_top['y span'] = fdtd_region_size_lateral_um * 1e-6
+air_top['z min'] = device_vertical_maximum_um * 1e-6
+air_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+air_top['index'] = min_device_index
 
 log_file = open( projects_directory_location + "/log.txt", 'a' )
 log_file.write( "Post adding ip dip bottom\n" )
