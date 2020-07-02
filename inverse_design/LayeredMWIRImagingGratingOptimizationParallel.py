@@ -139,8 +139,9 @@ log_file.close()
 
 
 for fwd_src_idx in range( 0, num_forward_sources ):
-	forward_src = fdtd_hook.addtfsf()
+	forward_src = fdtd_hook.addplane()
 	forward_src['name'] = 'forward_src_' + str( fwd_src_idx )
+	forward_src['plane wave type'] = 'Bloch/periodic'
 	forward_src['polarization angle'] = 0
 	forward_src['angle phi'] = forward_sources_phi_angles_degrees[ fwd_src_idx ]
 	forward_src['angle theta'] = forward_sources_theta_angle_degrees
