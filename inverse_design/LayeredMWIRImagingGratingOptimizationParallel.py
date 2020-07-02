@@ -551,7 +551,7 @@ for epoch in range(start_epoch, num_epochs):
 			x_gradient_component =  np.conj( Qx[ focal_idx, : ] ) * get_fwd_fields * get_adj_x_fields
 			y_gradient_component =  np.conj( Qy[ focal_idx, : ] ) * get_fwd_fields * get_adj_y_fields
 
-			combined_gradient_component = np.sum( x_gradient_component + y_gradient_component, axis=0 )
+			combined_gradient_component = 2 * np.real( np.sum( x_gradient_component + y_gradient_component, axis=0 ) )
 
 			for wl_idx in range( 0, num_design_frequency_points ):
 				performance_weight = performance_weights[ fwd_src_idx * num_design_frequency_points + wl_idx ]
@@ -559,7 +559,7 @@ for epoch in range(start_epoch, num_epochs):
 
 				device_gradient += net_weight * combined_gradient_component[ :, :, :, wl_idx ]
 
-		device_gradient = 2 * np.real( device_gradient )
+		# device_gradient = 2 * np.real( device_gradient )
 		# Enforce x=y symmetry
 		device_gradient = 0.5 * ( device_gradient + np.swapaxes( device_gradient, 0, 1 ) )
 
