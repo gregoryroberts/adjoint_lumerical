@@ -179,6 +179,11 @@ for adj_src_idx in range(0, num_adjoint_sources):
 
 		adjoint_sources[adj_src_idx].append(adj_src)
 
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Post adding adj source\n" )
+log_file.close()
+
+
 #
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
 # the adjoint gradient
@@ -271,6 +276,11 @@ ip_dip_bottom['z min'] = fdtd_region_minimum_vertical_um * 1e-6
 ip_dip_bottom['z max'] = device_vertical_minimum_um * 1e-6
 ip_dip_bottom['index'] = max_device_index
 
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Post adding ip dip bottom\n" )
+log_file.close()
+
+
 #
 # Add device region and create device permittivity
 #
@@ -289,9 +299,10 @@ bayer_filter = LayeredMWIRPolarizationBayerFilter.LayeredMWIRPolarizationBayerFi
 	num_vertical_layers,
 	topology_num_free_iterations_between_patches)
 
-bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Post creating filter\n" )
+log_file.close()
+
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
@@ -303,8 +314,8 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 def disable_all_sources():
 	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
-	for xy_idx in range(0, 2):
-		fdtd_hook.select( forward_sources[xy_idx]['name'] )
+	for fwd_src_idx in range(0, num_forward_sources):
+		fdtd_hook.select( forward_sources[fwd_src_idx]['name'] )
 		fdtd_hook.set( 'enabled', 0 )
 
 	for adj_src_idx in range(0, num_adjoint_sources):
