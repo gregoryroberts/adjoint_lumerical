@@ -370,6 +370,8 @@ def compute_transmission( E_field_focal, H_field_focal, power_normalization_by_w
 # Set up some numpy arrays to handle all the data we will pull out of the simulation.
 #
 forward_e_fields = {}
+adjoint_ex_fields = []
+adjoint_ey_fields = []
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 figure_of_merit_by_focal_spot_by_wavelength_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_focal_spots, num_design_frequency_points))
@@ -384,7 +386,7 @@ if start_epoch > 0:
 	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
 	bayer_filter.set_design_variable( design_variable_reload )
 	figure_of_merit_evolution = np.load( projects_directory_location + "/figure_of_merit.npy" )
-	figure_of_merit_by_focal_spot_by_wavelength_evolution = np.load( projects_directory_location + "/figure_of_merit_by_focal_spot_by_type_by_wavelength.npy" )
+	figure_of_merit_by_focal_spot_by_wavelength_evolution = np.load( projects_directory_location + "/figure_of_merit_by_focal_spot_by_wavelength.npy" )
 
 jobs_queue = queue.Queue()
 
@@ -523,8 +525,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
 		# gradients for x- and y-polarized forward sources.
 		#
-		adjoint_ex_fields = []
-		adjoint_ey_fields = []
+
 		for adj_src_idx in range(0, num_adjoint_sources):
 			for xy_idx in range(0, 2):
 				fdtd_hook.load( job_names[ ( 'adjoint', adj_src_idx, xy_idx ) ] )
@@ -558,6 +559,9 @@ for epoch in range(start_epoch, num_epochs):
 				net_weight = performance_weight / max_intensity_by_wavelength[ wl_idx ]
 
 				device_gradient += net_weight * combined_gradient_component[ :, :, :, wl_idx ]
+
+		adjoint_ex_fields.clear()
+		adjoint_ey_fields.clear()
 
 		# device_gradient = 2 * np.real( device_gradient )
 		# Enforce x=y symmetry
