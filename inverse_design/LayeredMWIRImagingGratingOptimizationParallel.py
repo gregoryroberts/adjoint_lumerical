@@ -133,6 +133,11 @@ xy_names = ['x', 'y']
 #
 forward_sources = []
 
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Pre adding fwd source\n" )
+log_file.close()
+
+
 for fwd_src_idx in range( 0, num_forward_sources ):
 	forward_src = fdtd_hook.addtfsf()
 	forward_src['name'] = 'forward_src_' + str( fwd_src_idx )
@@ -147,6 +152,11 @@ for fwd_src_idx in range( 0, num_forward_sources ):
 	forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
 	forward_sources.append( forward_src )
+
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "Post adding fwd source\n" )
+log_file.close()
+
 
 #
 # Place dipole adjoint sources at the focal plane that can ring in both
