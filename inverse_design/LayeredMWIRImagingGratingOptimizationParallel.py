@@ -467,7 +467,15 @@ def run_jobs_inner( queue_in ):
 		time.sleep( 1 )
 
 
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "right before saving\n" )
+log_file.close()
+
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+
+log_file = open( projects_directory_location + "/log.txt", 'a' )
+log_file.write( "right after saving\n" )
+log_file.close()
 
 
 #
