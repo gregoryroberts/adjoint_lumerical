@@ -134,11 +134,6 @@ xy_names = ['x', 'y']
 #
 forward_sources = []
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Pre adding fwd source\n" )
-log_file.close()
-
-
 for fwd_src_idx in range( 0, num_forward_sources ):
 	forward_src = fdtd_hook.addplane()
 	forward_src['name'] = 'forward_src_' + str( fwd_src_idx )
@@ -155,11 +150,6 @@ for fwd_src_idx in range( 0, num_forward_sources ):
 	forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
 	forward_sources.append( forward_src )
-
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Post adding fwd source\n" )
-log_file.close()
-
 
 #
 # Place dipole adjoint sources at the focal plane that can ring in both
@@ -181,11 +171,6 @@ for adj_src_idx in range(0, num_adjoint_sources):
 		adj_src['wavelength stop'] = lambda_max_um * 1e-6
 
 		adjoint_sources[adj_src_idx].append(adj_src)
-
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Post adding adj source\n" )
-log_file.close()
-
 
 #
 # Set up the volumetric electric field monitor inside the design region.  We will need this compute
@@ -279,11 +264,6 @@ air_top['z min'] = device_vertical_maximum_um * 1e-6
 air_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 air_top['index'] = min_device_index
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Post adding ip dip bottom\n" )
-log_file.close()
-
-
 #
 # Add device region and create device permittivity
 #
@@ -301,10 +281,6 @@ bayer_filter = LayeredMWIRPolarizationBayerFilter.LayeredMWIRPolarizationBayerFi
 	init_permittivity_0_1_scale,
 	num_vertical_layers,
 	topology_num_free_iterations_between_patches)
-
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "Post creating filter\n" )
-log_file.close()
 
 
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
@@ -418,18 +394,10 @@ def add_job( job_name, queue_in ):
 	fdtd_hook.save( full_name )
 	queue_in.put( full_name )
 
-	log_file = open( projects_directory_location + "/log.txt", 'a' )
-	log_file.write( "Adding job " + str( job_name ) + "\n" )
-	log_file.close()
-
 	return full_name
 
 def run_jobs( queue_in ):
 	small_queue = queue.Queue()
-
-	log_file = open( projects_directory_location + "/log.txt", 'a' )
-	log_file.write( "Running jobs\n" )
-	log_file.close()
 
 	while not queue_in.empty():
 		for node_idx in range( 0, num_nodes_available ):
@@ -469,27 +437,13 @@ def run_jobs_inner( queue_in ):
 		time.sleep( 1 )
 
 
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "right before saving\n" )
-log_file.close()
-
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-
-log_file = open( projects_directory_location + "/log.txt", 'a' )
-log_file.write( "right after saving\n" )
-log_file.close()
-
 
 #
 # Run the optimization
 #
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
-
-	log_file = open( projects_directory_location + "/log.txt", 'a' )
-	log_file.write( "Starting first epoch\n" )
-	log_file.close()
-
 
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
@@ -502,10 +456,6 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.select("design_import")
 		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
-		log_file = open( projects_directory_location + "/log.txt", 'a' )
-		log_file.write( "Imported filter\n" )
-		log_file.close()
-
 		#
 		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
 		#
@@ -513,38 +463,15 @@ for epoch in range(start_epoch, num_epochs):
 		Qy = np.zeros( ( num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 
 		for fwd_src_idx in range( 0, num_forward_sources ):
-			log_file = open( projects_directory_location + "/log.txt", 'a' )
-			log_file.write( "Pre source disable\n" )
-			log_file.close()
-
 			disable_all_sources()
-
-			log_file = open( projects_directory_location + "/log.txt", 'a' )
-			log_file.write( "Post source disable\n" )
-			log_file.close()
-
 
 			fdtd_hook.select( forward_sources[ fwd_src_idx ][ 'name' ] )
 			fdtd_hook.set( 'enabled', 1 )
 
-			log_file = open( projects_directory_location + "/log.txt", 'a' )
-			log_file.write( "post source enable\n" )
-			log_file.close()
-
-
 			job_name = 'forward_job_' + str( fwd_src_idx ) + '.fsp'
 			fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-			log_file = open( projects_directory_location + "/log.txt", 'a' )
-			log_file.write( "Pre file save\n" )
-			log_file.close()
 
 			job_names[ ( 'forward', fwd_src_idx ) ] = add_job( job_name, jobs_queue )
-
-
-			log_file = open( projects_directory_location + "/log.txt", 'a' )
-			log_file.write( "Post add job\n" )
-			log_file.close()
-
 
 
 		for adj_src_idx in range(0, num_adjoint_sources):
