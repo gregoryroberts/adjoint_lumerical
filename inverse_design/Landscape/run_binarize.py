@@ -96,29 +96,32 @@ for pair_idx in range( 0, num_pairings ):
 	rand_idx2 = np.random.randint( 0, num_left - 1 )
 
 	counter1 = 0
+	linear_idx1 = 0
 	for scan in range( 0, num_design_voxels ):
 		if used_voxels[ scan ] == 0:
 			if counter1 == rand_idx1:
-				used_voxels[ scan ] = 1
+				used_voxels[ scan ] += 1
+				linear_idx1 = scan
 				break
 			counter1 += 1
 
 	counter2 = 0
+	linear_idx2 = 0
 	for scan in range( 0, num_design_voxels ):
 		if used_voxels[ scan ] == 0:
 			if counter2 == rand_idx2:
-				used_voxels[ scan ] = 1
+				used_voxels[ scan ] += 1
+				linear_idx2 = scan
 				break
 			counter2 += 1
 
-	counter1_idx0 = int( counter1 / design_height )
-	counter1_idx1 = counter1 % design_height
-	counter2_idx0 = int( counter2 / design_height )
-	counter2_idx1 = counter2 % design_height
+	areal1_idx0 = int( linear_idx1 / design_height )
+	areal1_idx1 = linear_idx1 % design_height
+	areal2_idx0 = int( linear_idx2 / design_height )
+	areal2_idx1 = linear_idx2 % design_height
 
-	pairings[ pair_idx ] = np.array( [ counter1_idx0, counter1_idx1, counter2_idx0, counter2_idx1 ] )
+	pairings[ pair_idx ] = np.array( [ areal1_idx0, areal1_idx1, areal2_idx0, areal2_idx1 ] )
 
-# print( pairings )
 
 # sys.exit(0)
 
