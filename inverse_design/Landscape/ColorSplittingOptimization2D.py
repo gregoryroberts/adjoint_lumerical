@@ -82,7 +82,7 @@ class ColorSplittingOptimization2D():
 		permittivity_bounds, focal_spots_x_relative, focal_length_y_voxels,
 		wavelengths_um, wavelength_idx_to_focal_idx, random_seed,
 		num_layers, designable_layer_indicators, non_designable_permittivity,
-		save_folder, field_blur=False, field_blur_size_voxels=0.0 ):
+		save_folder, field_blur=False, field_blur_size_voxels=0.0, density_pairings=None ):
 		
 		self.device_width_voxels = device_size_voxels[ 0 ]
 		self.device_height_voxels = device_size_voxels[ 1 ]
@@ -119,6 +119,9 @@ class ColorSplittingOptimization2D():
 
 		self.random_seed = random_seed
 		np.random.seed( self.random_seed )
+
+		self.density_pairings = density_pairings
+		self.do_density_pairings = not ( self.density_pairings is None )
 
 		assert( self.design_height_voxels % num_layers ) == 0, "Expected the number of layers to evenly divide the design region"
 
@@ -164,6 +167,9 @@ class ColorSplittingOptimization2D():
 				self.design_density[ :, internal_layer_idx ] = fill_data
 
 		self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
+
+		if self.do_density_pairings:
+			self.design_density = self.pair_array( self.design_density )
 
 	def init_density_with_uniform( self, density_value ):
 		assert ( ( density_value <= 1.0 ) and ( density_value >= 0.0 ) ), "Invalid density value specified!"
@@ -400,6 +406,21 @@ class ColorSplittingOptimization2D():
 
 		return device_permittivity
 
+	def pair_array( self, input_array ):
+		output_array = np.zeros( input_array.shape, dtype=input_array.dtype )
+		for pair_idx in range( 0, len( self.density_pairings ) ):
+			get_pair = self.density_pairings[ pair_idx ]
+			density0 = input_array[ get_pair[ 0 ], get_pair[ 1 ] ]
+			density1 = input_array[ get_pair[ 2 ], get_pair[ 3 ] ]
+
+			density_average = 0.5 * ( density0 + density1 )
+
+			output_array[ get_pair[ 0 ], get_pair[ 1 ] ] = density_average
+			output_array[ get_pair[ 2 ], get_pair[ 3 ] ] = density_average
+
+		return output_array
+
+
 	def optimize( self, num_iterations, binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025 ):
 		self.max_density_change_per_iteration_start = 0.03#0.05
 		self.max_density_change_per_iteration_end = 0.01#0.005
@@ -462,6 +483,10 @@ class ColorSplittingOptimization2D():
 
 			norm_scaled_gradient = net_gradient / gradient_norm
 
+			gradient
+			if self.do_density_pairings:
+				norm_scaled_gradient = self.pair_array( norm_scaled_gradient )
+
 			self.gradient_directions[ iter_idx ] = norm_scaled_gradient
 
 			max_density_change = (
@@ -477,6 +502,9 @@ class ColorSplittingOptimization2D():
 				self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
 				self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
 
+			if self.do_density_pairings:
+				self.design_density = self.pair_array( self.design_density )
+
 	def save_optimization_data( self, file_base ):
 		np.save( file_base + "_gradient_norm_evolution.npy", self.gradient_norm_evolution )
 		np.save( file_base + "_fom_evolution.npy", self.fom_evolution )
@@ -484,6 +512,7 @@ class ColorSplittingOptimization2D():
 		np.save( file_base + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 		np.save( file_base + "_gradient_directions.npy", self.gradient_directions )
 		np.save( file_base + "_optimized_density.npy", self.design_density )
+		np.save( file_base + "_random_seed.npy", self.random_seed )
 
 
 

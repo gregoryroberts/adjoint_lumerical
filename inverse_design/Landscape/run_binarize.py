@@ -68,14 +68,61 @@ mean_density = 0.5
 sigma_density = 0.2
 init_from_old = False#True
 
-blur_fields_size_voxels = 4
-blur_fields = True
+blur_fields_size_voxels = 0#4
+blur_fields = False#True
 
 num_iterations = 450#150#300
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
 log_file.close()
+
+design_width = int( device_width_voxels / density_coarsen_factor )
+design_height = int( device_height_voxels / density_coarsen_factor )
+num_design_voxels = design_width * design_height
+assert ( num_design_voxels % 2 ) == 0, 'Design voxel pairings cannot be made'
+
+num_pairings = int( 0.5 * num_design_voxels )
+
+used_voxels = np.zeros( num_design_voxels, dtype=np.uint )
+
+pairings = np.zeros( ( num_pairings, 4 ), dtype=np.uint )
+np.random.seed( random_seed )
+
+for pair_idx in range( 0, num_pairings ):
+	num_left = num_design_voxels - 2 * pair_idx
+
+	rand_idx1 = np.random.randint( 0, num_left )
+	rand_idx2 = np.random.randint( 0, num_left - 1 )
+
+	counter1 = 0
+	for scan in range( 0, num_design_voxels ):
+		if used_voxels[ scan ] == 0:
+			if counter1 == rand_idx1:
+				used_voxels[ scan ] = 1
+				break
+			counter1 += 1
+
+	counter2 = 0
+	for scan in range( 0, num_design_voxels ):
+		if used_voxels[ scan ] == 0:
+			if counter2 == rand_idx2:
+				used_voxels[ scan ] = 1
+				break
+			counter2 += 1
+
+	counter1_idx0 = int( counter1 / design_height )
+	counter1_idx1 = counter1 % design_height
+	counter2_idx0 = int( counter2 / design_height )
+	counter2_idx1 = counter2 % design_height
+
+	pairings[ pair_idx ] = np.array( [ counter1_idx0, counter1_idx1, counter2_idx0, counter2_idx1 ] )
+
+# print( pairings )
+
+# sys.exit(0)
+
+
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],
@@ -84,7 +131,7 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	focal_points_x_relative, focal_length_voxels,
 	lambda_values_um, focal_map, random_seed,
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
-	blur_fields, blur_fields_size_voxels )
+	blur_fields, blur_fields_size_voxels, pairings )
 
 if init_from_old:
 	old_density = np.load( save_folder + "/opt_optimized_density.npy" )
