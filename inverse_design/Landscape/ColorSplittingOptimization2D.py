@@ -483,7 +483,6 @@ class ColorSplittingOptimization2D():
 
 			norm_scaled_gradient = net_gradient / gradient_norm
 
-			gradient
 			if self.do_density_pairings:
 				norm_scaled_gradient = self.pair_array( norm_scaled_gradient )
 
