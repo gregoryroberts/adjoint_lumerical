@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_imaging_grating_10layers_4to6um_fixed_step_addcage_25x25x25um'
+project_name = 'layered_mwir_2d_lithography_bridges_imaging_grating_10layers_x_pol_4to6um_fixed_step_addcage_25x25x25um'
 
 
 #
@@ -131,7 +131,7 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 2#0
+start_epoch = 0
 num_epochs = 10
 num_iterations_per_epoch = 30
 

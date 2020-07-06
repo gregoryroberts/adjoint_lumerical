@@ -139,7 +139,7 @@ for fwd_src_idx in range( 0, num_forward_sources ):
 	forward_src['name'] = 'forward_src_' + str( fwd_src_idx )
 	# forward_src['plane wave type'] = 'Bloch/periodic'
 	forward_src['plane wave type'] = 'Diffracting'
-	forward_src['polarization angle'] = 0
+	forward_src['polarization angle'] = -forward_sources_phi_angles_degrees[ fwd_src_idx ]
 	forward_src['angle phi'] = forward_sources_phi_angles_degrees[ fwd_src_idx ]
 	forward_src['angle theta'] = forward_sources_theta_angle_degrees
 	forward_src['direction'] = 'Backward'
@@ -552,7 +552,8 @@ for epoch in range(start_epoch, num_epochs):
 			x_gradient_component =  np.conj( Qx[ focal_idx, : ] ) * get_fwd_fields * get_adj_x_fields
 			y_gradient_component =  np.conj( Qy[ focal_idx, : ] ) * get_fwd_fields * get_adj_y_fields
 
-			combined_gradient_component = 2 * np.real( np.sum( x_gradient_component + y_gradient_component, axis=0 ) )
+			# combined_gradient_component = 2 * np.real( np.sum( x_gradient_component + y_gradient_component, axis=0 ) )
+			combined_gradient_component = 2 * np.real( np.sum( x_gradient_component, axis=0 ) )
 
 			for wl_idx in range( 0, num_design_frequency_points ):
 				performance_weight = performance_weights[ fwd_src_idx * num_design_frequency_points + wl_idx ]
