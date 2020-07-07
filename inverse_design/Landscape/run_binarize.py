@@ -34,7 +34,7 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 8
+mesh_size_nm = 4#8
 density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
@@ -49,10 +49,10 @@ def density_bound_from_eps( eps_val ):
 
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 
-device_width_voxels = 120
-device_height_voxels = 100
+device_width_voxels = 240#120
+device_height_voxels = 200#100
 device_voxels_total = device_width_voxels * device_height_voxels
-focal_length_voxels = 100
+focal_length_voxels = 200#100
 focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -125,8 +125,6 @@ for pair_idx in range( 0, num_pairings ):
 
 # sys.exit(0)
 
-
-
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],
 	density_coarsen_factor, mesh_size_nm,
@@ -134,7 +132,17 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	focal_points_x_relative, focal_length_voxels,
 	lambda_values_um, focal_map, random_seed,
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
-	blur_fields, blur_fields_size_voxels, pairings )
+	blur_fields, blur_fields_size_voxels, None )
+
+
+# make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
+# 	[ device_width_voxels, device_height_voxels ],
+# 	density_coarsen_factor, mesh_size_nm,
+# 	[ min_relative_permittivity, max_relative_permittivity ],
+# 	focal_points_x_relative, focal_length_voxels,
+# 	lambda_values_um, focal_map, random_seed,
+# 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
+# 	blur_fields, blur_fields_size_voxels, pairings )
 
 if init_from_old:
 	old_density = np.load( save_folder + "/opt_optimized_density.npy" )
