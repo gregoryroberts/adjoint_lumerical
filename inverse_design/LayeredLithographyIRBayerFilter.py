@@ -105,13 +105,26 @@ class LayeredLithographyIRBayerFilter(device.Device):
 		if enforce_binarization:
 
 			#
-			# todo: consider a differently shaped binarization function here
+			# todo: consider a differently shaped binarization function here! In particular, this one isn't the
+			# greatest because elements close to fully un-binarized have the smallest gradients.  If anything, this
+			# behavior should be flipped. Very odd how this turned out.  See below (max binarization is now)
+			#
+			# def compute_binarization( input_variable ):
+			# 	total_shape = np.product( input_variable.shape )
+			# 	return ( 2 / np.sqrt( total_shape ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
+			# def compute_binarization_gradient( input_variable ):
+			# 	total_shape = np.product( input_variable.shape )
+			# 	return ( 4 / total_shape ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
+
+
 			def compute_binarization( input_variable ):
 				total_shape = np.product( input_variable.shape )
-				return ( 2 / np.sqrt( total_shape ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
+				return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - 0.5 )**2 ) )
+
 			def compute_binarization_gradient( input_variable ):
 				total_shape = np.product( input_variable.shape )
-				return ( 4 / total_shape ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
+				return ( 2. / total_shape ) * np.sign( input_variable - 0.5 )
+
 
 			#
 			# This is after the feature size blurring
