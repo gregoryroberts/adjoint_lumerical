@@ -30,16 +30,16 @@ c = 3.0 * 1e8
 # 	total_shape = np.product( input_variable.shape )
 # 	return ( 4 / np.sqrt( total_shape ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
-def compute_binarization( input_variable ):
+def compute_binarization( input_variable, set_point=0.5 ):
 	total_shape = np.product( input_variable.shape )
-	return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - 0.5 )**2 ) )
+	return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - set_point )**2 ) )
 # def compute_binarization_gradient( input_variable ):
 # 	total_shape = np.product( input_variable.shape )
 # 	return ( 1. / total_shape ) * ( input_variable - 0.5 ) / np.sum( np.sqrt( ( input_variable - 0.5 )**2 )	)
 
-def compute_binarization_gradient( input_variable ):
+def compute_binarization_gradient( input_variable, set_point=0.5 ):
 	total_shape = np.product( input_variable.shape )
-	return ( 2. / total_shape ) * np.sign( input_variable - 0.5 )
+	return ( 2. / total_shape ) * np.sign( input_variable - set_point )
 
 
 def vector_norm( v_in ):
@@ -87,7 +87,8 @@ class ColorSplittingOptimization2D():
 		permittivity_bounds, focal_spots_x_relative, focal_length_y_voxels,
 		wavelengths_um, wavelength_idx_to_focal_idx, random_seed,
 		num_layers, designable_layer_indicators, non_designable_permittivity,
-		save_folder, field_blur=False, field_blur_size_voxels=0.0, density_pairings=None ):
+		save_folder, field_blur=False, field_blur_size_voxels=0.0, density_pairings=None,
+		binarization_set_point=0.5 ):
 		
 		self.device_width_voxels = device_size_voxels[ 0 ]
 		self.device_height_voxels = device_size_voxels[ 1 ]
@@ -144,6 +145,8 @@ class ColorSplittingOptimization2D():
 
 		self.field_blur = field_blur
 		self.field_blur_size_voxels = field_blur_size_voxels
+
+		self.binarization_set_point = binarization_set_point
 
 		self.setup_simulation()
 
@@ -345,7 +348,7 @@ class ColorSplittingOptimization2D():
 		flatten_gradient = gradient.flatten()
 
 		flatten_design_cuts = density_for_binarizing.copy()
-		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts )
+		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
 		flatten_fom_gradients = flatten_gradient.copy()
 
 		beta = binarize_max_movement
@@ -353,7 +356,7 @@ class ColorSplittingOptimization2D():
 
 		c = flatten_fom_gradients
 
-		initial_binarization = compute_binarization( flatten_design_cuts )
+		initial_binarization = compute_binarization( flatten_design_cuts, self.binarization_set_point )
 
 		b = np.real( extract_binarization_gradient )
 
@@ -400,8 +403,8 @@ class ColorSplittingOptimization2D():
 		proposed_design_variable = flatten_design_cuts + x_star
 		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
-		print( initial_binarization )
-		print( compute_binarization( proposed_design_variable.flatten() ) )
+		# print( initial_binarization )
+		# print( compute_binarization( proposed_design_variable.flatten() ) )
 
 		return np.reshape( proposed_design_variable, self.design_density.shape )
 
