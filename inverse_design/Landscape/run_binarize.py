@@ -34,7 +34,7 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 4#8
+mesh_size_nm = 8
 density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
@@ -49,10 +49,10 @@ def density_bound_from_eps( eps_val ):
 
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 
-device_width_voxels = 240#120
-device_height_voxels = 200#100
+device_width_voxels = 120
+device_height_voxels = 100
 device_voxels_total = device_width_voxels * device_height_voxels
-focal_length_voxels = 200#100
+focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -148,7 +148,8 @@ if init_from_old:
 	old_density = np.load( save_folder + "/opt_optimized_density.npy" )
 	make_optimizer.init_density_directly( old_density )
 else:
-	make_optimizer.init_density_with_random( mean_density, sigma_density )
+	make_optimizer.init_density_with_uniform( mean_density )
+	# make_optimizer.init_density_with_random( mean_density, sigma_density )
 	np.save( save_folder + "/opt_random_seed.npy", make_optimizer.random_seed )
 	np.save( save_folder + "/opt_init_random_density.npy", make_optimizer.design_density )
 
