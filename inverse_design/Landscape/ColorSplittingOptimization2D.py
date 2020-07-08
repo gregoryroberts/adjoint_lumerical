@@ -32,10 +32,15 @@ c = 3.0 * 1e8
 
 def compute_binarization( input_variable ):
 	total_shape = np.product( input_variable.shape )
-	return ( 1. / total_shape ) * np.sum( np.sqrt( ( input_variable - 0.5 )**2 ) )
+	return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - 0.5 )**2 ) )
+# def compute_binarization_gradient( input_variable ):
+# 	total_shape = np.product( input_variable.shape )
+# 	return ( 1. / total_shape ) * ( input_variable - 0.5 ) / np.sum( np.sqrt( ( input_variable - 0.5 )**2 )	)
+
 def compute_binarization_gradient( input_variable ):
 	total_shape = np.product( input_variable.shape )
-	return ( 1. / total_shape ) * ( input_variable - 0.5 ) / np.sqrt( ( input_variable - 0.5 )**2 )	
+	return ( 2. / total_shape ) * np.sign( input_variable - 0.5 )
+
 
 def vector_norm( v_in ):
 	return np.sqrt( np.sum( np.abs( v_in )**2 ) )
