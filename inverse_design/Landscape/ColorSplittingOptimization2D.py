@@ -5,11 +5,13 @@ import numpy as np
 import scipy.optimize
 
 from scipy.ndimage import gaussian_filter
+from scipy.interpolate import RectBivariateSpline
 
 #
 # System
 #
 import sys
+import os
 
 #
 # Electromagnetics
@@ -19,6 +21,13 @@ run_on_cluster = True
 if run_on_cluster:
 	sys.path.append( '/central/home/gdrobert/Develompent/ceviche' )
 import ceviche
+
+#
+# Topology Optimization
+#
+sys.path.append( os.path.abspath( '../LevelSet/' ) )
+
+import LevelSet
 
 eps_nought = 8.854 * 1e-12
 c = 3.0 * 1e8
@@ -236,6 +245,146 @@ class ColorSplittingOptimization2D():
 		self.fwd_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 		self.fwd_source[ fwd_src_x_range, fwd_src_y_range ] = 1
 
+	def plot_subcell_gradient_variations( self, omega_idx, factor ):
+		import matplotlib.pyplot as plt
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+
+		device_width_array = np.linspace( 0, 1, self.device_width_voxels )
+		device_height_array = np.linspace( 0, 1, self.device_height_voxels )
+
+		interp_width_array = np.linspace( 0, 1, factor * self.device_width_voxels )
+		interp_height_array = np.linspace( 0, 1, factor * self.device_height_voxels )
+
+		omega = self.omega_values[ omega_idx ]
+
+		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
+		
+		focal_point_x_loc = self.focal_spots_x_voxels[ 0 ]
+
+		interp_spline_fwd_real = RectBivariateSpline(
+			device_width_array, device_height_array, np.real( fwd_Ez[
+				self.device_width_start : self.device_width_end,
+				self.device_height_start : self.device_height_end
+		] ) )
+
+		interp_spline_fwd_imag = RectBivariateSpline(
+			device_width_array, device_height_array, np.imag( fwd_Ez[
+				self.device_width_start : self.device_width_end,
+				self.device_height_start : self.device_height_end
+		] ) )
+
+
+		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
+		adj_source[ focal_point_x_loc, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+
+		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
+
+		interp_spline_adj_real = RectBivariateSpline(
+			device_width_array, device_height_array, np.real( adj_Ez[
+				self.device_width_start : self.device_width_end,
+				self.device_height_start : self.device_height_end
+		] ) )
+
+		interp_spline_adj_imag = RectBivariateSpline(
+			device_width_array, device_height_array, np.imag( adj_Ez[
+				self.device_width_start : self.device_width_end,
+				self.device_height_start : self.device_height_end
+		] ) )
+
+
+		interpolated_fwd_real = interp_spline_fwd_real( interp_width_array, interp_height_array )
+		interpolated_adj_real = interp_spline_adj_real( interp_width_array, interp_height_array )
+		interpolated_fwd_imag = interp_spline_fwd_imag( interp_width_array, interp_height_array )
+		interpolated_adj_imag = interp_spline_adj_imag( interp_width_array, interp_height_array )
+
+		interpolated_fwd = interpolated_fwd_real + 1j * interpolated_fwd_imag
+		interpolated_adj = interpolated_adj_real + 1j * interpolated_adj_imag
+
+		interp_grad = 2 * np.real( interpolated_fwd * interpolated_adj )
+
+		averaged_grad = np.zeros( ( self.device_width_voxels, self.device_height_voxels ) )
+		middle_grad = 2 * np.real(
+			fwd_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] *
+			adj_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] )
+
+		for x_idx in range( 0, self.device_width_voxels ):
+			for y_idx in range( 0, self.device_height_voxels ):
+				for off_x in range( 0, factor ):
+					start_x = x_idx * factor
+					for off_y in range( 0, factor ):
+						start_y = y_idx * factor
+
+						averaged_grad[ x_idx, y_idx ] += (
+							( 1. / ( factor * factor ) ) *
+							interp_grad[ start_x + off_x, start_y + off_y ]
+						)
+
+		plt.subplot( 1, 3, 1 )
+		plt.imshow( middle_grad, cmap='Blues' )
+		plt.colorbar()
+		plt.subplot( 1, 3, 2 )
+		plt.imshow( averaged_grad, cmap='Blues' )
+		plt.colorbar()
+		plt.subplot( 1, 3, 3 )
+		plt.imshow( ( middle_grad - averaged_grad ), cmap='Greens' )
+		plt.colorbar()
+		plt.show()
+
+
+
+
+
+		half_width = int( factor * 0.5 * self.device_width_voxels )
+		half_height = int( factor * 0.5 * self.device_height_voxels )
+
+		plt.subplot( 1, 3, 1 )
+		plt.imshow( np.abs( interpolated_fwd[ half_width : ( half_width + self.coarsen_factor * 2 * factor ), half_height : ( half_height + self.coarsen_factor * 2 * factor) ] ), cmap='Reds' )
+		plt.colorbar()
+		plt.subplot( 1, 3, 2 )
+		plt.imshow( np.abs( interpolated_adj[ half_width : ( half_width + self.coarsen_factor * 2 * factor ), half_height : ( half_height + self.coarsen_factor * 2 * factor) ] ), cmap='Reds' )
+		plt.colorbar()
+		plt.subplot( 1, 3, 3 )
+		plt.imshow(
+			np.real(
+				interpolated_fwd[ half_width : ( half_width + self.coarsen_factor * 2 * factor ), half_height : ( half_height + self.coarsen_factor * 2 * factor ) ] *
+				interpolated_adj[ half_width : ( half_width + self.coarsen_factor * 2 * factor ), half_height : ( half_height + self.coarsen_factor * 2 * factor ) ] ),
+			cmap='Reds' )
+		plt.colorbar()
+		plt.show()
+
+
+	def get_device_efields( self, omega_idx ):
+		import matplotlib.pyplot as plt
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+		self.rel_eps_simulation[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] = device_permittivity
+
+		Ez = self.compute_forward_fields( self.omega_values[ omega_idx ], device_permittivity )
+
+		return Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ], device_permittivity
+
+	def plot_fields( self, omega_idx ):
+		import matplotlib.pyplot as plt
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+		self.rel_eps_simulation[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] = device_permittivity
+
+		Ez = self.compute_forward_fields( self.omega_values[ omega_idx ], device_permittivity )
+
+		plt.subplot( 1, 2, 1 )
+		plt.imshow( np.abs( Ez ), cmap='Blues' )
+		plt.subplot( 1, 2, 2 )
+		plt.imshow( np.real( Ez ), cmap='Greens' )
+		plt.show()
+
+		plt.subplot( 1, 2, 1 )
+		ceviche.viz.abs(Ez, outline=self.rel_eps_simulation, ax=plt.gca(), cbar=False)
+		plt.subplot( 1, 2, 2 )
+		plt.imshow( self.rel_eps_simulation, cmap='Greens' )
+		plt.show()
+
 	def compute_forward_fields( self, omega, device_permittivity ):
 		self.rel_eps_simulation[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] = device_permittivity
 
@@ -296,31 +445,44 @@ class ColorSplittingOptimization2D():
 
 
 	def verify_adjoint_against_finite_difference( self ):
-		fd_x = int( 0.5 * self.simulation_width_voxels )
+		fd_x = int( 0.5 * self.device_width_voxels )
 		fd_y = np.arange( 0, self.device_height_voxels )
 		compute_fd = np.zeros( len( fd_y ) )
 		omega_idx = int( 0.5 * len( self.omega_values ) )
 		fd_omega = self.omega_values[ omega_idx ]
 
-		fd_init_device = 1.5 * np.ones( ( self.device_width_voxels, self.device_height_voxels ) )
+		# fd_init_device = 1.5 * np.ones( ( self.device_width_voxels, self.device_height_voxels ) )
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+		fd_init_device = device_permittivity
 
 		focal_point_x = self.focal_spots_x_voxels[ 0 ]
 
 		get_fom, get_grad = self.compute_fom_and_gradient(
-			fd_omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ],
-			self.fwd_src_y, focal_point_x, self.focal_point_y, self.wavelength_intensity_scaling[ omega_idx ] )
+			fd_omega, fd_init_device, focal_point_x )
+		get_grad = get_grad[
+			self.device_width_start : self.device_width_end,
+			self.device_height_start : self.device_height_end ]
 
 		fd_step_eps = 1e-4
 
-		for fd_y_idx in range( 0, len( fd_y ) ):
+		num = 10
+
+		for fd_y_idx in range( 0, num ):#20 ):#len( fd_y ) ):
+			print( "working on " + str( fd_y_idx ) )
 			fd_device_permittivity = fd_init_device.copy()
 			fd_device_permittivity[ fd_x, fd_y[ fd_y_idx ] ] += fd_step_eps
 
-			get_fom_step = self.compute_fom( fd_omega, fd_device_permittivity, focal_point_x, self.wavelength_intensity_scaling[ omega_idx ] )
+			get_fom_step = self.compute_fom( fd_omega, fd_device_permittivity, focal_point_x )
 
 			compute_fd[ fd_y_idx ] = ( get_fom_step - get_fom ) / fd_step_eps
 
-		self.average_adjoint_finite_difference_error = np.sqrt( np.mean( np.abs( get_grad[ fd_x, device_height_start : device_height_end ] - compute_fd )**2 ) )
+		import matplotlib.pyplot as plt
+		plt.plot( get_grad[ fd_x, 0 : num ], color='g', linewidth=2 )
+		plt.plot( compute_fd[ 0 : num ], color='r', linewidth=2, linestyle='--' )
+		plt.show()
+
+		self.average_adjoint_finite_difference_error = np.sqrt( np.mean( np.abs( get_grad[ fd_x, self.device_height_start : self.device_height_end ] - compute_fd )**2 ) )
 
 	def density_to_permittivity( self, density ):
 		return ( self.min_relative_permittivity + ( self.max_relative_permittivity - self.min_relative_permittivity ) * density )
@@ -511,6 +673,119 @@ class ColorSplittingOptimization2D():
 
 			if self.do_density_pairings:
 				self.design_density = self.pair_array( self.design_density )
+
+	def optimize_with_level_set( self, num_iterations ):
+		self.lsf_gradient_norm_evolution = np.zeros( num_iterations )
+		self.lsf_fom_evolution = np.zeros( num_iterations )
+		self.lsf_fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
+		self.lsf_gradient_directions = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
+		self.level_set_device_evolution = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
+
+		level_set = LevelSet.LevelSet( [ self.design_width_voxels, self.design_height_voxels ], 1. / self.coarsen_factor )
+		level_set.init_with_density( self.design_density )
+
+		# import matplotlib.pyplot as plt
+		# plt.subplot( 1, 2, 1 )
+		# plt.imshow( self.design_density, cmap='Greens' )
+		# plt.subplot( 1, 2, 2 )
+		# plt.imshow( level_set.device_density_from_level_set(), cmap='Greens' )
+		# plt.show()
+		# # sys.exit(0)
+
+		# test_grad = np.random.random( ( self.design_width_voxels, self.design_height_voxels ) )
+		# test_grad /= np.sqrt( np.sum( test_grad**2 ) )
+
+		# start = level_set.device_density_from_level_set().copy()
+		# level_set.update( test_grad, 1 )
+
+		# import matplotlib.pyplot as plt
+		# plt.subplot( 1, 3, 1 )
+		# plt.imshow( start, cmap='Greens' )
+		# plt.subplot( 1, 3, 2 )
+		# plt.imshow( level_set.device_density_from_level_set(), cmap='Greens' )
+		# plt.subplot( 1, 3, 3 )
+		# plt.imshow( start - level_set.device_density_from_level_set(), cmap='Blues' )
+		# plt.show()
+		# sys.exit(0)
+
+
+		for iter_idx in range( 0, num_iterations ):
+			if ( iter_idx % 1 ) == 0:
+				log_file = open( self.save_folder + "/log_level_set.txt", 'a' )
+				log_file.write( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) + "\n")
+				log_file.close()
+
+				print( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) )
+ 
+			self.level_set_device_evolution[ iter_idx ] = level_set.device_density_from_level_set()
+
+			import_density = upsample( level_set.device_density_from_level_set(), self.coarsen_factor )
+			device_permittivity = self.density_to_permittivity( import_density )
+
+			gradient_by_wl = []
+			fom_by_wl = []
+
+			for wl_idx in range( 0, self.num_wavelengths ):
+				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+
+				get_fom, get_grad = self.compute_fom_and_gradient(
+					self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+					self.wavelength_intensity_scaling[ wl_idx ] )
+
+				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+
+				scale_fom_for_wl = get_fom
+				scale_gradient_for_wl = upsampled_device_grad
+
+				gradient_by_wl.append( scale_gradient_for_wl )
+				fom_by_wl.append( scale_fom_for_wl )
+
+			net_fom = np.product( fom_by_wl )
+			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
+
+			# print( net_fom )
+
+			# We are currently not doing a performance based weighting here, but we can add it in
+			for wl_idx in range( 0, self.num_wavelengths ):
+				wl_gradient = ( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
+				weighting = net_fom / fom_by_wl[ wl_idx ]
+
+				net_gradient += ( weighting * wl_gradient )
+
+			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
+
+			#
+			# Now, we should zero out non-designable regions and average over designable layers
+			#
+			net_gradient = self.layer_spacer_averaging( net_gradient )
+
+			gradient_norm = vector_norm( net_gradient )
+
+			self.lsf_fom_evolution[ iter_idx ] = net_fom
+			self.lsf_fom_by_wl_evolution[ iter_idx ] = np.array( fom_by_wl )
+			self.lsf_gradient_norm_evolution[ iter_idx ] = gradient_norm
+
+			norm_scaled_gradient = net_gradient / gradient_norm
+
+			self.lsf_gradient_directions[ iter_idx ] = norm_scaled_gradient
+
+			level_set.update( norm_scaled_gradient, 1 )
+
+			# max_density_change = (
+			# 	self.max_density_change_per_iteration_start +
+			# 	( iter_idx / ( num_iterations - 1 ) ) * ( self.max_density_change_per_iteration_end - self.max_density_change_per_iteration_start )
+			# )
+
+			# self.binarization_evolution[ iter_idx ] = compute_binarization( self.design_density.flatten() )
+
+			# if binarize:
+			# 	self.design_density = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel )
+			# else:
+			# 	self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
+			# 	self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
+
+			# if self.do_density_pairings:
+			# 	self.design_density = self.pair_array( self.design_density )
 
 	def save_optimization_data( self, file_base ):
 		np.save( file_base + "_gradient_norm_evolution.npy", self.gradient_norm_evolution )
