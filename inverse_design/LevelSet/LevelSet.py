@@ -1,22 +1,19 @@
 import numpy as np
 
-from scipy.ndimage import gaussian_filter
-
 from scipy.sparse import csc_matrix
 from scipy.sparse import lil_matrix
 from scipy.sparse.linalg import spsolve
 
-
-def eval_gaussian( x, y, x0, y0, sigma ):
-	return np.exp(
-		-0.5 * (
-			( ( x - x0 )**2 / sigma**2 ) + ( ( y - y0 )**2 / sigma**2 )
-		)
-	)
-
+#
+# A signed distance representation a hold where the inner points have a negative value for the level set function,
+# thus placing them in the void domain.  Everywhere else will be in the solid domain.
+#
 def eval_signed_distance_hole( x, y, x0, y0, radius ):
 	return ( np.sqrt( ( x - x0 )**2 + ( y - y0 )**2 ) - radius )
 
+#
+# Function used for blurring a density value near boundaries.
+# 
 def eval_heaviside( x, eta ):
 	x_over_eta = x / eta
 	middle = 0.5 * ( 1 + ( x_over_eta ) + ( 1 / np.pi ) * np.sin( np.pi * x_over_eta ) )
@@ -25,6 +22,12 @@ def eval_heaviside( x, eta ):
 
 class LevelSet():
 
+	#
+	# Create a level set object.  The dimesion should be the 2D dimension of the design area.  So if you are doing
+	# 3D device with distinct layers, then you would create one of these classes per layer.
+	# The boundary_smoothing_width controls the blurring over the boundary to use when computing a density from
+	# the level set function.  It controls the width of the approximate Heaviside function used across boundaries.
+	#
 	def __init__( self, dimension, boundary_smoothing_width ):
 		self.dimension = dimension
 		self.padded_dimension = [ ( d + 4 ) for d in dimension ]
@@ -34,17 +37,25 @@ class LevelSet():
 
 		self.boundary_smoothing_width = boundary_smoothing_width
 
-		# self.padded_meshgrid = np.meshgrid(
-		# 	np.arange( 0, self.padded_dimension[ 0 ] ),
-		# 	np.arange( 0, self.padded_dimension[ 1 ] )
-		# )
+		self.padded_meshgrid_x = np.zeros( ( self.padded_dimension[ 0 ], self.padded_dimension[ 1 ] ) )
+		self.padded_meshgrid_y = np.zeros( ( self.padded_dimension[ 0 ], self.padded_dimension[ 1 ] ) )
+		for x_idx in range( 0, self.padded_dimension[ 0 ] ):
+			for y_idx in range( 0, self.padded_dimension[ 1 ] ):
+				self.padded_meshgrid_x[ x_idx, y_idx ] = x_idx
+				self.padded_meshgrid_y[ x_idx, y_idx ] = y_idx
 
+		self.alpha_hilbertian = 1.0
+		self.setup_hilbertian_velocity_extension_matrices( self.alpha_hilbertian )
+
+	#
+	# Initialize the level set function with a bunch of holes as specified by the given arrays.
+	# The centers should be specified as a list of [x, y] coordinates.  The widths are an array of
+	# radii for the assumed circular holes.  Elliptical holdes requires a change to eval_signed_distance_hole
+	# above to allow for two widths.
+	#
 	def init_with_holes( self, init_hole_centers, init_hole_widths ):
-		print( init_hole_centers )
 		self.init_hole_centers = [ [ ( loc + 2 ) for loc in hole ] for hole in init_hole_centers ]
 		self.init_hole_widths = init_hole_widths
-
-		print( self.init_hole_centers )
 
 		num_holes = len( self.init_hole_centers )
 
@@ -67,85 +78,67 @@ class LevelSet():
 					)
 
 		self.signed_distance_reinitialization()
-		# self.level_set_function -= 0.5
 
+	#
+	# An initilaization for a structure density from a density-based optimization.  The density is assumed to be
+	# bounded below and above by 0 and 1, respectively.
+	#
 	def init_with_density( self, density ):
 		self.level_set_function = np.pad( density - 0.5, ( ( 2, 2 ), ( 2, 2 ) ), mode='edge' )
 		self.signed_distance_reinitialization()
 
+	#
+	# If you are restarting an optimization and you have saved out the level set function from this class or would like
+	# to initialize it directly, you can use this version of initialization.  A signed distance re-initialization will be
+	# run after setting the level set function.
+	#
 	def init_with_level_set_function( self, lsf ):
 		self.level_set_function = lsf.copy()
+		self.signed_distance_reinitialization()
 
-	def signed_distance_reinitialization( self ):
+	#
+	# A function for generally applying an operation based on distance from the boundaries of the level set function.
+	# operation should take in a distance matrix, which specifies the distance from every point to the boundary of
+	# the level set.  It should return whatever you would like to return from this function.  For example, for signed
+	# distance reinitialization, the operation returns the sign of the level set function point multiplied by the distance
+	# and returns this matrix to reset the level set function.
+	#
+	def distance_transform( self, operation ):
 		border_points_x, border_points_y = self.find_border_points()
 
-		# print( "Number of border points is " + str( len( border_points_x ) ) )
-		for x_idx in range( 0, self.padded_dimension[ 0 ] ):
-			# print( "Working on x idx = " + str( x_idx ) )
-			for y_idx in range( 0, self.padded_dimension[ 1 ] ):
+		distance_squared = np.inf * np.ones( self.padded_dimension )
 
-				distance = np.inf
-				for border_point_idx in range( 0, len( border_points_x ) ):
-					border_point_x_coord = border_points_x[ border_point_idx ]
-					border_point_y_coord = border_points_y[ border_point_idx ]
-					
-					distance_border_point = np.sqrt( ( x_idx - border_point_x_coord )**2 + ( y_idx - border_point_y_coord )**2 )
+		for border_point_idx in range( 0, len( border_points_x ) ):
+			border_point_x_coord = border_points_x[ border_point_idx ]
+			border_point_y_coord = border_points_y[ border_point_idx ]
 
-					distance = np.minimum( distance, distance_border_point )
+			find_distance_squared = (
+				( self.padded_meshgrid_x - border_point_x_coord )**2 +
+				( self.padded_meshgrid_y - border_point_y_coord )**2 )
+			distance_squared = np.minimum( distance_squared, find_distance_squared )
 
-				self.level_set_function[ x_idx, y_idx ] = np.sign( self.level_set_function[ x_idx, y_idx ] ) * distance
+		return operation( np.sqrt( distance_squared ) )
 
+	#
+	# Reinitialize the level function to be a signed distance representation.
+	#
+	def signed_distance_reinitialization( self ):
+		signed_distance_operation = lambda distance: np.sign( self.level_set_function ) * distance
+		self.level_set_function = self.distance_transform( signed_distance_operation )
 
-	# def signed_distance_reinitialization( self ):
-	# 	delta_ij_plus = np.zeros( self.level_set_function.shape )
-	# 	delta_ij_minus = np.zeros( self.level_set_function.shape )
-
-	# 	D_xplus = np.zeros( self.level_set_function.shape )
-	# 	D_xminus = np.zeros( self.level_set_function.shape )
-	# 	D_yplus = np.zeros( self.level_set_function.shape )
-	# 	D_yminus = np.zeros( self.level_set_function.shape )
-
-	# 	delta_t = 0.01
-	# 	num_steps = 50
-
-	# 	lsf_sign = np.sign( self.level_set_function )
-	# 	smoothed_lsf_sign = gaussian_filter( lsf_sign, sigma=1 )
-	# 	smoothed_lsf_sign -= np.min( smoothed_lsf_sign )
-	# 	smoothed_lsf_sign /= np.max( smoothed_lsf_sign )
-	# 	smoothed_lsf_sign = -1.0 + 2 * smoothed_lsf_sign
-
-	# 	for step_idx in range( 0, num_steps ):
-	# 		for x_idx in range( self.search_bounds[ 0 ][ 0 ], self.search_bounds[ 0 ][ 1 ] ):
-	# 			for y_idx in range( self.search_bounds[ 1 ][ 0 ], self.search_bounds[ 1 ][ 1 ] ):
-
-	# 				D_xplus[ x_idx, y_idx ] = self.level_set_function[ x_idx + 1, y_idx ] - self.level_set_function[ x_idx, y_idx ]
-	# 				D_xminus[ x_idx, y_idx ] = self.level_set_function[ x_idx, y_idx ] - self.level_set_function[ x_idx - 1, y_idx ]
-
-	# 				D_yplus[ x_idx, y_idx ] = self.level_set_function[ x_idx, y_idx + 1 ] - self.level_set_function[ x_idx, y_idx ]
-	# 				D_yminus[ x_idx, y_idx ] = self.level_set_function[ x_idx, y_idx ] - self.level_set_function[ x_idx, y_idx - 1 ]
-
-
-	# 		delta_ij_plus = np.sqrt(
-	# 			( np.minimum( D_xplus, 0 ) )**2 + ( np.maximum( D_xminus, 0 ) )**2 +
-	# 			( np.minimum( D_yplus, 0 ) )**2 + ( np.maximum( D_yminus, 0 ) )**2
-	# 		)
-
-	# 		delta_ij_minus = np.sqrt(
-	# 			( np.maximum( D_xplus, 0 ) )**2 + ( np.minimum( D_xminus, 0 ) )**2 +
-	# 			( np.maximum( D_yplus, 0 ) )**2 + ( np.minimum( D_yminus, 0 ) )**2
-	# 		)
-
-	# 		self.level_set_function += delta_t * (
-	# 			np.maximum( -smoothed_lsf_sign, 0 ) * delta_ij_plus + np.minimum( -smoothed_lsf_sign, 0 ) * delta_ij_minus + smoothed_lsf_sign
-	# 		)
-
-
+	#
+	# Ask for the current binary device on a mesh cell basis.  So each voxel is either 0 or 1.  A better representation
+	# would likely be to call find_border_points to retrieve the current boundaries of the level set.
+	#
 	def binarize( self ):
 		padded_lsf = 1.0 * np.greater( self.level_set_function, 0.0 )
 		print( padded_lsf[ self.search_bounds[ 0 ][ 0 ] : self.search_bounds[ 0 ][ 1 ], self.search_bounds[ 1 ][ 0 ] : self.search_bounds[ 1 ][ 1 ] ].shape )
 		return padded_lsf[ self.search_bounds[ 0 ][ 0 ] : self.search_bounds[ 0 ][ 1 ], self.search_bounds[ 1 ][ 0 ] : self.search_bounds[ 1 ][ 1 ] ]
 
-
+	#
+	# A coarse border representation for points that are in the solid domain and have at least one surrounding point in the
+	# void domain.  This is used to isolate the input velocity to be restricted onto the border points.
+	#
 	def find_border_representation( self ):
 		binary_representation = 1.0 * np.greater( self.level_set_function, 0.0 )
 
@@ -162,6 +155,10 @@ class LevelSet():
 
 		return border_representation
 
+	#
+	# Find subpixel border points with a linear interpolation for where the level set function crosses 0.
+	# This returns two arrays of values, one for the x-coordinates and another for the y-coordinates.
+	#
 	def find_border_points( self ):
 		border_points_x = []
 		border_points_y = []
@@ -189,58 +186,29 @@ class LevelSet():
 
 		return border_points_x, border_points_y
 
-
-	def find_border_points_simple( self ):
-		border_points_x = []
-		border_points_y = []
-
-		for x_idx in range( self.search_bounds[ 0 ][ 0 ], self.search_bounds[ 0 ][ 1 ] ):
-			for y_idx in range( self.search_bounds[ 1 ][ 0 ], self.search_bounds[ 1 ][ 1 ] ):
-				lsf_center = self.level_set_function[ x_idx, y_idx ]
-				surroundings = self.level_set_function[ ( x_idx - 1 ) : ( x_idx + 2 ), ( y_idx - 1 ) : ( y_idx + 2 ) ]
-
-				if lsf_center > 0:
-					if np.sum( np.greater( surroundings, 0 ) ) < 9:
-						border_points_x.append( x_idx )
-						border_points_y.append( y_idx )
-
-		return border_points_x, border_points_y
-
-
+	#
+	# Compute a device density with smoothed Heaviside function across the boundaries.
+	#
 	def device_density_from_level_set( self ):
-		device_density = np.zeros( self.level_set_function.shape )
+		density_from_distance = lambda distance: eval_heaviside( np.sign( self.level_set_function ) * distance, self.boundary_smoothing_width )
 
-		border_points_x, border_points_y = self.find_border_points()
+		padded_density = self.distance_transform( density_from_distance )
 
-		for x_idx in range( self.search_bounds[ 0 ][ 0 ], self.search_bounds[ 0 ][ 1 ] ):
-			for y_idx in range( self.search_bounds[ 1 ][ 0 ], self.search_bounds[ 1 ][ 1 ] ):
+		return padded_density[
+			self.search_bounds[ 0 ][ 0 ] : self.search_bounds[ 0 ][ 1 ],
+			self.search_bounds[ 1 ][ 0 ] : self.search_bounds[ 1 ][ 1 ]
+		]
 
-				distance = np.inf
-				for border_point_idx in range( 0, len( border_points_x ) ):
-					border_point_x_coord = border_points_x[ border_point_idx ]
-					border_point_y_coord = border_points_y[ border_point_idx ]
-					
-					distance_border_point = np.sqrt( ( x_idx - border_point_x_coord )**2 + ( y_idx - border_point_y_coord )**2 )
-
-					distance = np.minimum( distance, distance_border_point )
-
-				signed_distance = np.sign( self.level_set_function[ x_idx, y_idx ] ) * distance
-				device_density[ x_idx, y_idx ] = eval_heaviside( signed_distance, self.boundary_smoothing_width )
-
-		return device_density
-
-	def extend_velocity_hilbertian( self, velocity_field ):
-		border_representation = self.find_border_representation()
-
-		boundary_velocity = border_representation * velocity_field
-
+	#
+	# Setup function to create the sparse matrices we use for doing a Hilbertian velocity extension.
+	# The matrix used is static and so we only create it one time.
+	#
+	def setup_hilbertian_velocity_extension_matrices( self, alpha ):
 		vector_len = np.product( self.padded_dimension )
 
 		Dx = lil_matrix( ( vector_len, vector_len ) )
 		Dy = lil_matrix( ( vector_len, vector_len ) )
 		identity = lil_matrix( ( vector_len, vector_len ) )
-
-		alpha = 1
 
 		for x_idx in range( 0, self.padded_dimension[ 0 ] ):
 			for y_idx in range( 0, self.padded_dimension[ 1 ] ):
@@ -267,44 +235,39 @@ class LevelSet():
 		Dx_component = ( Dx.transpose() ).dot( Dx )
 		Dy_component = ( Dy.transpose() ).dot( Dy )
 
-		M_to_invert = ( alpha * Dx_component + alpha * Dy_component + identity ).transpose()
+		self.M_to_invert = ( alpha * Dx_component + alpha * Dy_component + identity ).transpose()
+
+	#
+	# Given a velocity field defined on the whole domain, we restrict it to the boundary and then
+	# extend it back to the domain using the Hilbertian extension method.
+	#
+	def extend_velocity_hilbertian( self, velocity_field ):
+		border_representation = self.find_border_representation()
+
+		boundary_velocity = border_representation * velocity_field
 		
 		sparse_g_omega = csc_matrix( np.transpose( boundary_velocity.flatten() ) )
 
-		V_tilde = spsolve( M_to_invert, sparse_g_omega.transpose() )
+		V_tilde = spsolve( self.M_to_invert, sparse_g_omega.transpose() )
 
 		reshape_V_tilde = np.reshape( V_tilde, velocity_field.shape )
 
-		# import matplotlib.pyplot as plt
-		# plt.subplot( 1, 4, 1 )
-		# plt.imshow( boundary_velocity )
-		# plt.colorbar()
-		# plt.subplot( 1, 4, 2 )
-		# plt.imshow( reshape_V_tilde )
-		# plt.colorbar()
-		# plt.subplot( 1, 4, 3 )
-		# plt.imshow( self.level_set_function )
-		# plt.colorbar()
-		# plt.subplot( 1, 4, 4 )
-		# plt.plot( self.level_set_function[ :, 15 ], linewidth=2, color='b' )
-		# plt.show()
-
 		return reshape_V_tilde
 
-	def update( self, velocity_field ):
+	#
+	# Run a level set update given an input velocity field.  This should just be the usual gradient we get from
+	# the density evaluation.  The boundary smoothing eases the requirement on breaking into electric and displacement
+	# fields.  It asks for a delta_t which is how far to move the level set forward in time.  Right now, we only take
+	# one step in time by default (num_steps) and this delta_t functions as a step size.  Note that the norm of
+	# the velocity field should also be considered when providing this parameter.  After a step is taken, the boundary will
+	# have moved, so it might be more correct to redo the velocity extension based on the input velocity field, but at this
+	# point I am not sure and I have just been moving a single step in time with a certain delta_t value.
+	#
+	def update( self, velocity_field, delta_t, num_steps=1 ):
 
 		padded_velocity_field = np.pad( velocity_field, ( ( 2, 2 ), ( 2, 2 ) ), mode='constant' )
 
 		extended_velocity = self.extend_velocity_hilbertian( padded_velocity_field )
-
-		# import matplotlib.pyplot as plt
-		# plt.subplot( 1, 3, 1 )
-		# plt.imshow( extended_velocity )
-		# plt.subplot( 1, 3, 2 )
-		# plt.imshow( velocity_field )
-		# plt.subplot( 1, 3, 3 )
-		# plt.imshow( self.level_set_function )
-		# plt.show()
 
 		delta_ij_plus = np.zeros( self.level_set_function.shape )
 		delta_ij_minus = np.zeros( self.level_set_function.shape )
@@ -313,17 +276,6 @@ class LevelSet():
 		D_xminus = np.zeros( self.level_set_function.shape )
 		D_yplus = np.zeros( self.level_set_function.shape )
 		D_yminus = np.zeros( self.level_set_function.shape )
-
-		D_x2 = np.zeros( self.level_set_function.shape )
-		D_y2 = np.zeros( self.level_set_function.shape )
-
-		#delta_t = 20#1.0
-		delta_t = 2.5
-		num_steps = 1#5
-
-		c_iso = 0#1e-3
-
-		print( "Max velocity = " + str( np.max( np.abs( extended_velocity ) ) ) )
 
 		for step_idx in range( 0, num_steps ):
 			for x_idx in range( self.search_bounds[ 0 ][ 0 ], self.search_bounds[ 0 ][ 1 ] ):
@@ -334,9 +286,6 @@ class LevelSet():
 
 					D_yplus[ x_idx, y_idx ] = self.level_set_function[ x_idx, y_idx + 1 ] - self.level_set_function[ x_idx, y_idx ]
 					D_yminus[ x_idx, y_idx ] = self.level_set_function[ x_idx, y_idx ] - self.level_set_function[ x_idx, y_idx - 1 ]
-
-					D_x2[ x_idx, y_idx ] = self.level_set_function[ x_idx + 1, y_idx ] - 2 * self.level_set_function[ x_idx, y_idx ] + self.level_set_function[ x_idx - 1, y_idx ]
-					D_y2[ x_idx, y_idx ] = self.level_set_function[ x_idx, y_idx + 1 ] - 2 * self.level_set_function[ x_idx, y_idx ] + self.level_set_function[ x_idx, y_idx - 1 ]
 
 			delta_ij_plus = np.sqrt(
 				( np.minimum( D_xplus, 0 ) )**2 + ( np.maximum( D_xminus, 0 ) )**2 +
@@ -349,6 +298,5 @@ class LevelSet():
 			)
 
 			self.level_set_function -= delta_t * (
-				np.maximum( -extended_velocity, 0 ) * delta_ij_plus + np.minimum( -extended_velocity, 0 ) * delta_ij_minus -
-				c_iso * ( D_x2 + D_y2 )
+				np.maximum( -extended_velocity, 0 ) * delta_ij_plus + np.minimum( -extended_velocity, 0 ) * delta_ij_minus
 			)
