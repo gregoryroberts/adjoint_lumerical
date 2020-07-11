@@ -67,13 +67,14 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 
 mean_density = 0.5
 sigma_density = 0.2
-init_from_old = True
+init_from_old = False#True
 binarize_set_point = 0.5
 
 blur_fields_size_voxels = 0#4
 blur_fields = False#True
 
-num_iterations = 450#150#300
+num_density_iterations = 100#150#300
+num_lsf_iterations = 250
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
@@ -96,9 +97,12 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 if init_from_old:
 	density = np.load( save_folder + "/opt_optimized_density.npy" )
 	make_optimizer.init_density_directly( density )
+else:
+	make_optimizer.init_density_with_uniform( 0.5 )
+	make_optimizer.optimize( num_density_iterations )
+	make_optimizer.save_optimization_data( save_folder + "/opt" )
 
-num_lsf_iter = 450#250
-make_optimizer.optimize_with_level_set( num_lsf_iter )
+make_optimizer.optimize_with_level_set( num_lsf_iterations )
 
 np.save( save_folder + "/lsf_fom_evolution.npy", make_optimizer.lsf_fom_evolution )
 np.save( save_folder + "/lsf_fom_by_wl_evolution.npy", make_optimizer.lsf_fom_by_wl_evolution )
