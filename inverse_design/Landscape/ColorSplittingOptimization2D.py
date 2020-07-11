@@ -25,12 +25,13 @@ import ceviche
 #
 # Topology Optimization
 #
+python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
+sys.path.append( os.path.abspath( python_src_directory + "/../LevelSet/" ) )
 if run_on_cluster:
-	sys.path.append( '/central/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/LevelSet/' )
+	from LevelSet import LevelSet
 else:
-	sys.path.append( os.path.abspath( '../LevelSet/' ) )
+	import LevelSet
 
-import LevelSet
 
 eps_nought = 8.854 * 1e-12
 c = 3.0 * 1e8
