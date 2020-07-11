@@ -88,22 +88,14 @@ densities = np.zeros( [ num_alpha ] + list( get_permittivity_1.shape ) )
 for alpha_idx in range( 0, num_alpha ):
 	middle_permittivity = ( 1. - alpha[ alpha_idx ] ) * get_permittivity_1 + alpha[ alpha_idx ] * get_permittivity_2
 
-	# make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
-	# 	[ device_width_voxels, device_height_voxels ],
-	# 	density_coarsen_factor, mesh_size_nm,
-	# 	[ min_relative_permittivity, max_relative_permittivity_both_opts ],
-	# 	focal_points_x_relative, focal_length_voxels,
-	# 	lambda_values_um, focal_map, 0,
-	# 	num_layers, designable_layer_indicators, non_designable_permittivity,
-	# 	save_folder )
-
 	make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 		[ device_width_voxels, device_height_voxels ],
 		density_coarsen_factor, mesh_size_nm,
-		[ min_relative_permittivity, max_relative_permittivity ],
+		[ min_relative_permittivity, max_relative_permittivity_both_opts ],
 		focal_points_x_relative, focal_length_voxels,
-		lambda_values_um, focal_map, random_seed,
-		num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
+		lambda_values_um, focal_map, 0,
+		num_layers, designable_layer_indicators, non_designable_permittivity,
+		save_folder,
 		False, 0, None, 0.5 )
 
 
