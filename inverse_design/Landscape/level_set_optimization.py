@@ -97,7 +97,7 @@ if init_from_old:
 	density = np.load( save_folder + "/opt_optimized_density.npy" )
 	make_optimizer.init_density_directly( density )
 
-num_lsf_iter = 20
+num_lsf_iter = 100
 make_optimizer.optimize_with_level_set( num_lsf_iter )
 
 np.save( save_folder + "/lsf_fom_evolution.npy", make_optimizer.lsf_fom_evolution )
