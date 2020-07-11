@@ -25,7 +25,10 @@ import ceviche
 #
 # Topology Optimization
 #
-sys.path.append( os.path.abspath( '../LevelSet/' ) )
+if run_on_cluster:
+	sys.path.append( '/central/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/LevelSet/' )
+else:
+	sys.path.append( os.path.abspath( '../LevelSet/' ) )
 
 import LevelSet
 
