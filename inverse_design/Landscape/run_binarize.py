@@ -49,8 +49,8 @@ def density_bound_from_eps( eps_val ):
 
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 
-# device_width_voxels = 120
-device_width_voxels = 200
+device_width_voxels = 120
+# device_width_voxels = 200
 device_height_voxels = 100
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
@@ -67,7 +67,7 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 
 mean_density = 0.5
 sigma_density = 0.2
-init_from_old = False#True
+init_from_old = True#False#True
 binarize_set_point = 0.5
 
 blur_fields_size_voxels = 0#4
@@ -147,10 +147,24 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 # 	blur_fields, blur_fields_size_voxels, pairings )
 
 if init_from_old:
-	old_density = np.load( save_folder + "/opt_optimized_density.npy" )
-	make_optimizer.init_density_directly( old_density )
+	density = np.load( save_folder + "/opt_optimized_density.npy" )
+	make_optimizer.init_density_directly( density )
 
-	make_optimizer.plot_fields( 0 )
+	fields, permittivity = make_optimizer.get_device_efields( 0 )
+
+	normalize_fields = np.abs( fields )**2 / np.max( np.abs( fields )**2 )
+	normalize_permittivity = permittivity / max_relative_permittivity
+	print( "Maximum field = " + str( np.max( np.abs( fields )**2 ) ) )
+	print( "Average field in material FOM = " + str( np.sum( np.abs( fields )**2 / permittivity**2 ) ) )
+	print( "Normalized field in material FOM = " + str( np.sum( normalize_fields / permittivity**2 ) ) )
+	print( "Double Normalized field in material FOM = " + str( np.sum( normalize_fields / normalize_permittivity**2 ) ) )
+
+
+
+	# make_optimizer.verify_adjoint_against_finite_difference()
+
+	# make_optimizer.plot_fields( 0 )
+	# make_optimizer.plot_subcell_gradient_variations( 0, 5 )
 else:
 	make_optimizer.init_density_with_uniform( mean_density )
 	# make_optimizer.init_density_with_random( mean_density, sigma_density )

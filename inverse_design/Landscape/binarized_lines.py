@@ -65,7 +65,9 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 	focal_map[ idx ] = 1
 
 get_density_1 = np.load( opt_folder_base + "/" + opt1_name + "/opt_optimized_density.npy" )
-get_density_2 = np.load( opt_folder_base + "/" + opt2_name + "/opt_optimized_density.npy" )
+# get_density_2 = np.load( opt_folder_base + "/" + opt2_name + "/opt_optimized_density.npy" )
+get_densities_2 = np.load( opt_folder_base + "/" + opt2_name + "/lsf_device_evolution.npy" )
+get_density_2 = get_densities_2[ get_densities_2.shape[ 0 ] - 1 ]
 
 min_relative_permittivity = 1.0**2
 max_relative_permittivity1 = max_index1**2
@@ -86,14 +88,24 @@ densities = np.zeros( [ num_alpha ] + list( get_permittivity_1.shape ) )
 for alpha_idx in range( 0, num_alpha ):
 	middle_permittivity = ( 1. - alpha[ alpha_idx ] ) * get_permittivity_1 + alpha[ alpha_idx ] * get_permittivity_2
 
+	# make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
+	# 	[ device_width_voxels, device_height_voxels ],
+	# 	density_coarsen_factor, mesh_size_nm,
+	# 	[ min_relative_permittivity, max_relative_permittivity_both_opts ],
+	# 	focal_points_x_relative, focal_length_voxels,
+	# 	lambda_values_um, focal_map, 0,
+	# 	num_layers, designable_layer_indicators, non_designable_permittivity,
+	# 	save_folder )
+
 	make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 		[ device_width_voxels, device_height_voxels ],
 		density_coarsen_factor, mesh_size_nm,
-		[ min_relative_permittivity, max_relative_permittivity_both_opts ],
+		[ min_relative_permittivity, max_relative_permittivity ],
 		focal_points_x_relative, focal_length_voxels,
-		lambda_values_um, focal_map, 0,
-		num_layers, designable_layer_indicators, non_designable_permittivity,
-		save_folder )
+		lambda_values_um, focal_map, random_seed,
+		num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
+		False, 0, None, 0.5 )
+
 
 	middle_density = density_bound_from_eps( middle_permittivity, min_relative_permittivity, max_relative_permittivity_both_opts )
 	make_optimizer.init_density_directly( middle_density )
