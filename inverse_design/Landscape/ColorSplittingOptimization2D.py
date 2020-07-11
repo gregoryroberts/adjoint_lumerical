@@ -773,7 +773,9 @@ class ColorSplittingOptimization2D():
 
 			self.lsf_gradient_directions[ iter_idx ] = norm_scaled_gradient
 
-			level_set.update( norm_scaled_gradient, 1 )
+			step_size = 1.0 + ( 0.1 - 1.0 ) * iter_idx / ( num_iterations - 1 )
+
+			level_set.update( norm_scaled_gradient, step_size )
 
 			# max_density_change = (
 			# 	self.max_density_change_per_iteration_start +
