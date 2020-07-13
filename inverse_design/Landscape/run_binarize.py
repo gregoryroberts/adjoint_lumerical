@@ -144,7 +144,7 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	focal_points_x_relative, focal_length_voxels,
 	lambda_values_um, focal_map, random_seed,
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
-	blur_fields, blur_fields_size_voxels, None, binarize_set_point, dense_plot_freq_iters, dense_plot_wls )
+	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
 
 # make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
@@ -184,6 +184,6 @@ else:
 	binarize = True
 	binarize_movement_per_step = 0.005
 	binarize_max_movement_per_voxel = 0.005
-	make_optimizer.optimize( num_iterations, binarize, binarize_movement_per_step, binarize_max_movement_per_voxel )
+	make_optimizer.optimize( num_iterations, binarize, binarize_movement_per_step, binarize_max_movement_per_voxel, dense_plot_freq_iters, dense_plot_wls )
 
 	make_optimizer.save_optimization_data( save_folder + "/opt" )
