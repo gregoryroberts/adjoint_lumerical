@@ -595,7 +595,18 @@ class ColorSplittingOptimization2D():
 		return output_array
 
 
-	def optimize( self, num_iterations, binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025 ):
+	def optimize(
+		self, num_iterations,
+		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
+		dense_plot_iters=-1, dense_plot_lambda=None ):
+
+		if dense_plot_iters == -1:
+			dense_plot_iters = num_iterations
+			dense_plot_lambda = self.wavelengths_um
+
+		dense_plot_omega = 2 * np.pi * c / ( 1e-6 * dense_plot_lambda )
+
+
 		self.max_density_change_per_iteration_start = 0.03#0.05
 		self.max_density_change_per_iteration_end = 0.01#0.005
 
@@ -604,6 +615,9 @@ class ColorSplittingOptimization2D():
 		self.binarization_evolution = np.zeros( num_iterations )
 		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
 		self.gradient_directions = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
+
+		self.dense_plot_idxs = []
+		self.dense_plots = []
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
@@ -616,6 +630,20 @@ class ColorSplittingOptimization2D():
 
 			gradient_by_wl = []
 			fom_by_wl = []
+			dense_plot = []
+
+			if ( iter_idx % dense_plot_iters ) == 0:
+				dense_wavelength_intensity_scaling = dense_plot_lambda**2 / ( eps_nought * np.max( self.wavelengths_um )**2 )
+
+				for wl_idx in range( 0, len( dense_plot_lambda ) ):
+					omega_value = dense_plot_omega[ wl_idx ]
+
+					dense_plot.append( self.compute_fom(
+						omega_value, device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+						dense_wavelength_intensity_scaling[ wl_idx ] ) )
+
+				self.dense_plots.append( dense_plot )
+				self.dense_plot_idxs.append( iter_idx )
 
 			for wl_idx in range( 0, self.num_wavelengths ):
 				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
@@ -801,6 +829,8 @@ class ColorSplittingOptimization2D():
 		np.save( file_base + "_gradient_directions.npy", self.gradient_directions )
 		np.save( file_base + "_optimized_density.npy", self.design_density )
 		np.save( file_base + "_random_seed.npy", self.random_seed )
+		np.save( file_base + "_dense_plots.npy", np.array( self.dense_plots ) )
+		np.save( file_base + "_dense_plot_idxs.npy", np.array( self.dense_plot_idxs ) )
 
 
 

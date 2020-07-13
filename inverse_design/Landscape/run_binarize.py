@@ -41,10 +41,10 @@ lambda_min_um = 0.45
 lambda_max_um = 0.55
 num_lambda_values = 8
 
-# min_relative_permittivity = 1.0**2
+min_relative_permittivity = 1.0**2
 # min_index = ( max_index ) * ( 1.0 / 2.25 )
-min_index = ( max_index ) * ( 1.0 / 1.5 )
-min_relative_permittivity = min_index**2
+# min_index = ( max_index ) * ( 1.0 / 1.5 )
+# min_relative_permittivity = min_index**2
 max_relative_permittivity = max_index**2
 
 def density_bound_from_eps( eps_val ):
