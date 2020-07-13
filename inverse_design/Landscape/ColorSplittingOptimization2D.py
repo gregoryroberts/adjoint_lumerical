@@ -598,11 +598,12 @@ class ColorSplittingOptimization2D():
 	def optimize(
 		self, num_iterations,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
-		dense_plot_iters=-1, dense_plot_lambda=None ):
+		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
 			dense_plot_lambda = self.wavelengths_um
+			focal_assignments = self.focal_spots_x_voxels
 
 		dense_plot_omega = 2 * np.pi * c / ( 1e-6 * dense_plot_lambda )
 
@@ -637,6 +638,8 @@ class ColorSplittingOptimization2D():
 
 				for wl_idx in range( 0, len( dense_plot_lambda ) ):
 					omega_value = dense_plot_omega[ wl_idx ]
+
+					get_focal_point_idx = focal_assignments[ wl_idx ]
 
 					dense_plot.append( self.compute_fom(
 						omega_value, device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],

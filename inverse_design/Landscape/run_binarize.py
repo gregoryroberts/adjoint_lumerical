@@ -135,7 +135,13 @@ for pair_idx in range( 0, num_pairings ):
 # sys.exit(0)
 
 dense_plot_freq_iters = 10
-dense_plot_wls = np.linspace( lambda_min_um, lambda_max_um, 4 * num_lambda_values )
+num_dense_wls = 4 * num_lambda_values
+dense_plot_wls = np.linspace( lambda_min_um, lambda_max_um, num_dense_wls )
+
+dense_focal_map = [ 0 for idx in range( 0, num_dense_wls ) ]
+for idx in range( int( 0.5 * num_dense_wls ), num_dense_wls ):
+	dense_focal_map[ idx ] = 1
+
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],
@@ -184,6 +190,6 @@ else:
 	binarize = True
 	binarize_movement_per_step = 0.005
 	binarize_max_movement_per_voxel = 0.005
-	make_optimizer.optimize( num_iterations, binarize, binarize_movement_per_step, binarize_max_movement_per_voxel, dense_plot_freq_iters, dense_plot_wls )
+	make_optimizer.optimize( num_iterations, binarize, binarize_movement_per_step, binarize_max_movement_per_voxel, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
 	make_optimizer.save_optimization_data( save_folder + "/opt" )
