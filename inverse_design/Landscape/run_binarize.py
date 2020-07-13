@@ -134,6 +134,9 @@ for pair_idx in range( 0, num_pairings ):
 
 # sys.exit(0)
 
+dense_plot_freq_iters = 10
+dense_plot_wls = np.linspace( lambda_min_um, lambda_max_um, 4 * num_lambda_values )
+
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],
 	density_coarsen_factor, mesh_size_nm,
@@ -141,7 +144,7 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	focal_points_x_relative, focal_length_voxels,
 	lambda_values_um, focal_map, random_seed,
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
-	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
+	blur_fields, blur_fields_size_voxels, None, binarize_set_point, dense_plot_freq_iters, dense_plot_wls )
 
 
 # make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
