@@ -41,7 +41,9 @@ lambda_min_um = 0.45
 lambda_max_um = 0.55
 num_lambda_values = 8
 
-min_relative_permittivity = 1.0**2
+# min_relative_permittivity = 1.0**2
+min_index = ( max_index ) * ( 1.0 / 2.25 )
+min_relative_permittivity = min_index**2
 max_relative_permittivity = max_index**2
 
 def density_bound_from_eps( eps_val ):
@@ -62,12 +64,12 @@ designable_layer_indicators = [ True for idx in range( 0, num_layers ) ]
 non_designable_permittivity = [ spacer_permittivity for idx in range( 0, num_layers ) ]
 
 focal_map = [ 0 for idx in range( 0, num_lambda_values ) ]
-# for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
-# 	focal_map[ idx ] = 1
+for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
+	focal_map[ idx ] = 1
 
-for idx in range( 0, num_lambda_values ):
-	if ( idx % 2 ) == 0:
-		focal_map[ idx ] = 1
+# for idx in range( 0, num_lambda_values ):
+# 	if ( idx % 2 ) == 0:
+# 		focal_map[ idx ] = 1
 
 mean_density = 0.5
 sigma_density = 0.2
