@@ -62,12 +62,16 @@ designable_layer_indicators = [ True for idx in range( 0, num_layers ) ]
 non_designable_permittivity = [ spacer_permittivity for idx in range( 0, num_layers ) ]
 
 focal_map = [ 0 for idx in range( 0, num_lambda_values ) ]
-for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
-	focal_map[ idx ] = 1
+# for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
+# 	focal_map[ idx ] = 1
+
+for idx in range( 0, num_lambda_values ):
+	if ( idx % 2 ) == 0:
+		focal_map[ idx ] = 1
 
 mean_density = 0.5
 sigma_density = 0.2
-init_from_old = True#False#True
+init_from_old = False#True
 binarize_set_point = 0.5
 
 blur_fields_size_voxels = 0#4
