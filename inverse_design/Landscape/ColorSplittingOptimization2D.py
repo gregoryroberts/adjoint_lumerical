@@ -683,7 +683,7 @@ class ColorSplittingOptimization2D():
 			divider_top_um = bandwidth_top_um / ( 2 * ( num_top_wls - 1 ) )
 
 			bottom_bins = np.zeros( ( num_bottom_wls, 2 ) )
-			top_bins = []
+			top_bins = np.zeros( ( num_top_wls, 2 ) )
 
 			cur_bottom_um = np.min( bandwidth_bottom_um )
 			for bottom_idx in range( 0, num_bottom_wls ):
