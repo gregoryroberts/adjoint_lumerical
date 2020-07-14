@@ -246,11 +246,15 @@ else:
 
 	use_log_fom = False
 
+	wavelength_adversary = True
+	adversary_update_iters = 10
+
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
 
 	make_optimizer.optimize(
 		num_iterations,
 		use_log_fom,
+		wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 		binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
 		dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 

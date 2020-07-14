@@ -129,7 +129,8 @@ class ColorSplittingOptimization2D():
 		self.focal_spots_x_relative = focal_spots_x_relative
 		self.focal_length_y_voxels = focal_length_y_voxels
 		self.wavelengths_um = wavelengths_um
-		self.wavelength_intensity_scaling = self.wavelengths_um**2 / ( eps_nought * np.max( self.wavelengths_um )**2 )
+		self.wavelength_intensity_scaling_factor = 1. / ( eps_nought * np.max( self.wavelengths_um )**2 )
+		self.wavelength_intensity_scaling = self.wavelengths_um**2 * self.wavelength_intensity_scaling_factor
 
 		self.num_wavelengths = len( wavelengths_um )
 
@@ -657,7 +658,9 @@ class ColorSplittingOptimization2D():
 
 
 	def optimize(
-		self, num_iterations, use_log_fom=False,
+		self, num_iterations,
+		use_log_fom=False,
+		wavelength_adversary=False, adversary_update_iters=-1, bottom_wls_um=None, top_wls_um=None,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
 		dropout_start=0, dropout_end=0, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None ):
@@ -666,6 +669,35 @@ class ColorSplittingOptimization2D():
 			dense_plot_iters = num_iterations
 			dense_plot_lambda = self.wavelengths_um
 			focal_assignments = self.focal_spots_x_voxels
+
+		if wavelength_adversary:
+			adversary_scan_density = 4
+
+			num_bottom_wls = len( bottom_wls_um )
+			num_top_wls = len( top_wls_um )
+
+			bandwidth_bottom_um = bottom_wls_um[ num_bottom_wls - 1 ] - bottom_wls_um[ 0 ]
+			bandwidth_top_um = top_wls_um[ num_top_wls - 1 ] - top_wls_um[ 0 ]
+
+			divider_bottom_um = bandwidth_bottom_um / ( 2 * ( num_bottom_wls - 1 ) )
+			divider_top_um = bandwidth_top_um / ( 2 * ( num_top_wls - 1 ) )
+
+			bottom_bins = np.zeros( ( num_bottom_wls, 2 ) )
+			top_bins = []
+
+			cur_bottom_um = np.min( bandwidth_bottom_um )
+			for bottom_idx in range( 0, num_bottom_wls ):
+				bottom_bins[ bottom_idx ] = np.array( [ cur_bottom_um, cur_bottom_um + 2 * divider_bottom_um ] )
+				cur_bottom_um += 2 * divider_bottom_um
+
+			cur_top_um = np.min( bandwidth_top_um )
+			for top_idx in range( 0, num_top_wls ):
+				top_bins[ top_idx ] = np.array( [ cur_top_um, cur_top_um + 2 * divider_top_um ] )
+				cur_top_um += 2 * divider_top_um
+
+			self.optimization_wavelengths_um = self.wavelengths_um
+		self.track_optimization_wavelengths_um = np.zeros( ( num_iterations, len( self.wavelengths_um ) ) )
+
 
 		dense_plot_omega = 2 * np.pi * c / ( 1e-6 * dense_plot_lambda )
 
@@ -709,12 +741,80 @@ class ColorSplittingOptimization2D():
 				self.dense_plots.append( dense_plot )
 				self.dense_plot_idxs.append( iter_idx )
 
+			if wavelength_adversary:
+				if ( iter_idx % adversary_update_iters ) == 0:
+
+					new_bottom_wls_um = np.zeros( num_bottom_wls )
+					new_top_wls_um = np.zeros( num_top_wls )
+
+					for bottom_idx in range( 0, num_bottom_wls ):
+						worst_fom = np.inf
+						worst_wl_um = 0
+
+						scan_wls_um = np.linspace( bottom_bins[ bottom_idx ][ 0 ], bottom_bins[ bottom_idx ][ 1 ], adversary_scan_density )
+
+						for scan_wl_idx in range( 0, adversary_scan_density ):
+							scan_wl_um = scan_wls_um[ scan_wl_idx ]
+							scan_omega = c / ( scan_wl_um * 1e-6 )
+
+							wl_intensity_scaling = scan_wl_um**2 * self.wavelength_intensity_scaling_factor
+
+							get_fom = self.compute_fom(
+								scan_omega, device_permittivity, self.focal_spots_x_voxels[ 0 ],
+								wl_intensity_scaling )
+
+							if get_fom < worst_fom:
+								worst_fom = get_fom
+								worst_wl_um = scan_wl_um
+
+						new_bottom_wls_um.append( worst_wl_um )
+
+					for top_idx in range( 0, num_top_wls ):
+						worst_fom = np.inf
+						worst_wl_um = 0
+
+						scan_wls_um = np.linspace( top_bins[ top_idx ][ 0 ], top_bins[ top_idx ][ 1 ], adversary_scan_density )
+
+						for scan_wl_idx in range( 0, adversary_scan_density ):
+							scan_wl_um = scan_wls_um[ scan_wl_idx ]
+							scan_omega = c / ( scan_wl_um * 1e-6 )
+
+							wl_intensity_scaling = scan_wl_um**2 * self.wavelength_intensity_scaling_factor
+
+							get_fom = self.compute_fom(
+								scan_omega, device_permittivity, self.focal_spots_x_voxels[ 0 ],
+								wl_intensity_scaling )
+
+							if get_fom < worst_fom:
+								worst_fom = get_fom
+								worst_wl_um = scan_wl_um
+
+						new_top_wls_um.append( worst_wl_um )
+
+					self.optimization_wavelengths_um = np.array( list( new_bottom_wls_um ) + list( new_top_wls_um ) )
+
+			self.track_optimization_wavelengths_um[ iter_idx ] = self.optimization_wavelengths_um
+
+
 			for wl_idx in range( 0, self.num_wavelengths ):
 				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
 
-				get_fom, get_grad = self.compute_fom_and_gradient(
-					self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
-					self.wavelength_intensity_scaling[ wl_idx ] )
+				if wavelength_adversary:
+
+					opt_omega_value = c / ( 1e-6 * self.optimization_wavelengths_um[ wl_idx ] )
+					wl_intensity_scaling = self.optimization_wavelengths_um[ wl_idx ]**2 * self.wavelength_intensity_scaling_factor
+
+					get_fom = self.compute_fom(
+						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+						self.wavelength_intensity_scaling[ wl_idx ] )
+
+					get_fom_, get_grad = self.compute_fom_and_gradient(
+						opt_omega_value, device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+						wl_intensity_scaling )
+				else:
+					get_fom, get_grad = self.compute_fom_and_gradient(
+						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+						self.wavelength_intensity_scaling[ wl_idx ] )
 
 				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 
@@ -905,6 +1005,7 @@ class ColorSplittingOptimization2D():
 		np.save( file_base + "_random_seed.npy", self.random_seed )
 		np.save( file_base + "_dense_plots.npy", np.array( self.dense_plots ) )
 		np.save( file_base + "_dense_plot_idxs.npy", np.array( self.dense_plot_idxs ) )
+		np.save( file_base + "_optimization_wavelengths.npy", self.optimization_wavelengths_um )
 
 
 
