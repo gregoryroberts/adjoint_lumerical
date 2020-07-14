@@ -657,7 +657,7 @@ class ColorSplittingOptimization2D():
 
 
 	def optimize(
-		self, num_iterations,
+		self, num_iterations, use_log_fom=False,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
 		dropout_start=0, dropout_end=0, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None ):
@@ -725,12 +725,19 @@ class ColorSplittingOptimization2D():
 				fom_by_wl.append( scale_fom_for_wl )
 
 			net_fom = np.product( fom_by_wl )
+
+			if use_log_fom:
+				net_fom = np.log( net_fom )
+
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
 
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
 				wl_gradient = ( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
 				weighting = net_fom / fom_by_wl[ wl_idx ]
+
+				if use_log_fom:
+					weighting = 1. / fom_by_wl
 
 				net_gradient += ( weighting * wl_gradient )
 

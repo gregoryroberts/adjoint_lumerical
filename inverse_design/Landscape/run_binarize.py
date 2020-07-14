@@ -175,6 +175,43 @@ if init_from_old:
 	print( "Normalized field in material FOM = " + str( np.sum( normalize_fields / permittivity**2 ) ) )
 	print( "Double Normalized field in material FOM = " + str( np.sum( normalize_fields / normalize_permittivity**2 ) ) )
 
+	init_fom = make_optimizer.compute_fom(
+		make_optimizer.omega_values[ 0 ],
+		make_optimizer.get_device_permittivity(),
+		make_optimizer.focal_spots_x_voxels[ 0 ] )
+
+	print( 'init fom = ' + str( init_fom ) )
+
+	index_low = 0.9 * max_index
+	index_high = 1.1 * max_index
+
+	num_index = 15
+
+	index_sweep = np.linspace( index_low, index_high, num_index )
+
+	plot_fom_sweep = np.zeros( num_index )
+	plot_fom_diff_sweep = np.zeros( num_index )
+
+	for index_idx in range( 0, num_index ):
+		make_optimizer.max_relative_permittivity = index_sweep[ index_idx ]**2
+
+		calc_fom = make_optimizer.compute_fom(
+			make_optimizer.omega_values[ 0 ],
+			make_optimizer.get_device_permittivity(),
+			make_optimizer.focal_spots_x_voxels[ 0 ] )
+		print( 'calc fom = ' + str( calc_fom ) )
+		print( 'ratio = ' + str( calc_fom / init_fom ) )
+		print()
+
+		plot_fom_sweep[ index_idx ] = calc_fom / init_fom
+		plot_fom_diff_sweep[ index_idx ] = ( calc_fom - init_fom ) / init_fom
+
+	plt.subplot( 1, 2, 1 )
+	plt.plot( 100. * ( index_sweep - max_index ) / max_index, plot_fom_sweep, color='r', linewidth=2 )
+	plt.subplot( 1, 2, 2 )
+	plt.plot( 100. * ( index_sweep - max_index ) / max_index, plot_fom_diff_sweep, color='g', linewidth=2 )
+	plt.show()
+
 
 
 	# make_optimizer.verify_adjoint_against_finite_difference()
@@ -192,13 +229,17 @@ else:
 	binarize_max_movement_per_voxel = 0.005
 
 	dropout_start = 0
-	dropout_end = 151
+	dropout_end = 0#151
 	dropout_p = 0.1
+
+	use_log_fom = True
 
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
 
 	make_optimizer.optimize(
-		num_iterations, binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+		num_iterations,
+		use_log_fom,
+		binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
 		dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
 	make_optimizer.save_optimization_data( save_folder + "/opt" )
