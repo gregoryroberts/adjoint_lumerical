@@ -659,7 +659,7 @@ class ColorSplittingOptimization2D():
 	def optimize(
 		self, num_iterations,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
-		dropout_start, dropout_end, dropout_p=0.5,
+		dropout_star0, dropout_end=0, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None ):
 
 		if dense_plot_iters == -1:
