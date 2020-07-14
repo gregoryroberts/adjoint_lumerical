@@ -767,7 +767,7 @@ class ColorSplittingOptimization2D():
 								worst_fom = get_fom
 								worst_wl_um = scan_wl_um
 
-						new_bottom_wls_um.append( worst_wl_um )
+						new_bottom_wls_um[ bottom_idx ] = worst_wl_um
 
 					for top_idx in range( 0, num_top_wls ):
 						worst_fom = np.inf
@@ -789,7 +789,7 @@ class ColorSplittingOptimization2D():
 								worst_fom = get_fom
 								worst_wl_um = scan_wl_um
 
-						new_top_wls_um.append( worst_wl_um )
+						new_top_wls_um[ top_idx ] = worst_wl_um
 
 					self.optimization_wavelengths_um = np.array( list( new_bottom_wls_um ) + list( new_top_wls_um ) )
 
