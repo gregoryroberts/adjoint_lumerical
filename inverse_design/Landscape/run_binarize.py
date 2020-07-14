@@ -193,7 +193,7 @@ else:
 
 	dropout_start = 0
 	dropout_end = 151
-	dropout_p = 0.25
+	dropout_p = 0.1
 
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
 
