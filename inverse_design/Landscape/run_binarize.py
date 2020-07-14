@@ -41,6 +41,17 @@ lambda_min_um = 0.45
 lambda_max_um = 0.55
 num_lambda_values = 8
 
+bandwidth_um = lambda_max_um - lambda_min_um
+exclusion_um = 0.030
+modified_bandwidth_um = bandwidth_um - exclusion_um
+left_middle_bound_um = lambda_min_um + 0.5 * modified_bandwidth_um
+right_middle_bound_um = left_middle_bound_um + exclusion_um
+
+num_left_lambda = int( 0.5 * num_lambda_values )
+num_right_lambda = num_lambda_values - num_left_lambda
+lambda_left = np.linspace( lambda_min_um, left_middle_bound_um, num_left_lambda )
+lambda_right = np.linspace( right_middle_bound_um, lambda_max_um, num_right_lambda )
+
 min_relative_permittivity = 1.0**2
 # min_index = ( max_index ) * ( 1.0 / 2.25 )
 # min_index = ( max_index ) * ( 1.0 / 1.5 )
@@ -50,7 +61,8 @@ max_relative_permittivity = max_index**2
 def density_bound_from_eps( eps_val ):
 	return ( eps_val - min_relative_permittivity ) / ( max_relative_permittivity - min_relative_permittivity )
 
-lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
+# lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
+lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 120
 # device_width_voxels = 200
@@ -232,7 +244,7 @@ else:
 	dropout_end = 0#151
 	dropout_p = 0.1
 
-	use_log_fom = True
+	use_log_fom = False
 
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
 
