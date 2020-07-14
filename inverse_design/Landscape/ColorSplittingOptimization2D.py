@@ -34,6 +34,7 @@ else:
 
 
 eps_nought = 8.854 * 1e-12
+mu_nought = 1.257 * 1e-6 
 c = 3.0 * 1e8
 
 # def compute_binarization( input_variable ):
@@ -447,6 +448,66 @@ class ColorSplittingOptimization2D():
 
 		return net_fom
 
+	def verify_adjoint_against_finite_difference_lambda( self ):
+		fd_x = int( 0.5 * self.device_width_voxels )
+		fd_y = np.arange( 0, self.device_height_voxels )
+		compute_fd = np.zeros( len( fd_y ) )
+		omega_idx = 0#int( 0.5 * len( self.omega_values ) )
+		fd_omega = self.omega_values[ omega_idx ]
+		lambda_value_um = 1e6 * c / fd_omega
+
+		h = 1e-5
+
+		lambda_low_um = lambda_value_um - h
+		lambda_high_um = lambda_value_um + h
+
+		omega_low = c / ( 1e-6 * lambda_low_um )
+		omega_high = c / ( 1e-6 * lambda_high_um )
+
+		# fd_init_device = 1.5 * np.ones( ( self.device_width_voxels, self.device_height_voxels ) )
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+		fd_init_device = device_permittivity
+
+		focal_point_x = self.focal_spots_x_voxels[ 0 ]
+
+		get_fom, get_grad = self.compute_fom_and_gradient(
+			fd_omega, fd_init_device, focal_point_x )
+
+		# import matplotlib.pyplot as plt
+		# plt.imshow( get_grad )
+		# plt.colorbar()
+		# plt.show()
+
+		print( "get fom = " + str( get_fom ) )
+		# get_grad = get_grad[
+		# 	self.device_width_start : self.device_width_end,
+		# 	self.device_height_start : self.device_height_end ]
+
+		get_fom_low = self.compute_fom(
+			omega_low, fd_init_device, focal_point_x )
+
+		print( "fom low = " + str( get_fom_low ) )
+
+		get_fom_high = self.compute_fom(
+			omega_high, fd_init_device, focal_point_x )
+
+		print( "fom high = " + str( get_fom_high ) )
+
+		fd_grad = ( get_fom_high - get_fom_low ) / ( 2 * h )
+
+		full_eps = np.ones( self.rel_eps_simulation.shape )
+		full_eps[
+			self.device_width_start : self.device_width_end,
+			self.device_height_start : self.device_height_end ] = device_permittivity
+
+		adj_grad = -np.sum( get_grad * fd_omega * eps_nought * full_eps * 2 * ( 2 * np.pi )**2  / ( ( 1e-6 * lambda_value_um )**2 ) )
+		# adj_grad = -get_grad[ focal_point_x, self.focal_point_y ] * 2 * ( 2 * np.pi )**2 / ( lambda_value_um )**3
+
+		print( "fd grad = " + str( fd_grad ) )
+		print( "adj grad = " + str( adj_grad ) )
+
+
 
 	def verify_adjoint_against_finite_difference( self ):
 		fd_x = int( 0.5 * self.device_width_voxels )
@@ -598,6 +659,7 @@ class ColorSplittingOptimization2D():
 	def optimize(
 		self, num_iterations,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
+		dropout_start, dropout_end, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None ):
 
 		if dense_plot_iters == -1:
@@ -606,7 +668,6 @@ class ColorSplittingOptimization2D():
 			focal_assignments = self.focal_spots_x_voxels
 
 		dense_plot_omega = 2 * np.pi * c / ( 1e-6 * dense_plot_lambda )
-
 
 		self.max_density_change_per_iteration_start = 0.03#0.05
 		self.max_density_change_per_iteration_end = 0.01#0.005
@@ -679,6 +740,9 @@ class ColorSplittingOptimization2D():
 			# Now, we should zero out non-designable regions and average over designable layers
 			#
 			net_gradient = self.layer_spacer_averaging( net_gradient )
+
+			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
+				net_gradient *= 1.0 * np.greater( np.random.random( net_gradient.shape ), dropout_p )
 
 			gradient_norm = vector_norm( net_gradient )
 
