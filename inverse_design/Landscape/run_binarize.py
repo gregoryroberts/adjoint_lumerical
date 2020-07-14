@@ -201,4 +201,4 @@ else:
 		num_iterations, binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
 		dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
-	# make_optimizer.save_optimization_data( save_folder + "/opt" )
+	make_optimizer.save_optimization_data( save_folder + "/opt" )
