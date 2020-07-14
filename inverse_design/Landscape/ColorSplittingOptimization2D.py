@@ -737,7 +737,7 @@ class ColorSplittingOptimization2D():
 				weighting = net_fom / fom_by_wl[ wl_idx ]
 
 				if use_log_fom:
-					weighting = 1. / fom_by_wl
+					weighting = 1. / fom_by_wl[ wl_idx ]
 
 				net_gradient += ( weighting * wl_gradient )
 
