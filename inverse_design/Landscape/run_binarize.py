@@ -92,7 +92,7 @@ binarize_set_point = 0.5
 blur_fields_size_voxels = 0#4
 blur_fields = False#True
 
-num_iterations = 450#150#300
+num_iterations = 20#450#150#300
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
@@ -247,7 +247,7 @@ else:
 	use_log_fom = False
 
 	wavelength_adversary = True
-	adversary_update_iters = 10
+	adversary_update_iters = 2#10
 
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
 
