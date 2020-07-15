@@ -695,7 +695,7 @@ class ColorSplittingOptimization2D():
 				top_bins[ top_idx ] = np.array( [ cur_top_um, cur_top_um + 2 * divider_top_um ] )
 				cur_top_um += 2 * divider_top_um
 
-			self.optimization_wavelengths_um = self.wavelengths_um
+			optimization_wavelengths_um = self.wavelengths_um.copy()
 		self.track_optimization_wavelengths_um = np.zeros( ( num_iterations, len( self.wavelengths_um ) ) )
 
 
@@ -755,7 +755,7 @@ class ColorSplittingOptimization2D():
 
 						for scan_wl_idx in range( 0, adversary_scan_density ):
 							scan_wl_um = scan_wls_um[ scan_wl_idx ]
-							scan_omega = c / ( scan_wl_um * 1e-6 )
+							scan_omega = 2 * np.pi * c / ( scan_wl_um * 1e-6 )
 
 							wl_intensity_scaling = scan_wl_um**2 * self.wavelength_intensity_scaling_factor
 
@@ -777,7 +777,7 @@ class ColorSplittingOptimization2D():
 
 						for scan_wl_idx in range( 0, adversary_scan_density ):
 							scan_wl_um = scan_wls_um[ scan_wl_idx ]
-							scan_omega = c / ( scan_wl_um * 1e-6 )
+							scan_omega = 2 * np.pi * c / ( scan_wl_um * 1e-6 )
 
 							wl_intensity_scaling = scan_wl_um**2 * self.wavelength_intensity_scaling_factor
 
@@ -791,9 +791,9 @@ class ColorSplittingOptimization2D():
 
 						new_top_wls_um[ top_idx ] = worst_wl_um
 
-					self.optimization_wavelengths_um = np.array( list( new_bottom_wls_um ) + list( new_top_wls_um ) )
+					optimization_wavelengths_um = np.array( list( new_bottom_wls_um ) + list( new_top_wls_um ) )
 
-			self.track_optimization_wavelengths_um[ iter_idx ] = self.optimization_wavelengths_um
+			self.track_optimization_wavelengths_um[ iter_idx ] = optimization_wavelengths_um
 
 
 			for wl_idx in range( 0, self.num_wavelengths ):
@@ -801,8 +801,8 @@ class ColorSplittingOptimization2D():
 
 				if wavelength_adversary:
 
-					opt_omega_value = c / ( 1e-6 * self.optimization_wavelengths_um[ wl_idx ] )
-					wl_intensity_scaling = self.optimization_wavelengths_um[ wl_idx ]**2 * self.wavelength_intensity_scaling_factor
+					opt_omega_value = 2 * np.pi * c / ( 1e-6 * optimization_wavelengths_um[ wl_idx ] )
+					wl_intensity_scaling = optimization_wavelengths_um[ wl_idx ]**2 * self.wavelength_intensity_scaling_factor
 
 					get_fom = self.compute_fom(
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
