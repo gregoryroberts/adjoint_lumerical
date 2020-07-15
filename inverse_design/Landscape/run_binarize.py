@@ -66,7 +66,8 @@ lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 120
 # device_width_voxels = 200
-device_height_voxels = 100
+# device_height_voxels = 100
+device_height_voxels = 72
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
@@ -246,7 +247,7 @@ else:
 
 	use_log_fom = False
 
-	wavelength_adversary = True
+	wavelength_adversary = False#True
 	adversary_update_iters = 10
 
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
