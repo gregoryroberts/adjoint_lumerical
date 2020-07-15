@@ -685,12 +685,12 @@ class ColorSplittingOptimization2D():
 			bottom_bins = np.zeros( ( num_bottom_wls, 2 ) )
 			top_bins = np.zeros( ( num_top_wls, 2 ) )
 
-			cur_bottom_um = np.min( bandwidth_bottom_um )
+			cur_bottom_um = np.min( bottom_wls_um )
 			for bottom_idx in range( 0, num_bottom_wls ):
 				bottom_bins[ bottom_idx ] = np.array( [ cur_bottom_um, cur_bottom_um + 2 * divider_bottom_um ] )
 				cur_bottom_um += 2 * divider_bottom_um
 
-			cur_top_um = np.min( bandwidth_top_um )
+			cur_top_um = np.min( top_wls_um )
 			for top_idx in range( 0, num_top_wls ):
 				top_bins[ top_idx ] = np.array( [ cur_top_um, cur_top_um + 2 * divider_top_um ] )
 				cur_top_um += 2 * divider_top_um
@@ -1005,7 +1005,7 @@ class ColorSplittingOptimization2D():
 		np.save( file_base + "_random_seed.npy", self.random_seed )
 		np.save( file_base + "_dense_plots.npy", np.array( self.dense_plots ) )
 		np.save( file_base + "_dense_plot_idxs.npy", np.array( self.dense_plot_idxs ) )
-		np.save( file_base + "_optimization_wavelengths.npy", self.optimization_wavelengths_um )
+		np.save( file_base + "_optimization_wavelengths.npy", self.track_optimization_wavelengths_um )
 
 
 
