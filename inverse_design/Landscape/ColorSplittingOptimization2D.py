@@ -782,7 +782,7 @@ class ColorSplittingOptimization2D():
 							wl_intensity_scaling = scan_wl_um**2 * self.wavelength_intensity_scaling_factor
 
 							get_fom = self.compute_fom(
-								scan_omega, device_permittivity, self.focal_spots_x_voxels[ 0 ],
+								scan_omega, device_permittivity, self.focal_spots_x_voxels[ 1 ],
 								wl_intensity_scaling )
 
 							if get_fom < worst_fom:
