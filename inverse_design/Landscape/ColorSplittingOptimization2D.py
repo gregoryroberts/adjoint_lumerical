@@ -671,7 +671,7 @@ class ColorSplittingOptimization2D():
 			focal_assignments = self.focal_spots_x_voxels
 
 		if wavelength_adversary:
-			adversary_scan_density = 4
+			adversary_scan_density = 8#4
 
 			num_bottom_wls = len( bottom_wls_um )
 			num_top_wls = len( top_wls_um )
