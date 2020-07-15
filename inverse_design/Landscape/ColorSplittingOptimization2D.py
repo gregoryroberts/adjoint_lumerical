@@ -793,8 +793,10 @@ class ColorSplittingOptimization2D():
 
 					optimization_wavelengths_um = np.array( list( new_bottom_wls_um ) + list( new_top_wls_um ) )
 
-			self.track_optimization_wavelengths_um[ iter_idx ] = optimization_wavelengths_um
-
+			if wavelength_adversary:
+				self.track_optimization_wavelengths_um[ iter_idx ] = optimization_wavelengths_um
+			else:
+				self.track_optimization_wavelengths_um[ iter_idx ] = self.wavelengths_um
 
 			for wl_idx in range( 0, self.num_wavelengths ):
 				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
