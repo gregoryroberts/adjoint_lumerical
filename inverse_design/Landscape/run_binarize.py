@@ -69,8 +69,8 @@ device_width_voxels = 120
 # device_height_voxels = 100
 # device_height_voxels = 72
 # device_height_voxels = 52
-# device_height_voxels = 32
-device_height_voxels = 24
+device_height_voxels = 32
+# device_height_voxels = 24
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
@@ -235,8 +235,8 @@ if init_from_old:
 	# make_optimizer.plot_fields( 0 )
 	# make_optimizer.plot_subcell_gradient_variations( 0, 5 )
 else:
-	make_optimizer.init_density_with_uniform( mean_density )
-	# make_optimizer.init_density_with_random( mean_density, sigma_density )
+	# make_optimizer.init_density_with_uniform( mean_density )
+	make_optimizer.init_density_with_random( mean_density, sigma_density )
 	np.save( save_folder + "/opt_random_seed.npy", make_optimizer.random_seed )
 	np.save( save_folder + "/opt_init_random_density.npy", make_optimizer.design_density )
 
