@@ -7,7 +7,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_fix_binarization_fn_6x6x3p84um_weighting_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_6x6x2p25um_weighting_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_fix_binarization_fn_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_tio2_zep_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_high_random_mean_init_6x6x3p84um_weighting_f4'
@@ -55,8 +56,8 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # mesh_spacing_um = 0.03
 # mesh_spacing_um = 0.032
-mesh_spacing_um = 0.02
-design_spacing_um = 0.08
+mesh_spacing_um = 0.025
+design_spacing_um = 0.075
 # design_spacing_um = 0.12
 # design_spacing_um = 0.24
 
@@ -70,7 +71,8 @@ device_size_lateral_um = 6.0
 # device_size_verical_um = num_vertical_layers * ( 3.168 / num_vertical_layers )
 # device_size_verical_um = num_vertical_layers * 0.704
 
-device_size_verical_um = num_vertical_layers * 1.28
+# device_size_verical_um = num_vertical_layers * 1.28
+device_size_verical_um = num_vertical_layers * 0.75
 # device_size_verical_um = num_vertical_layers * 0.72
 # device_size_verical_um = num_vertical_layers * 0.9
 
@@ -80,7 +82,8 @@ device_size_verical_um = num_vertical_layers * 1.28
 # amorphous_silicon_height_per_layer_um = 0.72
 # amorphous_silicon_height_per_layer_um = 0.704
 
-amorphous_silicon_height_per_layer_um = 0.64
+amorphous_silicon_height_per_layer_um = 0.3
+# amorphous_silicon_height_per_layer_um = 0.64
 # amorphous_silicon_height_per_layer_um = 0.6#0.64
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um
 
@@ -177,7 +180,7 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 start_epoch = 0#12#7#6
 num_epochs = 10#14
 num_iterations_per_epoch = 50#35#50#25
-binarization_start_epoch = 1#4
+binarization_start_epoch = 2#1#4
 max_binarize_movement = 0.0025
 desired_binarize_change = 0.005
 

@@ -135,7 +135,9 @@ log_file.close()
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/LayeredLithographyIRParameters.py", projects_directory_location + "/ArchiveLayeredBayerFilterIRParameters.py")
+shutil.copy2(python_src_directory + "/LayeredLithographyIRParameters.py", projects_directory_location + "/LayeredLithographyIRParameters.py")
+shutil.copy2(python_src_directory + "/LayeredLithographyIRBayerFilter.py", projects_directory_location + "/LayeredLithographyIRBayerFilter.py")
+shutil.copy2(python_src_directory + "/LayeredLithographyIROptimizationParallel.py", projects_directory_location + "/LayeredLithographyIROptimizationParallel.py")
 
 #
 # Set up the FDTD region and mesh
