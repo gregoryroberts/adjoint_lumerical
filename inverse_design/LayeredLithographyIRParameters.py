@@ -124,8 +124,8 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 #
 # FDTD
 #
-vertical_gap_size_um = 1.0
-lateral_gap_size_um = 1.0
+vertical_gap_size_um = lambda_max_um
+lateral_gap_size_um = lambda_max_um
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
