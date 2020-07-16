@@ -65,9 +65,9 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 	focal_map[ idx ] = 1
 
 get_density_1 = np.load( opt_folder_base + "/" + opt1_name + "/opt_optimized_density.npy" )
-# get_density_2 = np.load( opt_folder_base + "/" + opt2_name + "/opt_optimized_density.npy" )
-get_densities_2 = np.load( opt_folder_base + "/" + opt2_name + "/level_set_device_evolution.npy" )
-get_density_2 = get_densities_2[ get_densities_2.shape[ 0 ] - 1 ]
+get_density_2 = np.load( opt_folder_base + "/" + opt2_name + "/opt_optimized_density.npy" )
+# get_densities_2 = np.load( opt_folder_base + "/" + opt2_name + "/level_set_device_evolution.npy" )
+# get_density_2 = get_densities_2[ get_densities_2.shape[ 0 ] - 1 ]
 
 min_relative_permittivity = 1.0**2
 max_relative_permittivity1 = max_index1**2
