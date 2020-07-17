@@ -344,10 +344,13 @@ bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
 
 # bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
 
-bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, import_region_voxels_lateral)
-bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, import_region_voxels_lateral)
-bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
+# bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, import_region_voxels_lateral)
+# bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, import_region_voxels_lateral)
+# bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
 
+bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, import_region_voxels_lateral)
+bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, import_region_voxels_lateral)
+bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
 
 def border_and_replicate_device( device_index, border_size_voxels, border_index ):
 	z_size = device_index.shape[ 2 ]
@@ -358,7 +361,7 @@ def border_and_replicate_device( device_index, border_size_voxels, border_index 
 	pad_left = total_size_remaining - pad_right
 
 	for z_idx in range( 0, z_size ):
-		extract_layer = np.squeeze( device_index[ :, :, z_size ] )
+		extract_layer = np.squeeze( device_index[ :, :, z_idx ] )
 
 		bordered_layer = np.pad(
 			extract_layer,

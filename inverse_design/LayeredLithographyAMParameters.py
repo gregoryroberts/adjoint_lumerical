@@ -59,11 +59,11 @@ device_size_verical_um = num_vertical_layers * 0.8
 device_height_per_layer_um = 0.4
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - device_height_per_layer_um
 
-simulated_device_voxels_lateral = 2 + int(device_size_lateral_um / mesh_spacing_um)
-simulated_device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
+simulated_device_voxels_lateral = int(device_size_lateral_um / mesh_spacing_um)
+simulated_device_voxels_vertical = int(device_size_verical_um / mesh_spacing_um)
 
-device_voxels_lateral = 1 + int(device_size_lateral_um / design_spacing_um)
-device_voxels_vertical = 1 + int(device_size_verical_um / design_spacing_um)
+device_voxels_lateral = int(device_size_lateral_um / design_spacing_um)
+device_voxels_vertical = int(device_size_verical_um / design_spacing_um)
 spacer_size_voxels = int(spacer_size_um / design_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um

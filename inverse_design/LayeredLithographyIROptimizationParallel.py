@@ -349,9 +349,9 @@ bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
 
 # bayer_filter.set_design_variable( np.load(projects_directory_location + "/cur_design_variable.npy") )
 
-bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
-bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
+bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
 
 #
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
@@ -554,6 +554,28 @@ spatial_limits_device_um = [
 interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ]
 
 
+def resample_permittivity( input_permittivity ):
+	input_shape = input_permittivity.shape
+
+	resample_factor = int( design_spacing_um / mesh_spacing_um )
+
+	output_shape = [ ( resample_factor * input_dim ) for input_dim in input_shape ]
+
+	resampled = np.zeros( input_permittivity.shape, dtype=input_permittivity.dtype )
+
+	for x in range( 0, output_shape[ 0 ] ):
+		for y in range( 0, output_shape[ 1 ] ):
+			for z in range( 0, output_shape[ 2 ] ):
+				nearest_x = int( x / resample_factor )
+				nearest_y = int( y / resample_factor )
+				nearest_z = int( z / resample_factor )
+
+				resampled[ x, y, z ] = input_permittivity[ nearest_x, nearest_y, nearest_z ]
+
+	return resampled
+
+
+
 
 #
 # Run the optimization
@@ -573,8 +595,9 @@ for epoch in range(start_epoch, num_epochs):
 		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+		resampled_permittivity = resample_permittivity( cur_permittivity )
 		fdtd_hook.select( design_import[ 'name' ] )
-		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+		fdtd_hook.importnk2(np.sqrt(resampled_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
 
 		num_fdtd_jobs = 0
