@@ -299,13 +299,13 @@ substrate['z min'] = device_vertical_maximum_um * 1e-6
 substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 substrate['index'] = index_substrate
 
-air_bottom = fdtd_hook.addrect()
-air_bottom['name'] = 'air_bottom'
-air_bottom['x span'] = fdtd_region_size_lateral_um * 1e-6
-air_bottom['y span'] = fdtd_region_size_lateral_um * 1e-6
-air_bottom['z min'] = fdtd_region_minimum_vertical_um * 1e-6
-air_bottom['z max'] = device_vertical_minimum_um * 1e-6
-air_bottom['index'] = index_air
+# air_bottom = fdtd_hook.addrect()
+# air_bottom['name'] = 'air_bottom'
+# air_bottom['x span'] = fdtd_region_size_lateral_um * 1e-6
+# air_bottom['y span'] = fdtd_region_size_lateral_um * 1e-6
+# air_bottom['z min'] = fdtd_region_minimum_vertical_um * 1e-6
+# air_bottom['z max'] = device_vertical_minimum_um * 1e-6
+# air_bottom['index'] = index_air
 
 
 #
