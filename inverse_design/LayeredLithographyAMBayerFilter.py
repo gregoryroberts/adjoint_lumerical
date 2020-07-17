@@ -21,7 +21,7 @@ class GaussianBlur():
 
 		for z_idx in range( 0, z_shape ):
 			get_layer = np.squeeze( variable_in[ :, :, z_idx ] )
-			blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( get_layer, sigma=self.blur_sigma )
+			blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
 
 			variable_out[ :, :, z_idx ] = blurred_layer
 
@@ -34,7 +34,7 @@ class GaussianBlur():
 
 		for z_idx in range( 0, z_shape ):
 			get_layer = np.squeeze( gradient_out[ :, :, z_idx ] )
-			blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( get_layer, sigma=self.blur_sigma )
+			blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
 
 			gradient_in[ :, :, z_idx ] = blurred_layer
 
