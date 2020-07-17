@@ -45,7 +45,7 @@ min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2
 
 random_seed = 6235234
-init_permittivity_0_1_scale = 0.5
+init_permittivity_0_1_scale = 0.25
 
 focal_length_um = 4.0
 focal_plane_center_lateral_um = 0
