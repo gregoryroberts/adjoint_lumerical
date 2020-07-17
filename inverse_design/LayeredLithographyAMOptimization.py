@@ -354,9 +354,9 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * me
 
 def border_and_replicate_device( device_index, border_size_voxels, border_index ):
 	z_size = device_index.shape[ 2 ]
-	replicated_index = np.zeros( device_index.shape )
+	replicated_index = np.zeros( [ import_region_voxels_lateral, import_region_voxels_lateral, simulated_device_voxels_vertical ] )
 
-	total_size_remaining = import_region_voxels_lateral - border_size_voxels - device_voxels_lateral
+	total_size_remaining = import_region_voxels_lateral - device_voxels_lateral
 	pad_right = int( 0.5 * total_size_remaining )
 	pad_left = total_size_remaining - pad_right
 
@@ -365,11 +365,11 @@ def border_and_replicate_device( device_index, border_size_voxels, border_index 
 
 		bordered_layer = np.pad(
 			extract_layer,
-			( ( border_size_voxels, border_size_voxels ), ( border_size_voxels, border_size_voxels ) ),
+			( ( pad_left, pad_right ), ( pad_left, pad_right ) ),
 			mode='constant',
 			constant_values=(( border_index, border_index ), ( border_index, border_index )) )
 
-		replicated_index[ :, :, z_idx ] = np.pad( bordered_layer, ( ( pad_left, pad_right ), ( pad_left, pad_right ) ), mode='wrap' )
+		# replicated_index[ :, :, z_idx ] = np.pad( bordered_layer, ( ( pad_left, pad_right ), ( pad_left, pad_right ) ), mode='wrap' )
 
 	return replicated_index
 

@@ -561,7 +561,7 @@ def resample_permittivity( input_permittivity ):
 
 	output_shape = [ ( resample_factor * input_dim ) for input_dim in input_shape ]
 
-	resampled = np.zeros( input_permittivity.shape, dtype=input_permittivity.dtype )
+	resampled = np.zeros( output_shape, dtype=input_permittivity.dtype )
 
 	for x in range( 0, output_shape[ 0 ] ):
 		for y in range( 0, output_shape[ 1 ] ):
