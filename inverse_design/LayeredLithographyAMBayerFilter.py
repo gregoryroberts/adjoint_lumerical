@@ -14,7 +14,7 @@ class GaussianBlur():
 	def __init__( self, blur_sigma ):
 		self.blur_sigma = blur_sigma
 
-	def forward( variable_in ):
+	def forward( self, variable_in ):
 		z_shape = variable_in.shape[ 2 ]
 
 		variable_out = np.zeros( variable_in.shape, dtype=variable_in.dtype )
