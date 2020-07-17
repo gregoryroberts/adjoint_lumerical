@@ -241,8 +241,10 @@ else:
 	np.save( save_folder + "/opt_init_random_density.npy", make_optimizer.design_density )
 
 	binarize = True
-	binarize_movement_per_step = 0.005
-	binarize_max_movement_per_voxel = 0.005
+	# binarize_movement_per_step = 0.005
+	# binarize_max_movement_per_voxel = 0.005
+	binarize_movement_per_step = 0.0025
+	binarize_max_movement_per_voxel = 0.0025
 
 	dropout_start = 0
 	dropout_end = 0#151
