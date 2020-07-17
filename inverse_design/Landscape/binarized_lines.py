@@ -50,10 +50,10 @@ def density_bound_from_eps( eps_val, min_perm, max_perm ):
 lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 
 device_width_voxels = 120
-device_height_voxels = 100
+# device_height_voxels = 100
 # device_height_voxels = 72
 # device_height_voxels = 52
-# device_height_voxels = 32
+device_height_voxels = 32
 # device_height_voxels = 24
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
