@@ -26,7 +26,7 @@ class GaussianBlur():
 
 			variable_out[ :, :, z_idx ] = blurred_layer
 
-		return variable_out	
+		return np.maxium( np.minimum( variable_out, 1.0 ), 0.0 )
 
 	def chain_rule( self, gradient_out, variable_out, variable_in ):
 		z_shape = gradient_out.shape[ 2 ]
