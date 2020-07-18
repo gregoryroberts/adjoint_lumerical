@@ -34,7 +34,7 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 6#8
+mesh_size_nm = 8#6#8
 density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
@@ -64,15 +64,15 @@ def density_bound_from_eps( eps_val ):
 # lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
-device_width_voxels = 160#120
+device_width_voxels = 120#160#120
 # device_width_voxels = 200
-# device_height_voxels = 132#100
+device_height_voxels = 100#132#100
 # device_height_voxels = 100#72
 # device_height_voxels = 64#52
 # device_height_voxels = 48#32
-device_height_voxels = 32#24
+# device_height_voxels = 32#24
 device_voxels_total = device_width_voxels * device_height_voxels
-focal_length_voxels = 132#100
+focal_length_voxels = 100#132#100
 focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -255,10 +255,23 @@ else:
 	wavelength_adversary = False#True
 	adversary_update_iters = 10
 
+	opt_mask = np.ones( ( design_width, design_height ) )
+
+	opt_mask[ :, 10:15 ] = 0
+
+	opt_mask[ 6:12, 0:10 ] = 0
+	opt_mask[ 18:24, 0:10 ] = 0
+
+	opt_mask[ 0:6, 15:25 ] = 0
+	opt_mask[ 12:18, 15:25 ] = 0
+	opt_mask[ 24:30, 15:25 ] = 0
+
+
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
 
 	make_optimizer.optimize(
 		num_iterations,
+		opt_mask,
 		use_log_fom,
 		wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 		binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
