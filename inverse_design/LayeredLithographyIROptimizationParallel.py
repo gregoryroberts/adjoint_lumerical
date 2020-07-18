@@ -315,10 +315,10 @@ air_bottom['index'] = index_air
 #
 design_import = fdtd_hook.addimport()
 design_import['name'] = 'design_import'
-design_import['x span'] = device_size_lateral_um * 1e-6
-design_import['y span'] = device_size_lateral_um * 1e-6
-design_import['z max'] = device_vertical_maximum_um * 1e-6
-design_import['z min'] = device_vertical_minimum_um * 1e-6
+design_import['x span'] = ( device_size_lateral_um - mesh_spacing_um ) * 1e-6
+design_import['y span'] = ( device_size_lateral_um - mesh_spacing_um ) * 1e-6
+design_import['z max'] = ( device_vertical_maximum_um - 0.5 * mesh_spacing_um ) * 1e-6
+design_import['z min'] = ( device_vertical_minimum_um + 0.5 * mesh_spacing_um ) * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
 bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
