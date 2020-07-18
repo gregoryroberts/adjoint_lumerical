@@ -15,32 +15,34 @@ class GaussianBlur():
 		self.blur_sigma = blur_sigma
 
 	def forward( self, variable_in ):
-		z_shape = variable_in.shape[ 2 ]
+		return variable_in
+		# z_shape = variable_in.shape[ 2 ]
 
-		variable_out = np.zeros( variable_in.shape, dtype=variable_in.dtype )
+		# variable_out = np.zeros( variable_in.shape, dtype=variable_in.dtype )
 
-		for z_idx in range( 0, z_shape ):
-			get_layer = np.squeeze( variable_in[ :, :, z_idx ] )
-			# blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
-			blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+		# for z_idx in range( 0, z_shape ):
+		# 	get_layer = np.squeeze( variable_in[ :, :, z_idx ] )
+		# 	# blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+		# 	blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
 
-			variable_out[ :, :, z_idx ] = blurred_layer
+		# 	variable_out[ :, :, z_idx ] = blurred_layer
 
-		return np.maxium( np.minimum( variable_out, 1.0 ), 0.0 )
+		# return np.maxium( np.minimum( variable_out, 1.0 ), 0.0 )
 
 	def chain_rule( self, gradient_out, variable_out, variable_in ):
-		z_shape = gradient_out.shape[ 2 ]
+		return gradient
+		# z_shape = gradient_out.shape[ 2 ]
 
-		gradient_in = np.zeros( gradient_out.shape, dtype=gradient_out.dtype )
+		# gradient_in = np.zeros( gradient_out.shape, dtype=gradient_out.dtype )
 
-		for z_idx in range( 0, z_shape ):
-			get_layer = np.squeeze( gradient_out[ :, :, z_idx ] )
-			# blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
-			blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+		# for z_idx in range( 0, z_shape ):
+		# 	get_layer = np.squeeze( gradient_out[ :, :, z_idx ] )
+		# 	# blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+		# 	blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
 
-			gradient_in[ :, :, z_idx ] = blurred_layer
+		# 	gradient_in[ :, :, z_idx ] = blurred_layer
 
-		return gradient_in	
+		# return gradient_in	
 
 class LayeredLithographyAMBayerFilter(device.Device):
 
