@@ -30,7 +30,7 @@ class GaussianBlur():
 		# return np.maxium( np.minimum( variable_out, 1.0 ), 0.0 )
 
 	def chain_rule( self, gradient_out, variable_out, variable_in ):
-		return gradient
+		return gradient_out
 		# z_shape = gradient_out.shape[ 2 ]
 
 		# gradient_in = np.zeros( gradient_out.shape, dtype=gradient_out.dtype )
