@@ -58,6 +58,7 @@ focal_plane_center_vertical_um = -focal_length_um
 # mesh_spacing_um = 0.032
 mesh_spacing_um = 0.025
 design_spacing_um = 0.075
+resample_factor = 3
 # design_spacing_um = 0.12
 # design_spacing_um = 0.24
 

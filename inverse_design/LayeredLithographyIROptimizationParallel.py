@@ -557,8 +557,6 @@ interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxel
 def resample_permittivity( input_permittivity ):
 	input_shape = input_permittivity.shape
 
-	resample_factor = int( design_spacing_um / mesh_spacing_um )
-
 	output_shape = [ ( resample_factor * input_dim ) for input_dim in input_shape ]
 
 	resampled = np.zeros( output_shape, dtype=input_permittivity.dtype )
