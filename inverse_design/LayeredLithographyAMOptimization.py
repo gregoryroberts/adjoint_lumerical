@@ -159,8 +159,8 @@ fdtd['background index'] = background_index
 
 design_mesh = fdtd_hook.addmesh()
 design_mesh['name'] = 'design_override_mesh'
-design_mesh['x span'] = fdtd_region_size_lateral_um * 1e-6
-design_mesh['y span'] = fdtd_region_size_lateral_um * 1e-6
+design_mesh['x span'] = device_size_lateral_um * 1e-6
+design_mesh['y span'] = device_size_lateral_um * 1e-6
 design_mesh['z max'] = device_vertical_maximum_um * 1e-6
 design_mesh['z min'] = device_vertical_minimum_um * 1e-6
 design_mesh['dx'] = mesh_spacing_um * 1e-6
@@ -329,18 +329,18 @@ bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
 	spacer_size_voxels,
 	last_layer_permittivities )
 
-np.random.seed( random_seed )
-num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
-random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
-random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
+# np.random.seed( random_seed )
+# num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
+# random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
+# random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
 
-reshape_device = np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] )
-blur_random_device = np.zeros( reshape_device.shape )
+# reshape_device = np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] )
+# blur_random_device = np.zeros( reshape_device.shape )
 
-for z_idx in range( 0, reshape_device.shape[ 2 ] ):
-	blur_random_device[ :, :, z_idx ] = gaussian_filter( reshape_device[ :, :, z_idx ], sigma=2 )
+# for z_idx in range( 0, reshape_device.shape[ 2 ] ):
+# 	blur_random_device[ :, :, z_idx ] = gaussian_filter( reshape_device[ :, :, z_idx ], sigma=2 )
 
-bayer_filter.set_design_variable( blur_random_device )
+# bayer_filter.set_design_variable( blur_random_device )
 
 # bayer_filter.set_design_variable( np.random.random( bayer_filter.get_design_variable().shape ) )
 # bayer_filter.step(
