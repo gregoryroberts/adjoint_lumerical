@@ -96,7 +96,7 @@ binarize_set_point = 0.5
 blur_fields_size_voxels = 0#4
 blur_fields = False#True
 
-num_iterations = 600#450#150#300
+num_iterations = 100#450#150#300
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
@@ -236,9 +236,12 @@ if init_from_old:
 	# make_optimizer.plot_subcell_gradient_variations( 0, 5 )
 else:
 	# make_optimizer.init_density_with_uniform( mean_density )
-	make_optimizer.init_density_with_random( mean_density, sigma_density )
-	np.save( save_folder + "/opt_random_seed.npy", make_optimizer.random_seed )
-	np.save( save_folder + "/opt_init_random_density.npy", make_optimizer.design_density )
+	# make_optimizer.init_density_with_random( mean_density, sigma_density )
+	# np.save( save_folder + "/opt_random_seed.npy", make_optimizer.random_seed )
+	# np.save( save_folder + "/opt_init_random_density.npy", make_optimizer.design_density )
+
+	density = np.load( save_folder + "/opt_optimized_density.npy" )
+	make_optimizer.init_density_directly( density )
 
 	binarize = True
 	# binarize_movement_per_step = 0.005
