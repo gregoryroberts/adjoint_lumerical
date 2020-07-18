@@ -158,8 +158,8 @@ max_binarize_movement = 0.0025
 desired_binarize_change = 0.005
 
 # Probably need to taper this over the epochs!
-design_change_start_epoch = 0.05#0.025
-design_change_end_epoch = 0.02#0.01
+design_change_start_epoch = 0.05 / 5#0.025
+design_change_end_epoch = 0.02 / 5#0.01
 
 # epoch_start_permittivity_change_max = 0.05#0.1
 # epoch_end_permittivity_change_max = 0.01#0.02
