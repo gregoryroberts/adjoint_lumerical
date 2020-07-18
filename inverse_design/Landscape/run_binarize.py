@@ -66,8 +66,8 @@ lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 160#120
 # device_width_voxels = 200
-device_height_voxels = 132#100
-# device_height_voxels = 72
+# device_height_voxels = 132#100
+device_height_voxels = 100#72
 # device_height_voxels = 52
 # device_height_voxels = 32
 # device_height_voxels = 24
