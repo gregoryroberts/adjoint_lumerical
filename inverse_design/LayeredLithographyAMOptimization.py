@@ -313,10 +313,10 @@ substrate['index'] = index_substrate
 #
 design_import = fdtd_hook.addimport()
 design_import['name'] = 'design_import'
-design_import['x span'] = fdtd_region_size_lateral_um * 1e-6
-design_import['y span'] = fdtd_region_size_lateral_um * 1e-6
-design_import['z max'] = device_vertical_maximum_um * 1e-6
-design_import['z min'] = device_vertical_minimum_um * 1e-6
+design_import['x span'] = ( fdtd_region_size_lateral_um - mesh_spacing_um ) * 1e-6
+design_import['y span'] = ( fdtd_region_size_lateral_um - mesh_spacing_um ) * 1e-6
+design_import['z max'] = ( device_vertical_maximum_um - 0.5 * mesh_spacing_um ) * 1e-6
+design_import['z min'] = ( device_vertical_minimum_um + 0.5 * mesh_spacing_um ) * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
 bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
@@ -935,11 +935,11 @@ for epoch in range(start_epoch, num_epochs):
 		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
 		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
 		#
-		enforce_binarization = False
-		if epoch >= binarization_start_epoch:
-			enforce_binarization = True
+		# enforce_binarization = False
+		# if epoch >= binarization_start_epoch:
+		# 	enforce_binarization = True
 		device_gradient = np.flip( device_gradient, axis=2 )
-		bayer_filter.step(-device_gradient, step_size_density, enforce_binarization, projects_directory_location)
+		bayer_filter.step(-device_gradient, step_size_density)#, enforce_binarization, projects_directory_location)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )

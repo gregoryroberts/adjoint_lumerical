@@ -332,11 +332,11 @@ bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
 	max_binarize_movement,
 	desired_binarize_change)
 
-# np.random.seed( random_seed )
-# num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
-# random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
-# random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
-# bayer_filter.set_design_variable( np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] ) )
+np.random.seed( random_seed )
+num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
+random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
+random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
+bayer_filter.set_design_variable( np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] ) )
 
 # bayer_filter.set_design_variable( np.random.random( bayer_filter.get_design_variable().shape ) )
 # bayer_filter.step(
@@ -933,11 +933,11 @@ for epoch in range(start_epoch, num_epochs):
 		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
 		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
 		#
-		# enforce_binarization = False
-		# if epoch >= binarization_start_epoch:
-		# 	enforce_binarization = True
+		enforce_binarization = False
+		if epoch >= binarization_start_epoch:
+			enforce_binarization = True
 		device_gradient = np.flip( device_gradient, axis=2 )
-		bayer_filter.step(-device_gradient, step_size_density)#, enforce_binarization, projects_directory_location)
+		bayer_filter.step(-device_gradient, step_size_density, enforce_binarization, projects_directory_location)
 		cur_design_variable = bayer_filter.get_design_variable()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
