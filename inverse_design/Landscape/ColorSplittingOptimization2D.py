@@ -659,6 +659,7 @@ class ColorSplittingOptimization2D():
 
 	def optimize(
 		self, num_iterations,
+		opt_mask=None,
 		use_log_fom=False,
 		wavelength_adversary=False, adversary_update_iters=-1, bottom_wls_um=None, top_wls_um=None,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
@@ -669,6 +670,9 @@ class ColorSplittingOptimization2D():
 			dense_plot_iters = num_iterations
 			dense_plot_lambda = self.wavelengths_um
 			focal_assignments = self.focal_spots_x_voxels
+
+		if opt_mask is None:
+			opt_mask = np.ones( self.design_density.shape )
 
 		if wavelength_adversary:
 			adversary_scan_density = 8#4
@@ -713,13 +717,17 @@ class ColorSplittingOptimization2D():
 		self.dense_plot_idxs = []
 		self.dense_plots = []
 
+		self.design_density *= opt_mask
+
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
 				log_file = open( self.save_folder + "/log.txt", 'a' )
 				log_file.write( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) + "\n")
 				log_file.close()
 
-			import_density = upsample( self.design_density, self.coarsen_factor )
+
+			mask_density = opt_mask * self.design_density
+			import_density = upsample( mask_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
 
 			gradient_by_wl = []
@@ -853,6 +861,7 @@ class ColorSplittingOptimization2D():
 			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
 				net_gradient *= 1.0 * np.greater( np.random.random( net_gradient.shape ), dropout_p )
 
+			net_gradient *= opt_mask
 			gradient_norm = vector_norm( net_gradient )
 
 			self.fom_evolution[ iter_idx ] = net_fom
