@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+from scipy.ndimage import gaussian_filter
+
 import queue
 
 import subprocess
@@ -299,13 +301,13 @@ substrate['z min'] = device_vertical_maximum_um * 1e-6
 substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 substrate['index'] = index_substrate
 
-# air_bottom = fdtd_hook.addrect()
-# air_bottom['name'] = 'air_bottom'
-# air_bottom['x span'] = fdtd_region_size_lateral_um * 1e-6
-# air_bottom['y span'] = fdtd_region_size_lateral_um * 1e-6
-# air_bottom['z min'] = fdtd_region_minimum_vertical_um * 1e-6
-# air_bottom['z max'] = device_vertical_minimum_um * 1e-6
-# air_bottom['index'] = index_air
+air_bottom = fdtd_hook.addrect()
+air_bottom['name'] = 'air_bottom'
+air_bottom['x span'] = fdtd_region_size_lateral_um * 1e-6
+air_bottom['y span'] = fdtd_region_size_lateral_um * 1e-6
+air_bottom['z min'] = fdtd_region_minimum_vertical_um * 1e-6
+air_bottom['z max'] = device_vertical_minimum_um * 1e-6
+air_bottom['index'] = index_air
 
 
 #
@@ -327,11 +329,18 @@ bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
 	spacer_size_voxels,
 	last_layer_permittivities )
 
-# np.random.seed( random_seed )
-# num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
-# random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
-# random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
-# bayer_filter.set_design_variable( np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] ) )
+np.random.seed( random_seed )
+num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
+random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
+random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
+
+reshape_device = np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] )
+blur_random_device = np.zeros( reshape_device.shape )
+
+for z_idx in range( 0, reshape_device.shape[ 2 ] ):
+	blur_random_device[ :, :, z_idx ] = gaussian_filter( reshape_device[ :, :, z_idx ], sigma=2 )
+
+bayer_filter.set_design_variable( blur_random_device )
 
 # bayer_filter.set_design_variable( np.random.random( bayer_filter.get_design_variable().shape ) )
 # bayer_filter.step(
@@ -348,30 +357,35 @@ bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
 # bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, import_region_voxels_lateral)
 # bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
 
-bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, import_region_voxels_lateral)
-bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, import_region_voxels_lateral)
+# bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, import_region_voxels_lateral)
+# bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, import_region_voxels_lateral)
+# bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
+
+bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
 bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
 
-def border_and_replicate_device( device_index, border_size_voxels, border_index ):
-	z_size = device_index.shape[ 2 ]
-	replicated_index = np.zeros( [ import_region_voxels_lateral, import_region_voxels_lateral, simulated_device_voxels_vertical ] )
 
-	total_size_remaining = import_region_voxels_lateral - device_voxels_lateral
-	pad_right = int( 0.5 * total_size_remaining )
-	pad_left = total_size_remaining - pad_right
+# def border_and_replicate_device( device_index, border_size_voxels, border_index ):
+# 	z_size = device_index.shape[ 2 ]
+# 	replicated_index = np.zeros( [ import_region_voxels_lateral, import_region_voxels_lateral, simulated_device_voxels_vertical ] )
 
-	for z_idx in range( 0, z_size ):
-		extract_layer = np.squeeze( device_index[ :, :, z_idx ] )
+# 	total_size_remaining = import_region_voxels_lateral - device_voxels_lateral
+# 	pad_right = int( 0.5 * total_size_remaining )
+# 	pad_left = total_size_remaining - pad_right
 
-		bordered_layer = np.pad(
-			extract_layer,
-			( ( pad_left, pad_right ), ( pad_left, pad_right ) ),
-			mode='constant',
-			constant_values=(( border_index, border_index ), ( border_index, border_index )) )
+# 	for z_idx in range( 0, z_size ):
+# 		extract_layer = np.squeeze( device_index[ :, :, z_idx ] )
 
-		# replicated_index[ :, :, z_idx ] = np.pad( bordered_layer, ( ( pad_left, pad_right ), ( pad_left, pad_right ) ), mode='wrap' )
+# 		bordered_layer = np.pad(
+# 			extract_layer,
+# 			( ( pad_left, pad_right ), ( pad_left, pad_right ) ),
+# 			mode='constant',
+# 			constant_values=(( border_index, border_index ), ( border_index, border_index )) )
 
-	return replicated_index
+# 		# replicated_index[ :, :, z_idx ] = np.pad( bordered_layer, ( ( pad_left, pad_right ), ( pad_left, pad_right ) ), mode='wrap' )
+
+# 	return replicated_index
 
 
 #
@@ -596,10 +610,10 @@ for epoch in range(start_epoch, num_epochs):
 		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 		cur_index = np.sqrt( cur_permittivity )
 
-		bordered_replicated_index = border_and_replicate_device( cur_index, device_border_voxels, min_device_index )
+		# bordered_replicated_index = border_and_replicate_device( cur_index, device_border_voxels, min_device_index )
 
 		fdtd_hook.select( design_import[ 'name' ] )
-		fdtd_hook.importnk2(bordered_replicated_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+		fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
 
 		num_fdtd_jobs = 0

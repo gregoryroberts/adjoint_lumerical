@@ -20,7 +20,7 @@ index_am = 2.4
 index_substrate = 1.451
 index_sio2 = 1.46
 index_air = 1.0
-background_index = index_air
+background_index = index_sio2
 min_device_index = index_sio2
 max_device_index = index_am
 
