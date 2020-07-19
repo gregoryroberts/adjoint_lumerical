@@ -250,7 +250,7 @@ else:
 	# binarize_movement_per_step = 0.005
 	# binarize_max_movement_per_voxel = 0.005
 	binarize_movement_per_step_nominal = 0.005
-	binarize_max_movement_per_voxel_nominal = 0.0005
+	binarize_max_movement_per_voxel_nominal = 0.005
 
 	rho_delta_scaling = ( 1.5**2 - min_relative_permittivity ) / ( max_relative_permittivity - min_relative_permittivity )
 	binarize_movement_per_step = binarize_movement_per_step_nominal * rho_delta_scaling
