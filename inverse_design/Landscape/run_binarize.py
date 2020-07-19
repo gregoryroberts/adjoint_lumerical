@@ -34,7 +34,7 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 6#8
+mesh_size_nm = 8#6#8
 density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
@@ -64,15 +64,15 @@ def density_bound_from_eps( eps_val ):
 # lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
-device_width_voxels = 160#120
+device_width_voxels = 120#160#120
 # device_width_voxels = 200
-device_height_voxels = 132#100
+device_height_voxels = 100#132#100
 # device_height_voxels = 100#72
 # device_height_voxels = 64#52
 # device_height_voxels = 48#32
 # device_height_voxels = 32#24
 device_voxels_total = device_width_voxels * device_height_voxels
-focal_length_voxels = 132#100
+focal_length_voxels = 100#132#100
 focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -96,7 +96,10 @@ binarize_set_point = 0.5
 blur_fields_size_voxels = 0#4
 blur_fields = False#True
 
-num_iterations = 100#450#150#300
+# num_iterations = 450#150#300
+num_iterations_nominal = 150
+num_iterations = int( np.ceil(
+	num_iterations_nominal * ( max_relative_permittivity**2 - min_relative_permittivity**2 ) / ( 1.5**2 - min_relative_permittivity ) ) )
 
 log_file = open( save_folder + "/log.txt", 'w' )
 log_file.write( "Log\n" )
@@ -246,8 +249,12 @@ else:
 	binarize = True
 	# binarize_movement_per_step = 0.005
 	# binarize_max_movement_per_voxel = 0.005
-	binarize_movement_per_step = 0.0025
-	binarize_max_movement_per_voxel = 0.0025
+	binarize_movement_per_step_nominal = 0.005
+	binarize_max_movement_per_voxel_nominal = 0.0005
+
+	rho_delta_scaling = ( 1.5**2 - min_relative_permittivity**2 ) / ( max_relative_permittivity**2 - min_relative_permittivity )
+	binarize_movement_per_step = binarize_movement_per_step_nominal * rho_delta_scaling
+	binarize_max_movement_per_voxel = binarize_max_movement_per_voxel_nominal * rho_delta_scaling
 
 	dropout_start = 0
 	dropout_end = 0#151
