@@ -97,7 +97,8 @@ blur_fields_size_voxels = 0#4
 blur_fields = False#True
 
 # num_iterations = 450#150#300
-num_iterations_nominal = 150
+# num_iterations_nominal = 150
+num_iterations_nominal = 300
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
 
@@ -249,8 +250,8 @@ else:
 	binarize = True
 	# binarize_movement_per_step = 0.005
 	# binarize_max_movement_per_voxel = 0.005
-	binarize_movement_per_step_nominal = 0.005
-	binarize_max_movement_per_voxel_nominal = 0.005
+	binarize_movement_per_step_nominal = 0.0075
+	binarize_max_movement_per_voxel_nominal = 0.0075
 
 	rho_delta_scaling = ( 1.5**2 - min_relative_permittivity ) / ( max_relative_permittivity - min_relative_permittivity )
 	binarize_movement_per_step = binarize_movement_per_step_nominal * rho_delta_scaling
