@@ -584,7 +584,6 @@ class ColorSplittingOptimizationALD2D():
 		delta_permittivity = self.max_relative_permittivity - self.min_relative_permittivity
 
 		pad_gradient = np.pad( gradient, ( ( 1, 1 ), ( 1, 1 ) ), mode='constant' ) 
-		gradient_left = p
 
 		term_1 = -high_index_mask * self.delta_ald_permittivity + delta_permittivity
 
