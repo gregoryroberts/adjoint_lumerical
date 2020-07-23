@@ -588,8 +588,8 @@ class ColorSplittingOptimizationALD2D():
 		term_1 = -high_index_mask * self.delta_ald_permittivity + delta_permittivity
 
 		term_2 = ( 1 - density ) * self.delta_ald_permittivity * (
-			high_index_grad_mask_horizontal * ( pad_gradient[ 0:(density.shape[0] - 1), 1:(density.shape[1]) ] - pad_gradient[ 2:, 1:(density.shape[1]) ] ) +
-			high_index_grad_mask_vertical * ( pad_gradient[ 1:(density.shape[0]), 0:(density.shape[1] - 1) ] - pad_gradient[ 1:(density.shape[0]), 2: ] )
+			high_index_grad_mask_horizontal * ( pad_gradient[ 0:(density.shape[0]), 1:(density.shape[1] + 1) ] - pad_gradient[ 2:, 1:(density.shape[1] + 1) ] ) +
+			high_index_grad_mask_vertical * ( pad_gradient[ 1:(density.shape[0] + 1), 0:(density.shape[1]) ] - pad_gradient[ 1:(density.shape[0] + 1), 2: ] )
 		)
 
 		return term_1 + term_2
