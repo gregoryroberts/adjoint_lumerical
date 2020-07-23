@@ -559,8 +559,8 @@ class ColorSplittingOptimizationALD2D():
 
 		pad_density = np.pad( density, ( ( 1, 1 ), ( 1, 1 ) ), mode='edge' )
 
-		high_index_mask_horizontal = ( pad_density[ 0:(density.shape[0] - 1), 1:(density.shape[1]) ] - pad_density[ 2:, 1:(density.shape[1]) ] )**2
-		high_index_mask_vertical = ( pad_density[ 1:(density.shape[0]), 0:(density.shape[1] - 1) ] - pad_density[ 1:(density.shape[0]), 2: ] )**2
+		high_index_mask_horizontal = ( pad_density[ 0:(density.shape[0]), 1:(density.shape[1] + 1) ] - pad_density[ 2:, 1:(density.shape[1] + 1) ] )**2
+		high_index_mask_vertical = ( pad_density[ 1:(density.shape[0] + 1), 0:(density.shape[1]) ] - pad_density[ 1:(density.shape[0] + 1), 2: ] )**2
 		high_index_mask = high_index_mask_horizontal + high_index_mask_vertical
 
 		delta_permittivity = self.max_relative_permittivity - self.min_relative_permittivity
@@ -574,14 +574,12 @@ class ColorSplittingOptimizationALD2D():
 
 		pad_density = np.pad( density, ( ( 1, 1 ), ( 1, 1 ) ), mode='edge' )
 
-
-		high_index_mask_horizontal = ( pad_density[ 0:(density.shape[0] - 1), 1:(density.shape[1]) ] - pad_density[ 2:, 1:(density.shape[1]) ] )**2
-		high_index_mask_vertical = ( pad_density[ 1:(density.shape[0]), 0:(density.shape[1] - 1) ] - pad_density[ 1:(density.shape[0]), 2: ] )**2
+		high_index_mask_horizontal = ( pad_density[ 0:(density.shape[0]), 1:(density.shape[1] + 1) ] - pad_density[ 2:, 1:(density.shape[1] + 1) ] )**2
+		high_index_mask_vertical = ( pad_density[ 1:(density.shape[0] + 1), 0:(density.shape[1]) ] - pad_density[ 1:(density.shape[0] + 1), 2: ] )**2
 		high_index_mask = high_index_mask_horizontal + high_index_mask_vertical
 
-
-		high_index_grad_mask_horizontal = 2 * ( pad_density[ 0:(density.shape[0] - 1), 1:(density.shape[1]) ] - pad_density[ 2:, 1:(density.shape[1]) ] )
-		high_index_grad_mask_vertical = 2 * ( pad_density[ 1:(density.shape[0]), 0:(density.shape[1] - 1) ] - pad_density[ 1:(density.shape[0]), 2: ] )
+		high_index_grad_mask_horizontal = 2 * ( pad_density[ 0:(density.shape[0]), 1:(density.shape[1] + 1) ] - pad_density[ 2:, 1:(density.shape[1] + 1) ] )
+		high_index_grad_mask_vertical = 2 * ( pad_density[ 1:(density.shape[0] + 1), 0:(density.shape[1]) ] - pad_density[ 1:(density.shape[0] + 1), 2: ] )
 
 		delta_permittivity = self.max_relative_permittivity - self.min_relative_permittivity
 
