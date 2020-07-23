@@ -1053,12 +1053,16 @@ class ColorSplittingOptimizationALD2D():
 			# 	self.design_density = self.pair_array( self.design_density )
 
 	def save_optimization_data( self, file_base ):
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+
 		np.save( file_base + "_gradient_norm_evolution.npy", self.gradient_norm_evolution )
 		np.save( file_base + "_fom_evolution.npy", self.fom_evolution )
 		np.save( file_base + "_binarization_evolution.npy", self.binarization_evolution )
 		np.save( file_base + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 		np.save( file_base + "_gradient_directions.npy", self.gradient_directions )
 		np.save( file_base + "_optimized_density.npy", self.design_density )
+		np.save( file_base + "_optimized_permittivity.npy", device_permittivity )
 		np.save( file_base + "_random_seed.npy", self.random_seed )
 		np.save( file_base + "_dense_plots.npy", np.array( self.dense_plots ) )
 		np.save( file_base + "_dense_plot_idxs.npy", np.array( self.dense_plot_idxs ) )
