@@ -585,7 +585,7 @@ class ColorSplittingOptimizationALD2D():
 
 		pad_gradient = np.pad( gradient, ( ( 1, 1 ), ( 1, 1 ) ), mode='constant' ) 
 
-		term_1 = -high_index_mask * self.delta_ald_permittivity + delta_permittivity
+		term_1 = ( -high_index_mask * self.delta_ald_permittivity + delta_permittivity ) * pad_gradient[ 1:(density.shape[0] + 1), 1:(density.shape[1] + 1) ]
 
 		term_2 = ( 1 - density ) * self.delta_ald_permittivity * (
 			high_index_grad_mask_horizontal * ( pad_gradient[ 0:(density.shape[0]), 1:(density.shape[1] + 1) ] - pad_gradient[ 2:, 1:(density.shape[1] + 1) ] ) +
@@ -593,6 +593,7 @@ class ColorSplittingOptimizationALD2D():
 		)
 
 		return term_1 + term_2
+		# return term_1
 
 
 	def layer_spacer_averaging( self, gradient_input ):
