@@ -34,7 +34,7 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 25
+mesh_size_nm = 30
 density_coarsen_factor = 10
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.50
@@ -61,9 +61,9 @@ def density_bound_from_eps( eps_val ):
 lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 100
-device_height_voxels = 100
+device_height_voxels = 200#100
 device_voxels_total = device_width_voxels * device_height_voxels
-focal_length_voxels = 80
+focal_length_voxels = 120#80
 focal_points_x_relative = [ 0.25, 0.75 ]
 
 # num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -83,7 +83,7 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 
 mean_density = 0.5
 sigma_density = 0.2
-init_from_old = False
+init_from_old = True#False
 binarize_set_point = 0.5
 
 blur_fields_size_voxels = 0
@@ -166,11 +166,33 @@ make_optimizer = ColorSplittingOptimizationALD2D.ColorSplittingOptimizationALD2D
 
 if init_from_old:
 	density = np.load( save_folder + "/opt_optimized_density.npy" )
+	permittivity = np.load( save_folder + "/opt_optimized_permittivity.npy" )
 	make_optimizer.init_density_directly( density )
+
+	fom = np.load( save_folder + "/opt_fom_evolution.npy" )
+
+	plt.plot( np.log10( fom ), linewidth=2, color='g' )
+	plt.show()
+
+	plt.imshow( np.sqrt( permittivity ), cmap='Greens' )
+	plt.colorbar()
+	plt.show()
+
+	# sys.exit(0)
+
 
 	fields, permittivity = make_optimizer.get_device_efields( 0 )
 
 	normalize_fields = np.abs( fields )**2 / np.max( np.abs( fields )**2 )
+
+	plt.imshow( np.abs( fields ) )
+	plt.show()
+
+	make_optimizer.plot_fields( 0 )
+
+	sys.exit( 0 )
+
+
 	normalize_permittivity = permittivity / max_relative_permittivity
 	print( "Maximum field = " + str( np.max( np.abs( fields )**2 ) ) )
 	print( "Average field in material FOM = " + str( np.sum( np.abs( fields )**2 / permittivity**2 ) ) )
