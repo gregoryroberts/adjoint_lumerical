@@ -555,22 +555,21 @@ class ColorSplittingOptimizationALD2D():
 		self.average_adjoint_finite_difference_error = np.sqrt( np.mean( np.abs( get_grad[ fd_x, self.device_height_start : self.device_height_end ] - compute_fd )**2 ) )
 
 	def density_to_permittivity( self, density ):
-		low_index_permittivity = ( self.min_relative_permittivity + ( self.max_relative_permittivity - self.min_relative_permittivity ) * density )
+		# pad_density = np.pad( density, ( ( 1, 1 ), ( 1, 1 ) ), mode='edge' )
 
-		pad_density = np.pad( density, ( ( 1, 1 ), ( 1, 1 ) ), mode='edge' )
-
-		high_index_mask_horizontal = ( pad_density[ 0:(density.shape[0]), 1:(density.shape[1] + 1) ] - pad_density[ 2:, 1:(density.shape[1] + 1) ] )**2
-		high_index_mask_vertical = ( pad_density[ 1:(density.shape[0] + 1), 0:(density.shape[1]) ] - pad_density[ 1:(density.shape[0] + 1), 2: ] )**2
-		high_index_mask = high_index_mask_horizontal + high_index_mask_vertical
+		# high_index_mask_horizontal = ( pad_density[ 0:(density.shape[0]), 1:(density.shape[1] + 1) ] - pad_density[ 2:, 1:(density.shape[1] + 1) ] )**2
+		# high_index_mask_vertical = ( pad_density[ 1:(density.shape[0] + 1), 0:(density.shape[1]) ] - pad_density[ 1:(density.shape[0] + 1), 2: ] )**2
+		# high_index_mask = high_index_mask_horizontal + high_index_mask_vertical
 
 		delta_permittivity = self.max_relative_permittivity - self.min_relative_permittivity
 
-		permittivity = ( 1 - density ) * self.delta_ald_permittivity * high_index_mask + self.min_relative_permittivity + density * delta_permittivity
+		# permittivity = ( 1 - density ) * self.delta_ald_permittivity * high_index_mask + self.min_relative_permittivity + density * delta_permittivity
+		permittivity = self.min_relative_permittivity + density * delta_permittivity
 
 		return permittivity
 
 	def interpret_ald( self, density, gradient ):
-		low_index_permittivity = ( self.min_relative_permittivity + ( self.max_relative_permittivity - self.min_relative_permittivity ) * density )
+		return ( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient
 
 		pad_density = np.pad( density, ( ( 1, 1 ), ( 1, 1 ) ), mode='edge' )
 
@@ -593,7 +592,6 @@ class ColorSplittingOptimizationALD2D():
 		)
 
 		return term_1 + term_2
-		# return term_1
 
 
 	def layer_spacer_averaging( self, gradient_input ):

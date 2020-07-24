@@ -67,7 +67,7 @@ focal_length_voxels = 120#80
 focal_points_x_relative = [ 0.25, 0.75 ]
 
 # num_layers = int( device_height_voxels / density_coarsen_factor )
-num_layers = 10
+num_layers = 10#5
 spacer_permittivity = 1.0**2
 designable_layer_indicators = [ True for idx in range( 0, num_layers ) ]
 for layer_idx in range( 0, num_layers ):
