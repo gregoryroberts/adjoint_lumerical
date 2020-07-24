@@ -83,7 +83,7 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 
 mean_density = 0.5
 sigma_density = 0.2
-init_from_old = True#False
+init_from_old = False#True#False
 binarize_set_point = 0.5
 
 blur_fields_size_voxels = 0
