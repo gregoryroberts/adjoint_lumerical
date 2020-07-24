@@ -34,7 +34,7 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 30
+mesh_size_nm = 30#25
 density_coarsen_factor = 10
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.50
@@ -67,7 +67,7 @@ focal_length_voxels = 120#80
 focal_points_x_relative = [ 0.25, 0.75 ]
 
 # num_layers = int( device_height_voxels / density_coarsen_factor )
-num_layers = 5
+num_layers = 10
 spacer_permittivity = 1.0**2
 designable_layer_indicators = [ True for idx in range( 0, num_layers ) ]
 for layer_idx in range( 0, num_layers ):
@@ -170,8 +170,12 @@ if init_from_old:
 	make_optimizer.init_density_directly( density )
 
 	fom = np.load( save_folder + "/opt_fom_evolution.npy" )
+	binarization = np.load( save_folder + "/opt_binarization_evolution.npy" )
 
+	plt.subplot( 1, 2, 1 )
 	plt.plot( np.log10( fom ), linewidth=2, color='g' )
+	plt.subplot( 1, 2, 2 )
+	plt.plot( binarization, linewidth=2, color='r' )
 	plt.show()
 
 	plt.imshow( np.sqrt( permittivity ), cmap='Greens' )
@@ -181,14 +185,14 @@ if init_from_old:
 	# sys.exit(0)
 
 
-	fields, permittivity = make_optimizer.get_device_efields( 0 )
+	fields, permittivity = make_optimizer.get_device_efields( num_lambda_values - 1 )
 
 	normalize_fields = np.abs( fields )**2 / np.max( np.abs( fields )**2 )
 
 	plt.imshow( np.abs( fields ) )
 	plt.show()
 
-	make_optimizer.plot_fields( 0 )
+	make_optimizer.plot_fields( num_lambda_values - 1 )
 
 	sys.exit( 0 )
 
