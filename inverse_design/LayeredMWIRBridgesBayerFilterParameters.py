@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_4to6um_fixed_step_addcage_25x25x25um'
+project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3to5um_fixed_step_addcage_25x25x25um_f30um'
 
 # todo(gdrobert): consider the contrast here like you are doing in the cmos designs.. minimize energy into wrong quadrant
 
@@ -23,7 +23,7 @@ max_device_permittivity = max_device_index**2
 
 init_permittivity_0_1_scale = 0.5
 
-focal_length_um = 20
+focal_length_um = 30
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
@@ -44,8 +44,8 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 4
-lambda_max_um = 6
+lambda_min_um = 3
+lambda_max_um = 5
 
 num_bands = 3
 num_points_per_band = 10

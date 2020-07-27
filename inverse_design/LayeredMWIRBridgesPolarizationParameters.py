@@ -8,7 +8,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_polarization_10layers_4p5to5um_fixed_step_addcage_30x30x25um_f24um'
+project_name = 'layered_mwir_2d_lithography_bridges_polarization_10layers_3p5to4um_fixed_step_addcage_30x30x25um_f36um'
 
 
 optimized_focal_spots = [ 0, 1, 2, 3 ]
@@ -17,7 +17,8 @@ optimized_focal_spots = [ 0, 1, 2, 3 ]
 init_permittivity_0_1_scale = 0.5
 
 # focal_length_um = 20
-focal_length_um = 24
+# focal_length_um = 24
+focal_length_um = 36
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
@@ -39,8 +40,8 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 4.5
-lambda_max_um = 5
+lambda_min_um = 3.5
+lambda_max_um = 4.0
 
 num_design_frequency_points = 10
 num_eval_frequency_points = 60
