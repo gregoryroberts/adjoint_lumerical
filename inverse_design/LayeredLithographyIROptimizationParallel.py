@@ -552,6 +552,7 @@ spatial_limits_device_um = [
 ]
 
 interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ]
+original_size = [ simulated_device_voxels_lateral, simulated_device_voxels_lateral, simulated_device_voxels_vertical ]
 
 
 def resample_permittivity( input_permittivity ):
@@ -572,6 +573,24 @@ def resample_permittivity( input_permittivity ):
 
 	return resampled
 
+def average_gradient( input_gradient ):
+	input_shape = input_gradient.shape
+
+	output_shape = [ int( input_dim / resample_factor ) for input_dim in input_shape ]
+
+	averaged = np.zeros( output_shape, dtype=input_permittivity.dtype )
+	averaging_normalization = 1. / resample_factor**3
+
+	for x in range( 0, output_shape[ 0 ] ):
+		for y in range( 0, output_shape[ 1 ] ):
+			for z in range( 0, output_shape[ 2 ] ):
+				nearest_x = int( x * resample_factor )
+				nearest_y = int( y * resample_factor )
+				nearest_z = int( z * resample_factor )
+
+				averaged[ x, y, z ] += averaging_normalization * input_gradient[ nearest_x, nearest_y, nearest_z ]
+
+	return averaged
 
 
 
@@ -719,10 +738,21 @@ for epoch in range(start_epoch, num_epochs):
 
 				# forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 				# forward_e_fields[xy_names[xy_idx]] = get_efield( design_efield_monitor['name' ] )
+				# todo - it may be better to average after getting the electric field gradient data back.
+				# the interpolated field will be slightly inaccurate to use as a gradient because it doesn't take
+				# into account all the gradients inside its super voxel.  It basically just takes the gradient at the
+				# middle.  You can let it run for now, but this is a good thing to check.  If you do level set, you'll
+				# likely want more fine grained gradients so you can make correct decisions around edges.
+				# forward_e_fields[xy_names[xy_idx]] = get_efield_interpolated(
+				# 	design_efield_monitor['name' ],
+				# 	spatial_limits_device_um,
+				# 	interpolated_size
+				# )
+
 				forward_e_fields[xy_names[xy_idx]] = get_efield_interpolated(
 					design_efield_monitor['name' ],
 					spatial_limits_device_um,
-					interpolated_size
+					original_size
 				)
 
 
@@ -820,10 +850,16 @@ for epoch in range(start_epoch, num_epochs):
 
 					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_complex_monitor_data( design_efield_monitor['name'] ,'E' )
 					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_efield( design_efield_monitor['name'] )
+					# adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_efield_interpolated(
+					# 	design_efield_monitor['name'],
+					# 	spatial_limits_device_um,
+					# 	interpolated_size )
+
 					adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ] = get_efield_interpolated(
 						design_efield_monitor['name'],
 						spatial_limits_device_um,
-						interpolated_size )
+						original_size )
+
 
 			for pol_idx in range(0, len(polarizations)):
 				pol_name = polarizations[pol_idx]
@@ -863,7 +899,10 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 4: Step the design variable.
 		#
 		# device_gradient_simulation_mesh = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
-		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		raw_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+
+		device_gradient = average_gradient( raw_gradient )
+
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		# device_gradient = np.swapaxes(device_gradient, 0, 2)
