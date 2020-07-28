@@ -93,7 +93,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 
 	def make_layer( self, layer_idx ):
-		layer = np.zeros( ( fine_dim, fine_dim ) )
+		layer = np.zeros( ( self.size[ 0 ], self.size[ 1 ] ) )
 
 		for x_coarse in range( 0, coarse_dim ):
 			fine_x_offset = self.lateral_subsampling[ 0 ] * x_coarse
