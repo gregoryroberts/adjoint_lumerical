@@ -61,7 +61,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 		self.feature_size_sigma = feature_size_sigma
 		self.control_points_per_box = 2
-		self.box_counts = np.zeros( 2 )
+		self.box_counts = np.zeros( 2, dtype=np.int )
 		for dim in range( 0, 2 ):
 			# todo: these should be errors or exceptions or some return code, not assert
 			assert ( size[ dim ] % lateral_subsampling[ dim ] ) == 0, "The subsampling does not divide the size equally"
