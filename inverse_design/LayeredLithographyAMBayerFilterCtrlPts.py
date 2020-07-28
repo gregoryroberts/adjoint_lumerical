@@ -64,7 +64,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 		self.box_counts = np.zeros( 2 )
 		for dim in range( 0, 2 ):
 			# todo: these should be errors or exceptions or some return code, not assert
-			assert ( size[ dim ] % lateral_subsampling ) == 0, "The subsampling does not divide the size equally"
+			assert ( size[ dim ] % lateral_subsampling[ dim ] ) == 0, "The subsampling does not divide the size equally"
 			self.box_counts[ dim ] = int( size[ dim ] / lateral_subsampling[ dim ] )
 
 		self.init_control_boxes()
