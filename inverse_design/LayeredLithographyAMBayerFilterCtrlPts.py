@@ -95,10 +95,10 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 	def make_layer( self, layer_idx ):
 		layer = np.zeros( ( self.size[ 0 ], self.size[ 1 ] ) )
 
-		for x_coarse in range( 0, coarse_dim ):
+		for x_coarse in range( 0, self.box_counts[ 0 ] ):
 			fine_x_offset = self.lateral_subsampling[ 0 ] * x_coarse
 
-			for y_coarse in range( 0, coarse_dim ):
+			for y_coarse in range( 0, self.box_counts[ 1 ] ):
 				fine_y_offset = self.lateral_subsampling[ 1 ] * y_coarse
 
 				for step_x in range( 0, fine_factor ):
@@ -118,10 +118,10 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 	def layer_to_control_points_grad( self, layer_idx, gradient ):
 		control_points_grad = np.zeros( self.control_points.shape, dtype=self.control_points.dtype )
 
-		for x_coarse in range( 0, coarse_dim ):
+		for x_coarse in range( 0, self.box_counts[ 0 ] ):
 			fine_x_offset = self.lateral_subsampling[ 0 ] * x_coarse
 
-			for y_coarse in range( 0, coarse_dim ):
+			for y_coarse in range( 0, self.box_counts[ 1 ] ):
 				fine_y_offset = self.lateral_subsampling[ 1 ] * y_coarse
 
 				for step_x in range( 0, fine_factor ):
@@ -238,11 +238,11 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 
 		for layer_idx in range( 0, self.num_z_layers ):
-			for x_coarse in range( 0, coarse_dim ):
+			for x_coarse in range( 0, self.box_counts[ 0 ] ):
 				x_bound_low = self.lateral_subsampling[ 0 ] * ( x_coarse + 0.25 )
 				x_bound_high = self.lateral_subsampling[ 0 ] * ( x_coarse + 0.75 )
 
-				for y_coarse in range( 0, coarse_dim ):
+				for y_coarse in range( 0, self.box_counts[ 1 ] ):
 					y_bound_low = self.lateral_subsampling[ 1 ] * ( y_coarse + 0.25 )
 					y_bound_high = self.lateral_subsampling[ 1 ] * ( y_coarse + 0.75 )
 
