@@ -154,7 +154,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 	# Override the update_permittivity function so we can handle layer-dependent collapsing along either x- or y-dimensions
 	#
 	def update_permittivity( self ):
-		background_density = np.ones( self.size )
+		background_density = np.zeros( self.size )
 
 		layer_indices = self.layering_z.get_layer_idxs( self.size )
 
@@ -198,7 +198,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 			averaging_normalization = 1. / num_voxels_averaged
 
 			for internal_idx in range( layer_start, layer_end ):
-				average_gradient_layers[ :, :, layer_idx ] += ( averaging_normalization * gradient[ internal_idx ] )
+				average_gradient_layers[ :, :, layer_idx ] += ( averaging_normalization * gradient[ :, :, internal_idx ] )
 
 			control_points_gradient[ layer_idx ] = self.layer_to_control_points_grad( layer_idx, average_gradient_layers[ :, :, layer_idx ] )
 
