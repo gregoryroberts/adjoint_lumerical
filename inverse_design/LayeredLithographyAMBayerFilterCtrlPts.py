@@ -101,10 +101,10 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 			for y_coarse in range( 0, self.box_counts[ 1 ] ):
 				fine_y_offset = self.lateral_subsampling[ 1 ] * y_coarse
 
-				for step_x in range( 0, fine_factor ):
+				for step_x in range( 0, self.lateral_subsampling[ 0 ] ):
 					fine_x = fine_x_offset + step_x
 
-					for step_y in range( 0, fine_factor ):
+					for step_y in range( 0, self.lateral_subsampling[ 1 ] ):
 						fine_y = fine_y_offset + step_y
 
 						for pt_idx in range( 0, num_ctrl_pts_per_box ):
@@ -124,10 +124,10 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 			for y_coarse in range( 0, self.box_counts[ 1 ] ):
 				fine_y_offset = self.lateral_subsampling[ 1 ] * y_coarse
 
-				for step_x in range( 0, fine_factor ):
+				for step_x in range( 0, self.lateral_subsampling[ 0 ] ):
 					fine_x = fine_x_offset + step_x
 
-					for step_y in range( 0, fine_factor ):
+					for step_y in range( 0, self.lateral_subsampling[ 1 ] ):
 						fine_y = fine_y_offset + step_y
 
 						for pt_idx in range( 0, num_ctrl_pts_per_box ):
