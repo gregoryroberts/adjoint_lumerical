@@ -116,7 +116,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 		return layer
 
 	def layer_to_control_points_grad( self, layer_idx, gradient ):
-		control_points_grad = np.zeros( np.zeros( ( self.box_counts[ 0 ], self.box_counts[ 1 ], self.control_points_per_box, 2 ) ) )
+		control_points_grad = np.zeros( ( self.box_counts[ 0 ], self.box_counts[ 1 ], self.control_points_per_box, 2 ) )
 
 		for x_coarse in range( 0, self.box_counts[ 0 ] ):
 			fine_x_offset = self.lateral_subsampling[ 0 ] * x_coarse
