@@ -107,7 +107,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 					for step_y in range( 0, self.lateral_subsampling[ 1 ] ):
 						fine_y = fine_y_offset + step_y
 
-						for pt_idx in range( 0, num_ctrl_pts_per_box ):
+						for pt_idx in range( 0, self.control_points_per_box ):
 							ctrl_x = self.control_points[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ]
 							ctrl_y = self.control_points[ layer_idx, x_coarse, y_coarse, pt_idx, 1 ]
 
@@ -130,7 +130,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 					for step_y in range( 0, self.lateral_subsampling[ 1 ] ):
 						fine_y = fine_y_offset + step_y
 
-						for pt_idx in range( 0, num_ctrl_pts_per_box ):
+						for pt_idx in range( 0, self.control_points_per_box ):
 							ctrl_x = self.control_points[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ]
 							ctrl_y = self.control_points[ layer_idx, x_coarse, y_coarse, pt_idx, 1 ]
 
@@ -246,7 +246,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 					y_bound_low = self.lateral_subsampling[ 1 ] * ( y_coarse + 0.25 )
 					y_bound_high = self.lateral_subsampling[ 1 ] * ( y_coarse + 0.75 )
 
-					for pt_idx in range( 0, num_ctrl_pts_per_box ):
+					for pt_idx in range( 0, self.control_points_per_box ):
 						self.proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ] = np.minimum(
 							x_bound_high,
 							np.maximum(
