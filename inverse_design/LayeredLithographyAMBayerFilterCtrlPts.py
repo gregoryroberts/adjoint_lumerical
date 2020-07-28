@@ -236,7 +236,6 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 		control_points_gradient = self.backpropagate( gradient )
 		proposed_step = self.control_points - step_size * control_points_gradient
 
-
 		for layer_idx in range( 0, self.num_z_layers ):
 			for x_coarse in range( 0, self.box_counts[ 0 ] ):
 				x_bound_low = self.lateral_subsampling[ 0 ] * ( x_coarse + 0.25 )
@@ -247,21 +246,21 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 					y_bound_high = self.lateral_subsampling[ 1 ] * ( y_coarse + 0.75 )
 
 					for pt_idx in range( 0, self.control_points_per_box ):
-						self.proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ] = np.minimum(
+						proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ] = np.minimum(
 							x_bound_high,
 							np.maximum(
-								self.proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ],
+								proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ],
 								x_bound_low )
 							)
 
-						self.proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 1 ] = np.minimum(
+						proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 1 ] = np.minimum(
 							y_bound_high,
 							np.maximum(
-								self.proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 1 ],
+								proposed_step[ layer_idx, x_coarse, y_coarse, pt_idx, 1 ],
 								y_bound_low )
 							)
 
-		self.control_points = self.proposed_step.copy()
+		self.control_points = proposed_step.copy()
 
 		# self.w[0] = self.proposed_design_step(gradient, step_size)
 		# Update the variable stack including getting the permittivity at the w[-1] position
