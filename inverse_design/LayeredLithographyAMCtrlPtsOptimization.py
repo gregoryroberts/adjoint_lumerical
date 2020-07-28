@@ -321,7 +321,7 @@ design_import['z max'] = ( device_vertical_maximum_um - 0.5 * mesh_spacing_um ) 
 design_import['z min'] = ( device_vertical_minimum_um + 0.5 * mesh_spacing_um ) * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMCtrlPtsBayerFilter(
+bayer_filter = LayeredLithographyAMCtrlPtsBayerFilter.LayeredLithographyAMCtrlPtsBayerFilter(
 	bayer_filter_size_voxels,
 	[ lateral_box_sampling, lateral_box_sampling ],
 	gaussian_blur_filter_sigma,
