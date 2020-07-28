@@ -578,7 +578,7 @@ def average_gradient( input_gradient ):
 
 	output_shape = [ int( input_dim / resample_factor ) for input_dim in input_shape ]
 
-	averaged = np.zeros( output_shape, dtype=input_permittivity.dtype )
+	averaged = np.zeros( output_shape, dtype=input_gradient.dtype )
 	averaging_normalization = 1. / resample_factor**3
 
 	for x in range( 0, output_shape[ 0 ] ):
