@@ -227,7 +227,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 		scale_min = self.permittivity_bounds[0]
 		scale_max = self.permittivity_bounds[1]
-		self.scale_1 = scale.Scale([scale_min, scale_max])
+		self.scale_2 = scale.Scale([scale_min, scale_max])
 
 		self.init_variables()
 
