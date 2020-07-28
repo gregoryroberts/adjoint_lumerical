@@ -896,7 +896,7 @@ for epoch in range(start_epoch, num_epochs):
 		step_size_control_points /= np.max( np.abs( control_points_gradient ) )
 
 
-		last_design_variable = cur_design_variable.copy()
+		last_design_variable = bayer_filter.control_points.copy()
 		#
 		# todo: fix this in other files! the step already does the backpropagation so you shouldn't
 		# pass it an already backpropagated gradient!  Sloppy, these files need some TLC and cleanup!
@@ -905,17 +905,17 @@ for epoch in range(start_epoch, num_epochs):
 		# if epoch >= binarization_start_epoch:
 		# 	enforce_binarization = True
 		bayer_filter.step(-device_gradient, step_size_control_points)#, enforce_binarization, projects_directory_location)
-		cur_design_variable = bayer_filter.get_design_variable()
+		cur_design_variable = bayer_filter.control_points
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
 		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
 
-		step_size_evolution[epoch][iteration] = step_size_density
+		step_size_evolution[epoch][iteration] = step_size_control_points
 		average_design_variable_change_evolution[epoch][iteration] = average_design_variable_change
 		max_design_variable_change_evolution[epoch][iteration] = max_design_variable_change
 
 		np.save(projects_directory_location + '/device_gradient.npy', device_gradient)
-		np.save(projects_directory_location + '/design_gradient.npy', design_gradient)
+		np.save(projects_directory_location + '/design_gradient.npy', control_points_gradient)
 		np.save(projects_directory_location + "/step_size_evolution.npy", step_size_evolution)
 		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
 		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
