@@ -816,9 +816,14 @@ for epoch in range(start_epoch, num_epochs):
 		# gradients for x- and y-polarized forward sources.
 		#
 		cur_permittivity_shape = cur_permittivity.shape
+		# xy_polarized_gradients = [
+		# 	np.zeros((device_voxels_lateral, device_voxels_lateral, device_voxels_vertical), dtype=np.complex),
+		# 	np.zeros((device_voxels_lateral, device_voxels_lateral, device_voxels_vertical), dtype=np.complex) ]
+
 		xy_polarized_gradients = [
-			np.zeros((device_voxels_lateral, device_voxels_lateral, device_voxels_vertical), dtype=np.complex),
-			np.zeros((device_voxels_lateral, device_voxels_lateral, device_voxels_vertical), dtype=np.complex) ]
+			np.zeros((simulated_device_voxels_lateral, simulated_device_voxels_lateral, simulated_device_voxels_vertical), dtype=np.complex),
+			np.zeros((simulated_device_voxels_lateral, simulated_device_voxels_lateral, simulated_device_voxels_vertical), dtype=np.complex) ]
+
 
 		adjoint_e_fields = [ {} for i in range( 0, num_adjoint_sources ) ]
 
