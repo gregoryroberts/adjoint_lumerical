@@ -7,8 +7,8 @@ import numpy as np
 #
 # Files
 #
-# project_name = 'layered_rgb_5layers_pol_insensitive_2x2x4um_weighting_v2_f1p5'
-project_name = 'layered_nir_5layers_pol_insensitive_4x4x5um_weighting_f3'
+project_name = 'layered_rgb_5layers_pol_insensitive_2x2x4um_weighting_v2_f1p5'
+# project_name = 'layered_nir_5layers_pol_insensitive_4x4x5um_weighting_f3'
 
 #
 # Optical
@@ -34,22 +34,22 @@ max_device_permittivity = max_device_index**2
 random_seed = 6235234
 init_permittivity_0_1_scale = 0.25
 
-# focal_length_um = 1.5
-focal_length_um = 3.0
+focal_length_um = 1.5
+# focal_length_um = 3.0
 focal_plane_center_lateral_um = 0
 focal_plane_center_vertical_um = -focal_length_um
 
 #
 # Device
 #
-# mesh_spacing_um = 0.02
-mesh_spacing_um = 0.04
+mesh_spacing_um = 0.02
+# mesh_spacing_um = 0.04
 # For now, we will put the blurring out to 60nm in the filter chain
-# design_spacing_um = 0.02
-design_spacing_um = 0.04
+design_spacing_um = 0.02
+# design_spacing_um = 0.04
 
-# device_border_um = 0.12
-device_border_um = 0.24
+device_border_um = 0.12
+# device_border_um = 0.24
 device_border_voxels = int( device_border_um / mesh_spacing_um )
 
 #
@@ -57,14 +57,14 @@ device_border_voxels = int( device_border_um / mesh_spacing_um )
 #
 num_vertical_layers = 5
 
-# device_size_lateral_um = 2.0
-device_size_lateral_um = 4.0
+device_size_lateral_um = 2.0
+# device_size_lateral_um = 4.0
 
-# device_size_verical_um = num_vertical_layers * 0.8
-device_size_verical_um = num_vertical_layers * 1.0
+device_size_verical_um = num_vertical_layers * 0.8
+# device_size_verical_um = num_vertical_layers * 1.0
 
-# device_height_per_layer_um = 0.4
-device_height_per_layer_um = 0.5
+device_height_per_layer_um = 0.4
+# device_height_per_layer_um = 0.5
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - device_height_per_layer_um
 
 simulated_device_voxels_lateral = int(device_size_lateral_um / mesh_spacing_um)
@@ -80,10 +80,10 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-# lambda_min_um = 0.4
-# lambda_max_um = 0.7
-lambda_min_um = 0.8
-lambda_max_um = 1.4
+lambda_min_um = 0.4
+lambda_max_um = 0.7
+# lambda_min_um = 0.8
+# lambda_max_um = 1.4
 
 num_bands = 3
 num_points_per_band = 10
@@ -99,8 +99,8 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 max_blur_filter_size_um = 0.06
 gaussian_blur_size_um = 0.1
 
-# max_blur_filter_half_width = int( ( ( max_blur_filter_size_um / design_spacing_um ) - 1 ) / 2 )
-max_blur_filter_half_width = 0#int( ( ( max_blur_filter_size_um / design_spacing_um ) - 1 ) / 2 )
+max_blur_filter_half_width = int( ( ( max_blur_filter_size_um / design_spacing_um ) - 1 ) / 2 )
+# max_blur_filter_half_width = 0#int( ( ( max_blur_filter_size_um / design_spacing_um ) - 1 ) / 2 )
 # gaussian_blur_filter_sigma = int( ( ( gaussian_blur_size_um / design_spacing_um ) - 1 ) / 2 )
 gaussian_blur_filter_sigma = ( ( ( gaussian_blur_size_um / design_spacing_um ) - 1 ) / 2 )
 
