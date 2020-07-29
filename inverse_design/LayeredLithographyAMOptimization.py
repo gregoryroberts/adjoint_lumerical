@@ -679,7 +679,7 @@ for epoch in range(start_epoch, num_epochs):
 		# put all the data together later.
 		#
 		for xy_idx in range(0, 2):
-			get_symmetry_fields = None#forward_e_fields_job_queued.get( forward_symmetry[ xy_idx ], None )
+			get_symmetry_fields = forward_e_fields_job_queued.get( forward_symmetry[ xy_idx ], None )
 			if get_symmetry_fields is None:
 				disable_all_sources()
 				fdtd_hook.select( forward_sources[xy_idx]['name'] )
@@ -705,7 +705,7 @@ for epoch in range(start_epoch, num_epochs):
 			adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
 
 			for xy_idx in range(0, 2):
-				get_adj_symmetry_fields = None#adjoint_e_fields_job_queued[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
+				get_adj_symmetry_fields = adjoint_e_fields_job_queued[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
 
 				if get_adj_symmetry_fields is None:
 					disable_all_sources()
