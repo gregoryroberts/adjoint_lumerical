@@ -7,8 +7,8 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_infrared_3layers_pol_insensitive_even_thinner_layers_6x6x2p25um_weighting_f4'
-# project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_6x6x2p25um_weighting_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_even_thinner_layers_6x6x2p25um_weighting_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_6x6x2p25um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_fix_binarization_fn_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_tio2_zep_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84um_weighting_f4'
@@ -84,8 +84,8 @@ device_size_verical_um = num_vertical_layers * 0.75
 # amorphous_silicon_height_per_layer_um = 0.72
 # amorphous_silicon_height_per_layer_um = 0.704
 
-# amorphous_silicon_height_per_layer_um = 0.3
-amorphous_silicon_height_per_layer_um = 0.15
+amorphous_silicon_height_per_layer_um = 0.3
+# amorphous_silicon_height_per_layer_um = 0.15
 # amorphous_silicon_height_per_layer_um = 0.64
 # amorphous_silicon_height_per_layer_um = 0.6#0.64
 spacer_size_um = ( device_size_verical_um / num_vertical_layers ) - amorphous_silicon_height_per_layer_um

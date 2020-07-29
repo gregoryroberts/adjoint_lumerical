@@ -717,7 +717,7 @@ for epoch in range(start_epoch, num_epochs):
 				# fields are organized as [ pol, wavelength, z, y, x ]
 				# fields are organized as [ pol, x, y, z, wavelength ]
 				# get_symmetry_fields = np.swapaxes( get_symmetry_fields, 3, 4 )
-				get_symmetry_fields = np.swapaxes( get_symmetry_fields, 1, 2 )
+				get_symmetry_fields = np.swapaxes( get_symmetry_fields.copy(), 1, 2 )
 				get_symmetry_fields_ypol = ( get_symmetry_fields[ 1 ] ).copy()
 				get_symmetry_fields[ 1 ] = get_symmetry_fields[ 0 ]
 				get_symmetry_fields[ 0 ] = get_symmetry_fields_ypol
@@ -726,7 +726,7 @@ for epoch in range(start_epoch, num_epochs):
 
 				for adj_src_idx in range( 0, num_adjoint_sources ):
 					adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
-					get_symmetry_focal = focal_data[ adjoint_symmetry_loc ][ forward_symmetry[ xy_idx ] ]
+					get_symmetry_focal = focal_data[ adjoint_symmetry_loc ][ forward_symmetry[ xy_idx ] ].copy()
 					get_symmetry_focal_ypol = ( get_symmetry_focal[ 1 ] ).copy()
 					get_symmetry_focal[ 1 ] = get_symmetry_focal[ 0 ]
 					get_symmetry_focal[ 0 ] = get_symmetry_focal_ypol
@@ -827,7 +827,7 @@ for epoch in range(start_epoch, num_epochs):
 					# fields are organized as [ pol, wavelength, z, y, x ]
 					# fields are organized as [ pol, x, y, z, wavelength ]
 					# get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 3, 4 )
-					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 1, 2 )
+					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields.copy(), 1, 2 )
 					get_adj_symmetry_fields_ypol = ( get_adj_symmetry_fields[ 1 ] ).copy()
 					get_adj_symmetry_fields[ 1 ] = get_adj_symmetry_fields[ 0 ]
 					get_adj_symmetry_fields[ 0 ] = get_adj_symmetry_fields_ypol

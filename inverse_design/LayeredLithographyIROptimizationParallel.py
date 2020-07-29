@@ -335,6 +335,7 @@ bayer_filter = LayeredLithographyIRBayerFilter.LayeredLithographyIRBayerFilter(
 # np.random.seed( random_seed )
 # num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
 # random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
+# random_device = 0.5 * ( random_device + np.swapaxes( random_device, 0, 1 ) )
 # random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
 # bayer_filter.set_design_variable( np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] ) )
 
@@ -717,7 +718,7 @@ for epoch in range(start_epoch, num_epochs):
 				# fields are organized as [ pol, wavelength, z, y, x ]
 				# fields are organized as [ pol, x, y, z, wavelength ]
 				# get_symmetry_fields = np.swapaxes( get_symmetry_fields, 3, 4 )
-				get_symmetry_fields = np.swapaxes( get_symmetry_fields, 1, 2 )
+				get_symmetry_fields = np.swapaxes( get_symmetry_fields.copy(), 1, 2 )
 				get_symmetry_fields_ypol = ( get_symmetry_fields[ 1 ] ).copy()
 				get_symmetry_fields[ 1 ] = get_symmetry_fields[ 0 ]
 				get_symmetry_fields[ 0 ] = get_symmetry_fields_ypol
@@ -726,7 +727,7 @@ for epoch in range(start_epoch, num_epochs):
 
 				for adj_src_idx in range( 0, num_adjoint_sources ):
 					adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
-					get_symmetry_focal = focal_data[ adjoint_symmetry_loc ][ forward_symmetry[ xy_idx ] ]
+					get_symmetry_focal = focal_data[ adjoint_symmetry_loc ][ forward_symmetry[ xy_idx ] ].copy()
 					get_symmetry_focal_ypol = ( get_symmetry_focal[ 1 ] ).copy()
 					get_symmetry_focal[ 1 ] = get_symmetry_focal[ 0 ]
 					get_symmetry_focal[ 0 ] = get_symmetry_focal_ypol
@@ -843,7 +844,7 @@ for epoch in range(start_epoch, num_epochs):
 					# fields are organized as [ pol, wavelength, z, y, x ]
 					# fields are organized as [ pol, x, y, z, wavelength ]
 					# get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 3, 4 )
-					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields, 1, 2 )
+					get_adj_symmetry_fields = np.swapaxes( get_adj_symmetry_fields.copy(), 1, 2 )
 					get_adj_symmetry_fields_ypol = ( get_adj_symmetry_fields[ 1 ] ).copy()
 					get_adj_symmetry_fields[ 1 ] = get_adj_symmetry_fields[ 0 ]
 					get_adj_symmetry_fields[ 0 ] = get_adj_symmetry_fields_ypol

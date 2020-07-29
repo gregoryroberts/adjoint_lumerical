@@ -34,7 +34,7 @@ mesh_spacing_um = 0.02
 # Pesky size to get the number of voxels to be a multiple of 3
 #
 device_size_lateral_um = 2.02
-device_size_verical_um = 1.6
+device_size_verical_um = 2.0
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
 device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
@@ -77,6 +77,8 @@ fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
 
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
+
+import_region_voxels_lateral = 1 + int(fdtd_region_size_lateral_um / mesh_spacing_um)
 
 fdtd_simulation_time_fs = 700
 
