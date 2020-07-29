@@ -102,8 +102,8 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 			for xbox in range( 0, symmetry_range_x ):
 				for ybox in range( 0, symmetry_range_y ):
-					symmetric_x = ybox
-					symmetric_y = xbox
+					symmetric_x = self.box_counts[ 1 ] - ybox - 1
+					symmetric_y = self.box_counts[ 0 ] - xbox - 1
 					for pt_idx in range( 0, self.control_points_per_box ):
 
 						if ( xbox == ( symmetry_range_x - 1 ) ) and ( ybox == ( symmetry_range_y - 1 ) ):
