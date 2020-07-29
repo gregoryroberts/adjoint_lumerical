@@ -935,6 +935,9 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 
+		np.save( projects_directory_location + "/adjoint_e_fields.npy", adjoint_e_fields )
+		np.save( projects_directory_location + "/forward_e_fields.npy", forward_e_fields )
+
 		#
 		# Step 4: Step the design variable.
 		#
