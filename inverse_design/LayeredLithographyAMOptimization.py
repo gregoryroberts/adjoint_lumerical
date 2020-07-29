@@ -544,20 +544,30 @@ fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
 jobs_queue = queue.Queue()
 
-def add_job( job_name, queue ):
+def add_job( job_name, queue_in ):
 	full_name = projects_directory_location + "/" + job_name
 	fdtd_hook.save( full_name )
-	queue.put( full_name )
+	queue_in.put( full_name )
 
 	return full_name
 
-def run_jobs( queue ):
+def run_jobs( queue_in ):
+	small_queue = queue.Queue()
+
+	while not queue_in.empty():
+		for node_idx in range( 0, num_nodes_available ):
+			if queue_in.qsize() > 0:
+				small_queue.put( queue_in.get() )
+
+		run_jobs_inner( small_queue )
+
+def run_jobs_inner( queue_in ):
 	processes = []
-	# for job_idx in range( 0, len( queue ) ):
+	# for job_idx in range( 0, len( queue_in ) ):
 	# really should protect against number of available engines here
 	job_idx = 0
-	while not queue.empty():
-		get_job_path = queue.get()
+	while not queue_in.empty():
+		get_job_path = queue_in.get()
 
 		process = subprocess.Popen(
 			[
@@ -580,6 +590,45 @@ def run_jobs( queue ):
 					completed_jobs[ job_idx ] = 1
 
 		time.sleep( 1 )
+
+
+
+# def add_job( job_name, queue ):
+# 	full_name = projects_directory_location + "/" + job_name
+# 	fdtd_hook.save( full_name )
+# 	queue.put( full_name )
+
+# 	return full_name
+
+# def run_jobs( queue ):
+# 	processes = []
+# 	# for job_idx in range( 0, len( queue ) ):
+# 	# really should protect against number of available engines here
+# 	job_idx = 0
+# 	while not queue.empty():
+# 		get_job_path = queue.get()
+
+# 		process = subprocess.Popen(
+# 			[
+# 				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh',
+# 				cluster_hostnames[ job_idx ],
+# 				get_job_path
+# 			]
+# 		)
+# 		processes.append( process )
+
+# 		job_idx += 1
+	
+# 	completed_jobs = [ 0 for i in range( 0, len( processes ) ) ]
+# 	while np.sum( completed_jobs ) < len( processes ):
+# 		for job_idx in range( 0, len( processes ) ):
+# 			if completed_jobs[ job_idx ] == 0:
+
+# 				poll_result = processes[ job_idx ].poll()
+# 				if not( poll_result is None ):
+# 					completed_jobs[ job_idx ] = 1
+
+# 		time.sleep( 1 )
 
 
 
@@ -630,7 +679,7 @@ for epoch in range(start_epoch, num_epochs):
 		# put all the data together later.
 		#
 		for xy_idx in range(0, 2):
-			get_symmetry_fields = forward_e_fields_job_queued.get( forward_symmetry[ xy_idx ], None )
+			get_symmetry_fields = None#forward_e_fields_job_queued.get( forward_symmetry[ xy_idx ], None )
 			if get_symmetry_fields is None:
 				disable_all_sources()
 				fdtd_hook.select( forward_sources[xy_idx]['name'] )
@@ -656,7 +705,7 @@ for epoch in range(start_epoch, num_epochs):
 			adjoint_symmetry_loc = adjoint_symmetry_location[ adj_src_idx ]
 
 			for xy_idx in range(0, 2):
-				get_adj_symmetry_fields = adjoint_e_fields_job_queued[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
+				get_adj_symmetry_fields = None#adjoint_e_fields_job_queued[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
 
 				if get_adj_symmetry_fields is None:
 					disable_all_sources()
@@ -717,7 +766,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 3: Get all the forward data from the simulations
 		#
 		for xy_idx in range(0, 2):
-			get_symmetry_fields = forward_e_fields.get( forward_symmetry[ xy_idx ], None )
+			get_symmetry_fields = None#forward_e_fields.get( forward_symmetry[ xy_idx ], None )
 			if get_symmetry_fields is not None:
 				# fields are organized as [ pol, wavelength, z, y, x ]
 				# fields are organized as [ pol, x, y, z, wavelength ]
@@ -828,7 +877,7 @@ for epoch in range(start_epoch, num_epochs):
 			gradient_performance_weight = performance_weighting_with_wl[adj_src_idx]
 
 			for xy_idx in range(0, 2):
-				get_adj_symmetry_fields = adjoint_e_fields[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
+				get_adj_symmetry_fields = None#adjoint_e_fields[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
 
 				if get_adj_symmetry_fields is not None:
 					# fields are organized as [ pol, wavelength, z, y, x ]
@@ -879,7 +928,6 @@ for epoch in range(start_epoch, num_epochs):
 							adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][ :, :, :, :, spectral_indices[0] + spectral_idx ] *
 							forward_e_fields[ pol_name ][ :, :, :, :, spectral_indices[0] + spectral_idx ],
 							axis=0 )
-
 
 		# fdtd_hook.switchtolayout()
 		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
