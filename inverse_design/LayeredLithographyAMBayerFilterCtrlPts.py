@@ -108,13 +108,13 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 						if ( xbox == symmetry_range_x ) and ( ybox == symmetry_range_y ):
 							self.control_points[ layer_idx, symmetric_x, symmetric_y, pt_idx ] = np.array( [
-								self.control_points[ layer_idx, xbox, ybox, 0 ],
-								self.control_points[ layer_idx, xbox, ybox, 0 ]
+								self.control_points[ layer_idx, xbox, ybox, pt_idx, 0 ],
+								self.control_points[ layer_idx, xbox, ybox, pt_idx, 0 ]
 							] )
 						else:
 							self.control_points[ layer_idx, symmetric_x, symmetric_y, pt_idx ] = np.array( [
-								self.control_points[ layer_idx, xbox, ybox, 1 ],
-								self.control_points[ layer_idx, xbox, ybox, 0 ]
+								self.control_points[ layer_idx, xbox, ybox, pt_idx, 1 ],
+								self.control_points[ layer_idx, xbox, ybox, pt_idx, 0 ]
 							] )
 
 
