@@ -758,6 +758,8 @@ for epoch in range(start_epoch, num_epochs):
 					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] = pull_focal_data
 
 
+		np.save( projects_directory_location + "/focal_data.npy", focal_data )
+
 		#
 		# Step 4: Compute the figure of merit
 		#
