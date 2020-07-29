@@ -331,11 +331,11 @@ bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
 
 # If you are going random, you need to make it symmetric because the simulation is assuming that!
 np.random.seed( random_seed )
-num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
-random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
+# num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
+# random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
 # Need to enforce the x=y symmetry because this is assumed by the optimization
-random_device = 0.5 * ( random_device + np.swapaxes( random_device, 0, 1 ) )
-random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
+# random_device = 0.5 * ( random_device + np.swapaxes( random_device, 0, 1 ) )
+# random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
 
 # reshape_device = np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] )
 # blur_random_device = np.zeros( reshape_device.shape )
