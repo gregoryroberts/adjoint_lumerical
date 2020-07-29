@@ -872,6 +872,8 @@ for epoch in range(start_epoch, num_epochs):
 						# 	forward_e_fields[ pol_name ][ :, spectral_indices[0] + spectral_idx, :, :, : ],
 						# 	axis=0)
 
+						adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][ 2, :, :, :, spectral_indices[0] + spectral_idx ] = 0
+						forward_e_fields[ pol_name ][ 2, :, :, :, spectral_indices[0] + spectral_idx ] = 0
 						xy_polarized_gradients[pol_name_to_idx] += np.sum(
 							(source_weight[spectral_idx] * gradient_performance_weight[ spectral_idx ] * total_weighting[spectral_idx]) *
 							adjoint_e_fields[ adj_src_idx ][ xy_names[ xy_idx ] ][ :, :, :, :, spectral_indices[0] + spectral_idx ] *
