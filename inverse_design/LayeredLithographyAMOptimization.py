@@ -329,9 +329,12 @@ bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
 	spacer_size_voxels,
 	last_layer_permittivities )
 
+# If you are going random, you need to make it symmetric because the simulation is assuming that!
 np.random.seed( random_seed )
 num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
 random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
+# Need to enforce the x=y symmetry because this is assumed by the optimization
+random_device = 0.5 * ( random_device + np.swapaxes( random_device, 0, 1 ) )
 random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
 
 # reshape_device = np.reshape( random_device, [ device_voxels_lateral, device_voxels_lateral, device_voxels_vertical ] )
@@ -882,6 +885,7 @@ for epoch in range(start_epoch, num_epochs):
 		#
 		# device_gradient_simulation_mesh = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
 		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		device_gradient = np.flip( device_gradient, axis=2 )
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		# device_gradient = np.swapaxes(device_gradient, 0, 2)
@@ -952,7 +956,6 @@ for epoch in range(start_epoch, num_epochs):
 		# enforce_binarization = False
 		# if epoch >= binarization_start_epoch:
 		# 	enforce_binarization = True
-		device_gradient = np.flip( device_gradient, axis=2 )
 		bayer_filter.step(-device_gradient, step_size_density)#, enforce_binarization, projects_directory_location)
 		cur_design_variable = bayer_filter.get_design_variable()
 

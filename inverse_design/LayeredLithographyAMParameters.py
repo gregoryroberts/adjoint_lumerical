@@ -97,7 +97,9 @@ max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um*
 # Fabrication Constraints
 #
 max_blur_filter_size_um = 0.06
-gaussian_blur_size_um = 0.1
+# gaussian_blur_size_um = 0.1
+# Match up with sigmoid middle?
+gaussian_blur_size_um = 0.1 / np.sqrt( 2 * np.log( 2 ) )
 
 max_blur_filter_half_width = int( ( ( max_blur_filter_size_um / design_spacing_um ) - 1 ) / 2 )
 # max_blur_filter_half_width = 0#int( ( ( max_blur_filter_size_um / design_spacing_um ) - 1 ) / 2 )

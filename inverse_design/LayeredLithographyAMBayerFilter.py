@@ -10,6 +10,9 @@ import numpy as np
 
 from LayeredLithographyAMParameters import *
 
+# X=Y SYMMETRY!!! HERE AND IN CONTROL POINTS! - IF YOU ARE DOING RANDOM INITIALIZATIONS - put into optimization code for this
+# one and control points will put into the filter initilialization
+
 class GaussianBlur():
 	def __init__( self, blur_sigma ):
 		self.blur_sigma = blur_sigma
@@ -22,8 +25,8 @@ class GaussianBlur():
 
 		for z_idx in range( 0, z_shape ):
 			get_layer = np.squeeze( variable_in[ :, :, z_idx ] )
-			# blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
-			blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+			blurred_layer = 0.5 * 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+			# blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
 
 			variable_out[ :, :, z_idx ] = blurred_layer
 
@@ -37,8 +40,8 @@ class GaussianBlur():
 
 		for z_idx in range( 0, z_shape ):
 			get_layer = np.squeeze( gradient_out[ :, :, z_idx ] )
-			# blurred_layer = 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
-			blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+			blurred_layer = 0.5 * 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+			# blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
 
 			gradient_in[ :, :, z_idx ] = blurred_layer
 
