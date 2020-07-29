@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_rgb_5layers_pol_insensitive_ctrl_pts_2x2x4um_weighting_f1p5'
+project_name = 'layered_rgb_5layers_pol_insensitive_ctrl_pts_2x2x4um_v2_weighting_f1p5'
 
 #
 # Optical
