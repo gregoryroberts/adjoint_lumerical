@@ -935,8 +935,12 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 
-		np.save( projects_directory_location + "/adjoint_e_fields_sym.npy", adjoint_e_fields )
-		np.save( projects_directory_location + "/forward_e_fields_sym.npy", forward_e_fields )
+		np.save( projects_directory_location + "/forward_e_fields_x_sym.npy", forward_e_fields['x'][ :, :, :, :, 0 ] )
+		np.save( projects_directory_location + "/forward_e_fields_y_sym.npy", forward_e_fields['y'][ :, :, :, :, 0 ] )
+		np.save( projects_directory_location + "/adjoint_e_fields_0_x_sym.npy", adjoint_e_fields[0]['x'][ :, :, :, :, 0 ] )
+		np.save( projects_directory_location + "/adjoint_e_fields_0_y_sym.npy", adjoint_e_fields[0]['y'][ :, :, :, :, 0 ] )
+		np.save( projects_directory_location + "/adjoint_e_fields_1_x_sym.npy", adjoint_e_fields[1]['x'][ :, :, :, :, 0 ] )
+		np.save( projects_directory_location + "/adjoint_e_fields_1_y_sym.npy", adjoint_e_fields[1]['y'][ :, :, :, :, 0 ] )
 
 		#
 		# Step 4: Step the design variable.
