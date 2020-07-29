@@ -766,7 +766,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 3: Get all the forward data from the simulations
 		#
 		for xy_idx in range(0, 2):
-			get_symmetry_fields = None#forward_e_fields.get( forward_symmetry[ xy_idx ], None )
+			get_symmetry_fields = forward_e_fields.get( forward_symmetry[ xy_idx ], None )
 			if get_symmetry_fields is not None:
 				# fields are organized as [ pol, wavelength, z, y, x ]
 				# fields are organized as [ pol, x, y, z, wavelength ]
@@ -807,7 +807,7 @@ for epoch in range(start_epoch, num_epochs):
 					focal_data[ adj_src_idx ][ xy_names[ xy_idx ] ] = pull_focal_data
 
 
-		np.save( projects_directory_location + "/focal_data.npy", focal_data )
+		np.save( projects_directory_location + "/focal_data_symm.npy", focal_data )
 
 		#
 		# Step 4: Compute the figure of merit
@@ -877,7 +877,7 @@ for epoch in range(start_epoch, num_epochs):
 			gradient_performance_weight = performance_weighting_with_wl[adj_src_idx]
 
 			for xy_idx in range(0, 2):
-				get_adj_symmetry_fields = None#adjoint_e_fields[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
+				get_adj_symmetry_fields = adjoint_e_fields[ adjoint_symmetry_loc ].get( adjoint_symmetry_pol[ xy_idx ], None )
 
 				if get_adj_symmetry_fields is not None:
 					# fields are organized as [ pol, wavelength, z, y, x ]
@@ -935,8 +935,8 @@ for epoch in range(start_epoch, num_epochs):
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/optimization_start_epoch_" + str( epoch ) + ".fsp" )
 
-		np.save( projects_directory_location + "/adjoint_e_fields.npy", adjoint_e_fields )
-		np.save( projects_directory_location + "/forward_e_fields.npy", forward_e_fields )
+		np.save( projects_directory_location + "/adjoint_e_fields_sym.npy", adjoint_e_fields )
+		np.save( projects_directory_location + "/forward_e_fields_sym.npy", forward_e_fields )
 
 		#
 		# Step 4: Step the design variable.
