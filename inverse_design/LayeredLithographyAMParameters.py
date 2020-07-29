@@ -58,7 +58,7 @@ device_border_voxels = int( device_border_um / mesh_spacing_um )
 num_vertical_layers = 5
 
 # device_size_lateral_um = 2.0
-device_size_lateral_um = 4.0
+device_size_lateral_um = 4.0 + design_spacing_um
 
 # device_size_verical_um = num_vertical_layers * 0.8
 device_size_verical_um = num_vertical_layers * 1.0
