@@ -611,6 +611,9 @@ for epoch in range(start_epoch, num_epochs):
 		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+
+		np.save(projects_directory_location + "/cur_permittivity.npy", cur_permittivity)
+
 		cur_index = np.sqrt( cur_permittivity )
 
 		# bordered_replicated_index = border_and_replicate_device( cur_index, device_border_voxels, min_device_index )

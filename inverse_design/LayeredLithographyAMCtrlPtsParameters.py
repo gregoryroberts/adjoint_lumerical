@@ -47,7 +47,7 @@ mesh_spacing_um = 0.02
 design_spacing_um = 0.02
 # design_spacing_um = 0.04
 
-lateral_box_size_um = 0.2
+lateral_box_size_um = 0.4
 lateral_box_sampling = int( lateral_box_size_um / mesh_spacing_um )
 
 

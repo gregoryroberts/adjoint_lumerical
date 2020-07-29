@@ -59,6 +59,9 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 		self.lateral_subsampling = lateral_subsampling
 
+		# May want to step this up through optimization
+		self.middle_gaussian_weight = 0.75
+
 		self.feature_size_sigma = feature_size_sigma
 		self.control_points_per_box = 2
 		self.box_counts = np.zeros( 2, dtype=np.int )
@@ -78,6 +81,9 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 	def init_control_boxes( self ):
 		self.control_points = np.zeros( ( self.num_z_layers, self.box_counts[ 0 ], self.box_counts[ 1 ], self.control_points_per_box, 2 ) )
 
+		assert ( self.box_counts[ 0 ] % 2 ) == 1, "Currently expecting an odd number of boxes for symmetry reasons"
+		assert ( self.box_counts[ 1 ] % 2 ) == 1, "Currently expecting an odd number of boxes for symmetry reasons"
+
 		for layer_idx in range( 0, self.num_z_layers ):
 			for xbox in range( 0, self.box_counts[ 0 ] ):
 				for ybox in range( 0, self.box_counts[ 1 ] ):
@@ -90,6 +96,26 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 					for pt_idx in range( 0, self.control_points_per_box ):
 						self.control_points[ layer_idx, xbox, ybox, pt_idx ] = np.array( [ offset_x + random_control_pts_x[ pt_idx ], offset_y + random_control_pts_y[ pt_idx ] ] )
+
+			symmetry_range_x = int( np.ceil( 0.5 * self.box_counts[ 0 ] ) )
+			symmetry_range_y = int( np.ceil( 0.5 * self.box_counts[ 1 ] ) )
+
+			for xbox in range( 0, symmetry_range_x ):
+				for ybox in range( 0, symmetry_range_y ):
+					symmetric_x = ybox
+					symmetric_y = xbox
+					for pt_idx in range( 0, self.control_points_per_box ):
+
+						if ( xbox == symmetry_range_x ) and ( ybox == symmetry_range_y ):
+							self.control_points[ layer_idx, symmetric_x, symmetric_y, pt_idx ] = np.array( [
+								self.control_points[ layer_idx, xbox, ybox, 0 ],
+								self.control_points[ layer_idx, xbox, ybox, 0 ]
+							] )
+						else:
+							self.control_points[ layer_idx, symmetric_x, symmetric_y, pt_idx ] = np.array( [
+								self.control_points[ layer_idx, xbox, ybox, 1 ],
+								self.control_points[ layer_idx, xbox, ybox, 0 ]
+							] )
 
 
 	def make_layer( self, layer_idx ):
@@ -111,7 +137,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 							ctrl_x = self.control_points[ layer_idx, x_coarse, y_coarse, pt_idx, 0 ]
 							ctrl_y = self.control_points[ layer_idx, x_coarse, y_coarse, pt_idx, 1 ]
 
-							layer[ fine_x, fine_y ] += np.exp( -( 1. / ( 2. * self.feature_size_sigma**2 ) ) * ( ( ( fine_x - ctrl_x )**2 + ( fine_y - ctrl_y )**2 ) ) )
+							layer[ fine_x, fine_y ] += self.middle_gaussian_weight * np.exp( -( 1. / ( 2. * self.feature_size_sigma**2 ) ) * ( ( ( fine_x - ctrl_x )**2 + ( fine_y - ctrl_y )**2 ) ) )
 
 		return layer
 
@@ -136,6 +162,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 							control_points_grad[ x_coarse, y_coarse, pt_idx, 0 ] += (
 								gradient[ fine_x, fine_y ] *
+								self.middle_gaussian_weight *
 								np.exp( -( 1. / ( 2. * self.feature_size_sigma**2 ) ) * ( ( ( fine_x - ctrl_x )**2 + ( fine_y - ctrl_y )**2 ) ) ) *
 								( 1. / self.feature_size_sigma**2 ) *
 								( fine_x - ctrl_x )
@@ -143,6 +170,7 @@ class LayeredLithographyAMBayerFilterCtrlPts(device.Device):
 
 							control_points_grad[ x_coarse, y_coarse, pt_idx, 1 ] += (
 								gradient[ fine_x, fine_y ] *
+								self.middle_gaussian_weight *
 								np.exp( -( 1. / ( 2. * self.feature_size_sigma**2 ) ) * ( ( ( fine_x - ctrl_x )**2 + ( fine_y - ctrl_y )**2 ) ) ) *
 								( 1. / self.feature_size_sigma**2 ) *
 								( fine_y - ctrl_y )
