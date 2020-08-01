@@ -109,47 +109,50 @@ log_file.close()
 design_width = int( device_width_voxels / density_coarsen_factor )
 design_height = int( device_height_voxels / density_coarsen_factor )
 num_design_voxels = design_width * design_height
-assert ( num_design_voxels % 2 ) == 0, 'Design voxel pairings cannot be made'
 
-num_pairings = int( 0.5 * num_design_voxels )
+use_pairings = False
+if use_pairings:
+	assert ( num_design_voxels % 2 ) == 0, 'Design voxel pairings cannot be made'
 
-used_voxels = np.zeros( num_design_voxels, dtype=np.uint )
+	num_pairings = int( 0.5 * num_design_voxels )
 
-pairings = np.zeros( ( num_pairings, 4 ), dtype=np.uint )
-np.random.seed( random_seed )
+	used_voxels = np.zeros( num_design_voxels, dtype=np.uint )
 
-for pair_idx in range( 0, num_pairings ):
-	num_left = num_design_voxels - 2 * pair_idx
+	pairings = np.zeros( ( num_pairings, 4 ), dtype=np.uint )
+	np.random.seed( random_seed )
 
-	rand_idx1 = np.random.randint( 0, num_left )
-	rand_idx2 = np.random.randint( 0, num_left - 1 )
+	for pair_idx in range( 0, num_pairings ):
+		num_left = num_design_voxels - 2 * pair_idx
 
-	counter1 = 0
-	linear_idx1 = 0
-	for scan in range( 0, num_design_voxels ):
-		if used_voxels[ scan ] == 0:
-			if counter1 == rand_idx1:
-				used_voxels[ scan ] += 1
-				linear_idx1 = scan
-				break
-			counter1 += 1
+		rand_idx1 = np.random.randint( 0, num_left )
+		rand_idx2 = np.random.randint( 0, num_left - 1 )
 
-	counter2 = 0
-	linear_idx2 = 0
-	for scan in range( 0, num_design_voxels ):
-		if used_voxels[ scan ] == 0:
-			if counter2 == rand_idx2:
-				used_voxels[ scan ] += 1
-				linear_idx2 = scan
-				break
-			counter2 += 1
+		counter1 = 0
+		linear_idx1 = 0
+		for scan in range( 0, num_design_voxels ):
+			if used_voxels[ scan ] == 0:
+				if counter1 == rand_idx1:
+					used_voxels[ scan ] += 1
+					linear_idx1 = scan
+					break
+				counter1 += 1
 
-	areal1_idx0 = int( linear_idx1 / design_height )
-	areal1_idx1 = linear_idx1 % design_height
-	areal2_idx0 = int( linear_idx2 / design_height )
-	areal2_idx1 = linear_idx2 % design_height
+		counter2 = 0
+		linear_idx2 = 0
+		for scan in range( 0, num_design_voxels ):
+			if used_voxels[ scan ] == 0:
+				if counter2 == rand_idx2:
+					used_voxels[ scan ] += 1
+					linear_idx2 = scan
+					break
+				counter2 += 1
 
-	pairings[ pair_idx ] = np.array( [ areal1_idx0, areal1_idx1, areal2_idx0, areal2_idx1 ] )
+		areal1_idx0 = int( linear_idx1 / design_height )
+		areal1_idx1 = linear_idx1 % design_height
+		areal2_idx0 = int( linear_idx2 / design_height )
+		areal2_idx1 = linear_idx2 % design_height
+
+		pairings[ pair_idx ] = np.array( [ areal1_idx0, areal1_idx1, areal2_idx0, areal2_idx1 ] )
 
 
 # sys.exit(0)
