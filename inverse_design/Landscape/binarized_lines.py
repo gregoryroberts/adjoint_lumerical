@@ -38,7 +38,7 @@ if not os.path.isdir(save_folder):
 	os.mkdir(save_folder)
 
 mesh_size_nm = 8
-density_coarsen_factor = 4
+density_coarsen_factor = 8#4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
