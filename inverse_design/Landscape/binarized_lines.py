@@ -47,10 +47,29 @@ num_lambda_values = 8
 def density_bound_from_eps( eps_val, min_perm, max_perm ):
 	return ( eps_val - min_perm ) / ( max_perm - min_perm )
 
-lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
+bandwidth_um = lambda_max_um - lambda_min_um
+exclusion_um = 0.030
+modified_bandwidth_um = bandwidth_um - exclusion_um
+left_middle_bound_um = lambda_min_um + 0.5 * modified_bandwidth_um
+right_middle_bound_um = left_middle_bound_um + exclusion_um
+
+num_left_lambda = int( 0.5 * num_lambda_values )
+num_right_lambda = num_lambda_values - num_left_lambda
+lambda_left = np.linspace( lambda_min_um, left_middle_bound_um, num_left_lambda )
+lambda_right = np.linspace( right_middle_bound_um, lambda_max_um, num_right_lambda )
+
+#
+# todo: REDO LINE SEARCHES FOR EXCLUSION OPTIMIZATIONS BECAUSE YOU WERE USING DIFFERENT
+# LAMBDA ARRAYS! in general, check to make sure FOM matches up on either side.  Also
+# make sure this file matches up with other file.  These need to be put together in a
+# better way to ensure the same parameters are being used in both places!
+#
+
+# lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
+lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 120
-device_height_voxels = 100
+device_height_voxels = 104#100
 # device_height_voxels = 72
 # device_height_voxels = 52
 # device_height_voxels = 32
