@@ -500,7 +500,7 @@ while comparison < num_comparisons:
 
 		mie_time = time.time() - mie_start
 
-		log_file = open( projects_directory_location + "/log.txt", 'w' )
+		log_file = open( projects_directory_location + "/log.txt", 'a' )
 		log_file.write( "Mie time for single wavelength took " + str( mie_time ) + " seconds\n" )
 		log_file.close()
 
@@ -539,7 +539,7 @@ while comparison < num_comparisons:
 		job_name = 'spheres_' + str( job_idx ) + '.fsp'
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
-		job_names[ ( 'spheres', 0 ) ] = add_job( job_name, jobs_queue )
+		job_names[ ( 'spheres', job_idx ) ] = add_job( job_name, jobs_queue )
 
 		for sphere_object in lumerical_sphere_objects:
 			sphere_object['enabled'] = 0
@@ -577,14 +577,14 @@ while comparison < num_comparisons:
 		job_name = 'cylinders_' + str( job_idx ) + '.fsp'
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 
-		job_names[ ( 'cylinders', 0 ) ] = add_job( job_name, jobs_queue )
+		job_names[ ( 'cylinders', job_idx ) ] = add_job( job_name, jobs_queue )
 
 
 	run_jobs( jobs_queue )
 
 
 	for job_idx in range( 0, num_jobs ):
-		fdtd_hook.load( job_names[ ( 'spheres', 0 ) ] )
+		fdtd_hook.load( job_names[ ( 'spheres', job_idx ) ] )
 
 		for focal_idx in range(0, num_adjoint_sources):
 			pull_focal_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
@@ -594,7 +594,7 @@ while comparison < num_comparisons:
 		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 	for job_idx in range( 0, num_jobs ):
-		fdtd_hook.load( job_names[ ( 'cylinders', 0 ) ] )
+		fdtd_hook.load( job_names[ ( 'cylinders', job_idx ) ] )
 
 		for focal_idx in range(0, num_adjoint_sources):
 			pull_focal_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
