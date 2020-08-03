@@ -553,7 +553,7 @@ while comparison < num_comparisons:
 			else:
 				make_cylinder = lumerical_cylinder_objects[ cylinder_idx ]
 
-			flip_z = random_centers[ sphere_idx ][ 2 ] - sphere_z_global_offset_nm * nm
+			flip_z = random_centers[ cylinder_idx ][ 2 ] - sphere_z_global_offset_nm * nm
 			flip_z = device_height_nm * nm - flip_z - ( layer_spacing_nm - layer_thickness_nm ) * nm
 
 			make_cylinder['index'] = random_indices[ cylinder_idx ]
