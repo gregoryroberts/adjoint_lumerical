@@ -594,7 +594,7 @@ while comparison < num_comparisons:
 			fdtd_cylinder_data[ comparison + job_idx ][ focal_idx ] = np.sum( np.abs( pull_focal_data )**2 )
 
 
-	comparison += num_simultaneous_lumerical_jobs
+	comparison += num_nodes_available
 
 	np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
 	np.save( projects_directory_location + "/fdtd_sphere_data.npy", fdtd_sphere_data )
