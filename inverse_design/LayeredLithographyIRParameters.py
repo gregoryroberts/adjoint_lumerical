@@ -7,8 +7,15 @@ import numpy as np
 #
 # Files
 #
+
+#
+# With the recent bugfix for the symmetric based designs, you should try these designs with
+# thicker layers to see if that gets more performance.
+#
+
 # project_name = 'layered_infrared_3layers_pol_insensitive_even_thinner_layers_6x6x2p25um_weighting_f4'
-project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_v2_6x6x2p25um_weighting_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_v2_6x6x2p25um_weighting_f4'
+project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_v2_6x6x3p375um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_fix_binarization_fn_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_tio2_zep_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84um_weighting_f4'
@@ -74,7 +81,7 @@ device_size_lateral_um = 6.0
 # device_size_verical_um = num_vertical_layers * 0.704
 
 # device_size_verical_um = num_vertical_layers * 1.28
-device_size_verical_um = num_vertical_layers * 0.75
+device_size_verical_um = num_vertical_layers * 1.125#0.75
 # device_size_verical_um = num_vertical_layers * 0.72
 # device_size_verical_um = num_vertical_layers * 0.9
 
@@ -84,7 +91,8 @@ device_size_verical_um = num_vertical_layers * 0.75
 # amorphous_silicon_height_per_layer_um = 0.72
 # amorphous_silicon_height_per_layer_um = 0.704
 
-amorphous_silicon_height_per_layer_um = 0.3
+amorphous_silicon_height_per_layer_um = 0.525
+# amorphous_silicon_height_per_layer_um = 0.3
 # amorphous_silicon_height_per_layer_um = 0.15
 # amorphous_silicon_height_per_layer_um = 0.64
 # amorphous_silicon_height_per_layer_um = 0.6#0.64
@@ -180,7 +188,7 @@ adjoint_symmetry_pol = [ 'y', 'x' ]
 #
 # Optimization
 #
-start_epoch = 6#12#7#6
+start_epoch = 0#12#7#6
 num_epochs = 12#14
 num_iterations_per_epoch = 50#35#50#25
 binarization_start_epoch = 2#1#4
