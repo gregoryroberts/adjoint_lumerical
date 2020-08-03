@@ -506,7 +506,7 @@ while comparison < num_comparisons:
 		for sphere_idx in range( 0, len( random_centers ) ):
 			if sphere_idx >= len( lumerical_sphere_objects ):
 				make_sphere = fdtd_hook.addsphere()
-				make_sphere['name'] = 'sphere_' + str( cylinder_idx )
+				make_sphere['name'] = 'sphere_' + str( sphere_idx )
 			else:
 				make_sphere = lumerical_sphere_objects[ sphere_idx ]
 
