@@ -412,9 +412,9 @@ device_size_x_nm = x_bounds_nm[ 1 ] - x_bounds_nm[ 0 ]
 device_size_y_nm = y_bounds_nm[ 1 ] - y_bounds_nm[ 0 ]
 
 sphere_radius_nm = 50
-sphere_spacing_nm = 100
+sphere_spacing_nm = 200
 
-sphere_gen_probability = 0.05
+sphere_gen_probability = 0.1
 
 sphere_index = 2.4
 
@@ -511,7 +511,7 @@ while comparison < num_comparisons:
 				make_sphere = lumerical_sphere_objects[ sphere_idx ]
 
 			flip_z = random_centers[ sphere_idx ][ 2 ] - sphere_z_global_offset_nm * nm
-			flip_z = device_height_nm - flip_z - ( layer_spacing_nm - layer_thickness_nm ) * nm
+			flip_z = device_height_nm * nm - flip_z - ( layer_spacing_nm - layer_thickness_nm ) * nm
 
 			make_sphere['index'] = random_indices[ sphere_idx ]
 			make_sphere['radius'] = random_radii[ sphere_idx ]
@@ -548,7 +548,7 @@ while comparison < num_comparisons:
 				make_cylinder = lumerical_cylinder_objects[ cylinder_idx ]
 
 			flip_z = random_centers[ sphere_idx ][ 2 ] - sphere_z_global_offset_nm * nm
-			flip_z = device_height_nm - flip_z - ( layer_spacing_nm - layer_thickness_nm ) * nm
+			flip_z = device_height_nm * nm - flip_z - ( layer_spacing_nm - layer_thickness_nm ) * nm
 
 			make_cylinder['index'] = random_indices[ cylinder_idx ]
 			make_cylinder['radius'] = random_radii[ cylinder_idx ]
