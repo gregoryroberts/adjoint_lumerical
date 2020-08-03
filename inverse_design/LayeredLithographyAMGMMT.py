@@ -208,8 +208,7 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['use wavelength spacing'] = 1
 	focal_monitor['use source limits'] = 0
 	focal_monitor['frequency points'] = 1
-	focal_monitor['minimum wavelength'] = probe_wavelength_nm * 1e-9
-	focal_monitor['maximum wavelength'] = probe_wavelength_nm * 1e-9
+	focal_monitor['center'] = probe_wavelength_nm * 1e-9
 
 	focal_monitors.append(focal_monitor)
 
@@ -237,31 +236,31 @@ air_bottom['index'] = index_air
 #
 # Add device region and create device permittivity
 #
-design_import = fdtd_hook.addimport()
-design_import['name'] = 'design_import'
-design_import['x span'] = ( fdtd_region_size_lateral_um - mesh_spacing_um ) * 1e-6
-design_import['y span'] = ( fdtd_region_size_lateral_um - mesh_spacing_um ) * 1e-6
-design_import['z max'] = ( device_vertical_maximum_um - 0.5 * mesh_spacing_um ) * 1e-6
-design_import['z min'] = ( device_vertical_minimum_um + 0.5 * mesh_spacing_um ) * 1e-6
+# design_import = fdtd_hook.addimport()
+# design_import['name'] = 'design_import'
+# design_import['x span'] = ( fdtd_region_size_lateral_um - mesh_spacing_um ) * 1e-6
+# design_import['y span'] = ( fdtd_region_size_lateral_um - mesh_spacing_um ) * 1e-6
+# design_import['z max'] = ( device_vertical_maximum_um - 0.5 * mesh_spacing_um ) * 1e-6
+# design_import['z min'] = ( device_vertical_minimum_um + 0.5 * mesh_spacing_um ) * 1e-6
 
-bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredLithographyAMBayerFilterCtrlPts.LayeredLithographyAMBayerFilterCtrlPts(
-	bayer_filter_size_voxels,
-	[ lateral_box_sampling, lateral_box_sampling ],
-	gaussian_blur_filter_sigma,
-	[ min_device_permittivity, max_device_permittivity ],
-	init_permittivity_0_1_scale,
-	num_vertical_layers,
-	spacer_size_voxels )
+# bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
+# bayer_filter = LayeredLithographyAMBayerFilterCtrlPts.LayeredLithographyAMBayerFilterCtrlPts(
+# 	bayer_filter_size_voxels,
+# 	[ lateral_box_sampling, lateral_box_sampling ],
+# 	gaussian_blur_filter_sigma,
+# 	[ min_device_permittivity, max_device_permittivity ],
+# 	init_permittivity_0_1_scale,
+# 	num_vertical_layers,
+# 	spacer_size_voxels )
 
-np.random.seed( random_seed )
-num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
-random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
-random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
+# np.random.seed( random_seed )
+# num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
+# random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
+# random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
 
-bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
-bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
-bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
+# bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+# bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+# bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
 
 
 #
@@ -579,7 +578,7 @@ while comparison < num_comparisons:
 
 		for focal_idx in range(0, num_adjoint_sources):
 			pull_focal_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
-			pull_focal_data = pull_focal_data[ :, 0, 0, 0, : ]
+			pull_focal_data = pull_focal_data[ :, 0, 0, 0, 0 ]
 			fdtd_sphere_data[ comparison + job_idx ][ focal_idx ] = np.sum( np.abs( pull_focal_data )**2 )
 
 	for job_idx in range( 0, num_jobs ):
@@ -587,7 +586,7 @@ while comparison < num_comparisons:
 
 		for focal_idx in range(0, num_adjoint_sources):
 			pull_focal_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
-			pull_focal_data = pull_focal_data[ :, 0, 0, 0, : ]
+			pull_focal_data = pull_focal_data[ :, 0, 0, 0, 0 ]
 			fdtd_cylinder_data[ comparison + job_idx ][ focal_idx ] = np.sum( np.abs( pull_focal_data )**2 )
 
 
