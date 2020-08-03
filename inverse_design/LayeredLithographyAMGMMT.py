@@ -585,6 +585,8 @@ while comparison < num_comparisons:
 			pull_focal_data = pull_focal_data[ :, 0, 0, 0, 0 ]
 			fdtd_sphere_data[ comparison + job_idx ][ focal_idx ] = np.sum( np.abs( pull_focal_data )**2 )
 
+		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+
 	for job_idx in range( 0, num_jobs ):
 		fdtd_hook.load( job_names[ ( 'cylinders', 0 ) ] )
 
@@ -593,6 +595,7 @@ while comparison < num_comparisons:
 			pull_focal_data = pull_focal_data[ :, 0, 0, 0, 0 ]
 			fdtd_cylinder_data[ comparison + job_idx ][ focal_idx ] = np.sum( np.abs( pull_focal_data )**2 )
 
+		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 	comparison += num_nodes_available
 
