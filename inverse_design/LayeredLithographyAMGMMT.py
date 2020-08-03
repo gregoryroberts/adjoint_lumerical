@@ -476,7 +476,7 @@ lumerical_cylinder_objects = []
 
 comparison = 0
 while comparison < num_comparisons:
-	num_jobs = int( np.maximum( num_nodes_available, num_comparisons - comparison ) )
+	num_jobs = int( np.minimum( num_nodes_available, num_comparisons - comparison ) )
 	job_names = {}
 
 	for job_idx in range( 0, num_jobs ):
@@ -581,7 +581,6 @@ while comparison < num_comparisons:
 
 
 	run_jobs( jobs_queue )
-
 
 	for job_idx in range( 0, num_jobs ):
 		fdtd_hook.load( job_names[ ( 'spheres', job_idx ) ] )
