@@ -389,7 +389,7 @@ interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxel
 
 
 
-num_comparisons = 10#100
+num_comparisons = 200
 
 gmmt_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 fdtd_sphere_data = np.zeros( ( num_comparisons, num_focal_spots ) )
