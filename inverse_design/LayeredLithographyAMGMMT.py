@@ -424,7 +424,7 @@ interface_dielectric = miepy.materials.vacuum()
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( sphere_z_global_offset_nm * nm ) )
-lmax = 4
+lmax = 3
 
 
 
