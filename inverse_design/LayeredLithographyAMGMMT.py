@@ -13,9 +13,11 @@ import lumapi
 
 import functools
 import h5py
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import time
+
+import miepy
 
 from scipy.ndimage import gaussian_filter
 
