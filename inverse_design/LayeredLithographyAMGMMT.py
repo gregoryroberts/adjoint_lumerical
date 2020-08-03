@@ -483,6 +483,8 @@ while comparison < num_comparisons:
 
 		random_centers, random_radii, random_materials, random_indices = gen_random_cluster( sphere_gen_probability )
 
+		mie_start = time.time()
+
 		mie_cluster = miepy.sphere_cluster(
 			position=random_centers, radius=random_radii, material=random_materials,
 			source=plane_wave, wavelength=(probe_wavelength_nm*nm), lmax=lmax, interface=air_interface )
@@ -496,7 +498,11 @@ while comparison < num_comparisons:
 		gmmt_data[ comparison + job_idx, 3 ] = np.sum(
 			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + focal_length_nm ) * nm ) )**2 )
 
+		mie_time = time.time() - mie_start
 
+		log_file = open( projects_directory_location + "/log.txt", 'w' )
+		log_file.write( "Mie time for single wavelength took " + str( mie_time ) + " seconds\n" )
+		log_file.close()
 
 		for sphere_object in lumerical_sphere_objects:
 			sphere_object['enabled'] = 0
