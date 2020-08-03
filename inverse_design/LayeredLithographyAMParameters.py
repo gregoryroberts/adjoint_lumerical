@@ -80,10 +80,13 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 0.4
-lambda_max_um = 0.7
+# Consider putting a gap between wavelength bands or some kind 
+lambda_min_um = 0.45
+lambda_max_um = 0.65
 # lambda_min_um = 0.8
 # lambda_max_um = 1.4
+transmission_min_um = 0.4
+transmission_max_um = 0.7
 
 num_bands = 3
 num_points_per_band = 10
