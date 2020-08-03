@@ -505,7 +505,7 @@ while comparison < num_comparisons:
 
 		for sphere_idx in range( 0, len( random_centers ) ):
 			if sphere_idx >= len( lumerical_sphere_objects ):
-				make_sphere = fdtd.addsphere()
+				make_sphere = fdtd_hook.addsphere()
 			else:
 				make_sphere = lumerical_sphere_objects[ sphere_idx ]
 
@@ -541,9 +541,9 @@ while comparison < num_comparisons:
 
 		for cylinder_idx in range( 0, len( random_centers ) ):
 			if cylinder_idx >= len( lumerical_sphere_objects ):
-				make_cylinder = fdtd.addsphere()
+				make_cylinder = fdtd_hook.addcircle()
 			else:
-				make_cylinder = lumerical_sphere_objects[ cylinder_idx ]
+				make_cylinder = lumerical_cylinder_objects[ cylinder_idx ]
 
 			flip_z = random_centers[ sphere_idx ][ 2 ] - sphere_z_global_offset_nm * nm
 			flip_z = device_height_nm - flip_z - ( layer_spacing_nm - layer_thickness_nm ) * nm
