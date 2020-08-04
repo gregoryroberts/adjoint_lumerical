@@ -210,7 +210,7 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['use wavelength spacing'] = 1
 	focal_monitor['use source limits'] = 0
 	focal_monitor['frequency points'] = 1
-	focal_monitor['minimum wavelength'] = probe_wavelength_nm * 1e-9
+	focal_monitor['wavelength center'] = probe_wavelength_nm * 1e-9
 
 	focal_monitors.append(focal_monitor)
 
