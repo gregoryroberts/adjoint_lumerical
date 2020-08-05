@@ -255,7 +255,7 @@ air_bottom['index'] = index_air
 # 	num_vertical_layers,
 # 	spacer_size_voxels )
 
-# np.random.seed( random_seed )
+np.random.seed( random_seed )
 # num_random = device_voxels_lateral * device_voxels_lateral * device_voxels_vertical
 # random_device = np.random.normal( init_permittivity_0_1_scale, 0.25, num_random )
 # random_device = np.minimum( np.maximum( random_device, 0.0 ), 1.0 )
@@ -491,13 +491,13 @@ while comparison < num_comparisons:
 			source=plane_wave, wavelength=(probe_wavelength_nm*nm), lmax=lmax, interface=air_interface )
 
 		gmmt_data[ comparison + job_idx, 0 ] = np.sum(
-			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
 		gmmt_data[ comparison + job_idx, 1 ] = np.sum(
-			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
 		gmmt_data[ comparison + job_idx, 2 ] = np.sum(
-			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
 		gmmt_data[ comparison + job_idx, 3 ] = np.sum(
-			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
 
 		mie_time = time.time() - mie_start
 
