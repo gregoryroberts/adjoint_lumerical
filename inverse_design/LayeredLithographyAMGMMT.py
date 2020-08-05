@@ -424,7 +424,9 @@ interface_dielectric = miepy.materials.vacuum()
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( sphere_z_global_offset_nm * nm ) )
-lmax = 3
+lmax = 5#3
+
+just_mie = True
 
 
 
@@ -472,8 +474,6 @@ lumerical_cylinder_objects = []
 
 
 
-
-
 comparison = 0
 while comparison < num_comparisons:
 	num_jobs = int( np.minimum( num_nodes_available, num_comparisons - comparison ) )
@@ -504,6 +504,10 @@ while comparison < num_comparisons:
 		log_file = open( projects_directory_location + "/log.txt", 'a' )
 		log_file.write( "Mie time for single wavelength took " + str( mie_time ) + " seconds\n" )
 		log_file.close()
+
+		if just_mie:
+			np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
+			continue
 
 		for sphere_object in lumerical_sphere_objects:
 			sphere_object['enabled'] = 0
