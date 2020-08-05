@@ -486,6 +486,7 @@ while comparison < num_comparisons:
 		mie_start = time.time()
 
 		mie_cluster = miepy.sphere_cluster(
+			medium=background_dielectric,
 			position=random_centers, radius=random_radii, material=random_materials,
 			source=plane_wave, wavelength=(probe_wavelength_nm*nm), lmax=lmax, interface=air_interface )
 
