@@ -125,7 +125,7 @@ cluster_hostnames = get_slurm_node_list()
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location += "/" + project_name + "_gmmt_v2"
+projects_directory_location += "/" + project_name + "_gmmt_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -213,6 +213,20 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['wavelength center'] = probe_wavelength_nm * 1e-9
 
 	focal_monitors.append(focal_monitor)
+
+focal_plane_intensity = fdtd_hook.addpower()
+focal_plane_intensity['name'] = 'focal_plane_intensity'
+focal_plane_intensity['monitor type'] = '2D Z-Normal'
+focal_plane_intensity['x'] = 0 * 1e-6
+focal_plane_intensity['x span'] = device_size_lateral_um * 1e-6
+focal_plane_intensity['y'] = 0 * 1e-6
+focal_plane_intensity['y span'] = device_size_lateral_um * 1e-6
+focal_plane_intensity['z'] = adjoint_vertical_um * 1e-6
+focal_plane_intensity['override global monitor settings'] = 1
+focal_plane_intensity['use wavelength spacing'] = 1
+focal_monitor['use source limits'] = 0
+focal_monitor['frequency points'] = 1
+focal_monitor['wavelength center'] = probe_wavelength_nm * 1e-9
 
 
 #
@@ -399,6 +413,8 @@ gmmt_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 gmmt_focal_intensity = np.zeros( ( num_comparisons, focal_x_points, focal_y_points ) )
 fdtd_sphere_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 fdtd_cylinder_data = np.zeros( ( num_comparisons, num_focal_spots ) )
+sphere_focal_intensity = np.zeros( ( num_comparisons, 101, 101 ) )
+cylinder_focal_intensity = np.zeros( ( num_comparisons, 101, 101 ) )
 
 nm = 1e-9
 
@@ -423,7 +439,7 @@ sphere_gen_probability = 0.1
 
 sphere_index = 2.4
 
-sphere_dielectric = miepy.constant_material( sphere_index )
+sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
@@ -510,10 +526,14 @@ while comparison < num_comparisons:
 		gmmt_data[ comparison + job_idx, 3 ] = np.sum(
 			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
 
-		for x_idx in range( 0, focal_x_points ):
-			for y_idx in range( 0, focal_y_points ):
-				gmmt_focal_intensity[ comparison + job_idx, x_idx, y_idx ] = np.sum(
-					np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ] * nm, focal_y_nm[ y_idx ] * nm, focal_z_nm * nm ) )**2 )
+		gmmt_focal_intensity[ comparison + job_idx ] = np.sum(
+			np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ], focal_y_nm * nm, focal_z_nm * nm * np.ones( focal_x_nm.shape ) ) )**2,
+			axis=0 )
+
+		# for x_idx in range( 0, focal_x_points ):
+		# 	for y_idx in range( 0, focal_y_points ):
+		# 		gmmt_focal_intensity[ comparison + job_idx, x_idx, y_idx ] = np.sum(
+		# 			np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ] * nm, focal_y_nm[ y_idx ] * nm, focal_z_nm * nm ) )**2 )
 
 		mie_time = time.time() - mie_start
 
@@ -608,6 +628,9 @@ while comparison < num_comparisons:
 	for job_idx in range( 0, num_jobs ):
 		fdtd_hook.load( job_names[ ( 'spheres', job_idx ) ] )
 
+		focal_plane_data = np.squeeze( get_efield( 'focal_plane_intensity' ) )
+		sphere_focal_intensity[ comparison + job_idx ] = np.sum( np.abs( focal_plane_data )**2, axis=0 )
+
 		for focal_idx in range(0, num_adjoint_sources):
 			pull_focal_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
 			pull_focal_data = pull_focal_data[ :, 0, 0, 0, 0 ]
@@ -617,6 +640,9 @@ while comparison < num_comparisons:
 
 	for job_idx in range( 0, num_jobs ):
 		fdtd_hook.load( job_names[ ( 'cylinders', job_idx ) ] )
+
+		focal_plane_data = np.squeeze( get_efield( 'focal_plane_intensity' ) )
+		cylinder_focal_intensity[ comparison + job_idx ] = np.sum( np.abs( focal_plane_data )**2, axis=0 )
 
 		for focal_idx in range(0, num_adjoint_sources):
 			pull_focal_data = get_efield( focal_monitors[ focal_idx ][ 'name' ] )
@@ -630,4 +656,6 @@ while comparison < num_comparisons:
 	np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
 	np.save( projects_directory_location + "/gmmt_focal_intensity.npy", gmmt_focal_intensity )
 	np.save( projects_directory_location + "/fdtd_sphere_data.npy", fdtd_sphere_data )
+	np.save( projects_directory_location + "/sphere_focal_intensity.npy", sphere_focal_intensity )
 	np.save( projects_directory_location + "/fdtd_cylinder_data.npy", fdtd_cylinder_data )
+	np.save( projects_directory_location + "/cylinder_focal_intensity.npy", cylinder_focal_intensity )
