@@ -224,9 +224,9 @@ focal_plane_intensity['y span'] = device_size_lateral_um * 1e-6
 focal_plane_intensity['z'] = adjoint_vertical_um * 1e-6
 focal_plane_intensity['override global monitor settings'] = 1
 focal_plane_intensity['use wavelength spacing'] = 1
-focal_monitor['use source limits'] = 0
-focal_monitor['frequency points'] = 1
-focal_monitor['wavelength center'] = probe_wavelength_nm * 1e-9
+focal_plane_intensity['use source limits'] = 0
+focal_plane_intensity['frequency points'] = 1
+focal_plane_intensity['wavelength center'] = probe_wavelength_nm * 1e-9
 
 
 #
