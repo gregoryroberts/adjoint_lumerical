@@ -125,7 +125,7 @@ cluster_hostnames = get_slurm_node_list()
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location += "/" + project_name + "_gmmt"
+projects_directory_location += "/" + project_name + "_gmmt_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -389,9 +389,10 @@ interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxel
 
 
 
-num_comparisons = 200
+num_comparisons = 1#200
 
 gmmt_data = np.zeros( ( num_comparisons, num_focal_spots ) )
+gmmt_focal_intensity = np.zeros( ( num_comparisons, focal_x_points, focal_y_points ) )
 fdtd_sphere_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 fdtd_cylinder_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 
@@ -424,10 +425,16 @@ interface_dielectric = miepy.materials.vacuum()
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( sphere_z_global_offset_nm * nm ) )
-lmax = 4#3
+lmax = 3
 
 just_mie = True
+record_focal_plane = True
+focal_x_points = 10
+focal_y_points = 10
 
+focal_x_nm = np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, focal_x_points )
+focal_y_nm = np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, focal_y_points )
+focal_z_nm = sphere_z_global_offset_nm + device_height_nm + focal_length_nm
 
 
 def gen_random_cluster( sphere_probability ):
@@ -491,13 +498,18 @@ while comparison < num_comparisons:
 			source=plane_wave, wavelength=(probe_wavelength_nm*nm), lmax=lmax, interface=air_interface )
 
 		gmmt_data[ comparison + job_idx, 0 ] = np.sum(
-			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
 		gmmt_data[ comparison + job_idx, 1 ] = np.sum(
-			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
 		gmmt_data[ comparison + job_idx, 2 ] = np.sum(
-			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
 		gmmt_data[ comparison + job_idx, 3 ] = np.sum(
-			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, ( sphere_z_global_offset_nm + device_height_nm + focal_length_nm ) * nm ) )**2 )
+			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
+
+		for x_idx in range( 0, focal_x_points ):
+			for y_idx in range( 0, focal_y_points ):
+				gmmt_focal_intensity[ x_idx, y_idx ] = np.sum(
+					np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ] * nm, focal_y_nm[ y_idx ] * nm, focal_z_nm * nm ) )**2 )
 
 		mie_time = time.time() - mie_start
 
@@ -584,6 +596,7 @@ while comparison < num_comparisons:
 	if just_mie:
 		comparison += num_nodes_available
 		np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
+		np.save( projects_directory_location + "/gmmt_focal_intensity.npy", gmmt_focal_intensity )
 		continue
 
 	run_jobs( jobs_queue )
@@ -611,5 +624,6 @@ while comparison < num_comparisons:
 	comparison += num_nodes_available
 
 	np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
+	np.save( projects_directory_location + "/gmmt_focal_intensity.npy", gmmt_focal_intensity )
 	np.save( projects_directory_location + "/fdtd_sphere_data.npy", fdtd_sphere_data )
 	np.save( projects_directory_location + "/fdtd_cylinder_data.npy", fdtd_cylinder_data )
