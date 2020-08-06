@@ -218,13 +218,13 @@ for adj_src in range(0, num_adjoint_sources):
 #
 # Add SiO2 at the top
 #
-substrate = fdtd_hook.addrect()
-substrate['name'] = 'substrate'
-substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
-substrate['y span'] = fdtd_region_size_lateral_um * 1e-6
-substrate['z min'] = device_vertical_maximum_um * 1e-6
-substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-substrate['index'] = index_substrate
+# substrate = fdtd_hook.addrect()
+# substrate['name'] = 'substrate'
+# substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
+# substrate['y span'] = fdtd_region_size_lateral_um * 1e-6
+# substrate['z min'] = device_vertical_maximum_um * 1e-6
+# substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+# substrate['index'] = index_substrate
 
 air_bottom = fdtd_hook.addrect()
 air_bottom['name'] = 'air_bottom'
@@ -389,7 +389,7 @@ interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxel
 
 
 
-num_comparisons = 1#200
+num_comparisons = 50#200
 
 gmmt_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 gmmt_focal_intensity = np.zeros( ( num_comparisons, focal_x_points, focal_y_points ) )
@@ -424,7 +424,7 @@ background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
-air_interface = miepy.interface( interface_dielectric, z=( sphere_z_global_offset_nm * nm ) )
+air_interface = miepy.interface( interface_dielectric, z=( ( device_height_nm + sphere_z_global_offset_nm ) * nm ) )
 lmax = 3
 
 just_mie = True
@@ -485,6 +485,11 @@ comparison = 0
 while comparison < num_comparisons:
 	num_jobs = int( np.minimum( num_nodes_available, num_comparisons - comparison ) )
 	job_names = {}
+
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Working on comparison " + str( comparison ) + " out of " + str( num_comparisons - 1 ) + " total\n" )
+	log_file.close()
+
 
 	for job_idx in range( 0, num_jobs ):
 
