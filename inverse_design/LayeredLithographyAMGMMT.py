@@ -582,6 +582,7 @@ while comparison < num_comparisons:
 
 
 	if just_mie:
+		comparison += num_nodes_available
 		np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
 		continue
 
