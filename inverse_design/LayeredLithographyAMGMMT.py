@@ -390,6 +390,10 @@ interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxel
 
 
 num_comparisons = 50#200
+just_mie = True
+record_focal_plane = True
+focal_x_points = 10
+focal_y_points = 10
 
 gmmt_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 gmmt_focal_intensity = np.zeros( ( num_comparisons, focal_x_points, focal_y_points ) )
@@ -426,11 +430,6 @@ interface_dielectric = miepy.materials.vacuum()
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( ( device_height_nm + sphere_z_global_offset_nm ) * nm ) )
 lmax = 3
-
-just_mie = True
-record_focal_plane = True
-focal_x_points = 10
-focal_y_points = 10
 
 focal_x_nm = np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, focal_x_points )
 focal_y_nm = np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, focal_y_points )
