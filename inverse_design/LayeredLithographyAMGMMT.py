@@ -505,10 +505,6 @@ while comparison < num_comparisons:
 		log_file.write( "Mie time for single wavelength took " + str( mie_time ) + " seconds\n" )
 		log_file.close()
 
-		if just_mie:
-			np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
-			continue
-
 		for sphere_object in lumerical_sphere_objects:
 			sphere_object['enabled'] = 0
 		for cylinder_object in lumerical_cylinder_objects:
@@ -584,6 +580,10 @@ while comparison < num_comparisons:
 
 		job_names[ ( 'cylinders', job_idx ) ] = add_job( job_name, jobs_queue )
 
+
+	if just_mie:
+		np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
+		continue
 
 	run_jobs( jobs_queue )
 
