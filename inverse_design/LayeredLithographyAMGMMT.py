@@ -431,8 +431,8 @@ plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( ( device_height_nm + sphere_z_global_offset_nm ) * nm ) )
 lmax = 3
 
-focal_x_nm = np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, focal_x_points )
-focal_y_nm = np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, focal_y_points )
+focal_x_nm = np.linspace( x_bounds_nm[ 0 ], x_bounds_nm[ 1 ], focal_x_points )
+focal_y_nm = np.linspace( y_bounds_nm[ 0 ], y_bounds_nm[ 1 ], focal_y_points )
 focal_z_nm = sphere_z_global_offset_nm + device_height_nm + focal_length_nm
 
 
