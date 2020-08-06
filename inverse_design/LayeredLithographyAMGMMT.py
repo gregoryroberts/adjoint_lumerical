@@ -389,11 +389,11 @@ interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxel
 
 
 
-num_comparisons = 50#200
-just_mie = True
+num_comparisons = 10#200
+just_mie = False
 record_focal_plane = True
-focal_x_points = 10
-focal_y_points = 10
+focal_x_points = 50
+focal_y_points = 50
 
 gmmt_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 gmmt_focal_intensity = np.zeros( ( num_comparisons, focal_x_points, focal_y_points ) )
