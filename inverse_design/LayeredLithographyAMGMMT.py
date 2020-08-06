@@ -512,7 +512,7 @@ while comparison < num_comparisons:
 
 		for x_idx in range( 0, focal_x_points ):
 			for y_idx in range( 0, focal_y_points ):
-				gmmt_focal_intensity[ x_idx, y_idx ] = np.sum(
+				gmmt_focal_intensity[ comparison + job_idx, x_idx, y_idx ] = np.sum(
 					np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ] * nm, focal_y_nm[ y_idx ] * nm, focal_z_nm * nm ) )**2 )
 
 		mie_time = time.time() - mie_start
