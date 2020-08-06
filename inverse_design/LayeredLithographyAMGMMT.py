@@ -495,6 +495,15 @@ lumerical_sphere_objects = []
 lumerical_cylinder_objects = []
 
 
+focal_lateral_search_mesh_x_nm = np.zeros( ( focal_x_points, focal_y_points ) )
+focal_lateral_search_mesh_y_nm = np.zeros( ( focal_x_points, focal_y_points ) )
+focal_lateral_search_mesh_z_nm = np.zeros( ( focal_x_points, focal_y_points ) )
+for x_idx in range( 0, focal_x_points ):
+	for y_idx in range( 0, focal_y_points ):
+		focal_lateral_search_mesh_x_nm[ x_idx, y_idx ] = focal_x_nm[ x_idx ] * nm
+		focal_lateral_search_mesh_y_nm[ x_idx, y_idx ] = focal_y_nm[ y_idx ] * nm
+		focal_lateral_search_mesh_z_nm[ x_idx, y_idx ] = focal_z_nm * nm
+
 
 comparison = 0
 while comparison < num_comparisons:
@@ -527,7 +536,7 @@ while comparison < num_comparisons:
 			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
 
 		gmmt_focal_intensity[ comparison + job_idx ] = np.sum(
-			np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ], focal_y_nm * nm, focal_z_nm * nm * np.ones( focal_x_nm.shape ) ) )**2,
+			np.abs( mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm ) )**2,
 			axis=0 )
 
 		# for x_idx in range( 0, focal_x_points ):
