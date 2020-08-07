@@ -456,14 +456,14 @@ two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[
 
 smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
-											polar_angle=np.pi,#4*np.pi/5, # from top
+											polar_angle=0,#np.pi,#4*np.pi/5, # from top
 											azimuthal_angle=0,
 											polarization=1 )         # 0=TE 1=TM
 
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( ( device_height_nm + sphere_z_global_offset_nm ) * nm ) )
-lmax = 3
+lmax = 2#3
 
 focal_x_nm = np.linspace( x_bounds_nm[ 0 ], x_bounds_nm[ 1 ], focal_x_points )
 focal_y_nm = np.linspace( y_bounds_nm[ 0 ], y_bounds_nm[ 1 ], focal_y_points )
