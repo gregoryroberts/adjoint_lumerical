@@ -541,7 +541,7 @@ while comparison < num_comparisons:
 			get_center[ 2 ] -= device_height_nm
 			smuthi_spheres.append( 
 				smuthi.particles.Sphere(
-					position=get_center,
+					position=list( get_center ),
 					refractive_index=random_indices[ sphere_idx ],
 					radius=( random_radii[ sphere_idx ] / nm ),
 					l_max=lmax ) )
