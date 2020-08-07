@@ -570,8 +570,8 @@ while comparison < num_comparisons:
 		simulation.run()
 
 		vacuum_wavelength = simulation.initial_field.vacuum_wavelength
-		dim1vec = np.arange(-1000, 1000 + 50/2, 50)
-		dim2vec = np.arange(-1000, 1000 + 50/2, 50)
+		dim1vec = np.arange(-1000, 1000 + 25/2, 25)
+		dim2vec = np.arange(-1000, 1000 + 25/2, 25)
 		xarr, yarr = np.meshgrid(dim1vec, dim2vec)
 		zarr = xarr - xarr - focal_length_nm
 
