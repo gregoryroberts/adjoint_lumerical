@@ -552,6 +552,7 @@ while comparison < num_comparisons:
 												layer_system=two_layers,
 												particle_list=smuthi_spheres,
 												initial_field=smuthi_plane_wave,
+												solver_type='gmres',
 												length_unit='nm' )
 		simulation.run()
 
