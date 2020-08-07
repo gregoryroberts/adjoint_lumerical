@@ -565,7 +565,7 @@ while comparison < num_comparisons:
 					save_plots=True,
 					save_opts=[{'format':'png'},
 								{'format':'hdf5'},
-								{'format':'ascii'}]
+								{'format':'ascii'}],
 					outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
 					xmin=-1000,
 					xmax=1000,
