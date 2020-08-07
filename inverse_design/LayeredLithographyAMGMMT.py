@@ -452,7 +452,7 @@ sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
-two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.46, 1.0 ] )
+two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
 
 smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
