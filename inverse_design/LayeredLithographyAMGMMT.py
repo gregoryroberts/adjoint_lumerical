@@ -456,7 +456,7 @@ two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[
 
 smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
-											polar_angle=np.pi,#4*np.pi/5, # from top
+											polar_angle=0,#np.pi,#4*np.pi/5, # from top
 											azimuthal_angle=0,
 											polarization=0 )         # 0=TE 1=TM
 
@@ -556,6 +556,9 @@ while comparison < num_comparisons:
 												particle_list=smuthi_spheres,
 												initial_field=smuthi_plane_wave,
 												solver_type='gmres',
+												store_coupling_matrix=False,
+												interpolation_order='linear',
+												solver_tolerance=5e-4,
 												length_unit='nm' )
 		simulation.run()
 
