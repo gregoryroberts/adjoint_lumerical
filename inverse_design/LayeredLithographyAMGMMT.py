@@ -458,7 +458,7 @@ smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
 											polar_angle=0,#4*np.pi/5, # from top
 											azimuthal_angle=0,
-											polarization=0 )         # 0=TE 1=TM
+											polarization=1 )         # 0=TE 1=TM
 
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
