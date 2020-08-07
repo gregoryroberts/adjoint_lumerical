@@ -564,8 +564,8 @@ while comparison < num_comparisons:
 								{'interpolation':'quadric'}],
 					save_plots=True,
 					save_opts=[{'format':'png'},
-								{'format':'pdf','dpi':200},
-								{'format':'gif'}], # animated gif of E_y
+								{'format':'hdf5'},
+								{'format':'ascii'}]
 					outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
 					xmin=-1000,
 					xmax=1000,
