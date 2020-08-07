@@ -456,7 +456,7 @@ two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[
 
 smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
-											polar_angle=0,#np.pi,#4*np.pi/5, # from top
+											polar_angle=np.pi,#np.pi,#4*np.pi/5, # from top
 											azimuthal_angle=0,
 											polarization=1 )         # 0=TE 1=TM
 
@@ -540,8 +540,14 @@ while comparison < num_comparisons:
 		smuthi_spheres = []
 		for sphere_idx in range( 0, len( random_centers ) ):
 			get_center = random_centers[ sphere_idx ] / nm
-			get_center[ 2 ] -= sphere_z_global_offset_nm
-			get_center[ 2 ] += device_height_nm
+			# get_center[ 2 ] -= sphere_z_global_offset_nm
+			# get_center[ 2 ] += device_height_nm
+
+			flip_z = get_center[ 2 ] - sphere_z_global_offset_nm
+			flip_z = device_height_nm - flip_z - ( layer_spacing_nm - layer_thickness_nm )
+
+			get_center[ 2 ] = flip_z
+
 			smuthi_spheres.append( 
 				smuthi.particles.Sphere(
 					position=list( get_center ),
