@@ -452,11 +452,11 @@ sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
-two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.46, 1.0 ] )
+two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
 
 smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
-											polar_angle=0,#np.pi,#4*np.pi/5, # from top
+											polar_angle=np.pi,#4*np.pi/5, # from top
 											azimuthal_angle=0,
 											polarization=0 )         # 0=TE 1=TM
 
@@ -559,7 +559,7 @@ while comparison < num_comparisons:
 												store_coupling_matrix=False,
 												# coupling_matrix_interpolator_kind='linear',
 												# coupling_matrix_lookup_resolution=5,
-												solver_tolerance=5e-4,
+												solver_tolerance=1e-4,
 												length_unit='nm' )
 		simulation.run()
 
