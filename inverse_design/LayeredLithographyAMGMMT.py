@@ -564,7 +564,7 @@ while comparison < num_comparisons:
 								{'interpolation':'quadric'}],
 					save_plots=True,
 					save_opts=[{'format':'png'},
-								{'format':'hdf5'},
+								{'format':'raw'},
 								{'format':'ascii'}],
 					outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
 					xmin=-1000,
