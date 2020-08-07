@@ -563,11 +563,16 @@ while comparison < num_comparisons:
 												initial_field=smuthi_plane_wave,
 												solver_type='gmres',
 												store_coupling_matrix=True,
-												coupling_matrix_interpolator_kind='linear',
-												coupling_matrix_lookup_resolution=5,
+												# coupling_matrix_interpolator_kind='linear',
+												# coupling_matrix_lookup_resolution=5,
 												solver_tolerance=1e-4,
 												length_unit='nm' )
-		simulation.run()
+		prep_time, solution_time, post_time = simulation.run()
+
+		log_file = open( projects_directory_location + "/log.txt", 'a' )
+		log_file.write( "Prep, Solution, Post times are: " + str( prep_time ) + ", " + str( solution_time ) + ", " + str( post_time ) + "\n" )
+		log_file.close()
+
 
 		vacuum_wavelength = simulation.initial_field.vacuum_wavelength
 		dim1vec = np.arange(-1000, 1000 + 25/2, 25)
