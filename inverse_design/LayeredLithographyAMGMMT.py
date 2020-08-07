@@ -36,6 +36,9 @@ import smuthi.initial_field
 import smuthi.layers
 import smuthi.particles
 import smuthi.postprocessing.graphical_output as go
+import smuthi.postprocessing.scattered_field as sf
+import smuthi.postprocessing.internal_field as intf
+import smuthi.postprocessing.far_field as ff
 
 
 #
@@ -556,25 +559,44 @@ while comparison < num_comparisons:
 												length_unit='nm' )
 		simulation.run()
 
-		go.show_near_field(
-					quantities_to_plot=['norm(E)'],
-					show_plots=False,
-					show_opts=[{'label':'raw_data'},
-								{'interpolation':'quadric'},
-								{'interpolation':'quadric'}],
-					save_plots=True,
-					save_opts=[{'format':'png'},
-								{'format':'raw'}],
-					outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
-					xmin=-1000,
-					xmax=1000,
-					ymin=-1000,
-					ymax=1000,
-					zmin=focal_length_nm,
-					zmax=focal_length_nm,
-					resolution_step=50,
-					simulation=simulation,
-					show_internal_field=False)
+		vacuum_wavelength = simulation.initial_field.vacuum_wavelength
+		dim1vec = np.arange(-1000, xmax + 50/2, 50)
+		dim2vec = np.arange(-1000, ymax + 50/2, 50)
+		xarr, yarr = np.meshgrid(dim1vec, dim2vec)
+		zarr = xarr - xarr + zmin
+
+		scat_fld_exp = sf.scattered_field_piecewise_expansion(vacuum_wavelength,
+																simulation.particle_list, simulation.layer_system,
+																'default', 'default', None)
+
+		e_x_scat, e_y_scat, e_z_scat = scat_fld_exp.electric_field(xarr, yarr, zarr)
+		e_x_init, e_y_init, e_z_init = simulation.initial_field.electric_field(xarr, yarr, zarr, simulation.layer_system)
+
+		e_x, e_y, e_z = e_x_scat + e_x_init, e_y_scat + e_y_init, e_z_scat + e_z_init
+
+		intensity = abs(e_x)**2 + abs(e_y)**2 + abs(e_z)**2
+
+		np.save( projects_directory_location + "/sumith_intensity_" + str( comparison + job_idx ) + ".npy", intensity )
+
+		# go.show_near_field(
+		# 			quantities_to_plot=['norm(E)'],
+		# 			show_plots=False,
+		# 			show_opts=[{'label':'raw_data'},
+		# 						{'interpolation':'quadric'},
+		# 						{'interpolation':'quadric'}],
+		# 			save_plots=True,
+		# 			save_opts=[{'format':'png'},
+		# 						{'format':'raw'}],
+		# 			outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
+		# 			xmin=-1000,
+		# 			xmax=1000,
+		# 			ymin=-1000,
+		# 			ymax=1000,
+		# 			zmin=focal_length_nm,
+		# 			zmax=focal_length_nm,
+		# 			resolution_step=50,
+		# 			simulation=simulation,
+		# 			show_internal_field=False)
 
 
 		# mie_cluster = miepy.sphere_cluster(
