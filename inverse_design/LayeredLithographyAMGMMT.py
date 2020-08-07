@@ -544,7 +544,7 @@ while comparison < num_comparisons:
 					position=get_center,
 					refractive_index=random_indices[ sphere_idx ],
 					radius=( random_radii[ sphere_idx ] / nm ),
-					lmax=l_max ) )
+					lmax=lmax ) )
 
 		mie_start = time.time()
 
