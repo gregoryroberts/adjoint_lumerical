@@ -410,7 +410,7 @@ interpolated_size = [ device_voxels_lateral, device_voxels_lateral, device_voxel
 
 
 num_comparisons = 10#200
-just_mie = False
+just_mie = True
 record_focal_plane = True
 focal_x_points = 50
 focal_y_points = 50
@@ -560,12 +560,12 @@ while comparison < num_comparisons:
 					quantities_to_plot=['norm(E)'],
 					show_plots=False,
 					show_opts=[{'label':'raw_data'},
-					          {'interpolation':'quadric'},
-					          {'interpolation':'quadric'}],
+								{'interpolation':'quadric'},
+								{'interpolation':'quadric'}],
 					save_plots=True,
 					save_opts=[{'format':'png'},
-					          {'format':'pdf','dpi':200},
-					          {'format':'gif'}], # animated gif of E_y
+								{'format':'pdf','dpi':200},
+								{'format':'gif'}], # animated gif of E_y
 					outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
 					xmin=-1000,
 					xmax=1000,
