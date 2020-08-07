@@ -560,10 +560,10 @@ while comparison < num_comparisons:
 		simulation.run()
 
 		vacuum_wavelength = simulation.initial_field.vacuum_wavelength
-		dim1vec = np.arange(-1000, xmax + 50/2, 50)
-		dim2vec = np.arange(-1000, ymax + 50/2, 50)
+		dim1vec = np.arange(-1000, 1000 + 50/2, 50)
+		dim2vec = np.arange(-1000, 1000 + 50/2, 50)
 		xarr, yarr = np.meshgrid(dim1vec, dim2vec)
-		zarr = xarr - xarr + zmin
+		zarr = xarr - xarr + focal_length_nm
 
 		scat_fld_exp = sf.scattered_field_piecewise_expansion(vacuum_wavelength,
 																simulation.particle_list, simulation.layer_system,
