@@ -572,7 +572,7 @@ while comparison < num_comparisons:
 					ymax=1000,
 					zmin=focal_length_nm,
 					zmax=focal_length_nm,
-					resolution_step=20,
+					resolution_step=50,
 					simulation=simulation,
 					show_internal_field=False)
 
