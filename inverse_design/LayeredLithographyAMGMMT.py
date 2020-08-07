@@ -581,6 +581,9 @@ while comparison < num_comparisons:
 		intensity = abs(e_x)**2 + abs(e_y)**2 + abs(e_z)**2
 
 		np.save( projects_directory_location + "/sumith_intensity_" + str( comparison + job_idx ) + ".npy", intensity )
+		np.save( projects_directory_location + "/sumith_ex_" + str( comparison + job_idx ) + ".npy", np.abs( e_x_init ) )
+		np.save( projects_directory_location + "/sumith_ey_" + str( comparison + job_idx ) + ".npy", np.abs( e_y_init ) )
+		np.save( projects_directory_location + "/sumith_ez_" + str( comparison + job_idx ) + ".npy", np.abs( e_z_init ) )
 
 		# go.show_near_field(
 		# 			quantities_to_plot=['norm(E)'],
