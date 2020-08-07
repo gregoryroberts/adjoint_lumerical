@@ -452,18 +452,18 @@ sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
-two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
+two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.46, 1.0 ] )
 
 smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
-											polar_angle=0,#4*np.pi/5, # from top
+											polar_angle=np.pi,#4*np.pi/5, # from top
 											azimuthal_angle=0,
 											polarization=1 )         # 0=TE 1=TM
 
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( ( device_height_nm + sphere_z_global_offset_nm ) * nm ) )
-lmax = 3
+lmax = 2#3
 
 focal_x_nm = np.linspace( x_bounds_nm[ 0 ], x_bounds_nm[ 1 ], focal_x_points )
 focal_y_nm = np.linspace( y_bounds_nm[ 0 ], y_bounds_nm[ 1 ], focal_y_points )
@@ -541,7 +541,7 @@ while comparison < num_comparisons:
 		for sphere_idx in range( 0, len( random_centers ) ):
 			get_center = random_centers[ sphere_idx ] / nm
 			get_center[ 2 ] -= sphere_z_global_offset_nm
-			get_center[ 2 ] -= device_height_nm
+			get_center[ 2 ] += device_height_nm
 			smuthi_spheres.append( 
 				smuthi.particles.Sphere(
 					position=list( get_center ),
@@ -567,7 +567,7 @@ while comparison < num_comparisons:
 		dim1vec = np.arange(-1000, 1000 + 50/2, 50)
 		dim2vec = np.arange(-1000, 1000 + 50/2, 50)
 		xarr, yarr = np.meshgrid(dim1vec, dim2vec)
-		zarr = xarr - xarr + focal_length_nm
+		zarr = xarr - xarr - focal_length_nm
 
 		scat_fld_exp = sf.scattered_field_piecewise_expansion(vacuum_wavelength,
 																simulation.particle_list, simulation.layer_system,
