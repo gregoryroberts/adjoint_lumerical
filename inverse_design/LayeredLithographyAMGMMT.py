@@ -562,9 +562,9 @@ while comparison < num_comparisons:
 												particle_list=smuthi_spheres,
 												initial_field=smuthi_plane_wave,
 												solver_type='gmres',
-												store_coupling_matrix=False,
-												# coupling_matrix_interpolator_kind='linear',
-												# coupling_matrix_lookup_resolution=5,
+												store_coupling_matrix=True,
+												coupling_matrix_interpolator_kind='linear',
+												coupling_matrix_lookup_resolution=5,
 												solver_tolerance=1e-4,
 												length_unit='nm' )
 		simulation.run()
