@@ -556,26 +556,26 @@ while comparison < num_comparisons:
 												length_unit='nm' )
 		simulation.run()
 
-		go.show_near_field(
-					quantities_to_plot=['norm(E)'],
-					show_plots=False,
-					show_opts=[{'label':'raw_data'},
-								{'interpolation':'quadric'},
-								{'interpolation':'quadric'}],
-					save_plots=True,
-					save_opts=[{'format':'png'},
-								{'format':'pdf','dpi':200},
-								{'format':'gif'}], # animated gif of E_y
-					outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
-					xmin=-1000,
-					xmax=1000,
-					ymin=-1000,
-					ymax=1000,
-					zmin=focal_length_nm,
-					zmax=focal_length_nm,
-					resolution_step=20,
-					simulation=simulation,
-					show_internal_field=False)
+		# go.show_near_field(
+		# 			quantities_to_plot=['norm(E)'],
+		# 			show_plots=False,
+		# 			show_opts=[{'label':'raw_data'},
+		# 						{'interpolation':'quadric'},
+		# 						{'interpolation':'quadric'}],
+		# 			save_plots=True,
+		# 			save_opts=[{'format':'png'},
+		# 						{'format':'pdf','dpi':200},
+		# 						{'format':'gif'}], # animated gif of E_y
+		# 			outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
+		# 			xmin=-1000,
+		# 			xmax=1000,
+		# 			ymin=-1000,
+		# 			ymax=1000,
+		# 			zmin=focal_length_nm,
+		# 			zmax=focal_length_nm,
+		# 			resolution_step=20,
+		# 			simulation=simulation,
+		# 			show_internal_field=False)
 
 """
 		mie_cluster = miepy.sphere_cluster(
