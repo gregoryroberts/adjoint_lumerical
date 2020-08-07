@@ -31,6 +31,12 @@ import re
 
 import reinterpolate
 
+import smuthi.simulation
+import smuthi.initial_field
+import smuthi.layers
+import smuthi.particles
+import smuthi.postprocessing.graphical_output as go
+
 
 #
 # Code from Conner // START
@@ -443,6 +449,15 @@ sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
+two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.46, 1.0 ] )
+
+smuthi_plane_wave = smuthi.initial_field.PlaneWave(
+											vacuum_wavelength=probe_wavelength_nm,
+											polar_angle=pi,#4*np.pi/5, # from top
+											azimuthal_angle=0,
+											polarization=0 )         # 0=TE 1=TM
+
+
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( ( device_height_nm + sphere_z_global_offset_nm ) * nm ) )
 lmax = 3
@@ -519,8 +534,50 @@ while comparison < num_comparisons:
 
 		random_centers, random_radii, random_materials, random_indices = gen_random_cluster( sphere_gen_probability )
 
+		smuthi_spheres = []
+		for sphere_idx in range( 0, len( random_centers ) ):
+			get_center = random_centers[ sphere_idx ] / nm
+			get_center[ 2 ] -= sphere_z_global_offset_nm
+			get_center[ 2 ] -= device_height_nm
+			smuthi_spheres.append( 
+				smuthi.particles.Sphere(
+					position=get_center,
+					refractive_index=random_indices[ sphere_idx ],
+					radius=( random_radii[ sphere_idx ] / nm ),
+					lmax=l_max )
+				)
+
 		mie_start = time.time()
 
+		simulation = smuthi.simulation.Simulation(
+												layer_system=two_layers,
+												particle_list=smuthi_spheres,
+												initial_field=smuthi_plane_wave,
+												length_unit='nm' )
+		simulation.run()
+
+		go.show_near_field(
+					quantities_to_plot=['norm(E)'],
+					show_plots=False,
+					show_opts=[{'label':'raw_data'},
+					          {'interpolation':'quadric'},
+					          {'interpolation':'quadric'}],
+					save_plots=True,
+					save_opts=[{'format':'png'},
+					          {'format':'pdf','dpi':200},
+					          {'format':'gif'}], # animated gif of E_y
+					outputdir=(projects_directory_location + "/smuthi_output_" + str( comparison + job_idx ) + "/"),
+					xmin=-1000,
+					xmax=1000,
+					ymin=-1000,
+					ymax=1000,
+					zmin=focal_length_nm,
+					zmax=focal_length_nm,
+					resolution_step=20,
+					simulation=simulation,
+					show_internal_field=False)
+
+"""
 		mie_cluster = miepy.sphere_cluster(
 			medium=background_dielectric,
 			position=random_centers, radius=random_radii, material=random_materials,
@@ -538,6 +595,7 @@ while comparison < num_comparisons:
 		gmmt_focal_intensity[ comparison + job_idx ] = np.sum(
 			np.abs( mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm ) )**2,
 			axis=0 )
+"""
 
 		# for x_idx in range( 0, focal_x_points ):
 		# 	for y_idx in range( 0, focal_y_points ):
