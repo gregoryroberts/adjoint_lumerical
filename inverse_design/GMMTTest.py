@@ -89,8 +89,8 @@ cylinder_focal_intensity = np.zeros( ( num_comparisons, 101, 101 ) )
 
 nm = 1e-9
 
-layer_thickness_nm = 100#400
-layer_spacing_nm = 200#800
+layer_thickness_nm = 400
+layer_spacing_nm = 800
 num_layers = 5
 device_height_nm = num_layers * layer_spacing_nm
 focal_length_nm = 1500
@@ -103,10 +103,10 @@ y_bounds_nm = [ -1000, 1000 ]
 device_size_x_nm = x_bounds_nm[ 1 ] - x_bounds_nm[ 0 ]
 device_size_y_nm = y_bounds_nm[ 1 ] - y_bounds_nm[ 0 ]
 
-sphere_radius_nm = 50
+sphere_radius_nm = 150#50
 sphere_spacing_nm = 200
 
-sphere_gen_probability = 0.1
+sphere_gen_probability = 0.05#0.1
 
 sphere_index = 2.4
 
@@ -127,7 +127,7 @@ smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
 air_interface = miepy.interface( interface_dielectric, z=( ( device_height_nm + sphere_z_global_offset_nm ) * nm ) )
-lmax = 2#3
+lmax = 3#2#3
 
 focal_x_nm = np.linspace( x_bounds_nm[ 0 ], x_bounds_nm[ 1 ], focal_x_points )
 focal_y_nm = np.linspace( y_bounds_nm[ 0 ], y_bounds_nm[ 1 ], focal_y_points )
