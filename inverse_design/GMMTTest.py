@@ -189,7 +189,7 @@ for x_idx in range( 0, focal_x_points ):
 
 comparison = 0
 while comparison < num_comparisons:
-	num_jobs = int( np.minimum( num_nodes_available, num_comparisons - comparison ) )
+	num_jobs = int( np.minimum( 1, num_comparisons - comparison ) )
 	job_names = {}
 
 	log_file = open( projects_directory_location + "/log.txt", 'a' )
