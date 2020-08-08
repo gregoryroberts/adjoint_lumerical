@@ -103,7 +103,7 @@ y_bounds_nm = [ -1000, 1000 ]
 device_size_x_nm = x_bounds_nm[ 1 ] - x_bounds_nm[ 0 ]
 device_size_y_nm = y_bounds_nm[ 1 ] - y_bounds_nm[ 0 ]
 
-sphere_radius_nm = 100
+sphere_radius_nm = 50
 sphere_spacing_nm = 200
 
 sphere_gen_probability = 0.1
@@ -114,8 +114,8 @@ sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
-# two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
-two_layers = smuthi.layers.LayerSystem( thicknesses=[0], refractive_indices=[ 1.0 ] )
+two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
+# two_layers = smuthi.layers.LayerSystem( thicknesses=[0], refractive_indices=[ 1.0 ] )
 
 probe_wavelength_nm = 500
 
@@ -235,7 +235,7 @@ while comparison < num_comparisons:
 												particle_list=smuthi_spheres,
 												initial_field=smuthi_plane_wave,
 												solver_type='gmres',
-												store_coupling_matrix=False,
+												store_coupling_matrix=True,
 												coupling_matrix_interpolator_kind='linear',
 												coupling_matrix_lookup_resolution=5,#5,
 												solver_tolerance=1e-4,
