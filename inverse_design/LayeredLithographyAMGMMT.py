@@ -7,9 +7,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 from LayeredLithographyAMCtrlPtsParameters import *
 import LayeredLithographyAMBayerFilterCtrlPts
 
-import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
-import lumapi
+# import imp
+# imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
+# import lumapi
 
 import functools
 import h5py
