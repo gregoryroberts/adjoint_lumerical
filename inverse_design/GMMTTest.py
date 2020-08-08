@@ -116,6 +116,8 @@ interface_dielectric = miepy.materials.vacuum()
 
 two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
 
+probe_wavelength_nm = 500
+
 smuthi_plane_wave = smuthi.initial_field.PlaneWave(
 											vacuum_wavelength=probe_wavelength_nm,
 											polar_angle=np.pi,#np.pi,#4*np.pi/5, # from top
