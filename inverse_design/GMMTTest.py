@@ -188,6 +188,7 @@ for x_idx in range( 0, focal_x_points ):
 
 
 comparison = 0
+use_gpu = True
 while comparison < num_comparisons:
 	num_jobs = int( np.minimum( 1, num_comparisons - comparison ) )
 	job_names = {}
