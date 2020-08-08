@@ -89,8 +89,8 @@ cylinder_focal_intensity = np.zeros( ( num_comparisons, 101, 101 ) )
 
 nm = 1e-9
 
-layer_thickness_nm = 400
-layer_spacing_nm = 800
+layer_thickness_nm = 100#400
+layer_spacing_nm = 200#800
 num_layers = 5
 device_height_nm = num_layers * layer_spacing_nm
 focal_length_nm = 1500
