@@ -39,6 +39,7 @@ import smuthi.postprocessing.graphical_output as go
 import smuthi.postprocessing.scattered_field as sf
 import smuthi.postprocessing.internal_field as intf
 import smuthi.postprocessing.far_field as ff
+import smuthi.utility.cuda as cu
 
 
 #
@@ -133,8 +134,9 @@ cluster_hostnames = get_slurm_node_list()
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
-projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location += "/" + project_name + "_gmmt_v3_test"
+# projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+# projects_directory_location += "/" + project_name + "_gmmt_v3_test"
+projects_directory_location = "/home/ec2-user/gmmt_test/"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -557,14 +559,19 @@ while comparison < num_comparisons:
 
 		mie_start = time.time()
 
+		cu.enable_gpu(use_gpu)
+		if use_gpu and not cu.use_gpu:
+			print("Failed to load pycuda, skipping simulation")
+			sys.exit( 1 )
+
 		simulation = smuthi.simulation.Simulation(
 												layer_system=two_layers,
 												particle_list=smuthi_spheres,
 												initial_field=smuthi_plane_wave,
 												solver_type='gmres',
 												store_coupling_matrix=False,
-												# coupling_matrix_interpolator_kind='linear',
-												coupling_matrix_lookup_resolution=20,
+												coupling_matrix_interpolator_kind='linear',
+												coupling_matrix_lookup_resolution=5,
 												solver_tolerance=1e-4,
 												length_unit='nm' )
 		prep_time, solution_time, post_time = simulation.run()
