@@ -234,7 +234,7 @@ while comparison < num_comparisons:
 												layer_system=two_layers,
 												particle_list=smuthi_spheres,
 												initial_field=smuthi_plane_wave,
-												# solver_type='gmres',
+												solver_type='gmres',
 												store_coupling_matrix=False,
 												coupling_matrix_interpolator_kind='linear',
 												coupling_matrix_lookup_resolution=50,#5,
