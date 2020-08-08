@@ -59,9 +59,6 @@ log_file = open( projects_directory_location + "/log.txt", 'w' )
 log_file.write( "Log\n" )
 log_file.close()
 
-fdtd_hook.newproject()
-fdtd_hook.save(projects_directory_location + "/optimization")
-
 shutil.copy2(python_src_directory + "/LayeredLithographyAMCtrlPtsParameters.py", projects_directory_location + "/LayeredLithographyAMCtrlPtsParameters.py")
 shutil.copy2(python_src_directory + "/GMMTTest.py", projects_directory_location + "/GMMTTest.py")
 shutil.copy2(python_src_directory + "/LayeredLithographyAMCtrlPtsOptimization.py", projects_directory_location + "/LayeredLithographyAMCtrlPtsOptimization.py")
