@@ -114,7 +114,8 @@ sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
-two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
+# two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
+two_layers = smuthi.layers.LayerSystem( thicknesses=[0], refractive_indices=[ 1.0 ] )
 
 probe_wavelength_nm = 500
 
