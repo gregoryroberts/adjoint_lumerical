@@ -227,6 +227,8 @@ while comparison < num_comparisons:
 			print("Failed to load pycuda, skipping simulation")
 			sys.exit( 1 )
 
+
+		print( "number of particles = " + str( len( smuthi_spheres ) ) )
 		simulation = smuthi.simulation.Simulation(
 												layer_system=two_layers,
 												particle_list=smuthi_spheres,
