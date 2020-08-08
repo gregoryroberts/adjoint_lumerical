@@ -235,8 +235,8 @@ while comparison < num_comparisons:
 												initial_field=smuthi_plane_wave,
 												solver_type='gmres',
 												store_coupling_matrix=False,
-												# coupling_matrix_interpolator_kind='linear',
-												# coupling_matrix_lookup_resolution=5,
+												coupling_matrix_interpolator_kind='linear',
+												coupling_matrix_lookup_resolution=5,
 												solver_tolerance=1e-4,
 												length_unit='nm' )
 		prep_time, solution_time, post_time = simulation.run()
