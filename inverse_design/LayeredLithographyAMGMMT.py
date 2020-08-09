@@ -134,9 +134,9 @@ cluster_hostnames = get_slurm_node_list()
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
-# projects_directory_location = "/central/groups/Faraon_Computing/projects" 
-# projects_directory_location += "/" + project_name + "_gmmt_v3_test"
-projects_directory_location = "/home/ec2-user/gmmt_test/"
+projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+projects_directory_location += "/" + project_name + "_gmmt_v4"
+# projects_directory_location = "/home/ec2-user/gmmt_test/"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -422,6 +422,7 @@ focal_y_points = 50
 
 gmmt_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 gmmt_focal_intensity = np.zeros( ( num_comparisons, focal_x_points, focal_y_points ) )
+gmmt_focal_E = np.zeros( ( num_comparisons, 3, focal_x_points, focal_y_points ), dtype=np.complex )
 fdtd_sphere_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 fdtd_cylinder_data = np.zeros( ( num_comparisons, num_focal_spots ) )
 sphere_focal_intensity = np.zeros( ( num_comparisons, 101, 101 ) )
@@ -639,7 +640,7 @@ while comparison < num_comparisons:
 		gmmt_focal_intensity[ comparison + job_idx ] = np.sum(
 			np.abs( mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm ) )**2,
 			axis=0 )
-
+		gmmt_focal_E[ comparison + job_idx ] = mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm )
 
 		for x_idx in range( 0, focal_x_points ):
 			for y_idx in range( 0, focal_y_points ):
