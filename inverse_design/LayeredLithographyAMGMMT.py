@@ -137,6 +137,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 projects_directory_location = "/central/groups/Faraon_Computing/projects" 
 projects_directory_location += "/" + project_name + "_gmmt_v4"
 # projects_directory_location = "/home/ec2-user/gmmt_test/"
+# projects_directory_location = "/Users/gregory/Development/Photonics/adjoint_lumerical/inverse_design/GMMT"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -641,11 +642,6 @@ while comparison < num_comparisons:
 			np.abs( mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm ) )**2,
 			axis=0 )
 		gmmt_focal_E[ comparison + job_idx ] = mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm )
-
-		for x_idx in range( 0, focal_x_points ):
-			for y_idx in range( 0, focal_y_points ):
-				gmmt_focal_intensity[ comparison + job_idx, x_idx, y_idx ] = np.sum(
-					np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ] * nm, focal_y_nm[ y_idx ] * nm, focal_z_nm * nm ) )**2 )
 
 		mie_time = time.time() - mie_start
 
