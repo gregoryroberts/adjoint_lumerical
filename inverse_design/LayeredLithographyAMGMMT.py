@@ -31,15 +31,15 @@ import re
 
 import reinterpolate
 
-import smuthi.simulation
-import smuthi.initial_field
-import smuthi.layers
-import smuthi.particles
-import smuthi.postprocessing.graphical_output as go
-import smuthi.postprocessing.scattered_field as sf
-import smuthi.postprocessing.internal_field as intf
-import smuthi.postprocessing.far_field as ff
-import smuthi.utility.cuda as cu
+# import smuthi.simulation
+# import smuthi.initial_field
+# import smuthi.layers
+# import smuthi.particles
+# import smuthi.postprocessing.graphical_output as go
+# import smuthi.postprocessing.scattered_field as sf
+# import smuthi.postprocessing.internal_field as intf
+# import smuthi.postprocessing.far_field as ff
+# import smuthi.utility.cuda as cu
 
 
 #
@@ -455,13 +455,13 @@ sphere_dielectric = miepy.constant_material( sphere_index**2 )
 background_dielectric = miepy.constant_material( 1.46**2 )
 interface_dielectric = miepy.materials.vacuum()
 
-two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
+# two_layers = smuthi.layers.LayerSystem( thicknesses=[0, 0], refractive_indices=[ 1.0, 1.46 ] )
 
-smuthi_plane_wave = smuthi.initial_field.PlaneWave(
-											vacuum_wavelength=probe_wavelength_nm,
-											polar_angle=np.pi,#np.pi,#4*np.pi/5, # from top
-											azimuthal_angle=0,
-											polarization=1 )         # 0=TE 1=TM
+# smuthi_plane_wave = smuthi.initial_field.PlaneWave(
+# 											vacuum_wavelength=probe_wavelength_nm,
+# 											polar_angle=np.pi,#np.pi,#4*np.pi/5, # from top
+# 											azimuthal_angle=0,
+# 											polarization=1 )         # 0=TE 1=TM
 
 
 plane_wave = miepy.sources.plane_wave( [ 1, 0 ] )
@@ -540,23 +540,23 @@ while comparison < num_comparisons:
 
 		random_centers, random_radii, random_materials, random_indices = gen_random_cluster( sphere_gen_probability )
 
-		smuthi_spheres = []
-		for sphere_idx in range( 0, len( random_centers ) ):
-			get_center = random_centers[ sphere_idx ] / nm
-			# get_center[ 2 ] -= sphere_z_global_offset_nm
-			# get_center[ 2 ] += device_height_nm
+		# smuthi_spheres = []
+		# for sphere_idx in range( 0, len( random_centers ) ):
+		# 	get_center = random_centers[ sphere_idx ] / nm
+		# 	# get_center[ 2 ] -= sphere_z_global_offset_nm
+		# 	# get_center[ 2 ] += device_height_nm
 
-			flip_z = get_center[ 2 ] - sphere_z_global_offset_nm
-			flip_z = device_height_nm - flip_z - ( layer_spacing_nm - layer_thickness_nm )
+		# 	flip_z = get_center[ 2 ] - sphere_z_global_offset_nm
+		# 	flip_z = device_height_nm - flip_z - ( layer_spacing_nm - layer_thickness_nm )
 
-			get_center[ 2 ] = flip_z
+		# 	get_center[ 2 ] = flip_z
 
-			smuthi_spheres.append( 
-				smuthi.particles.Sphere(
-					position=list( get_center ),
-					refractive_index=random_indices[ sphere_idx ],
-					radius=( random_radii[ sphere_idx ] / nm ),
-					l_max=lmax ) )
+		# 	smuthi_spheres.append( 
+		# 		smuthi.particles.Sphere(
+		# 			position=list( get_center ),
+		# 			refractive_index=random_indices[ sphere_idx ],
+		# 			radius=( random_radii[ sphere_idx ] / nm ),
+		# 			l_max=lmax ) )
 
 		mie_start = time.time()
 
@@ -732,6 +732,7 @@ while comparison < num_comparisons:
 	if just_mie:
 		comparison += num_nodes_available
 		np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
+		np.save( projects_directory_location + "/gmmt_focal_E.npy", gmmt_focal_E )
 		np.save( projects_directory_location + "/gmmt_focal_intensity.npy", gmmt_focal_intensity )
 		continue
 
@@ -767,6 +768,7 @@ while comparison < num_comparisons:
 
 	np.save( projects_directory_location + "/gmmt_data.npy", gmmt_data )
 	np.save( projects_directory_location + "/gmmt_focal_intensity.npy", gmmt_focal_intensity )
+	np.save( projects_directory_location + "/gmmt_focal_E.npy", gmmt_focal_E )
 	np.save( projects_directory_location + "/fdtd_sphere_data.npy", fdtd_sphere_data )
 	np.save( projects_directory_location + "/sphere_focal_intensity.npy", sphere_focal_intensity )
 	np.save( projects_directory_location + "/fdtd_cylinder_data.npy", fdtd_cylinder_data )
