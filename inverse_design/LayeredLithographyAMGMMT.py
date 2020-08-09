@@ -7,9 +7,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 from LayeredLithographyAMCtrlPtsParameters import *
 import LayeredLithographyAMBayerFilterCtrlPts
 
-# import imp
-# imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
-# import lumapi
+import imp
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
+import lumapi
 
 import functools
 import h5py
@@ -559,47 +559,47 @@ while comparison < num_comparisons:
 
 		mie_start = time.time()
 
-		cu.enable_gpu(use_gpu)
-		if use_gpu and not cu.use_gpu:
-			print("Failed to load pycuda, skipping simulation")
-			sys.exit( 1 )
+		# cu.enable_gpu(use_gpu)
+		# if use_gpu and not cu.use_gpu:
+		# 	print("Failed to load pycuda, skipping simulation")
+		# 	sys.exit( 1 )
 
-		simulation = smuthi.simulation.Simulation(
-												layer_system=two_layers,
-												particle_list=smuthi_spheres,
-												initial_field=smuthi_plane_wave,
-												solver_type='gmres',
-												store_coupling_matrix=False,
-												coupling_matrix_interpolator_kind='linear',
-												coupling_matrix_lookup_resolution=5,
-												solver_tolerance=1e-4,
-												length_unit='nm' )
-		prep_time, solution_time, post_time = simulation.run()
+		# simulation = smuthi.simulation.Simulation(
+		# 										layer_system=two_layers,
+		# 										particle_list=smuthi_spheres,
+		# 										initial_field=smuthi_plane_wave,
+		# 										solver_type='gmres',
+		# 										store_coupling_matrix=False,
+		# 										coupling_matrix_interpolator_kind='linear',
+		# 										coupling_matrix_lookup_resolution=5,
+		# 										solver_tolerance=5e-4,
+		# 										length_unit='nm' )
+		# prep_time, solution_time, post_time = simulation.run()
 
-		log_file = open( projects_directory_location + "/log.txt", 'a' )
-		log_file.write( "Prep, Solution, Post times are: " + str( prep_time ) + ", " + str( solution_time ) + ", " + str( post_time ) + "\n" )
-		log_file.close()
+		# log_file = open( projects_directory_location + "/log.txt", 'a' )
+		# log_file.write( "Prep, Solution, Post times are: " + str( prep_time ) + ", " + str( solution_time ) + ", " + str( post_time ) + "\n" )
+		# log_file.close()
 
 
-		vacuum_wavelength = simulation.initial_field.vacuum_wavelength
-		dim1vec = np.arange(-1000, 1000 + 25/2, 25)
-		dim2vec = np.arange(-1000, 1000 + 25/2, 25)
-		xarr, yarr = np.meshgrid(dim1vec, dim2vec)
-		zarr = xarr - xarr - focal_length_nm
+		# vacuum_wavelength = simulation.initial_field.vacuum_wavelength
+		# dim1vec = np.arange(-1000, 1000 + 25/2, 25)
+		# dim2vec = np.arange(-1000, 1000 + 25/2, 25)
+		# xarr, yarr = np.meshgrid(dim1vec, dim2vec)
+		# zarr = xarr - xarr - focal_length_nm
 
-		scat_fld_exp = sf.scattered_field_piecewise_expansion(vacuum_wavelength,
-																simulation.particle_list, simulation.layer_system,
-																'default', 'default', None)
+		# scat_fld_exp = sf.scattered_field_piecewise_expansion(vacuum_wavelength,
+		# 														simulation.particle_list, simulation.layer_system,
+		# 														'default', 'default', None)
 
-		e_x_scat, e_y_scat, e_z_scat = scat_fld_exp.electric_field(xarr, yarr, zarr)
-		e_x_init, e_y_init, e_z_init = simulation.initial_field.electric_field(xarr, yarr, zarr, simulation.layer_system)
+		# e_x_scat, e_y_scat, e_z_scat = scat_fld_exp.electric_field(xarr, yarr, zarr)
+		# e_x_init, e_y_init, e_z_init = simulation.initial_field.electric_field(xarr, yarr, zarr, simulation.layer_system)
 
-		e_x, e_y, e_z = e_x_scat + e_x_init, e_y_scat + e_y_init, e_z_scat + e_z_init
+		# e_x, e_y, e_z = e_x_scat + e_x_init, e_y_scat + e_y_init, e_z_scat + e_z_init
 
-		intensity = abs(e_x)**2 + abs(e_y)**2 + abs(e_z)**2
-		intensity = np.swapaxes( intensity, 0, 1 )
+		# intensity = abs(e_x)**2 + abs(e_y)**2 + abs(e_z)**2
+		# intensity = np.swapaxes( intensity, 0, 1 )
 
-		np.save( projects_directory_location + "/sumith_intensity_" + str( comparison + job_idx ) + ".npy", intensity )
+		# np.save( projects_directory_location + "/sumith_intensity_" + str( comparison + job_idx ) + ".npy", intensity )
 
 		# go.show_near_field(
 		# 			quantities_to_plot=['norm(E)'],
@@ -622,29 +622,29 @@ while comparison < num_comparisons:
 		# 			show_internal_field=False)
 
 
-		# mie_cluster = miepy.sphere_cluster(
-		# 	medium=background_dielectric,
-		# 	position=random_centers, radius=random_radii, material=random_materials,
-		# 	source=plane_wave, wavelength=(probe_wavelength_nm*nm), lmax=lmax, interface=air_interface )
+		mie_cluster = miepy.sphere_cluster(
+			medium=background_dielectric,
+			position=random_centers, radius=random_radii, material=random_materials,
+			source=plane_wave, wavelength=(probe_wavelength_nm*nm), lmax=lmax )#, interface=air_interface )
 
-		# gmmt_data[ comparison + job_idx, 0 ] = np.sum(
-		# 	np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
-		# gmmt_data[ comparison + job_idx, 1 ] = np.sum(
-		# 	np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
-		# gmmt_data[ comparison + job_idx, 2 ] = np.sum(
-		# 	np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
-		# gmmt_data[ comparison + job_idx, 3 ] = np.sum(
-		# 	np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
+		gmmt_data[ comparison + job_idx, 0 ] = np.sum(
+			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
+		gmmt_data[ comparison + job_idx, 1 ] = np.sum(
+			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, 0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
+		gmmt_data[ comparison + job_idx, 2 ] = np.sum(
+			np.abs( mie_cluster.E_field( -0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
+		gmmt_data[ comparison + job_idx, 3 ] = np.sum(
+			np.abs( mie_cluster.E_field( 0.25 * device_size_x_nm * nm, -0.25 * device_size_y_nm * nm, focal_z_nm * nm ) )**2 )
 
-		# gmmt_focal_intensity[ comparison + job_idx ] = np.sum(
-		# 	np.abs( mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm ) )**2,
-		# 	axis=0 )
+		gmmt_focal_intensity[ comparison + job_idx ] = np.sum(
+			np.abs( mie_cluster.E_field( focal_lateral_search_mesh_x_nm, focal_lateral_search_mesh_y_nm, focal_lateral_search_mesh_z_nm ) )**2,
+			axis=0 )
 
 
-		# for x_idx in range( 0, focal_x_points ):
-		# 	for y_idx in range( 0, focal_y_points ):
-		# 		gmmt_focal_intensity[ comparison + job_idx, x_idx, y_idx ] = np.sum(
-		# 			np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ] * nm, focal_y_nm[ y_idx ] * nm, focal_z_nm * nm ) )**2 )
+		for x_idx in range( 0, focal_x_points ):
+			for y_idx in range( 0, focal_y_points ):
+				gmmt_focal_intensity[ comparison + job_idx, x_idx, y_idx ] = np.sum(
+					np.abs( mie_cluster.E_field( focal_x_nm[ x_idx ] * nm, focal_y_nm[ y_idx ] * nm, focal_z_nm * nm ) )**2 )
 
 		mie_time = time.time() - mie_start
 
