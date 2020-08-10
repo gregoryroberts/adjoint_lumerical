@@ -39,7 +39,7 @@ fdtd_hook = lumapi.FDTD( hide=True )
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-base_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
+base_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 projects_directory_location = base_directory + "/projects/cluster/nir/"
 
