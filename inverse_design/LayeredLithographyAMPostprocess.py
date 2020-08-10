@@ -415,10 +415,10 @@ eval_forward_idx = 0
 # fdtd_hook.switchtolayout()
 
 
-blur_sigmas = [ 0, gaussian_blur_filter_sigma, 2 * gaussian_blur_filter_sigma ]
+blur_sigmas = [ 0, 0.05, 0.1, 0.15 ]
 colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
-linestyles = [ '--', '-', ':' ]
+linestyles = [ '--', '-', ':', ':-' ]
 
 for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
@@ -511,8 +511,9 @@ for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 
 legend = [
 	'No Blur Q1', 'No Blur Q2', 'No Blur Q3', 'No Blur Q4',
+	'50nm Blur Q1', '50nm Blur Q2', '50nm Blur Q3', '50nm Blur Q4',
 	'100nm Blur Q1', '100nm Blur Q2', '100nm Blur Q3', '100nm Blur Q4',
-	'200nm Blur Q1', '200nm Blur Q2', '200nm Blur Q3', '200nm Blur Q4',
+	'150nm Blur Q1', '150nm Blur Q2', '150nm Blur Q3', '150nm Blur Q4',
 ]
 plt.legend( legend )
 plt.ylabel( 'Transmission', fontsize=16 )
