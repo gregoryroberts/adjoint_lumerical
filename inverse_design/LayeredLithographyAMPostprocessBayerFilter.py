@@ -88,6 +88,7 @@ class LayeredLithographyAMBayerFilter(device.Device):
 		var4 = self.gaussian_blur_3.forward(var3)
 		self.w[4] = var4
 
+		var4 = np.maximum( 0.0, np.minimum( var4, 1.0 ) )
 		# var4 = 1.0 * np.greater_equal( var4, 0.5 )
 
 		var5 = self.layering_z_4.forward(var4)
