@@ -40,7 +40,7 @@ fdtd_hook = lumapi.FDTD( hide=True )
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
-projects_directory_location = "/../projects/postprocess_" + str( sys.argv[ 1 ] ) + "/"
+projects_directory_location = "/../projects/cluster/" + str( sys.argv[ 1 ] ) + "/"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -50,7 +50,7 @@ log_file.write( "Log\n" )
 log_file.close()
 
 fdtd_hook.newproject()
-fdtd_hook.save(projects_directory_location + "/optimization")
+fdtd_hook.save(projects_directory_location + "/postprocess")
 
 #
 # Set up the FDTD region and mesh
