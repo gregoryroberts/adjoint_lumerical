@@ -86,10 +86,12 @@ class LayeredLithographyAMBayerFilter(device.Device):
 		var3 = self.sigmoid_2.forward(var2)
 		self.w[3] = var3
 
+		var3 = 1.0 * np.greater_equal( var3, 0.5 )
+
 		var4 = self.gaussian_blur_3.forward(var3)
 		self.w[4] = var4
 
-		var4 = 1.0 * np.greater_equal( var4, 0.5 )
+		# var4 = 1.0 * np.greater_equal( var4, 0.5 )
 
 		var5 = self.layering_z_4.forward(var4)
 		self.w[5] = var5
