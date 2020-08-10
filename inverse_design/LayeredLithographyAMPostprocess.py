@@ -421,7 +421,7 @@ colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
 linestyles = [ '--', '-.', '-', ':', ]
 
-plt.clf()
+# plt.clf()
 
 for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
@@ -440,7 +440,7 @@ for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	bayer_filter.update_filters( num_epochs - 1 )
 	bayer_filter.set_design_variable( final_design_variable )
 
-	bayer_filter.plot_layers( 2, 3, 'Greens', projects_directory_location + "/layers_sigma_" + str( blur_sigma_idx ) + ".png" )
+	# bayer_filter.plot_layers( 2, 3, 'Greens', projects_directory_location + "/layers_sigma_" + str( blur_sigma_idx ) + ".png" )
 
 	cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 	cur_index = np.sqrt( cur_permittivity )
