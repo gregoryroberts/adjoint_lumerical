@@ -397,19 +397,7 @@ step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
-step_size_start = 0.001
-
-if start_epoch > 0:
-	design_variable_reload = np.load( projects_directory_location + '/cur_design_variable_' + str( start_epoch - 1 ) + '.npy' )
-	bayer_filter.set_design_variable( design_variable_reload )
-	figure_of_merit_evolution_load = np.load( projects_directory_location + "/figure_of_merit.npy" )
-
-	num_epochs_reload = figure_of_merit_evolution_load.shape[ 0 ]
-	figure_of_merit_evolution[ 0 : num_epochs_reload ] = figure_of_merit_evolution_load
-
-
 fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-
 
 spatial_limits_device_um = [
 	[ -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um ],
@@ -425,89 +413,101 @@ eval_forward_idx = 0
 # Run the optimization
 #
 # fdtd_hook.switchtolayout()
-lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
-cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 
-np.save(projects_directory_location + "/cur_permittivity.npy", cur_permittivity)
-
-cur_index = np.sqrt( cur_permittivity )
-
-# bordered_replicated_index = border_and_replicate_device( cur_index, device_border_voxels, min_device_index )
-
-fdtd_hook.select( design_import[ 'name' ] )
-fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
-
-#
-# Step 1: Get all the simulations we need queued up and run in parallel and then we will
-# put all the data together later.
-#
-disable_all_sources()
-fdtd_hook.select( forward_sources[eval_forward_idx]['name'] )
-fdtd_hook.set( 'enabled', 1 )
-
-fdtd_hook.run()
-
-forward_e_fields = {}
-focal_data = [ {} for i in range( 0, num_adjoint_sources ) ]
-#
-# Step 3: Get all the forward data from the simulations
-#
-# forward_e_fields[xy_names[eval_forward_idx]] = get_efield_interpolated(
-# 	design_efield_monitor['name' ],
-# 	spatial_limits_device_um,
-# 	interpolated_size
-# )
-
-for adj_src_idx in range(0, num_adjoint_sources):
-	# pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
-	pull_focal_data = get_efield( focal_monitors[ adj_src_idx ][ 'name' ] )
-	# pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
-	pull_focal_data = pull_focal_data[ :, 0, 0, 0, : ]
-	focal_data[ adj_src_idx ][ xy_names[ eval_forward_idx ] ] = pull_focal_data
-
-#
-# Step 4: Compute the figure of merit
-#
+blur_sigmas = [ 0, gaussian_blur_filter_sigma, 2 * gaussian_blur_filter_sigma ]
 colors = [ 'b', 'g', 'r', 'g' ]
-linestyles = [ '-', '-', '-', '--' ]
-figure_of_merit_per_focal_spot = []
-figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
-for focal_idx in range(0, num_focal_spots):
-	compute_fom = 0
+# linestyles = [ '-', '-', '-', '--' ]
+linestyles = [ '--', '-', ':' ]
 
-	# polarizations = polarizations_focal_plane_map[focal_idx]
+for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
+	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
+		bayer_filter_size_voxels,
+		[min_device_permittivity, max_device_permittivity],
+		init_permittivity_0_1_scale,
+		num_vertical_layers,
+		spacer_size_voxels,
+		last_layer_permittivities,
+		blur_sigmas[ blur_sigma_idx ] )
 
-	transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
-	plt.plot( np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), -transmission_data[ 'T' ], color=colors[ focal_idx ], linestyle=linestyles[ focal_idx ], linewidth=2 )
+	bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+	bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+	bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
 
-	# for polarization_idx in range(0, len(polarizations)):
-	# 	get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
+	bayer_filter.update_filters( num_epochs - 1 )
+	bayer_filter.set_design_variable( final_design_variable )
 
-	# 	max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
-	# 	total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
+	cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+	cur_index = np.sqrt( cur_permittivity )
 
-	# 	for spectral_idx in range(0, total_weighting.shape[0]):
-	# 		get_fom_by_wl = np.sum(
-	# 			np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
-	# 				total_weighting[spectral_idx]
-	# 		)
+	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+	fdtd_hook.select( design_import[ 'name' ] )
+	fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 
-	# 		figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_idx ] += get_fom_by_wl
 
-	# 		compute_fom += get_fom_by_wl
+	#
+	# Step 1: Get all the simulations we need queued up and run in parallel and then we will
+	# put all the data together later.
+	#
+	disable_all_sources()
+	fdtd_hook.select( forward_sources[eval_forward_idx]['name'] )
+	fdtd_hook.set( 'enabled', 1 )
 
-	# figure_of_merit_per_focal_spot.append(compute_fom)
+	fdtd_hook.run()
+
+	forward_e_fields = {}
+	focal_data = [ {} for i in range( 0, num_adjoint_sources ) ]
+	#
+	# Step 3: Get all the forward data from the simulations
+	#
+	# forward_e_fields[xy_names[eval_forward_idx]] = get_efield_interpolated(
+	# 	design_efield_monitor['name' ],
+	# 	spatial_limits_device_um,
+	# 	interpolated_size
+	# )
+
+	for adj_src_idx in range(0, num_adjoint_sources):
+		# pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
+		pull_focal_data = get_efield( focal_monitors[ adj_src_idx ][ 'name' ] )
+		# pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
+		pull_focal_data = pull_focal_data[ :, 0, 0, 0, : ]
+		focal_data[ adj_src_idx ][ xy_names[ eval_forward_idx ] ] = pull_focal_data
+
+	#
+	# Step 4: Compute the figure of merit
+	#
+
+	figure_of_merit_per_focal_spot = []
+	figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
+	for focal_idx in range(0, num_focal_spots):
+		compute_fom = 0
+
+		# polarizations = polarizations_focal_plane_map[focal_idx]
+
+		transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
+		plt.plot(
+			np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), -transmission_data[ 'T' ],
+			color=colors[ focal_idx ],
+			linestyle=linestyles[ blur_sigma_idx ],
+			linewidth=2 )
+
+		# for polarization_idx in range(0, len(polarizations)):
+		# 	get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
+
+		# 	max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
+		# 	total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
+
+		# 	for spectral_idx in range(0, total_weighting.shape[0]):
+		# 		get_fom_by_wl = np.sum(
+		# 			np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
+		# 				total_weighting[spectral_idx]
+		# 		)
+
+		# 		figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_idx ] += get_fom_by_wl
+
+		# 		compute_fom += get_fom_by_wl
+
+		# figure_of_merit_per_focal_spot.append(compute_fom)
 
 plt.show()
-figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
-
-flatten_fom_by_focal_wl = figure_of_merit_by_focal_spot_by_wavelength.flatten()
-performance_weighting_with_wl = ( 2. / ( num_focal_spots * num_points_per_band ) ) - flatten_fom_by_focal_wl**2 / np.sum( flatten_fom_by_focal_wl**2 )
-performance_weighting_with_wl = np.maximum( performance_weighting_with_wl, 0 )
-performance_weighting_with_wl /= np.sum( performance_weighting_with_wl )
-performance_weighting_with_wl = np.reshape( performance_weighting_with_wl, figure_of_merit_by_focal_spot_by_wavelength.shape )
-
-figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
-figure_of_merit_evolution[epoch, iteration] = figure_of_merit
 

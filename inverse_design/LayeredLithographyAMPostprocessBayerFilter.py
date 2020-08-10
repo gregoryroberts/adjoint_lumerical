@@ -49,7 +49,7 @@ class GaussianBlur():
 
 class LayeredLithographyAMBayerFilter(device.Device):
 
-	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers, spacer_height_voxels, last_layer_permittivity):
+	def __init__(self, size, permittivity_bounds, init_permittivity, num_z_layers, spacer_height_voxels, last_layer_permittivity, gaussian_blur_sigma=gaussian_blur_filter_sigma):
 		super(LayeredLithographyAMBayerFilter, self).__init__(size, permittivity_bounds, init_permittivity)
 
 		self.num_z_layers = num_z_layers
@@ -60,6 +60,7 @@ class LayeredLithographyAMBayerFilter(device.Device):
 		self.layer_height_voxels = int( ( self.size[ 2 ] / self.num_z_layers ) - self.spacer_height_voxels )
 		self.init_filters_and_variables()
 		self.last_layer_permittivity = last_layer_permittivity
+		self.gaussian_blur_sigma = gaussian_blur_sigma
 
 		self.update_permittivity()
 
@@ -147,7 +148,7 @@ class LayeredLithographyAMBayerFilter(device.Device):
 			alpha,
 			[self.blur_half_width, self.blur_half_width, 0])
 
-		self.gaussian_blur_3 = GaussianBlur( gaussian_blur_filter_sigma )
+		self.gaussian_blur_3 = GaussianBlur( self.gaussian_blur_sigma )
 
 
 		z_voxel_layers = self.size[2]
