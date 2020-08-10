@@ -527,5 +527,5 @@ legend = [
 plt.ylabel( 'Transmission', fontsize=16 )
 plt.xlabel( 'Wavelength (um)', fontsize=16 )
 # plt.show()
-plt.savefig( projects_directory_location + "/blur_test_less.png" )
+plt.savefig( projects_directory_location + "/blur_test_less_bin.png" )
 
