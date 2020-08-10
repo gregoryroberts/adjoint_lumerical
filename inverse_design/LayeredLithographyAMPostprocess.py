@@ -509,5 +509,13 @@ for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 
 		# figure_of_merit_per_focal_spot.append(compute_fom)
 
+legend = [
+	'No Blur Q1', 'No Blur Q2', 'No Blur Q3', 'No Blur Q4',
+	'100nm Blur Q1', '100nm Blur Q2', '100nm Blur Q3', '100nm Blur Q4',
+	'200nm Blur Q1', '200nm Blur Q2', '200nm Blur Q3', '200nm Blur Q4',
+]
+plt.legend( legend )
+plt.ylabel( 'Transmission', fontsize=16 )
+plt.xlabel( 'Wavelength (um)', fontsize=16 )
 plt.show()
 
