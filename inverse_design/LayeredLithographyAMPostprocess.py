@@ -475,28 +475,28 @@ figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_p
 for focal_idx in range(0, num_focal_spots):
 	compute_fom = 0
 
-	polarizations = polarizations_focal_plane_map[focal_idx]
+	# polarizations = polarizations_focal_plane_map[focal_idx]
 
 	transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
 	plt.plot( np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), -transmission_data[ 'T' ], color=colors[ focal_idx ], linestyle=linestyles[ focal_idx ], linewidth=2 )
 
-	for polarization_idx in range(0, len(polarizations)):
-		get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
+	# for polarization_idx in range(0, len(polarizations)):
+	# 	get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
 
-		max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
-		total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
+	# 	max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
+	# 	total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
 
-		for spectral_idx in range(0, total_weighting.shape[0]):
-			get_fom_by_wl = np.sum(
-				np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
-					total_weighting[spectral_idx]
-			)
+	# 	for spectral_idx in range(0, total_weighting.shape[0]):
+	# 		get_fom_by_wl = np.sum(
+	# 			np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
+	# 				total_weighting[spectral_idx]
+	# 		)
 
-			figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_idx ] += get_fom_by_wl
+	# 		figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_idx ] += get_fom_by_wl
 
-			compute_fom += get_fom_by_wl
+	# 		compute_fom += get_fom_by_wl
 
-	figure_of_merit_per_focal_spot.append(compute_fom)
+	# figure_of_merit_per_focal_spot.append(compute_fom)
 
 plt.show()
 figure_of_merit_per_focal_spot = np.array(figure_of_merit_per_focal_spot)
