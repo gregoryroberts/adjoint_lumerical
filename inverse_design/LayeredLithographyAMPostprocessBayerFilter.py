@@ -173,9 +173,10 @@ class LayeredLithographyAMBayerFilter(device.Device):
 		self.init_variables()
 
 	def plot_layers( self, subplot_rows, subplot_cols, colormap, filename ):
+		import matplotlib.pyplot as plt
+
 		layer_indices = self.layering_z_4.get_layer_idxs( self.size )
 		cur_permittivity = self.get_permittivity()
-
 		plt.clf()
 		for layer_idx in range( 0, len( layer_indices ) ):
 			get_layer = cur_permittivity[ :, :, layer_indices[ layer_idx ] ]
