@@ -172,6 +172,17 @@ class LayeredLithographyAMBayerFilter(device.Device):
 
 		self.init_variables()
 
+	def plot_layers( self, subplot_rows, subplot_cols, colormap, filename ):
+		layer_indices = self.layering_z_4.get_layer_idxs()
+		cur_permittivity = self.get_permittivity()
+
+		plt.clf()
+		for layer_idx in range( 0, len( layer_indices ) ):
+			get_layer = cur_permittivity[ :, :, layer_indices[ layer_idx ] ]
+			plt.subplot( subplot_rows, subplot_cols, layer_idx + 1 )
+			plt.imshow( get_layer, cmap=colormap )
+		plt.savefig( filename )
+
 	# In the step function, we should update the permittivity with update_permittivity
 	def step(self, gradient, step_size):
 		self.w[0] = self.proposed_design_step(gradient, step_size)
