@@ -513,8 +513,7 @@ for angle_idx in range( 0, num_angles ):
 	# put all the data together later.
 	#
 	disable_all_sources()
-	fdtd_hook.select( forward_sources[eval_forward_idx]['name'] )
-	fdtd_hook
+	fdtd_hook.select( angled_source['name'] )
 	fdtd_hook.set( 'enabled', 1 )
 
 	fdtd_hook.run()
