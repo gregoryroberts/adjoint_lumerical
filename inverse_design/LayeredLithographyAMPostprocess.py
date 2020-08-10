@@ -39,8 +39,9 @@ fdtd_hook = lumapi.FDTD( hide=True )
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
+base_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
-projects_directory_location = "/../projects/cluster/" + str( sys.argv[ 1 ] ) + "/"
+projects_directory_location = base_directory + "/projects/cluster/nir/"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -80,6 +81,8 @@ design_mesh['dx'] = mesh_spacing_um * 1e-6
 design_mesh['dy'] = mesh_spacing_um * 1e-6
 design_mesh['dz'] = mesh_spacing_um * 1e-6
 
+transmission_min_um = lambda_min_um
+transmission_max_um = lambda_max_um
 
 #
 # General polarized source information
