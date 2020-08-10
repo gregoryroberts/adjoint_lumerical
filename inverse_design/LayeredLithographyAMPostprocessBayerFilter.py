@@ -8,7 +8,7 @@ from scipy.ndimage import gaussian_filter
 
 import numpy as np
 
-from LayeredLithographyAMParameters import *
+from LayeredLithographyAMPostprocessParameters import *
 
 # X=Y SYMMETRY!!! HERE AND IN CONTROL POINTS! - IF YOU ARE DOING RANDOM INITIALIZATIONS - put into optimization code for this
 # one and control points will put into the filter initilialization
