@@ -415,7 +415,7 @@ eval_forward_idx = 0
 def blur_size_to_sigma( blur_size_um ):
 	return ( ( ( blur_size_um / design_spacing_um ) - 1 ) / 2 )
 
-blur_sizes_um = [ 0, 0.75, 0.1, 0.15 ]
+blur_sizes_um = [ 0, 0.075, 0.1, 0.15 ]
 blur_sigmas = [ blur_size_to_sigma( x ) for x in blur_sizes_um ]
 colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
