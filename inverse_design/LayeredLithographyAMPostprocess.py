@@ -452,11 +452,11 @@ focal_data = [ {} for i in range( 0, num_adjoint_sources ) ]
 #
 # Step 3: Get all the forward data from the simulations
 #
-forward_e_fields[xy_names[eval_forward_idx]] = get_efield_interpolated(
-	design_efield_monitor['name' ],
-	spatial_limits_device_um,
-	interpolated_size
-)
+# forward_e_fields[xy_names[eval_forward_idx]] = get_efield_interpolated(
+# 	design_efield_monitor['name' ],
+# 	spatial_limits_device_um,
+# 	interpolated_size
+# )
 
 for adj_src_idx in range(0, num_adjoint_sources):
 	# pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
