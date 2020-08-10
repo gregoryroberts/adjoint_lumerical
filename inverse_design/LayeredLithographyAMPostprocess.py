@@ -397,8 +397,6 @@ step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 
-fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-
 spatial_limits_device_um = [
 	[ -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um ],
 	[ -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um ],
@@ -420,7 +418,7 @@ colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
 linestyles = [ '--', '-.', '-', ':', ]
 
-for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
+for blur_sigma_idx in range( 0, 2 ):#len( blur_sigmas ) ):
 	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
 		bayer_filter_size_voxels,
 		[min_device_permittivity, max_device_permittivity],
@@ -443,6 +441,7 @@ for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 	fdtd_hook.select( design_import[ 'name' ] )
 	fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+	fdtd_hook.save( projects_directory_location + "/postprocess.fsp" )
 
 
 	#
@@ -515,7 +514,7 @@ legend = [
 	'100nm Blur Q1', '100nm Blur Q2', '100nm Blur Q3', '100nm Blur Q4',
 	'150nm Blur Q1', '150nm Blur Q2', '150nm Blur Q3', '150nm Blur Q4',
 ]
-plt.legend( legend )
+# plt.legend( legend )
 plt.ylabel( 'Transmission', fontsize=16 )
 plt.xlabel( 'Wavelength (um)', fontsize=16 )
 plt.show()
