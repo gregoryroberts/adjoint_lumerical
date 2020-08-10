@@ -468,6 +468,8 @@ for adj_src_idx in range(0, num_adjoint_sources):
 #
 # Step 4: Compute the figure of merit
 #
+colors = [ 'r', 'g', 'b', 'g' ]
+linestyles = [ '-', '-', '--', '-' ]
 figure_of_merit_per_focal_spot = []
 figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
 for focal_idx in range(0, num_focal_spots):
@@ -476,7 +478,7 @@ for focal_idx in range(0, num_focal_spots):
 	polarizations = polarizations_focal_plane_map[focal_idx]
 
 	transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
-	plt.plot( transmission_data )
+	plt.plot( np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), -transmission_data[ 'T' ], color=colors[ focal_idx ], linestyle=linestyles[ focal_idx ], linewidth=2 )
 
 	for polarization_idx in range(0, len(polarizations)):
 		get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
