@@ -438,6 +438,8 @@ for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	bayer_filter.update_filters( num_epochs - 1 )
 	bayer_filter.set_design_variable( final_design_variable )
 
+	bayer_filter.plot_layers( 2, 3, 'Greens', projects_directory_location + "/layers_sigma_" + str( blur_sigma_idx ) + ".png" )
+
 	cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
 	cur_index = np.sqrt( cur_permittivity )
 
@@ -481,6 +483,7 @@ for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 
 	figure_of_merit_per_focal_spot = []
 	figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
+	plt.clf()
 	for focal_idx in range(0, num_focal_spots):
 		compute_fom = 0
 
@@ -520,5 +523,6 @@ legend = [
 # plt.legend( legend )
 plt.ylabel( 'Transmission', fontsize=16 )
 plt.xlabel( 'Wavelength (um)', fontsize=16 )
-plt.show()
+# plt.show()
+plt.savefig( projects_directory_location + "/blur_test.png" )
 
