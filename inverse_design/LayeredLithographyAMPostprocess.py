@@ -467,6 +467,9 @@ for angle_idx in range( 0, num_angles ):
 
 	disable_all_sources()
 	design_import.enabled = 0
+	air_bottom.enabled = 0
+	substrate['index'] = background_index
+
 	angled_source['angle theta'] = angles_degrees[ angle_idx ]
 	fdtd_hook.select( angled_source['name'] )
 	fdtd_hook.set( 'enabled', 1 )
@@ -498,6 +501,8 @@ for angle_idx in range( 0, num_angles ):
 
 	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 	design_import.enabled = 1
+	air_bottom.enabled = 1
+	substrate['index'] = index_substrate
 	fdtd_hook.select( design_import[ 'name' ] )
 	fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
 	fdtd_hook.save( projects_directory_location + "/postprocess.fsp" )
