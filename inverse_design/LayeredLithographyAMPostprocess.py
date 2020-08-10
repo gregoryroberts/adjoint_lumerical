@@ -33,7 +33,7 @@ import reinterpolate
 #
 # Create FDTD hook
 #
-fdtd_hook = lumapi.FDTD( hide=True )
+fdtd_hook = lumapi.FDTD( hide=False )
 
 #
 # Create project folder and save out the parameter file for documentation for this optimization
