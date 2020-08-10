@@ -19,19 +19,20 @@ class GaussianBlur():
 
 	def forward( self, variable_in ):
 		if self.blur_sigma == 0:
-			return variable_in
+			variable_out = variable_in.copy()
+		else:
 
-		# return variable_in
-		z_shape = variable_in.shape[ 2 ]
+			# return variable_in
+			z_shape = variable_in.shape[ 2 ]
 
-		variable_out = np.zeros( variable_in.shape, dtype=variable_in.dtype )
+			variable_out = np.zeros( variable_in.shape, dtype=variable_in.dtype )
 
-		for z_idx in range( 0, z_shape ):
-			get_layer = np.squeeze( variable_in[ :, :, z_idx ] )
-			blurred_layer = 0.5 * 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
-			# blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+			for z_idx in range( 0, z_shape ):
+				get_layer = np.squeeze( variable_in[ :, :, z_idx ] )
+				blurred_layer = 0.5 * 2 * np.pi * self.blur_sigma**2 * gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
+				# blurred_layer = gaussian_filter( np.real( get_layer ), sigma=self.blur_sigma )
 
-			variable_out[ :, :, z_idx ] = blurred_layer
+				variable_out[ :, :, z_idx ] = blurred_layer
 
 		return np.maximum( np.minimum( variable_out, 1.0 ), 0.0 )
 
@@ -88,7 +89,6 @@ class LayeredLithographyAMBayerFilter(device.Device):
 		var4 = self.gaussian_blur_3.forward(var3)
 		self.w[4] = var4
 
-		var4 = np.maximum( 0.0, np.minimum( var4, 1.0 ) )
 		# var4 = 1.0 * np.greater_equal( var4, 0.5 )
 
 		var5 = self.layering_z_4.forward(var4)
