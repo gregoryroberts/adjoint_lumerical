@@ -412,13 +412,16 @@ eval_forward_idx = 0
 #
 # fdtd_hook.switchtolayout()
 
+def blur_size_to_sigma( blur_size_um ):
+	return ( ( ( blur_size_um / design_spacing_um ) - 1 ) / 2 )
 
-blur_sigmas = [ 0, 0.05, 0.1, 0.15 ]
+blur_sizes_um = [ 0, 0.05, 0.1, 0.15 ]
+blur_sigmas = [ blur_size_to_sigma( x ) for x in blur_size_um ]
 colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
 linestyles = [ '--', '-.', '-', ':', ]
 
-for blur_sigma_idx in range( 0, 2 ):#len( blur_sigmas ) ):
+for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
 		bayer_filter_size_voxels,
 		[min_device_permittivity, max_device_permittivity],
