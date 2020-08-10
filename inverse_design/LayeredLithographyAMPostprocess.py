@@ -444,7 +444,7 @@ linestyles = [ '--', '-.', '-', ':', ]
 
 # plt.clf()
 
-num_angles = 6
+num_angles = 4
 angle_phi = 45
 min_angle_degrees = 0
 max_angle_degrees = 12
