@@ -445,7 +445,7 @@ num_angles = 2
 angle_phi = 45
 min_angle_degrees = 0
 max_angle_degrees = 8
-angles_degrees = n.linspace( min_angle_degrees, max_angle_degrees, num_angles )
+angles_degrees = np.linspace( min_angle_degrees, max_angle_degrees, num_angles )
 
 for angle_idx in range( 0, num_angles ):
 	angled_source = fdtd_hook.addplane()
