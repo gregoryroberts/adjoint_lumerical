@@ -18,6 +18,9 @@ class GaussianBlur():
 		self.blur_sigma = blur_sigma
 
 	def forward( self, variable_in ):
+		if self.blur_sigma == 0:
+			return variable_in
+
 		# return variable_in
 		z_shape = variable_in.shape[ 2 ]
 
@@ -33,6 +36,8 @@ class GaussianBlur():
 		return np.maximum( np.minimum( variable_out, 1.0 ), 0.0 )
 
 	def chain_rule( self, gradient_out, variable_out, variable_in ):
+		if self.blur_sigma == 0:
+			return gradient_out
 		# return gradient_out
 		z_shape = gradient_out.shape[ 2 ]
 
