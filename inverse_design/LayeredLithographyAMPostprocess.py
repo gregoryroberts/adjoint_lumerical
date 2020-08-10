@@ -470,7 +470,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
 # Step 4: Compute the figure of merit
 #
 colors = [ 'b', 'g', 'r', 'g' ]
-linestyles = [ '-', '-', '--', '-' ]
+linestyles = [ '-', '-', '-', '--' ]
 figure_of_merit_per_focal_spot = []
 figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
 for focal_idx in range(0, num_focal_spots):
