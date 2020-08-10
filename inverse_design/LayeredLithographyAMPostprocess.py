@@ -418,7 +418,7 @@ eval_forward_idx = 0
 blur_sigmas = [ 0, 0.05, 0.1, 0.15 ]
 colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
-linestyles = [ '--', '-', ':', ':-' ]
+linestyles = [ '--', '-.', '-', ':', ]
 
 for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
