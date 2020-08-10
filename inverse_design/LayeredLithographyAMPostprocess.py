@@ -421,6 +421,8 @@ colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
 linestyles = [ '--', '-.', '-', ':', ]
 
+plt.clf()
+
 for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
 		bayer_filter_size_voxels,
@@ -483,7 +485,6 @@ for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
 
 	figure_of_merit_per_focal_spot = []
 	figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
-	plt.clf()
 	for focal_idx in range(0, num_focal_spots):
 		compute_fom = 0
 
