@@ -5,7 +5,8 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
 from LayeredLithographyAMPostprocessParameters import *
-import LayeredLithographyAMBayerFilter
+# import LayeredLithographyAMBayerFilter
+import LayeredLithographyAMPostprocessBayerFilter
 
 # import imp
 # imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
@@ -243,7 +244,7 @@ design_import['z max'] = ( device_vertical_maximum_um - 0.5 * mesh_spacing_um ) 
 design_import['z min'] = ( device_vertical_minimum_um + 0.5 * mesh_spacing_um ) * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredLithographyAMBayerFilter.LayeredLithographyAMBayerFilter(
+bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
 	bayer_filter_size_voxels,
 	[min_device_permittivity, max_device_permittivity],
 	init_permittivity_0_1_scale,
@@ -468,7 +469,7 @@ for adj_src_idx in range(0, num_adjoint_sources):
 #
 # Step 4: Compute the figure of merit
 #
-colors = [ 'r', 'g', 'b', 'g' ]
+colors = [ 'b', 'g', 'r', 'g' ]
 linestyles = [ '-', '-', '--', '-' ]
 figure_of_merit_per_focal_spot = []
 figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
