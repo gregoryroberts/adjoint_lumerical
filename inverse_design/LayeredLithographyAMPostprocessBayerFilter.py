@@ -182,6 +182,8 @@ class LayeredLithographyAMBayerFilter(device.Device):
 			get_layer = cur_permittivity[ :, :, layer_indices[ layer_idx ] ]
 			plt.subplot( subplot_rows, subplot_cols, layer_idx + 1 )
 			plt.imshow( get_layer, cmap=colormap )
+		plt.setp(plt.gca().get_xticklabels(), visible=False)
+		plt.setp(plt.gca().get_yticklabels(), visible=False)
 		plt.savefig( filename )
 
 	# In the step function, we should update the permittivity with update_permittivity
