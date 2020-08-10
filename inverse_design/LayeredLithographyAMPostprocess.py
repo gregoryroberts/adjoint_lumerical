@@ -283,6 +283,9 @@ def disable_all_sources():
 	# fdtd_hook.switchtolayout()
 	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
+	fdtd_hook.select( angled_source['name'] )
+	fdtd_hook.set( 'enabled', 0 )
+
 	for xy_idx in range(0, 2):
 		fdtd_hook.select( forward_sources[xy_idx]['name'] )
 		fdtd_hook.set( 'enabled', 0 )
@@ -447,22 +450,24 @@ min_angle_degrees = 0
 max_angle_degrees = 8
 angles_degrees = np.linspace( min_angle_degrees, max_angle_degrees, num_angles )
 
+angled_source = fdtd_hook.addplane()
+angled_source['name'] = 'angled_source'
+angled_source['angle phi'] = xy_phi_rotations[0] + angle_phi
+angled_source['angle theta'] = angles_degrees[ 0 ]
+angled_source['direction'] = 'Backward'
+angled_source['x span'] = 2 * lateral_aperture_um * 1e-6
+angled_source['y span'] = 2 * lateral_aperture_um * 1e-6
+angled_source['z'] = src_maximum_vertical_um * 1e-6
+# angled_source['z min'] = src_minimum_vertical_um * 1e-6
+angled_source['wavelength start'] = lambda_min_um * 1e-6
+angled_source['wavelength stop'] = lambda_max_um * 1e-6
+
 for angle_idx in range( 0, num_angles ):
-	angled_source = fdtd_hook.addplane()
-	angled_source['name'] = 'angled_source'
-	angled_source['angle phi'] = xy_phi_rotations[0] + angle_phi
-	angled_source['angle theta'] = angles_degrees[ angle_idx ]
-	angled_source['direction'] = 'Backward'
-	angled_source['x span'] = 2 * lateral_aperture_um * 1e-6
-	angled_source['y span'] = 2 * lateral_aperture_um * 1e-6
-	angled_source['z'] = src_maximum_vertical_um * 1e-6
-	# angled_source['z min'] = src_minimum_vertical_um * 1e-6
-	angled_source['wavelength start'] = lambda_min_um * 1e-6
-	angled_source['wavelength stop'] = lambda_max_um * 1e-6
 
 
 	disable_all_sources()
 	design_import.enabled = 0
+	angled_source['angle theta'] = angles_degrees[ angle_idx ]
 	fdtd_hook.select( angled_source['name'] )
 	fdtd_hook.set( 'enabled', 1 )
 	fdtd_hook.run()
