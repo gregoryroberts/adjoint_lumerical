@@ -19,7 +19,7 @@ class GaussianBlur():
 
 	def forward( self, variable_in ):
 		if self.blur_sigma == 0:
-			return variable_in
+			return 1.0 * np.greater_equal( variable_in, 0.5 )
 
 		# return variable_in
 		z_shape = variable_in.shape[ 2 ]
