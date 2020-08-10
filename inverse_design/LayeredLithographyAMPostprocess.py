@@ -444,10 +444,10 @@ linestyles = [ '--', '-.', '-', ':', ]
 
 # plt.clf()
 
-num_angles = 2
+num_angles = 6
 angle_phi = 45
 min_angle_degrees = 0
-max_angle_degrees = 8
+max_angle_degrees = 12
 angles_degrees = np.linspace( min_angle_degrees, max_angle_degrees, num_angles )
 
 angled_source = fdtd_hook.addplane()
@@ -535,7 +535,7 @@ for angle_idx in range( 0, num_angles ):
 plt.ylabel( 'Transmission', fontsize=16 )
 plt.xlabel( 'Wavelength (um)', fontsize=16 )
 plt.savefig( projects_directory_location + "/angled_test.png" )
-
+sys.exit(0)
 
 
 
