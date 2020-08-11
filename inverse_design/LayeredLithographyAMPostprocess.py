@@ -445,7 +445,7 @@ linestyles = [ '--', '-.', '-', ':', ]
 # plt.clf()
 
 num_angles = 4
-angle_phi = 45
+angle_phi = 0#45
 min_angle_degrees = 0
 max_angle_degrees = 12
 angles_degrees = np.linspace( min_angle_degrees, max_angle_degrees, num_angles )
