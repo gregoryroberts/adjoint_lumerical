@@ -486,7 +486,8 @@ for angle_idx in range( 0, num_angles ):
 		num_vertical_layers,
 		spacer_size_voxels,
 		last_layer_permittivities,
-		blur_sigmas[ 1 ] )
+		blur_sigmas[ 0 ] )
+		# blur_sigmas[ 1 ] )
 
 	bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
 	bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
@@ -539,7 +540,7 @@ for angle_idx in range( 0, num_angles ):
 
 plt.ylabel( 'Transmission', fontsize=16 )
 plt.xlabel( 'Wavelength (um)', fontsize=16 )
-plt.savefig( projects_directory_location + "/angled_test.png" )
+plt.savefig( projects_directory_location + "/angled_test_mask.png" )
 sys.exit(0)
 
 
