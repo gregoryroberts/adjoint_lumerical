@@ -452,11 +452,12 @@ angles_degrees = np.linspace( min_angle_degrees, max_angle_degrees, num_angles )
 
 angled_source = fdtd_hook.addplane()
 angled_source['name'] = 'angled_source'
+angled_source['plane wave type'] = 'Diffracting'
 angled_source['angle phi'] = xy_phi_rotations[0] + angle_phi
 angled_source['angle theta'] = angles_degrees[ 0 ]
 angled_source['direction'] = 'Backward'
-angled_source['x span'] = lateral_aperture_um * 1e-6
-angled_source['y span'] = lateral_aperture_um * 1e-6
+angled_source['x span'] = fdtd_region_size_lateral_um * 1e-6
+angled_source['y span'] = fdtd_region_size_lateral_um * 1e-6
 angled_source['z'] = src_maximum_vertical_um * 1e-6
 # angled_source['z min'] = src_minimum_vertical_um * 1e-6
 angled_source['wavelength start'] = lambda_min_um * 1e-6
