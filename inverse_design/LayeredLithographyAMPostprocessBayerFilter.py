@@ -20,6 +20,8 @@ class GaussianBlur():
 	def forward( self, variable_in ):
 		if self.blur_sigma == 0:
 			variable_out = variable_in.copy()
+			import sys
+			sys.exit(0)
 		else:
 
 			# return variable_in
