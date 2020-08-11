@@ -434,8 +434,8 @@ eval_forward_idx = 0
 def blur_size_to_sigma( blur_size_um ):
 	return ( ( ( blur_size_um / design_spacing_um ) - 1 ) / 2 )
 
-# blur_sizes_um = [ 0, 0.075, 0.1, 0.125 ]
-blur_sizes_um = [ 0, 0.1 ]
+blur_sizes_um = [ 0, 0.075, 0.1, 0.125 ]
+# blur_sizes_um = [ 0, 0.1 ]
 blur_sigmas = [ blur_size_to_sigma( x ) for x in blur_sizes_um ]
 colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
@@ -463,190 +463,194 @@ angled_source['z'] = src_maximum_vertical_um * 1e-6
 angled_source['wavelength start'] = lambda_min_um * 1e-6
 angled_source['wavelength stop'] = lambda_max_um * 1e-6
 
-for angle_idx in range( 0, num_angles ):
+do_angles = False
+do_features = True
+
+if do_angles:
+
+	for angle_idx in range( 0, num_angles ):
 
 
-	disable_all_sources()
-	design_import.enabled = 0
-	air_bottom.enabled = 0
-	substrate['index'] = background_index
+		disable_all_sources()
+		design_import.enabled = 0
+		air_bottom.enabled = 0
+		substrate['index'] = background_index
 
-	angled_source['angle theta'] = angles_degrees[ angle_idx ]
-	fdtd_hook.select( angled_source['name'] )
-	fdtd_hook.set( 'enabled', 1 )
-	fdtd_hook.run()
+		angled_source['angle theta'] = angles_degrees[ angle_idx ]
+		fdtd_hook.select( angled_source['name'] )
+		fdtd_hook.set( 'enabled', 1 )
+		fdtd_hook.run()
 
-	transmission_device_normalization = fdtd_hook.getresult( transmission_device['name'], 'T' )
-
-
-	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
-		bayer_filter_size_voxels,
-		[min_device_permittivity, max_device_permittivity],
-		init_permittivity_0_1_scale,
-		num_vertical_layers,
-		spacer_size_voxels,
-		last_layer_permittivities,
-		blur_sigmas[ 0 ] )
-		# blur_sigmas[ 1 ] )
-
-	bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
-	bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
-	bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
-
-	bayer_filter.update_filters( num_epochs - 1 )
-	bayer_filter.set_design_variable( final_design_variable )
-
-	# bayer_filter.plot_layers( 2, 3, 'Greens', projects_directory_location + "/layers_sigma_" + str( blur_sigma_idx ) + ".png" )
-
-	cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
-	cur_index = np.sqrt( cur_permittivity )
-
-	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
-	design_import.enabled = 1
-	air_bottom.enabled = 1
-	substrate['index'] = index_substrate
-	fdtd_hook.select( design_import[ 'name' ] )
-	fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
-	fdtd_hook.save( projects_directory_location + "/postprocess.fsp" )
+		transmission_device_normalization = fdtd_hook.getresult( transmission_device['name'], 'T' )
 
 
-	#
-	# Step 1: Get all the simulations we need queued up and run in parallel and then we will
-	# put all the data together later.
-	#
-	disable_all_sources()
-	fdtd_hook.select( angled_source['name'] )
-	fdtd_hook.set( 'enabled', 1 )
+		bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
+			bayer_filter_size_voxels,
+			[min_device_permittivity, max_device_permittivity],
+			init_permittivity_0_1_scale,
+			num_vertical_layers,
+			spacer_size_voxels,
+			last_layer_permittivities,
+			blur_sigmas[ 0 ] )
+			# blur_sigmas[ 1 ] )
 
-	fdtd_hook.run()
+		bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+		bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+		bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
 
-	#
-	# Step 4: Compute the figure of merit
-	#
+		bayer_filter.update_filters( num_epochs - 1 )
+		bayer_filter.set_design_variable( final_design_variable )
 
-	figure_of_merit_per_focal_spot = []
-	figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
-	for focal_idx in range(0, num_focal_spots - 1):
-		compute_fom = 0
+		# bayer_filter.plot_layers( 2, 3, 'Greens', projects_directory_location + "/layers_sigma_" + str( blur_sigma_idx ) + ".png" )
 
-		# polarizations = polarizations_focal_plane_map[focal_idx]
+		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+		cur_index = np.sqrt( cur_permittivity )
 
-		transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
-		plt.plot(
-			np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), transmission_data[ 'T' ] / transmission_device_normalization[ 'T' ],
-			color=colors[ focal_idx ],
-			linestyle=linestyles[ angle_idx ],
-			linewidth=2 )
-
-plt.ylabel( 'Transmission', fontsize=16 )
-plt.xlabel( 'Wavelength (um)', fontsize=16 )
-plt.savefig( projects_directory_location + "/angled_test_mask.png" )
-sys.exit(0)
+		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+		design_import.enabled = 1
+		air_bottom.enabled = 1
+		substrate['index'] = index_substrate
+		fdtd_hook.select( design_import[ 'name' ] )
+		fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+		fdtd_hook.save( projects_directory_location + "/postprocess.fsp" )
 
 
+		#
+		# Step 1: Get all the simulations we need queued up and run in parallel and then we will
+		# put all the data together later.
+		#
+		disable_all_sources()
+		fdtd_hook.select( angled_source['name'] )
+		fdtd_hook.set( 'enabled', 1 )
+
+		fdtd_hook.run()
+
+		#
+		# Step 4: Compute the figure of merit
+		#
+
+		figure_of_merit_per_focal_spot = []
+		figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
+		for focal_idx in range(0, num_focal_spots - 1):
+			compute_fom = 0
+
+			# polarizations = polarizations_focal_plane_map[focal_idx]
+
+			transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
+			plt.plot(
+				np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), transmission_data[ 'T' ] / transmission_device_normalization[ 'T' ],
+				color=colors[ focal_idx ],
+				linestyle=linestyles[ angle_idx ],
+				linewidth=2 )
+
+	plt.ylabel( 'Transmission', fontsize=16 )
+	plt.xlabel( 'Wavelength (um)', fontsize=16 )
+	plt.savefig( projects_directory_location + "/angled_test_mask.png" )
 
 
-for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
-	bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
-		bayer_filter_size_voxels,
-		[min_device_permittivity, max_device_permittivity],
-		init_permittivity_0_1_scale,
-		num_vertical_layers,
-		spacer_size_voxels,
-		last_layer_permittivities,
-		blur_sigmas[ blur_sigma_idx ] )
+if do_features:
 
-	bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
-	bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
-	bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
+	for blur_sigma_idx in range( 0, len( blur_sigmas ) ):
+		bayer_filter = LayeredLithographyAMPostprocessBayerFilter.LayeredLithographyAMBayerFilter(
+			bayer_filter_size_voxels,
+			[min_device_permittivity, max_device_permittivity],
+			init_permittivity_0_1_scale,
+			num_vertical_layers,
+			spacer_size_voxels,
+			last_layer_permittivities,
+			blur_sigmas[ blur_sigma_idx ] )
 
-	bayer_filter.update_filters( num_epochs - 1 )
-	bayer_filter.set_design_variable( final_design_variable )
+		bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+		bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um + 0.5 * mesh_spacing_um, 0.5 * device_size_lateral_um - 0.5 * mesh_spacing_um, simulated_device_voxels_lateral)
+		bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um + 0.5 * mesh_spacing_um, device_vertical_maximum_um - 0.5 * mesh_spacing_um, simulated_device_voxels_vertical)
 
-	# bayer_filter.plot_layers( 2, 3, 'Greens', projects_directory_location + "/layers_sigma_" + str( blur_sigma_idx ) + ".png" )
+		bayer_filter.update_filters( num_epochs - 1 )
+		bayer_filter.set_design_variable( final_design_variable )
 
-	cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
-	cur_index = np.sqrt( cur_permittivity )
+		# bayer_filter.plot_layers( 2, 3, 'Greens', projects_directory_location + "/layers_sigma_" + str( blur_sigma_idx ) + ".png" )
 
-	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
-	fdtd_hook.select( design_import[ 'name' ] )
-	fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
-	fdtd_hook.save( projects_directory_location + "/postprocess.fsp" )
+		cur_permittivity = np.flip( bayer_filter.get_permittivity(), axis=2 )
+		cur_index = np.sqrt( cur_permittivity )
+
+		lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
+		fdtd_hook.select( design_import[ 'name' ] )
+		fdtd_hook.importnk2(cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
+		fdtd_hook.save( projects_directory_location + "/postprocess.fsp" )
 
 
-	#
-	# Step 1: Get all the simulations we need queued up and run in parallel and then we will
-	# put all the data together later.
-	#
-	disable_all_sources()
-	fdtd_hook.select( forward_sources[eval_forward_idx]['name'] )
-	fdtd_hook.set( 'enabled', 1 )
+		#
+		# Step 1: Get all the simulations we need queued up and run in parallel and then we will
+		# put all the data together later.
+		#
+		disable_all_sources()
+		fdtd_hook.select( forward_sources[eval_forward_idx]['name'] )
+		fdtd_hook.set( 'enabled', 1 )
 
-	fdtd_hook.run()
+		fdtd_hook.run()
 
-	forward_e_fields = {}
-	focal_data = [ {} for i in range( 0, num_adjoint_sources ) ]
-	#
-	# Step 3: Get all the forward data from the simulations
-	#
-	# forward_e_fields[xy_names[eval_forward_idx]] = get_efield_interpolated(
-	# 	design_efield_monitor['name' ],
-	# 	spatial_limits_device_um,
-	# 	interpolated_size
-	# )
+		forward_e_fields = {}
+		focal_data = [ {} for i in range( 0, num_adjoint_sources ) ]
+		#
+		# Step 3: Get all the forward data from the simulations
+		#
+		# forward_e_fields[xy_names[eval_forward_idx]] = get_efield_interpolated(
+		# 	design_efield_monitor['name' ],
+		# 	spatial_limits_device_um,
+		# 	interpolated_size
+		# )
 
-	for adj_src_idx in range(0, num_adjoint_sources):
-		# pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
-		pull_focal_data = get_efield( focal_monitors[ adj_src_idx ][ 'name' ] )
-		# pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
-		pull_focal_data = pull_focal_data[ :, 0, 0, 0, : ]
-		focal_data[ adj_src_idx ][ xy_names[ eval_forward_idx ] ] = pull_focal_data
+		for adj_src_idx in range(0, num_adjoint_sources):
+			# pull_focal_data = get_complex_monitor_data( focal_monitors[ adj_src_idx ][ 'name' ], 'E' )
+			pull_focal_data = get_efield( focal_monitors[ adj_src_idx ][ 'name' ] )
+			# pull_focal_data = pull_focal_data[ :, :, 0, 0, 0 ]
+			pull_focal_data = pull_focal_data[ :, 0, 0, 0, : ]
+			focal_data[ adj_src_idx ][ xy_names[ eval_forward_idx ] ] = pull_focal_data
 
-	#
-	# Step 4: Compute the figure of merit
-	#
+		#
+		# Step 4: Compute the figure of merit
+		#
 
-	figure_of_merit_per_focal_spot = []
-	figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
-	for focal_idx in range(0, num_focal_spots):
-		compute_fom = 0
+		figure_of_merit_per_focal_spot = []
+		figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
+		for focal_idx in range(0, num_focal_spots - 1):
+			compute_fom = 0
 
-		# polarizations = polarizations_focal_plane_map[focal_idx]
+			# polarizations = polarizations_focal_plane_map[focal_idx]
 
-		transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
-		plt.plot(
-			np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), -transmission_data[ 'T' ],
-			color=colors[ focal_idx ],
-			linestyle=linestyles[ blur_sigma_idx ],
-			linewidth=2 )
+			transmission_data = fdtd_hook.getresult( transmission_focal_monitors[focal_idx]['name'], 'T' )
+			plt.plot(
+				np.linspace( lambda_min_um, lambda_max_um, num_eval_frequency_points ), -transmission_data[ 'T' ],
+				color=colors[ focal_idx ],
+				linestyle=linestyles[ blur_sigma_idx ],
+				linewidth=2 )
 
-		# for polarization_idx in range(0, len(polarizations)):
-		# 	get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
+			# for polarization_idx in range(0, len(polarizations)):
+			# 	get_focal_data = focal_data[ focal_idx ][ polarizations[ polarization_idx ] ]
 
-		# 	max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
-		# 	total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
+			# 	max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
+			# 	total_weighting = weight_focal_plane_map[focal_idx] / max_intensity_weighting
 
-		# 	for spectral_idx in range(0, total_weighting.shape[0]):
-		# 		get_fom_by_wl = np.sum(
-		# 			np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
-		# 				total_weighting[spectral_idx]
-		# 		)
+			# 	for spectral_idx in range(0, total_weighting.shape[0]):
+			# 		get_fom_by_wl = np.sum(
+			# 			np.abs(get_focal_data[:, spectral_focal_plane_map[focal_idx][0] + spectral_idx])**2 *
+			# 				total_weighting[spectral_idx]
+			# 		)
 
-		# 		figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_idx ] += get_fom_by_wl
+			# 		figure_of_merit_by_focal_spot_by_wavelength[ focal_idx, spectral_idx ] += get_fom_by_wl
 
-		# 		compute_fom += get_fom_by_wl
+			# 		compute_fom += get_fom_by_wl
 
-		# figure_of_merit_per_focal_spot.append(compute_fom)
+			# figure_of_merit_per_focal_spot.append(compute_fom)
 
-legend = [
-	'No Blur Q1', 'No Blur Q2', 'No Blur Q3', 'No Blur Q4',
-	'50nm Blur Q1', '50nm Blur Q2', '50nm Blur Q3', '50nm Blur Q4',
-	'100nm Blur Q1', '100nm Blur Q2', '100nm Blur Q3', '100nm Blur Q4',
-	'150nm Blur Q1', '150nm Blur Q2', '150nm Blur Q3', '150nm Blur Q4',
-]
-# plt.legend( legend )
-plt.ylabel( 'Transmission', fontsize=16 )
-plt.xlabel( 'Wavelength (um)', fontsize=16 )
-# plt.show()
-plt.savefig( projects_directory_location + "/blur_test_less_bin.png" )
+	legend = [
+		'No Blur Q1', 'No Blur Q2', 'No Blur Q3', 'No Blur Q4',
+		'50nm Blur Q1', '50nm Blur Q2', '50nm Blur Q3', '50nm Blur Q4',
+		'100nm Blur Q1', '100nm Blur Q2', '100nm Blur Q3', '100nm Blur Q4',
+		'150nm Blur Q1', '150nm Blur Q2', '150nm Blur Q3', '150nm Blur Q4',
+	]
+	# plt.legend( legend )
+	plt.ylabel( 'Transmission', fontsize=16 )
+	plt.xlabel( 'Wavelength (um)', fontsize=16 )
+	# plt.show()
+	plt.savefig( projects_directory_location + "/blur_test.png" )
 
