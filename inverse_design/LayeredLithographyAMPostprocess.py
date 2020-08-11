@@ -652,5 +652,5 @@ if do_features:
 	plt.ylabel( 'Transmission', fontsize=16 )
 	plt.xlabel( 'Wavelength (um)', fontsize=16 )
 	# plt.show()
-	plt.savefig( projects_directory_location + "/blur_test.png" )
+	plt.savefig( projects_directory_location + "/blur_test_less.png" )
 
