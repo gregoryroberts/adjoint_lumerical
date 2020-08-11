@@ -444,10 +444,10 @@ linestyles = [ '--', '-.', '-', ':', ]
 
 # plt.clf()
 
-num_angles = 4
+num_angles = 3
 angle_phi = 0#45
 min_angle_degrees = 0
-max_angle_degrees = 12
+max_angle_degrees = 9
 angles_degrees = np.linspace( min_angle_degrees, max_angle_degrees, num_angles )
 
 angled_source = fdtd_hook.addplane()
