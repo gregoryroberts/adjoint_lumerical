@@ -444,7 +444,7 @@ linestyles = [ '--', '-.', '-', ':', ]
 
 # plt.clf()
 
-num_angles = 3
+num_angles = 4
 angle_phi = 0#45
 min_angle_degrees = 0
 max_angle_degrees = 9
@@ -525,7 +525,7 @@ for angle_idx in range( 0, num_angles ):
 
 	figure_of_merit_per_focal_spot = []
 	figure_of_merit_by_focal_spot_by_wavelength = np.zeros( ( num_focal_spots, num_points_per_band ) )
-	for focal_idx in range(0, num_focal_spots):
+	for focal_idx in range(0, num_focal_spots - 1):
 		compute_fom = 0
 
 		# polarizations = polarizations_focal_plane_map[focal_idx]
