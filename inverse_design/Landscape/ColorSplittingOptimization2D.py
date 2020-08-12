@@ -659,7 +659,7 @@ class ColorSplittingOptimization2D():
 
 	def optimize(
 		self, num_iterations,
-		random_globals=False, random_global_iteration_frequency=10, random_global_scan_points=10,
+		random_globals=False, random_global_iteration_frequency=10, random_global_scan_points=10, bounds_cutoff=0.9,
 		opt_mask=None,
 		use_log_fom=False,
 		wavelength_adversary=False, adversary_update_iters=-1, bottom_wls_um=None, top_wls_um=None,
@@ -733,14 +733,19 @@ class ColorSplittingOptimization2D():
 
 
 			if random_globals and ( ( iter_idx % random_global_iteration_frequency ) == 0 ):
-				random_direction = opt_mask * np.random.normal( 0, 1 )
+				random_direction = opt_mask * np.random.normal( 0, 1, self.design_density.shape )
+
+				for row in range( 0, random_direction.shape[ 0 ] ):
+					for col in range( 0, random_direction.shape[ 1 ] ):
+						if ( mask_density[ row, col ] >= bounds_cutoff ) or ( mask_density[ row, col ] < ( 1 - bounds_cutoff ) ):
+							random_direction[ row, col ] = 0
+
 				random_direction /= np.sqrt( np.sum( random_direction**2 ) )
 
 				alpha_0 = np.sum( random_direction * mask_density )
 				rho_0 = mask_density - alpha_0 * random_direction
-
-				lower_alpha_bound = np.inf
-				upper_alpha_bound = -np.inf
+				lower_alpha_bound = -np.inf
+				upper_alpha_bound = np.inf
 
 				flatten_rho_0 = rho_0.flatten()
 				flatten_random_direction = random_direction.flatten()
@@ -779,17 +784,24 @@ class ColorSplittingOptimization2D():
 					return total_product_fom
 
 				fom_to_beat = sweep_fom( self.design_density )
-				alpha_to_beat = 0
+				alpha_to_beat = alpha_0
 
 				for alpha_idx in range( 0, random_global_scan_points ):
 					sweep_density = alpha_sweep[ alpha_idx ] * random_direction + rho_0
+					sweep_density = np.maximum( 0.0, np.minimum( sweep_density, 1.0 ) )
 
 					cur_fom = sweep_fom( sweep_density )
 					if cur_fom > fom_to_beat:
 						fom_to_beat = cur_fom
 						alpha_to_beat = alpha_sweep[ alpha_idx ]
 
+				log_file = open( self.save_folder + "/log.txt", 'a' )
+				log_file.write( "Initial alpha: " + str( alpha_0 ) + "\n" )
+				log_file.write( "Final alpha: " + str( alpha_to_beat ) + "\n\n" )
+				log_file.close()
+
 				self.design_density = alpha_to_beat * random_direction + rho_0
+				self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
 				mask_density = opt_mask * self.design_density
 				import_density = upsample( mask_density, self.coarsen_factor )
 				device_permittivity = self.density_to_permittivity( import_density )
