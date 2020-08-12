@@ -659,6 +659,7 @@ class ColorSplittingOptimization2D():
 
 	def optimize(
 		self, num_iterations,
+		random_globals=False, random_global_iteration_frequency=10, random_global_scan_points=10,
 		opt_mask=None,
 		use_log_fom=False,
 		wavelength_adversary=False, adversary_update_iters=-1, bottom_wls_um=None, top_wls_um=None,
@@ -729,6 +730,71 @@ class ColorSplittingOptimization2D():
 			mask_density = opt_mask * self.design_density
 			import_density = upsample( mask_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
+
+
+			if random_globals and ( ( iter_idx % random_global_iteration_frequency ) == 0 ):
+				random_direction = opt_mask * np.random.normal( 0, 1 )
+				random_direction /= np.sqrt( np.sum( random_direction**2 ) )
+
+				alpha_0 = np.sum( random_direction * mask_density )
+				rho_0 = mask_density - alpha_0 * random_direction
+
+				lower_alpha_bound = np.inf
+				upper_alpha_bound = -np.inf
+
+				flatten_rho_0 = rho_0.flatten()
+				flatten_random_direction = random_direction.flatten()
+
+				critical_low_alpha = ( 0.0 - flatten_rho_0 ) / ( flatten_random_direction + 1e-8 )
+				critical_high_alpha = ( 1.0 - flatten_rho_0 ) / ( flatten_random_direction + 1e-8 )
+
+				for idx in range( 0, len( flatten_rho_0 ) ):
+					if ( flatten_random_direction[ idx ] > 0 ):
+						upper_alpha_bound = np.minimum( upper_alpha_bound, critical_high_alpha[ idx ] )
+						lower_alpha_bound = np.maximum( lower_alpha_bound, critical_low_alpha[ idx ] )
+					else:
+						lower_alpha_bound = np.maximum( lower_alpha_bound, critical_high_alpha[ idx ] )
+						upper_alpha_bound = np.minimum( upper_alpha_bound, critical_low_alpha[ idx ] )
+
+				alpha_sweep = np.linspace( lower_alpha_bound, upper_alpha_bound, random_global_scan_points )
+
+
+				def sweep_fom( test_rho ):
+					mask_density = opt_mask * test_rho
+					import_density = upsample( mask_density, self.coarsen_factor )
+					test_permittivity = self.density_to_permittivity( import_density )	
+
+					total_product_fom = 1.0
+					for wl_idx in range( 0, self.num_wavelengths ):
+						get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+
+						get_fom = self.compute_fom(
+							self.omega_values[ wl_idx ], test_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+							self.wavelength_intensity_scaling[ wl_idx ] )
+
+						total_product_fom *= get_fom
+
+					if use_log_fom:
+						total_product_fom = np.log( total_product_fom )
+
+					return total_product_fom
+
+				fom_to_beat = sweep_fom( self.design_density )
+				alpha_to_beat = 0
+
+				for alpha_idx in range( 0, random_global_scan_points ):
+					sweep_density = alpha_sweep[ alpha_idx ] * random_direction + rho_0
+
+					cur_fom = sweep_fom( sweep_density )
+					if cur_fom > fom_to_beat:
+						fom_to_beat = cur_fom
+						alpha_to_beat = alpha_sweep[ alpha_idx ]
+
+				self.design_density = alpha_to_beat * random_direction + rho_0
+				mask_density = opt_mask * self.design_density
+				import_density = upsample( mask_density, self.coarsen_factor )
+				device_permittivity = self.density_to_permittivity( import_density )
+
 
 			gradient_by_wl = []
 			fom_by_wl = []

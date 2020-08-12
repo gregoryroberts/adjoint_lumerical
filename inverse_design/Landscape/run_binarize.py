@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8#6#8
-density_coarsen_factor = 8#4
+density_coarsen_factor = 4#8#4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -66,7 +66,7 @@ lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 120#160#120
 # device_width_voxels = 200
-device_height_voxels = 104#100#132#100
+device_height_voxels = 100#104#100#132#100
 # device_height_voxels = 72#100#72
 # device_height_voxels = #52#64#52
 # device_height_voxels = 48#32
@@ -285,6 +285,7 @@ else:
 
 	make_optimizer.optimize(
 		num_iterations,
+		True, 10, 10,
 		None, # opt_mask,
 		use_log_fom,
 		wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
