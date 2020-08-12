@@ -758,7 +758,6 @@ class ColorSplittingOptimization2D():
 
 				alpha_sweep = np.linspace( lower_alpha_bound, upper_alpha_bound, random_global_scan_points )
 
-
 				def sweep_fom( test_rho ):
 					mask_density = opt_mask * test_rho
 					import_density = upsample( mask_density, self.coarsen_factor )
