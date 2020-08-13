@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8#6#8
-density_coarsen_factor = 12
+density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -281,59 +281,7 @@ else:
 	wavelength_adversary = False#True
 	adversary_update_iters = 10
 
-	opt_mask_mid_focus = np.zeros( ( design_width, design_height ) )
-	opt_mask_splitter = np.zeros( ( design_width, design_height ) )
-
-	# opt_mask[ :, 10:15 ] = 0
-
-	# opt_mask[ 6:12, 0:10 ] = 0
-	# opt_mask[ 18:24, 0:10 ] = 0
-
-	# opt_mask[ 0:6, 15:25 ] = 0
-	# opt_mask[ 12:18, 15:25 ] = 0
-	# opt_mask[ 24:30, 15:25 ] = 0
-
-	device_layer_voxels_focuser = int( device_height_voxels * 2. / 7. )
-	design_layer_voxels_focuser = int( device_layer_voxels_focuser / density_coarsen_factor )
-
-	opt_mask_mid_focus[ :, ( design_height - design_layer_voxels_focuser ) : ] = 1
-	opt_mask_splitter[ :, 0 : design_layer_voxels_focuser ] = 1
-
-	focal_points_x_relative_mid_focus = [ 0.5, 0.5 ]
-	focal_length_voxels_mid_focus = -device_layer_voxels_focuser
-
-	make_optimizer_mid_focus = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
-		[ device_width_voxels, device_height_voxels ],
-		density_coarsen_factor, mesh_size_nm,
-		[ min_relative_permittivity, max_relative_permittivity ],
-		focal_points_x_relative_mid_focus, focal_length_voxels_mid_focus,
-		lambda_values_um, focal_map, random_seed,
-		num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
-		blur_fields, blur_fields_size_voxels, None, binarize_set_point )
-
-
-	uniform_density_with_spacer = mean_density * np.ones( ( design_width, design_height ) )
-	uniform_density_with_spacer *= np.maximum( opt_mask_mid_focus, opt_mask_splitter )
-	make_optimizer_mid_focus.init_density_directly( uniform_density_with_spacer )
-
-	make_optimizer_mid_focus.optimize(
-		int( num_iterations / 1.5 ),
-		False, 20, 20, 0.95,
-		opt_mask_mid_focus,
-		use_log_fom,
-		wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-		binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
-		dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
-
-	make_optimizer_mid_focus.save_optimization_data( save_folder + "/opt_focuser" )
-
-
-
-
-	# make_optimizer_mid_focus.plot_geometry( opt_mask_mid_focus + 2 * opt_mask_splitter )
-
-
-	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
+	dual_opt = False
 
 	make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 		[ device_width_voxels, device_height_voxels ],
@@ -344,27 +292,69 @@ else:
 		num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
 		blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
-	make_optimizer.init_density_directly( make_optimizer_mid_focus.design_density )
+	if dual_opt:
+		opt_mask_mid_focus = np.zeros( ( design_width, design_height ) )
+		opt_mask_splitter = np.zeros( ( design_width, design_height ) )
 
-	make_optimizer.optimize(
-		int( num_iterations / 1.5 ),
-		False, 20, 20, 0.95,
-		opt_mask_splitter,
-		use_log_fom,
-		wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-		binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
-		dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+		device_layer_voxels_focuser = int( device_height_voxels * 2. / 7. )
+		design_layer_voxels_focuser = int( device_layer_voxels_focuser / density_coarsen_factor )
 
-	# make_optimizer.plot_geometry( opt_mask_splitter )
+		opt_mask_mid_focus[ :, ( design_height - design_layer_voxels_focuser ) : ] = 1
+		opt_mask_splitter[ :, 0 : design_layer_voxels_focuser ] = 1
+
+		focal_points_x_relative_mid_focus = [ 0.5, 0.5 ]
+		focal_length_voxels_mid_focus = -device_layer_voxels_focuser
+
+		make_optimizer_mid_focus = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
+			[ device_width_voxels, device_height_voxels ],
+			density_coarsen_factor, mesh_size_nm,
+			[ min_relative_permittivity, max_relative_permittivity ],
+			focal_points_x_relative_mid_focus, focal_length_voxels_mid_focus,
+			lambda_values_um, focal_map, random_seed,
+			num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
+			blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
 
-	# make_optimizer.optimize(
-	# 	num_iterations,
-	# 	True, 20, 20, 0.95,
-	# 	None, # opt_mask,
-	# 	use_log_fom,
-	# 	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-	# 	binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-	# 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+		uniform_density_with_spacer = mean_density * np.ones( ( design_width, design_height ) )
+		uniform_density_with_spacer *= np.maximum( opt_mask_mid_focus, opt_mask_splitter )
+		make_optimizer_mid_focus.init_density_directly( uniform_density_with_spacer )
 
-	make_optimizer.save_optimization_data( save_folder + "/opt" )
+		make_optimizer_mid_focus.optimize(
+			int( num_iterations / 1.5 ),
+			False, 20, 20, 0.95,
+			opt_mask_mid_focus,
+			use_log_fom,
+			wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+			binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
+			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+
+		make_optimizer_mid_focus.save_optimization_data( save_folder + "/opt_focuser" )
+
+
+		make_optimizer.init_density_directly( make_optimizer_mid_focus.design_density )
+
+		make_optimizer.optimize(
+			int( num_iterations / 1.5 ),
+			False, 20, 20, 0.95,
+			opt_mask_splitter,
+			use_log_fom,
+			wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+			binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
+			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+
+		make_optimizer.save_optimization_data( save_folder + "/opt" )
+
+	else:
+		make_optimizer.init_density_with_uniform( mean_density )
+
+		make_optimizer.optimize(
+			int( num_iterations / 1.5 ),
+			False, 20, 20, 0.95,
+			None,
+			use_log_fom,
+			wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+			binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
+			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+
+
+		make_optimizer.save_optimization_data( save_folder + "/opt" )

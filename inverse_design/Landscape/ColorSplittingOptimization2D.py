@@ -767,8 +767,6 @@ class ColorSplittingOptimization2D():
 		self.dense_plot_idxs = []
 		self.dense_plots = []
 
-		self.design_density *= opt_mask
-
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
 				log_file = open( self.save_folder + "/log.txt", 'a' )
@@ -776,8 +774,8 @@ class ColorSplittingOptimization2D():
 				log_file.close()
 
 
-			mask_density = opt_mask * self.design_density
-			import_density = upsample( mask_density, self.coarsen_factor )
+			# mask_density = opt_mask * self.design_density
+			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
 
 
@@ -813,8 +811,7 @@ class ColorSplittingOptimization2D():
 					alpha_sweep = np.linspace( lower_alpha_bound, upper_alpha_bound, random_global_scan_points )
 
 					def sweep_fom( test_rho ):
-						mask_density = opt_mask * test_rho
-						import_density = upsample( mask_density, self.coarsen_factor )
+						import_density = upsample( self.design_density, self.coarsen_factor )
 						test_permittivity = self.density_to_permittivity( import_density )	
 
 						total_product_fom = 1.0
@@ -851,8 +848,7 @@ class ColorSplittingOptimization2D():
 
 					self.design_density = alpha_to_beat * random_direction + rho_0
 					self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
-					mask_density = opt_mask * self.design_density
-					import_density = upsample( mask_density, self.coarsen_factor )
+					import_density = upsample( self.design_density, self.coarsen_factor )
 					device_permittivity = self.density_to_permittivity( import_density )
 
 
