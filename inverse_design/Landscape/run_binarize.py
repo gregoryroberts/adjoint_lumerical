@@ -64,16 +64,28 @@ def density_bound_from_eps( eps_val ):
 # lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
-device_width_voxels = 120#160#120
-# device_width_voxels = 200
-device_height_voxels = 100#104#100#132#100
-# device_height_voxels = 72#100#72
-# device_height_voxels = #52#64#52
-# device_height_voxels = 48#32
-# device_height_voxels = 32#24
-device_voxels_total = device_width_voxels * device_height_voxels
-focal_length_voxels = 100#132#100
-focal_points_x_relative = [ 0.25, 0.75 ]
+feature_test = True
+
+if feature_test:
+
+	device_width_voxels = 240
+	device_height_voxels = 168
+	device_voxels_total = device_width_voxels * device_height_voxels
+	focal_length_voxels = 200
+	focal_points_x_relative = [ 0.25, 0.75 ]
+
+else:
+
+	device_width_voxels = 120#160#120
+	# device_width_voxels = 200
+	device_height_voxels = 100#104#100#132#100
+	# device_height_voxels = 72#100#72
+	# device_height_voxels = #52#64#52
+	# device_height_voxels = 48#32
+	# device_height_voxels = 32#24
+	device_voxels_total = device_width_voxels * device_height_voxels
+	focal_length_voxels = 100#132#100
+	focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
 spacer_permittivity = 1.0**2
@@ -281,15 +293,40 @@ else:
 	opt_mask[ 24:30, 15:25 ] = 0
 
 
+	# focal_points_x_relative_focusing = [ 0.5, 0.5 ]
+	# focal_length_voxels
+
+	# make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
+	# 	[ device_width_voxels, device_height_voxels ],
+	# 	density_coarsen_factor, mesh_size_nm,
+	# 	[ min_relative_permittivity, max_relative_permittivity ],
+	# 	focal_points_x_relative, focal_length_voxels,
+	# 	lambda_values_um, focal_map, random_seed,
+	# 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
+	# 	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
+
+
+
+
 	# make_optimizer.verify_adjoint_against_finite_difference_lambda()
 
 	make_optimizer.optimize(
 		num_iterations,
-		True, 20, 20, 0.95,
+		False, 20, 20, 0.95,
 		None, # opt_mask,
 		use_log_fom,
 		wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 		binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
 		dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+
+
+	# make_optimizer.optimize(
+	# 	num_iterations,
+	# 	True, 20, 20, 0.95,
+	# 	None, # opt_mask,
+	# 	use_log_fom,
+	# 	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+	# 	binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+	# 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
 	make_optimizer.save_optimization_data( save_folder + "/opt" )
