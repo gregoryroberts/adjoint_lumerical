@@ -230,19 +230,19 @@ class ColorSplittingOptimization2D():
 		self.pml_voxels = int( 1.0 * np.max( self.wavelengths_um ) / self.mesh_size_um )
 
 		self.simulation_width_voxels = self.device_width_voxels + 2 * self.width_gap_voxels + 2 * self.pml_voxels
-		self.simulation_height_voxels = self.device_height_voxels + self.focal_length_y_voxels + self.height_gap_voxels_bottom + self.height_gap_voxels_top + 2 * self.pml_voxels
+		self.simulation_height_voxels = self.device_height_voxels + np.maximum( self.focal_length_y_voxels, 0 ) + self.height_gap_voxels_bottom + self.height_gap_voxels_top + 2 * self.pml_voxels
 
 		self.device_width_start = int( 0.5 * ( self.simulation_width_voxels - self.device_width_voxels ) )
 		self.device_width_end = self.device_width_start + self.device_width_voxels
-		self.device_height_start = int( self.pml_voxels + self.height_gap_voxels_bottom + self.focal_length_y_voxels )
+		self.device_height_start = int( self.pml_voxels + self.height_gap_voxels_bottom + np.maximum( self.focal_length_y_voxels, 0 ) )
 		self.device_height_end = self.device_height_start + self.device_height_voxels
 
 		self.focal_spots_x_voxels = [
 			int( self.device_width_start + self.focal_spots_x_relative[ idx ] * self.device_width_voxels ) for idx in range( 0, len( self.focal_spots_x_relative ) )
 		]
 
-		self.fwd_src_y = int( self.pml_voxels + self.height_gap_voxels_bottom + self.focal_length_y_voxels + self.device_height_voxels + 0.75 * self.height_gap_voxels_top )
-		self.focal_point_y = int( self.pml_voxels + self.height_gap_voxels_bottom )
+		self.fwd_src_y = int( self.pml_voxels + self.height_gap_voxels_bottom + np.maximum( self.focal_length_y_voxels, 0 ) + self.device_height_voxels + 0.75 * self.height_gap_voxels_top )
+		self.focal_point_y = int( self.pml_voxels + self.height_gap_voxels_bottom - np.minimum( self.focal_length_y_voxels, 0 ) )
 
 		self.rel_eps_simulation = np.ones( ( self.simulation_width_voxels, self.simulation_height_voxels ) )
 
@@ -251,6 +251,54 @@ class ColorSplittingOptimization2D():
 
 		self.fwd_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 		self.fwd_source[ fwd_src_x_range, fwd_src_y_range ] = 1
+
+	def plot_geometry( self, opt_mask=None ):
+		import matplotlib.pyplot as plt
+
+		focal_y = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ) )
+		for spot in range( 0, len( self.focal_spots_x_voxels ) ):
+			focal_y[
+				self.focal_spots_x_voxels[ spot ] - 5 : self.focal_spots_x_voxels[ spot ] + 5,
+				self.focal_point_y - 5 : self.focal_point_y + 5 ] = 1
+
+		device_region = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ) )
+		device_region[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] = 1
+
+		for spot in range( 0, len( self.focal_spots_x_voxels ) ):
+			device_region[
+				self.focal_spots_x_voxels[ spot ] - 5 : self.focal_spots_x_voxels[ spot ] + 5,
+				self.focal_point_y - 5 : self.focal_point_y + 5 ] = 2
+
+
+		plt.subplot( 2, 2, 1 )
+		plt.imshow( np.real( self.fwd_source ) )
+		plt.title( 'Forward Source' )
+		plt.subplot( 2, 2, 2 )
+		plt.imshow( focal_y )
+		plt.title( 'Focal Y' )
+		plt.subplot( 2, 2, 3 )
+		plt.imshow( device_region )
+		plt.title( 'Device Region' )
+		if opt_mask is not None:
+			opt_mask_region = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ) )
+			upsampled_mask = upsample( opt_mask, self.coarsen_factor )
+
+			for row in range( 0, upsampled_mask.shape[ 0 ] ):
+				for col in range( 0, upsampled_mask.shape[ 1 ] ):
+					opt_mask_region[ self.device_width_start + row, self.device_height_start + col ] = upsampled_mask[ row, col ]
+
+			for spot in range( 0, len( self.focal_spots_x_voxels ) ):
+				opt_mask_region[
+					self.focal_spots_x_voxels[ spot ] - 5 : self.focal_spots_x_voxels[ spot ] + 5,
+					self.focal_point_y - 5 : self.focal_point_y + 5 ] = 3
+
+
+			plt.subplot( 2, 2, 4 )
+			plt.imshow( opt_mask_region )
+			plt.title( 'Masked optimization region' )
+		plt.show()
+
+
 
 	def plot_subcell_gradient_variations( self, omega_idx, factor ):
 		import matplotlib.pyplot as plt
