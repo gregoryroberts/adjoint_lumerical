@@ -435,12 +435,12 @@ def blur_size_to_sigma( blur_size_um ):
 	return ( ( ( blur_size_um / design_spacing_um ) - 1 ) / 2 )
 
 # blur_sizes_um = [ 0, 0.075, 0.1, 0.125 ]
-blur_sizes_um = [ 0, 0.1 ]
+blur_sizes_um = [ 0.1 ]#[ 0, 0.1 ]
 blur_sigmas = [ blur_size_to_sigma( x ) for x in blur_sizes_um ]
 colors = [ 'b', 'g', 'r', 'g' ]
 # linestyles = [ '-', '-', '-', '--' ]
 # linestyles = [ '--', '-.', '-', ':', ]
-linestyles = [ '--', '-' ]
+linestyles = [ '-' ]#'--', '-' ]
 
 # plt.clf()
 
@@ -652,5 +652,5 @@ if do_features:
 	plt.ylabel( 'Transmission', fontsize=16 )
 	plt.xlabel( 'Wavelength (um)', fontsize=16 )
 	# plt.show()
-	plt.savefig( projects_directory_location + "/blur_test_less.png" )
+	plt.savefig( projects_directory_location + "/blur_test_100nm.png" )
 
