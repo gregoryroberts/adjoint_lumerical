@@ -282,6 +282,7 @@ else:
 	adversary_update_iters = 10
 
 	opt_mask_mid_focus = np.zeros( ( design_width, design_height ) )
+	opt_mask_splitter = np.zeros( ( design_width, design_height ) )
 
 	# opt_mask[ :, 10:15 ] = 0
 
@@ -296,6 +297,7 @@ else:
 	design_layer_voxels_focuser = int( device_layer_voxels_focuser / density_coarsen_factor )
 
 	opt_mask_mid_focus[ :, ( design_height - design_layer_voxels_focuser ) : ] = 1
+	opt_mask_splitter[ :, 0 : design_layer_voxels_focuser ] = 1
 
 	focal_points_x_relative_mid_focus = [ 0.5, 0.5 ]
 	focal_length_voxels_mid_focus = -device_layer_voxels_focuser
@@ -308,6 +310,11 @@ else:
 		lambda_values_um, focal_map, random_seed,
 		num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
 		blur_fields, blur_fields_size_voxels, None, binarize_set_point )
+
+
+	uniform_density_with_spacer = mean_density * np.ones( ( design_width, design_height ) )
+	uniform_density_with_spacer *= np.maximum( opt_mask_mid_focus, opt_mask_splitter )
+	make_optimizer_mid_focus.init_density_directly( uniform_density_with_spacer )
 
 	make_optimizer_mid_focus.optimize(
 		int( num_iterations / 1.5 ),
@@ -322,8 +329,6 @@ else:
 
 
 
-	opt_mask_splitter = np.zeros( ( design_width, design_height ) )
-	opt_mask_splitter[ :, 0 : design_layer_voxels_focuser ] = 1
 
 	# make_optimizer_mid_focus.plot_geometry( opt_mask_mid_focus + 2 * opt_mask_splitter )
 
