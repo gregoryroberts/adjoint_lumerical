@@ -285,7 +285,7 @@ else:
 
 	make_optimizer.optimize(
 		num_iterations,
-		True, 10, 10, 0.9,
+		True, 20, 20, 0.95,
 		None, # opt_mask,
 		use_log_fom,
 		wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,

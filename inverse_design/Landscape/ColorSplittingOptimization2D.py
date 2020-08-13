@@ -36,6 +36,7 @@ else:
 eps_nought = 8.854 * 1e-12
 mu_nought = 1.257 * 1e-6 
 c = 3.0 * 1e8
+small = 1e-10
 
 # def compute_binarization( input_variable ):
 # 	total_shape = np.product( input_variable.shape )
@@ -737,74 +738,74 @@ class ColorSplittingOptimization2D():
 
 				for row in range( 0, random_direction.shape[ 0 ] ):
 					for col in range( 0, random_direction.shape[ 1 ] ):
-						if ( mask_density[ row, col ] >= bounds_cutoff ) or ( mask_density[ row, col ] < ( 1 - bounds_cutoff ) ):
+						if ( mask_density[ row, col ] > bounds_cutoff ) or ( mask_density[ row, col ] < ( 1 - bounds_cutoff ) ):
 							random_direction[ row, col ] = 0
 
-				random_direction /= np.sqrt( np.sum( random_direction**2 ) )
+				if np.sqrt( np.sum( random_direction**2 ) ) > small:
 
-				alpha_0 = np.sum( random_direction * mask_density )
-				rho_0 = mask_density - alpha_0 * random_direction
-				lower_alpha_bound = -np.inf
-				upper_alpha_bound = np.inf
+					random_direction /= np.sqrt( np.sum( random_direction**2 ) )
 
-				flatten_rho_0 = rho_0.flatten()
-				flatten_random_direction = random_direction.flatten()
+					alpha_0 = np.sum( random_direction * mask_density )
+					rho_0 = mask_density - alpha_0 * random_direction
+					lower_alpha_bound = -np.inf
+					upper_alpha_bound = np.inf
 
-				critical_low_alpha = ( 0.0 - flatten_rho_0 ) / ( flatten_random_direction + 1e-8 )
-				critical_high_alpha = ( 1.0 - flatten_rho_0 ) / ( flatten_random_direction + 1e-8 )
+					flatten_rho_0 = rho_0.flatten()
+					flatten_random_direction = random_direction.flatten()
 
-				for idx in range( 0, len( flatten_rho_0 ) ):
-					if ( flatten_random_direction[ idx ] > 0 ):
-						upper_alpha_bound = np.minimum( upper_alpha_bound, critical_high_alpha[ idx ] )
-						lower_alpha_bound = np.maximum( lower_alpha_bound, critical_low_alpha[ idx ] )
-					else:
-						lower_alpha_bound = np.maximum( lower_alpha_bound, critical_high_alpha[ idx ] )
-						upper_alpha_bound = np.minimum( upper_alpha_bound, critical_low_alpha[ idx ] )
+					critical_low_alpha = ( 0.0 - flatten_rho_0 ) / ( flatten_random_direction + small )
+					critical_high_alpha = ( 1.0 - flatten_rho_0 ) / ( flatten_random_direction + small )
 
-				alpha_sweep = np.linspace( lower_alpha_bound, upper_alpha_bound, random_global_scan_points )
+					for idx in range( 0, len( flatten_rho_0 ) ):
+						if ( flatten_random_direction[ idx ] > 0 ):
+							upper_alpha_bound = np.minimum( upper_alpha_bound, critical_high_alpha[ idx ] )
+						elif ( flatten_random_direction[ idx ] < 0  ):
+							lower_alpha_bound = np.maximum( lower_alpha_bound, critical_low_alpha[ idx ] )
 
-				def sweep_fom( test_rho ):
-					mask_density = opt_mask * test_rho
+					alpha_sweep = np.linspace( lower_alpha_bound, upper_alpha_bound, random_global_scan_points )
+
+					def sweep_fom( test_rho ):
+						mask_density = opt_mask * test_rho
+						import_density = upsample( mask_density, self.coarsen_factor )
+						test_permittivity = self.density_to_permittivity( import_density )	
+
+						total_product_fom = 1.0
+						for wl_idx in range( 0, self.num_wavelengths ):
+							get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+
+							get_fom = self.compute_fom(
+								self.omega_values[ wl_idx ], test_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+								self.wavelength_intensity_scaling[ wl_idx ] )
+
+							total_product_fom *= get_fom
+
+						if use_log_fom:
+							total_product_fom = np.log( total_product_fom )
+
+						return total_product_fom
+
+					fom_to_beat = sweep_fom( self.design_density )
+					alpha_to_beat = alpha_0
+
+					for alpha_idx in range( 0, random_global_scan_points ):
+						sweep_density = alpha_sweep[ alpha_idx ] * random_direction + rho_0
+						sweep_density = np.maximum( 0.0, np.minimum( sweep_density, 1.0 ) )
+
+						cur_fom = sweep_fom( sweep_density )
+						if cur_fom > fom_to_beat:
+							fom_to_beat = cur_fom
+							alpha_to_beat = alpha_sweep[ alpha_idx ]
+
+					log_file = open( self.save_folder + "/log.txt", 'a' )
+					log_file.write( "Initial alpha: " + str( alpha_0 ) + "\n" )
+					log_file.write( "Final alpha: " + str( alpha_to_beat ) + "\n\n" )
+					log_file.close()
+
+					self.design_density = alpha_to_beat * random_direction + rho_0
+					self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
+					mask_density = opt_mask * self.design_density
 					import_density = upsample( mask_density, self.coarsen_factor )
-					test_permittivity = self.density_to_permittivity( import_density )	
-
-					total_product_fom = 1.0
-					for wl_idx in range( 0, self.num_wavelengths ):
-						get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
-
-						get_fom = self.compute_fom(
-							self.omega_values[ wl_idx ], test_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
-							self.wavelength_intensity_scaling[ wl_idx ] )
-
-						total_product_fom *= get_fom
-
-					if use_log_fom:
-						total_product_fom = np.log( total_product_fom )
-
-					return total_product_fom
-
-				fom_to_beat = sweep_fom( self.design_density )
-				alpha_to_beat = alpha_0
-
-				for alpha_idx in range( 0, random_global_scan_points ):
-					sweep_density = alpha_sweep[ alpha_idx ] * random_direction + rho_0
-					sweep_density = np.maximum( 0.0, np.minimum( sweep_density, 1.0 ) )
-
-					cur_fom = sweep_fom( sweep_density )
-					if cur_fom > fom_to_beat:
-						fom_to_beat = cur_fom
-						alpha_to_beat = alpha_sweep[ alpha_idx ]
-
-				log_file = open( self.save_folder + "/log.txt", 'a' )
-				log_file.write( "Initial alpha: " + str( alpha_0 ) + "\n" )
-				log_file.write( "Final alpha: " + str( alpha_to_beat ) + "\n\n" )
-				log_file.close()
-
-				self.design_density = alpha_to_beat * random_direction + rho_0
-				self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
-				mask_density = opt_mask * self.design_density
-				import_density = upsample( mask_density, self.coarsen_factor )
-				device_permittivity = self.density_to_permittivity( import_density )
+					device_permittivity = self.density_to_permittivity( import_density )
 
 
 			gradient_by_wl = []
