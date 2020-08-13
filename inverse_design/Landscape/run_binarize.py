@@ -281,7 +281,7 @@ else:
 	wavelength_adversary = False#True
 	adversary_update_iters = 10
 
-	dual_opt = False
+	dual_opt = True
 
 	make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 		[ device_width_voxels, device_height_voxels ],
