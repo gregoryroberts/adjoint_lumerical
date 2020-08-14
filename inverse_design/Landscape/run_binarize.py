@@ -314,7 +314,6 @@ else:
 			num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
 			blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
-
 		uniform_density_with_spacer = mean_density * np.ones( ( design_width, design_height ) )
 		uniform_density_with_spacer *= np.maximum( opt_mask_mid_focus, opt_mask_splitter )
 		make_optimizer_mid_focus.init_density_directly( uniform_density_with_spacer )
@@ -330,8 +329,12 @@ else:
 
 		make_optimizer_mid_focus.save_optimization_data( save_folder + "/opt_focuser" )
 
+		# Note: with the mask, the binarization binarizes everything, so you should reinitialize the mean
+		# density here
+		init_density_part2 = make_optimizer_mid_focus.design_density
+		init_density_part2[ :, 0 : design_layer_voxels_focuser ] = mean_density
 
-		make_optimizer.init_density_directly( make_optimizer_mid_focus.design_density )
+		make_optimizer.init_density_directly( init_density_part2 )
 
 		make_optimizer.optimize(
 			int( num_iterations / 1.5 ),
