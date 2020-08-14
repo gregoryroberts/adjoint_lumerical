@@ -645,9 +645,6 @@ class ColorSplittingOptimization2D():
 			if flatten_opt_mask[ idx ] > 0:
 				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
 				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
-			else:
-				upper_bounds[ idx ] = flatten_design_cuts[ idx ]
-				lower_bounds[ idx ] = flatten_design_cuts[ idx ]
 
 		max_possible_binarization_change = 0
 		for idx in range( 0, len( c ) ):
