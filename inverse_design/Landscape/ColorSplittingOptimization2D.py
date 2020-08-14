@@ -619,7 +619,7 @@ class ColorSplittingOptimization2D():
 
 		return gradient_output
 
-	def step_binarize( self, gradient, binarize_amount, binarize_max_movement ):
+	def step_binarize( self, gradient, binarize_amount, binarize_max_movement, opt_mask ):
 
 		density_for_binarizing = self.design_density.flatten()
 		flatten_gradient = gradient.flatten()
@@ -627,6 +627,7 @@ class ColorSplittingOptimization2D():
 		flatten_design_cuts = density_for_binarizing.copy()
 		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
 		flatten_fom_gradients = flatten_gradient.copy()
+		flatten_opt_mask = opt_mask.flatten()
 
 		beta = binarize_max_movement
 		projected_binarization_increase = 0
@@ -641,8 +642,12 @@ class ColorSplittingOptimization2D():
 		upper_bounds = np.zeros( len( c ) )
 
 		for idx in range( 0, len( c ) ):
-			upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
-			lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+			if flatten_opt_mask[ idx ] > 0:
+				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+			else:
+				upper_bounds[ idx ] = flatten_design_cuts[ idx ]
+				lower_bounds[ idx ] = flatten_design_cuts[ idx ]
 
 		max_possible_binarization_change = 0
 		for idx in range( 0, len( c ) ):
@@ -1005,7 +1010,7 @@ class ColorSplittingOptimization2D():
 			self.binarization_evolution[ iter_idx ] = compute_binarization( self.design_density.flatten() )
 
 			if binarize:
-				proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel )
+				proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
 				self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
 			else:
 				self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
