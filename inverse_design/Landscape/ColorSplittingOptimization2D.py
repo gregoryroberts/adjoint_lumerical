@@ -1459,9 +1459,9 @@ class ColorSplittingOptimization2D():
 			if self.do_density_pairings:
 				self.design_density = self.pair_array( self.design_density )
 
-			np.save( file_base + "_fom_evolution.npy", self.fom_evolution )
-			np.save( file_base + "_binarization_evolution.npy", self.binarization_evolution )
-			np.save( file_base + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
+			np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
+			np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
+			np.save( folder_for_saving + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 
 
 	def optimize_with_level_set( self, num_iterations ):
