@@ -501,8 +501,12 @@ class ColorSplittingOptimization2D():
 						device_start_col : device_end_col
 					] + fwd_Ez[ device_start_row : device_end_row,
 								device_start_col : device_end_col ]
+				local_adj_Ez = adj_Ez[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col
+				]
 
-				local_gradient_device = 2 * omega * eps_nought * np.real( local_p_ind * adj_Ez / 1j )
+				local_gradient_device = 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
 
 		return fom, gradient_design
