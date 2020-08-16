@@ -483,9 +483,12 @@ class ColorSplittingOptimization2D():
 
 				polarizability_src = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
 
+				#
+				# Oh wait, you should only have to do this once per forward source! Wasteful, but ok for now
+				#
 				polarizability_src[
 					device_start_row : device_end_row,
-					device_start_col : device_end_col ] = ( eps_nought / 1j ) * select_omega * fwd_Ez[
+					device_start_col : device_end_col ] = ( eps_nought / 1j ) * omega * fwd_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ]
 
