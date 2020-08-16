@@ -143,7 +143,8 @@ make_optimizer.init_density_with_uniform( mean_density )
 make_optimizer.optimize(
 	int( num_iterations ),
 	save_folder + "/opt",
-	True,
+	# True,
+	False,
 	False, 20, 20, 0.95,
 	None,
 	use_log_fom,
