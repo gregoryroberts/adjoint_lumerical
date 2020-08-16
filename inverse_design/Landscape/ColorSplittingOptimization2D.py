@@ -475,10 +475,10 @@ class ColorSplittingOptimization2D():
 
 		for design_row in range( 0, self.design_width_voxels ):
 			for design_col in range( 0, self.design_height_voxels ):
-				device_start_row = self.coarsen_factor * design_row
+				device_start_row = self.device_width_start + self.coarsen_factor * design_row
 				device_end_row = device_start_row + self.coarsen_factor
 
-				device_start_col = self.coarsen_factor * design_col
+				device_start_col = self.device_height_start + self.coarsen_factor * design_col
 				device_end_col = device_start_col + self.coarsen_factor
 
 				polarizability_src = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
@@ -1385,10 +1385,13 @@ class ColorSplittingOptimization2D():
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
-				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
-
 				scale_fom_for_wl = get_fom
-				scale_gradient_for_wl = upsampled_device_grad
+
+				if compute_polarizability:
+					scale_gradient_for_wl = get_grad
+				else:
+					upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+					scale_gradient_for_wl = upsampled_device_grad
 
 				gradient_by_wl.append( scale_gradient_for_wl )
 				fom_by_wl.append( scale_fom_for_wl )
