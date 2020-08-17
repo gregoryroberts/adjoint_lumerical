@@ -65,7 +65,7 @@ def density_bound_from_eps( eps_val ):
 lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 10 * density_coarsen_factor
-device_height_voxels = 3 * density_coarsen_factor
+device_height_voxels = 4 * density_coarsen_factor
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
@@ -87,7 +87,7 @@ binarize_set_point = 0.5
 blur_fields_size_voxels = 0
 blur_fields = False
 
-num_iterations_nominal = 60#300
+num_iterations_nominal = 100#60#300
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
 
@@ -110,7 +110,7 @@ for idx in range( int( 0.5 * num_dense_wls ), num_dense_wls ):
 	dense_focal_map[ idx ] = 1
 
 
-binarize = True
+binarize = False#True
 binarize_movement_per_step_nominal = 0.0075
 binarize_max_movement_per_voxel_nominal = 0.0075
 
