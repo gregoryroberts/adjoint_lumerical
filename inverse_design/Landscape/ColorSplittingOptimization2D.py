@@ -494,6 +494,15 @@ class ColorSplittingOptimization2D():
 
 				pol_Hx, pol_Hy, pol_Ez = polarizability_sim.solve( polarizability_src )
 
+
+				# new_rel_eps = self.rel_eps_simulation.copy()
+				# new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += 1e-3
+				# new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
+				# check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
+
+				# check_pind = new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez
+
+
 				local_p_ind = self.rel_eps_simulation[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ] * pol_Ez[ 
@@ -506,7 +515,29 @@ class ColorSplittingOptimization2D():
 					device_start_col : device_end_col
 				]
 
-				local_gradient_device = 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
+				# import matplotlib.pyplot as plt
+				# plt.subplot( 2, 2, 1 )
+				# plt.imshow( np.abs( self.rel_eps_simulation[
+				# 	device_start_row : device_end_row,
+				# 	device_start_col : device_end_col ] * pol_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col
+				# 	] ) )
+				# plt.colorbar()
+				# plt.subplot( 2, 2, 2 )
+				# plt.imshow( np.abs( fwd_Ez[ device_start_row : device_end_row,
+				# 				device_start_col : device_end_col ] ) )
+				# plt.colorbar()
+				# plt.subplot( 2, 2, 3 )
+				# plt.imshow( np.abs( local_p_ind ) )
+				# plt.colorbar()
+				# plt.subplot( 2, 2, 4 )
+				# plt.imshow( np.abs( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				# plt.colorbar()
+				# plt.show()
+
+
+				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
 
 		return fom, gradient_design
