@@ -503,12 +503,15 @@ class ColorSplittingOptimization2D():
 				# check_pind = new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez
 
 
-				local_p_ind = self.rel_eps_simulation[
+				weight_fwd = 1
+				weight_env = 1 - weight_fwd
+
+				local_p_ind = weight_env * self.rel_eps_simulation[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ] * pol_Ez[ 
 						device_start_row : device_end_row,
 						device_start_col : device_end_col
-					] + fwd_Ez[ device_start_row : device_end_row,
+					] + weight_fwd * fwd_Ez[ device_start_row : device_end_row,
 								device_start_col : device_end_col ]
 				local_adj_Ez = adj_Ez[
 					device_start_row : device_end_row,
@@ -528,11 +531,19 @@ class ColorSplittingOptimization2D():
 				# plt.imshow( np.abs( fwd_Ez[ device_start_row : device_end_row,
 				# 				device_start_col : device_end_col ] ) )
 				# plt.colorbar()
+
+				# plt.subplot( 2, 2, 1 )
+				# plt.imshow( np.real( local_p_ind ) )
+				# plt.colorbar()
+				# plt.subplot( 2, 2, 2 )
+				# plt.imshow( np.real( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				# plt.colorbar()
+
 				# plt.subplot( 2, 2, 3 )
-				# plt.imshow( np.abs( local_p_ind ) )
+				# plt.imshow( np.imag( local_p_ind ) )
 				# plt.colorbar()
 				# plt.subplot( 2, 2, 4 )
-				# plt.imshow( np.abs( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				# plt.imshow( np.imag( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
 				# plt.colorbar()
 				# plt.show()
 
