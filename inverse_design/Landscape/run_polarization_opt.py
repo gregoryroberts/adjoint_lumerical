@@ -127,7 +127,7 @@ use_log_fom = False
 wavelength_adversary = False
 adversary_update_iters = 10
 
-dual_opt = True
+# dual_opt = True
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],
@@ -143,8 +143,8 @@ make_optimizer.init_density_with_uniform( mean_density )
 make_optimizer.optimize(
 	int( num_iterations ),
 	save_folder + "/opt",
-	# True,
-	False,
+	True,
+	# False,
 	False, 20, 20, 0.95,
 	None,
 	use_log_fom,
