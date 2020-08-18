@@ -454,7 +454,7 @@ class ColorSplittingOptimization2D():
 		
 		return fom
 
-	def compute_fom_and_gradient_with_polarizability_( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+	def compute_fom_and_gradient_with_polarizability( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
@@ -538,7 +538,7 @@ class ColorSplittingOptimization2D():
 
 
 
-	def compute_fom_and_gradient_with_polarizability( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+	def compute_fom_and_gradient_with_polarizability_( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
