@@ -141,19 +141,20 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 # test_density = np.load( 'opt_with_pol_v1/opt_1p5/opt_optimized_density.npy' )
 # make_optimizer.init_density_directly( test_density )
 
-make_optimizer.init_density_with_uniform( mean_density )
+make_optimizer.init_density_with_uniform( 0.5 )
 
-make_optimizer.optimize(
-	int( num_iterations ),
-	save_folder + "/opt",
-	True,
-	# False,
-	False, 20, 20, 0.95,
-	None,
-	use_log_fom,
-	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-	binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
-	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+# make_optimizer.optimize(
+# 	int( num_iterations ),
+# 	save_folder + "/opt",
+# 	True,
+# 	# False,
+# 	False, 20, 20, 0.95,
+# 	None,
+# 	use_log_fom,
+# 	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+# 	binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
+# 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
+make_optimizer.verify_adjoint_against_finite_difference_lambda_design( save_folder + "/opt" )
 
-make_optimizer.save_optimization_data( save_folder + "/opt" )
+# make_optimizer.save_optimization_data( save_folder + "/opt" )

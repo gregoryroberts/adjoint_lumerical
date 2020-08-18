@@ -1037,6 +1037,41 @@ class ColorSplittingOptimization2D():
 
 		return net_fom
 
+	def verify_adjoint_against_finite_difference_lambda_design( self, save_loc ):
+
+		fd_grad = np.zeros( self.design_density.shape )
+		fom_init, adj_grad, adj_grad_orig = self.compute_fom_and_gradient_with_polarizability(
+			self.omega_values[ 0 ], self.rel_eps_simulation, 0 )
+
+		h = 1e-3
+	
+		for row in range( 0, self.design_width_voxels ):
+			for col in range( 0, self.design_height_voxels ):
+				copy_density = self.design_density.copy()
+
+				copy_density[ row, col ] += h
+				fd_density = upsample( copy_density, self.coarsen_factor )
+				fd_permittivity = self.density_to_permittivity( fd_density )
+
+				fom_up = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, 0 )			
+
+				copy_density[ row, col ] -= h
+				fd_density = upsample( copy_density, self.coarsen_factor )
+				fd_permittivity = self.density_to_permittivity( fd_density )
+
+				fom_down = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, 0 )
+
+				fd_grad[ row, col ] = ( fom_up - fom_down ) / h
+
+
+
+		np.save( save_loc + "_fd_grad.npy", fd_grad )
+		np.save( save_loc + "_adj_grad.npy", adj_grad )
+		np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
+
+
+
+
 	def verify_adjoint_against_finite_difference_lambda( self ):
 		fd_x = int( 0.5 * self.device_width_voxels )
 		fd_y = np.arange( 0, self.device_height_voxels )
