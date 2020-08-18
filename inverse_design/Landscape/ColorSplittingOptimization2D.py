@@ -1075,7 +1075,7 @@ class ColorSplittingOptimization2D():
 
 
 		np.save( save_loc + "_fd_grad.npy", fd_grad )
-		np.save( save_loc + "_fd_grad_second.npy", fd_grad )
+		np.save( save_loc + "_fd_grad_second.npy", fd_grad_second )
 		np.save( save_loc + "_adj_grad.npy", adj_grad )
 		np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
 
