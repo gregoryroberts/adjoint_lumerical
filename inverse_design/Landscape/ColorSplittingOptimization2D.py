@@ -1045,6 +1045,7 @@ class ColorSplittingOptimization2D():
 
 		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
 		fd_grad = np.zeros( self.design_density.shape )
+		fd_grad_second = np.zeros( self.design_density.shape )
 		fom_init, adj_grad, adj_grad_orig = self.compute_fom_and_gradient_with_polarizability(
 			self.omega_values[ 0 ], get_permittivity, fd_focal_x_loc )
 
@@ -1069,9 +1070,12 @@ class ColorSplittingOptimization2D():
 
 				fd_grad[ row, col ] = ( fom_up - fom_down ) / h
 
+				fd_grad_second[ row, col ] = ( fom_up + fom_down - 2 * fom_init ) / ( h**2 )
+
 
 
 		np.save( save_loc + "_fd_grad.npy", fd_grad )
+		np.save( save_loc + "_fd_grad_second.npy", fd_grad )
 		np.save( save_loc + "_adj_grad.npy", adj_grad )
 		np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
 
