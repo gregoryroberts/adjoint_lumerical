@@ -469,6 +469,7 @@ class ColorSplittingOptimization2D():
 		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
 
 		gradient_design = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
+		gradient_design_orig = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
 
 		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 
@@ -534,7 +535,12 @@ class ColorSplittingOptimization2D():
 				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
 
-		return fom, gradient_design
+				local_gradient_device_orig = fom_scaling * 2 * omega * eps_nought * np.real( fwd_Ez[ device_start_row : device_end_row,
+					device_start_col : device_end_col ] * local_adj_Ez / 1j )
+				gradient_design_orig[ design_row, design_col ] = np.mean( local_gradient_device_orig )
+
+
+		return fom, gradient_design, gradient_design_orig
 
 
 
@@ -595,8 +601,8 @@ class ColorSplittingOptimization2D():
 		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 		polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
 
-		for design_row in range( 20, self.design_width_voxels ):
-			for design_col in range( 10, self.design_height_voxels ):
+		for design_row in range( 2, self.design_width_voxels ):
+			for design_col in range( 1, self.design_height_voxels ):
 				device_start_row = self.device_width_start + self.coarsen_factor * design_row
 				device_end_row = device_start_row + self.coarsen_factor
 
@@ -700,6 +706,15 @@ class ColorSplittingOptimization2D():
 				new_rel_eps = self.rel_eps_simulation.copy()
 				test_delta = 0.001
 				new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += test_delta
+
+				next_row_over_start = device_start_row + self.coarsen_factor
+				next_row_over_end = next_row_over_start + self.coarsen_factor
+				next_col_over_start = device_start_row + self.coarsen_factor
+				next_col_over_end = next_row_over_start + self.coarsen_factor
+
+				new_rel_eps[ next_row_over_start : next_row_over_end, next_col_over_start : next_col_over_end ] -= test_delta
+
+
 				new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
 				check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
 
@@ -1843,11 +1858,11 @@ class ColorSplittingOptimization2D():
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
-					get_fom_, get_grad = function_for_fom_and_gradient(
+					get_fom_, get_grad, get_grad_orig = function_for_fom_and_gradient(
 						opt_omega_value, device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						wl_intensity_scaling )
 				else:
-					get_fom, get_grad = function_for_fom_and_gradient(
+					get_fom, get_grad, get_grad_orig = function_for_fom_and_gradient(
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
@@ -1855,6 +1870,10 @@ class ColorSplittingOptimization2D():
 
 				if compute_polarizability:
 					scale_gradient_for_wl = get_grad
+
+					np.save( folder_for_saving + '/get_grad_' + str( iter_idx ) + '.npy', get_grad )
+					np.save( folder_for_saving + '/get_grad_orig_' + str( iter_idx ) + '.npy', get_grad_orig )
+
 				else:
 					upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 					scale_gradient_for_wl = upsampled_device_grad
