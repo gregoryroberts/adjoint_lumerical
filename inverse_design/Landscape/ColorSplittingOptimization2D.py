@@ -454,7 +454,6 @@ class ColorSplittingOptimization2D():
 		
 		return fom
 
-
 	def compute_fom_and_gradient_with_polarizability( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
@@ -482,43 +481,291 @@ class ColorSplittingOptimization2D():
 				device_end_col = device_start_col + self.coarsen_factor
 
 				polarizability_src = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
+				polarizability_src_conj = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
 
 				#
 				# Oh wait, you should only have to do this once per forward source! Wasteful, but ok for now
 				#
 				polarizability_src[
 					device_start_row : device_end_row,
-					device_start_col : device_end_col ] = ( eps_nought / 1j ) * omega * fwd_Ez[
+					device_start_col : device_end_col ] = ( 1 / 1j ) * ( 1 / omega ) * fwd_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ]
 
 				pol_Hx, pol_Hy, pol_Ez = polarizability_sim.solve( polarizability_src )
 
+				e_piece = fwd_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ]
 
-				# new_rel_eps = self.rel_eps_simulation.copy()
-				# new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += 1e-3
-				# new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
-				# check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
-
-				# check_pind = new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez
-
-
-				weight_fwd = 1
-				weight_env = 1 - weight_fwd
-
-				local_p_ind = weight_env * self.rel_eps_simulation[
+				local_p_ind = self.rel_eps_simulation[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ] * pol_Ez[ 
 						device_start_row : device_end_row,
 						device_start_col : device_end_col
-					] + weight_fwd * fwd_Ez[ device_start_row : device_end_row,
-								device_start_col : device_end_col ]
+					] + e_piece
+
+				print(np.max(np.abs(e_piece)))
+				print(np.max(np.abs(self.rel_eps_simulation[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] * pol_Ez[ 
+						device_start_row : device_end_row,
+						device_start_col : device_end_col
+					])))
+				print()
+
+
 				local_adj_Ez = adj_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col
 				]
 
+				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
+				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
+
+		return fom, gradient_design
+
+
+
+	def compute_fom_and_gradient_with_polarizability_( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+		assert not self.field_blur, "Field blur not supported with polarizability"
+
+		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
+		fom = fom_scaling * np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
+		
+		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
+		adj_source[ focal_point_x_loc, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+
+		adj_source_2 = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
+		adj_source_2[ focal_point_x_loc, self.focal_point_y ] = ( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+
+
+		# adj_source[
+		# 	self.device_width_start : self.device_width_end,
+		# 	self.device_height_start : self.device_height_end ] = (
+		# 		np.random.random( ( self.device_width_voxels, self.device_height_voxels ) ) + 1j * 
+		# 		np.random.random( ( self.device_width_voxels, self.device_height_voxels ) ) )
+
+		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
+		adj_Hx_2, adj_Hy_2, adj_Ez_2 = simulation.solve( adj_source_2 )
+
+		# adj_Hx_, adj_Hy_, adj_Ez_ = simulation.solve( np.conj( adj_source ) )
+
+		# local_adj_Ez = adj_Ez[
+		# 	self.device_width_start : self.device_width_end,
+		# 	self.device_height_start : self.device_height_end
+		# ]
+
+		# local_adj_Ez_ = adj_Ez_[
+		# 	self.device_width_start : self.device_width_end,
+		# 	self.device_height_start : self.device_height_end
+		# ]
+
+		# import matplotlib.pyplot as plt
+		# plt.subplot( 1, 2, 1 )
+		# plt.imshow( np.abs( local_adj_Ez ) )
+		# plt.subplot( 1, 2, 2 )
+		# plt.imshow( np.abs( local_adj_Ez_ ) )
+		# plt.show()
+		# asdfasd
+
+		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
+
+		gradient_design = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
+
+		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
+
+		for design_row in range( 4, self.design_width_voxels ):
+			for design_col in range( 1, self.design_height_voxels ):
+				device_start_row = self.device_width_start + self.coarsen_factor * design_row
+				device_end_row = device_start_row + self.coarsen_factor
+
+				device_start_col = self.device_height_start + self.coarsen_factor * design_col
+				device_end_col = device_start_col + self.coarsen_factor
+
+				polarizability_src = np.zeros( self.fwd_source.shape, dtype=np.complex )#dtype=self.fwd_source.dtype )
+				polarizability_src_conj = np.zeros( self.fwd_source.shape, dtype=np.complex )#dtype=self.fwd_source.dtype )
+
+				# testsrc = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
+
+				# testsrc[
+				# 	device_start_row + self.coarsen_factor : device_end_row + self.coarsen_factor,
+				# 	device_start_col + self.coarsen_factor : device_end_col + self.coarsen_factor ] = (
+				# 		np.random.random( ( self.coarsen_factor, self.coarsen_factor ) ) +
+				# 		1j * np.random.random( ( self.coarsen_factor, self.coarsen_factor ) ) )
+
+
+				#
+				# Oh wait, you should only have to do this once per forward source! Wasteful, but ok for now
+				#
+				# polarizability_src[
+				# 	device_start_row + self.coarsen_factor : device_end_row + self.coarsen_factor,
+				# 	device_start_col + self.coarsen_factor : device_end_col + self.coarsen_factor ] = testsrc[
+				# 	device_start_row + self.coarsen_factor : device_end_row + self.coarsen_factor,
+				# 	device_start_col + self.coarsen_factor : device_end_col + self.coarsen_factor ]
+				# polarizability_src = np.imag( polarizability_src )
+
+				polarizability_src[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] = ( eps_nought / 1j ) * omega * fwd_Ez[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ]
+
+				pol_Hx, pol_Hy, pol_Ez = simulation.solve( polarizability_src )
+
+				polarizability_src_conj[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] = ( eps_nought / 1j ) * omega * np.conj( fwd_Ez[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] )
+
+				pol_Hx_conj, pol_Hy_conj, pol_Ez_conj = simulation.solve( polarizability_src_conj )
+
+				import matplotlib.pyplot as plt
+				plt.subplot( 5, 2, 1 )
+				plt.imshow( np.real( pol_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 2 )
+				plt.imshow( np.imag( pol_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 3 )
+				plt.imshow( np.real( pol_Ez_conj[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 4 )
+				plt.imshow( np.imag( pol_Ez_conj[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 5 )
+				plt.imshow( np.abs( pol_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 6 )
+				plt.imshow( np.abs( pol_Ez_conj[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 7 )
+				plt.imshow( np.real( polarizability_src[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 8 )
+				plt.imshow( np.real( polarizability_src_conj[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 9 )
+				plt.imshow( np.imag( polarizability_src ) )
+				plt.colorbar()
+				plt.subplot( 5, 2, 10 )
+				plt.imshow( np.imag( polarizability_src_conj ) )
+				plt.colorbar()
+				plt.show()
+
+
+
+
+				# new_rel_eps = self.rel_eps_simulation.copy()
+				# test_delta = 0.005
+				# new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += test_delta
+				# new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
+				# check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
+
+				# check_pind = ( new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez ) / test_delta
+
+				# beta_piece = self.rel_eps_simulation[
+				# 	device_start_row : device_end_row,
+				# 	device_start_col : device_end_col ] * pol_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col
+				# 	]
+				e_piece = fwd_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ]
+				e_piece_conj = np.conj( fwd_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] )
+				pol_piece = pol_Ez[ 
+						device_start_row : device_end_row,
+						device_start_col : device_end_col ]
+				rel_eps_piece = self.rel_eps_simulation[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ]
+
+				# new_E = ( rel_eps_piece * pol_piece / ( eps_nought * omega ) ) + e_piece
+				# new_E = ( test_delta * rel_eps_piece * pol_piece ) + e_piece
+				# new_E = ( test_delta * pol_piece ) + e_piece
+
 				# import matplotlib.pyplot as plt
+				# plt.subplot( 3, 2, 1 )
+				# plt.imshow( np.real( new_E - e_piece ) )
+				# plt.colorbar()
+				# plt.subplot( 3, 2, 2 )
+				# plt.imshow( np.imag( new_E - e_piece ) )
+				# plt.colorbar()
+				# plt.subplot( 3, 2, 3 )
+				# plt.imshow( np.real( check_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col ] - e_piece ) )
+				# plt.colorbar()
+				# plt.subplot( 3, 2, 4 )
+				# plt.imshow( np.imag( check_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col ] - e_piece ) )
+				# plt.colorbar()
+				# plt.subplot( 3, 2, 5 )
+				# plt.imshow( np.abs( new_E - e_piece ) / ( np.abs( e_piece ) + 1e-14 ) )
+				# plt.colorbar()
+				# plt.subplot( 3, 2, 6 )
+				# plt.imshow( np.abs( check_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col ] - e_piece ) / ( np.abs( e_piece ) + 1e-14 ) )
+				# plt.colorbar()
+				# plt.show()
+
+
+				local_p_ind = self.rel_eps_simulation[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] * pol_Ez[ 
+						device_start_row : device_end_row,
+						device_start_col : device_end_col
+					] + e_piece
+
+				local_p_ind_conj = self.rel_eps_simulation[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] * pol_Ez_conj[ 
+						device_start_row : device_end_row,
+						device_start_col : device_end_col
+					] + e_piece_conj
+
+				local_adj_Ez = adj_Ez[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col
+				]
+
+				local_adj_Ez_conj = adj_Ez_2[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col
+				]
+
+				calc_0 = 2 * omega * eps_nought * ( local_p_ind * local_adj_Ez / 1j )
+				calc_1 = 2 * omega * eps_nought * ( local_p_ind_conj * local_adj_Ez_conj / 1j )
+
+				plt.subplot( 2, 2, 1 )
+				plt.imshow( np.real( calc_0 ) )
+				plt.colorbar()
+				plt.subplot( 2, 2, 2 )
+				plt.imshow( np.imag( calc_0 ) )
+				plt.colorbar()
+				plt.subplot( 2, 2, 3 )
+				plt.imshow( np.real( calc_1 ) )
+				plt.colorbar()
+				plt.subplot( 2, 2, 4 )
+				plt.imshow( np.imag( calc_1 ) )
+				plt.colorbar()
+				plt.show()
+
+
+				import matplotlib.pyplot as plt
 				# plt.subplot( 2, 2, 1 )
 				# plt.imshow( np.abs( self.rel_eps_simulation[
 				# 	device_start_row : device_end_row,
@@ -532,21 +779,44 @@ class ColorSplittingOptimization2D():
 				# 				device_start_col : device_end_col ] ) )
 				# plt.colorbar()
 
-				# plt.subplot( 2, 2, 1 )
-				# plt.imshow( np.real( local_p_ind ) )
-				# plt.colorbar()
-				# plt.subplot( 2, 2, 2 )
-				# plt.imshow( np.real( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
-				# plt.colorbar()
+				plt.subplot( 3, 2, 1 )
+				plt.imshow( np.real( local_p_ind ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 2 )
+				plt.imshow( np.imag( local_p_ind ) )
+				plt.colorbar()
 
-				# plt.subplot( 2, 2, 3 )
-				# plt.imshow( np.imag( local_p_ind ) )
-				# plt.colorbar()
-				# plt.subplot( 2, 2, 4 )
-				# plt.imshow( np.imag( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
-				# plt.colorbar()
+				plt.subplot( 3, 2, 3 )
+				plt.imshow( np.real( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 4 )
+				plt.imshow( np.imag( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
 				# plt.show()
 
+				plt.subplot( 3, 2, 5 )
+				plt.imshow( np.real( fwd_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 6 )
+				plt.imshow( np.imag( fwd_Ez[ device_start_row : device_end_row,
+								device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.show()
+
+				# sum_pind_contribution = np.mean( 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j ) )
+				# sum_e_contribution = np.mean( 2 * omega * eps_nought * np.real( e_piece * local_adj_Ez / 1j ) )
+
+				# if sum_pind_contribution >= sum_e_contribution:
+				# 	print('a')
+				# 	gradient_design[ design_row, design_col ] = fom_scaling * sum_e_contribution
+				# else:
+				# 	print('b')
+				# 	gradient_design[ design_row, design_col ] = 2 * eps_nought * fom_scaling * sum_pind_contribution / sum_e_contribution
+
+				# 	print( fom_scaling * sum_e_contribution )
+				# 	print( gradient_design[ design_row, design_col ] )
+				# 	print()
 
 				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )

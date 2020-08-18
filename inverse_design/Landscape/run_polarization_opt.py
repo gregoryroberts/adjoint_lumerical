@@ -138,6 +138,9 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
 	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
+# test_density = np.load( 'opt_with_pol_v1/opt_1p5/opt_optimized_density.npy' )
+# make_optimizer.init_density_directly( test_density )
+
 make_optimizer.init_density_with_uniform( mean_density )
 
 make_optimizer.optimize(
