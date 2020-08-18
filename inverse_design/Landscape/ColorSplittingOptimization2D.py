@@ -454,7 +454,7 @@ class ColorSplittingOptimization2D():
 		
 		return fom
 
-	def compute_fom_and_gradient_with_polarizability( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+	def compute_fom_and_gradient_with_polarizability_( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
@@ -494,8 +494,8 @@ class ColorSplittingOptimization2D():
 
 				pol_Hx, pol_Hy, pol_Ez = simulation.solve( polarizability_src )
 
-				e_piece = fwd_Ez[ device_start_row : device_end_row,
-								device_start_col : device_end_col ]
+				# e_piece = fwd_Ez[ device_start_row : device_end_row,
+				# 				device_start_col : device_end_col ]
 
 				# local_p_ind = self.rel_eps_simulation[
 				# 	device_start_row : device_end_row,
@@ -504,12 +504,17 @@ class ColorSplittingOptimization2D():
 				# 		device_start_col : device_end_col
 				# 	] + e_piece
 
-				local_p_ind = self.rel_eps_simulation[
-					device_start_row : device_end_row,
-					device_start_col : device_end_col ] * pol_Ez[ 
-						device_start_row : device_end_row,
-						device_start_col : device_end_col
-					]
+				# local_p_ind = self.rel_eps_simulation[
+				# 	device_start_row : device_end_row,
+				# 	device_start_col : device_end_col ] * pol_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col
+				# 	]
+
+				guess_pind = fwd_Ez + self.rel_eps_simulation * pol_Ez
+				local_p_ind = guess_pind[ device_start_row : device_end_row,
+					device_start_col : device_end_col ]
+
 
 				# print(np.max(np.abs(e_piece)))
 				# print(np.max(np.abs(self.rel_eps_simulation[
@@ -533,7 +538,7 @@ class ColorSplittingOptimization2D():
 
 
 
-	def compute_fom_and_gradient_with_polarizability_( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+	def compute_fom_and_gradient_with_polarizability( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
@@ -590,8 +595,8 @@ class ColorSplittingOptimization2D():
 		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 		polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
 
-		for design_row in range( 4, self.design_width_voxels ):
-			for design_col in range( 1, self.design_height_voxels ):
+		for design_row in range( 20, self.design_width_voxels ):
+			for design_col in range( 10, self.design_height_voxels ):
 				device_start_row = self.device_width_start + self.coarsen_factor * design_row
 				device_end_row = device_start_row + self.coarsen_factor
 
@@ -619,6 +624,12 @@ class ColorSplittingOptimization2D():
 				# 	device_start_row + self.coarsen_factor : device_end_row + self.coarsen_factor,
 				# 	device_start_col + self.coarsen_factor : device_end_col + self.coarsen_factor ]
 				# polarizability_src = np.imag( polarizability_src )
+
+				# Pnew = (eps + del_eps) * (Eold + delE)
+				# Pold = eps * Eold
+				# del_P = del_eps * Eold + eps * delE
+
+				# delE = 
 
 				polarizability_src[
 					device_start_row : device_end_row,
@@ -686,16 +697,39 @@ class ColorSplittingOptimization2D():
 
 
 
-				# new_rel_eps = self.rel_eps_simulation.copy()
-				# test_delta = 0.005
-				# new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += test_delta
-				# new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
-				# check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
+				new_rel_eps = self.rel_eps_simulation.copy()
+				test_delta = 0.001
+				new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += test_delta
+				new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
+				check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
 
-				# check_pind = ( new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez ) / test_delta
+				check_pind = ( new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez )
+				guess_pind = test_delta * fwd_Ez
+				guess_pind2 = test_delta * ( fwd_Ez + self.rel_eps_simulation * pol_Ez )
 				# check_pind_conj = ( new_rel_eps * np.conj( check_Ez ) - self.rel_eps_simulation * np.conj( fwd_Ez ) ) / test_delta
 
+				import matplotlib.pyplot as plt
+				plt.subplot( 3, 2, 1 )
+				plt.imshow( np.real( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 2 )
+				plt.imshow( np.imag( check_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 3 )
+				plt.imshow( np.real( guess_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 4 )
+				plt.imshow( np.imag( guess_pind[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 5 )
+				plt.imshow( np.real( guess_pind2[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
+				plt.subplot( 3, 2, 6 )
+				plt.imshow( np.imag( guess_pind2[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+				plt.colorbar()
 
+				plt.show()
+				continue
 
 
 				# beta_piece = self.rel_eps_simulation[
@@ -708,41 +742,59 @@ class ColorSplittingOptimization2D():
 								device_start_col : device_end_col ]
 				e_piece_conj = np.conj( fwd_Ez[ device_start_row : device_end_row,
 								device_start_col : device_end_col ] )
-				pol_piece = pol_Ez[ 
-						device_start_row : device_end_row,
-						device_start_col : device_end_col ]
+
 				rel_eps_piece = self.rel_eps_simulation[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ]
-				pol_piece_conj = pol_Ez_conj[ 
+				pol_piece = pol_Ez[ 
 						device_start_row : device_end_row,
 						device_start_col : device_end_col ]
+				# pol_piece_conj = pol_Ez_conj[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col ]
 
 
 				# new_E = ( rel_eps_piece * pol_piece / ( eps_nought * omega ) ) + e_piece
-				new_E = ( test_delta * rel_eps_piece * pol_piece ) + e_piece
-				new_E_conj = ( test_delta * rel_eps_piece * pol_piece_conj ) + np.conj( e_piece )
+				# new_E = ( test_delta * rel_eps_piece * pol_piece ) + e_piece
+				# new_E_conj = ( test_delta * rel_eps_piece * pol_piece_conj ) + np.conj( e_piece )
 				# new_E = ( test_delta * pol_piece ) + e_piece
-				new_delta_E_conj = np.conj( new_E ) - np.conj( e_piece )
-				new_delta_E = test_delta * rel_eps_piece * pol_piece
+				# new_delta_E_conj = np.conj( new_E ) - np.conj( e_piece )
+				# new_delta_E = test_delta * rel_eps_piece * pol_piece
 				
-				plt.subplot( 2, 2, 1 )
+				import matplotlib.pyplot as plt
+				plt.subplot( 3, 2, 1 )
 				plt.imshow( np.real( pol_piece ) )
 				plt.title('New E')
 				plt.colorbar()
-				plt.subplot( 2, 2, 2 )
+				plt.subplot( 3, 2, 2 )
 				plt.imshow( np.real( e_piece ) )
 				plt.title('New E conj')
 				plt.colorbar()
-				plt.subplot( 2, 2, 3 )
+				plt.subplot( 3, 2, 3 )
 				plt.imshow( np.imag( pol_piece ) )
 				plt.title('New E')
 				plt.colorbar()
-				plt.subplot( 2, 2, 4 )
+				plt.subplot( 3, 2, 4 )
 				plt.imshow( np.imag( e_piece ) )
 				plt.title('New E conj')
 				plt.colorbar()
+				plt.subplot( 3, 2, 5 )
+				plt.imshow( np.abs( pol_piece / e_piece ) )
+				plt.title('New E')
+				plt.colorbar()
+				plt.subplot( 3, 2, 6 )
+				plt.imshow( np.angle( pol_piece / e_piece ) )
+				plt.title('New E conj')
+				plt.colorbar()
 				plt.show()	
+				print( np.angle( e_piece ) )
+				print( np.abs( pol_piece / e_piece ) )
+				print( np.angle( pol_piece / e_piece ) )
+				print( eps_nought * omega )
+				print( 1. / ( eps_nought * omega ) )
+				print()
+				continue
+
 
 				# import matplotlib.pyplot as plt
 				# plt.subplot( 3, 2, 1 )
