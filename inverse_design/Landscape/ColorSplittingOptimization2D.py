@@ -470,7 +470,7 @@ class ColorSplittingOptimization2D():
 
 		gradient_design = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
 
-		polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 
 		for design_row in range( 0, self.design_width_voxels ):
 			for design_col in range( 0, self.design_height_voxels ):
@@ -481,18 +481,18 @@ class ColorSplittingOptimization2D():
 				device_end_col = device_start_col + self.coarsen_factor
 
 				polarizability_src = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
-				polarizability_src_conj = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
+				# polarizability_src_conj = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
 
 				#
 				# Oh wait, you should only have to do this once per forward source! Wasteful, but ok for now
 				#
 				polarizability_src[
 					device_start_row : device_end_row,
-					device_start_col : device_end_col ] = ( 1 / 1j ) * ( 1 / omega ) * fwd_Ez[
+					device_start_col : device_end_col ] = eps_nought * omega * ( 1 / 1j ) * fwd_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ]
 
-				pol_Hx, pol_Hy, pol_Ez = polarizability_sim.solve( polarizability_src )
+				pol_Hx, pol_Hy, pol_Ez = simulation.solve( polarizability_src )
 
 				e_piece = fwd_Ez[ device_start_row : device_end_row,
 								device_start_col : device_end_col ]
@@ -504,14 +504,14 @@ class ColorSplittingOptimization2D():
 						device_start_col : device_end_col
 					] + e_piece
 
-				print(np.max(np.abs(e_piece)))
-				print(np.max(np.abs(self.rel_eps_simulation[
-					device_start_row : device_end_row,
-					device_start_col : device_end_col ] * pol_Ez[ 
-						device_start_row : device_end_row,
-						device_start_col : device_end_col
-					])))
-				print()
+				# print(np.max(np.abs(e_piece)))
+				# print(np.max(np.abs(self.rel_eps_simulation[
+				# 	device_start_row : device_end_row,
+				# 	device_start_col : device_end_col ] * pol_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col
+				# 	])))
+				# print()
 
 
 				local_adj_Ez = adj_Ez[
@@ -737,6 +737,11 @@ class ColorSplittingOptimization2D():
 						device_start_col : device_end_col
 					] + e_piece_conj
 
+				# local_p_ind =  e_piece
+
+				# local_p_ind_conj = e_piece_conj
+
+
 				local_adj_Ez = adj_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col
@@ -747,8 +752,9 @@ class ColorSplittingOptimization2D():
 					device_start_col : device_end_col
 				]
 
-				calc_0 = 2 * omega * eps_nought * ( local_p_ind * local_adj_Ez / 1j )
-				calc_1 = 2 * omega * eps_nought * ( local_p_ind_conj * local_adj_Ez_conj / 1j )
+				calc_0 = omega * eps_nought * ( local_p_ind * local_adj_Ez / 1j )
+				calc_1 = omega * eps_nought * ( local_p_ind_conj * np.conj( local_adj_Ez / 1j ) )
+
 
 				plt.subplot( 2, 2, 1 )
 				plt.imshow( np.real( calc_0 ) )
@@ -763,6 +769,8 @@ class ColorSplittingOptimization2D():
 				plt.imshow( np.imag( calc_1 ) )
 				plt.colorbar()
 				plt.show()
+
+				print( calc_0 + calc_1 )
 
 
 				import matplotlib.pyplot as plt
