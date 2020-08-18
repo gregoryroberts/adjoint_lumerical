@@ -1871,8 +1871,8 @@ class ColorSplittingOptimization2D():
 				if compute_polarizability:
 					scale_gradient_for_wl = get_grad
 
-					np.save( folder_for_saving + '/get_grad_' + str( iter_idx ) + '.npy', get_grad )
-					np.save( folder_for_saving + '/get_grad_orig_' + str( iter_idx ) + '.npy', get_grad_orig )
+					np.save( folder_for_saving + '_get_grad_' + str( iter_idx ) + '.npy', get_grad )
+					np.save( folder_for_saving + '_get_grad_orig_' + str( iter_idx ) + '.npy', get_grad_orig )
 
 				else:
 					upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
