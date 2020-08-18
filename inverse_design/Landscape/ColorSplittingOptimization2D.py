@@ -1039,9 +1039,15 @@ class ColorSplittingOptimization2D():
 
 	def verify_adjoint_against_finite_difference_lambda_design( self, save_loc ):
 
+		get_density = upsample( self.design_density, self.coarsen_factor )
+		get_permittivity = self.density_to_permittivity( get_density )
+
+
+		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
 		fd_grad = np.zeros( self.design_density.shape )
 		fom_init, adj_grad, adj_grad_orig = self.compute_fom_and_gradient_with_polarizability(
-			self.omega_values[ 0 ], self.rel_eps_simulation, 0 )
+			self.omega_values[ 0 ], get_permittivity, fd_focal_x_loc )
+
 
 		h = 1e-3
 	
@@ -1053,13 +1059,13 @@ class ColorSplittingOptimization2D():
 				fd_density = upsample( copy_density, self.coarsen_factor )
 				fd_permittivity = self.density_to_permittivity( fd_density )
 
-				fom_up = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, 0 )			
+				fom_up = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )			
 
 				copy_density[ row, col ] -= h
 				fd_density = upsample( copy_density, self.coarsen_factor )
 				fd_permittivity = self.density_to_permittivity( fd_density )
 
-				fom_down = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, 0 )
+				fom_down = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )
 
 				fd_grad[ row, col ] = ( fom_up - fom_down ) / h
 
