@@ -1055,20 +1055,20 @@ class ColorSplittingOptimization2D():
 		for row in range( 0, self.design_width_voxels ):
 			for col in range( 0, self.design_height_voxels ):
 				copy_density = self.design_density.copy()
-
 				copy_density[ row, col ] += h
 				fd_density = upsample( copy_density, self.coarsen_factor )
 				fd_permittivity = self.density_to_permittivity( fd_density )
 
 				fom_up = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )			
 
+				copy_density = self.design_density.copy()
 				copy_density[ row, col ] -= h
 				fd_density = upsample( copy_density, self.coarsen_factor )
 				fd_permittivity = self.density_to_permittivity( fd_density )
 
 				fom_down = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )
 
-				fd_grad[ row, col ] = ( fom_up - fom_down ) / h
+				fd_grad[ row, col ] = ( fom_up - fom_down ) / ( 2 * h )
 
 				fd_grad_second[ row, col ] = ( fom_up + fom_down - 2 * fom_init ) / ( h**2 )
 
