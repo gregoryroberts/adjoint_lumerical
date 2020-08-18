@@ -497,9 +497,14 @@ class ColorSplittingOptimization2D():
 				e_piece = fwd_Ez[ device_start_row : device_end_row,
 								device_start_col : device_end_col ]
 
-				local_p_ind = self.rel_eps_simulation[
-					device_start_row : device_end_row,
-					device_start_col : device_end_col ] * pol_Ez[ 
+				# local_p_ind = self.rel_eps_simulation[
+				# 	device_start_row : device_end_row,
+				# 	device_start_col : device_end_col ] * pol_Ez[ 
+				# 		device_start_row : device_end_row,
+				# 		device_start_col : device_end_col
+				# 	] + e_piece
+
+				local_p_ind = pol_Ez[ 
 						device_start_row : device_end_row,
 						device_start_col : device_end_col
 					] + e_piece
@@ -534,9 +539,11 @@ class ColorSplittingOptimization2D():
 		
 		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 		adj_source[ focal_point_x_loc, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+		adj_source[ focal_point_x_loc + 4, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc + 4, self.focal_point_y ] )
 
 		adj_source_2 = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 		adj_source_2[ focal_point_x_loc, self.focal_point_y ] = ( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+		adj_source_2[ focal_point_x_loc + 4, self.focal_point_y ] = ( fwd_Ez[ focal_point_x_loc + 4, self.focal_point_y ] )
 
 
 		# adj_source[
@@ -551,22 +558,27 @@ class ColorSplittingOptimization2D():
 
 		# adj_Hx_, adj_Hy_, adj_Ez_ = simulation.solve( np.conj( adj_source ) )
 
-		# local_adj_Ez = adj_Ez[
-		# 	self.device_width_start : self.device_width_end,
-		# 	self.device_height_start : self.device_height_end
-		# ]
+		local_adj_Ez = adj_Ez[
+			self.device_width_start : self.device_width_end,
+			self.device_height_start : self.device_height_end
+		]
 
-		# local_adj_Ez_ = adj_Ez_[
-		# 	self.device_width_start : self.device_width_end,
-		# 	self.device_height_start : self.device_height_end
-		# ]
+		local_adj_Ez_2 = adj_Ez_2[
+			self.device_width_start : self.device_width_end,
+			self.device_height_start : self.device_height_end
+		]
 
-		# import matplotlib.pyplot as plt
-		# plt.subplot( 1, 2, 1 )
-		# plt.imshow( np.abs( local_adj_Ez ) )
-		# plt.subplot( 1, 2, 2 )
-		# plt.imshow( np.abs( local_adj_Ez_ ) )
-		# plt.show()
+		device_start_row = self.coarsen_factor * 3
+		device_end_row = device_start_row + self.coarsen_factor
+		device_start_col = self.coarsen_factor * 2
+		device_end_col = device_start_col + self.coarsen_factor
+
+		import matplotlib.pyplot as plt
+		plt.subplot( 1, 2, 1 )
+		plt.imshow( np.abs( local_adj_Ez[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+		plt.subplot( 1, 2, 2 )
+		plt.imshow( np.abs( local_adj_Ez_2[ device_start_row : device_end_row, device_start_col : device_end_col ] ) )
+		plt.show()
 		# asdfasd
 
 		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
@@ -611,6 +623,9 @@ class ColorSplittingOptimization2D():
 					device_start_col : device_end_col ] = ( eps_nought / 1j ) * omega * fwd_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ]
+				# polarizability_src[
+				# device_start_row + 4,
+				# 	device_start_col + 8 ] = ( eps_nought / 1j ) * omega * fwd_Ez[ device_start_row + 4, device_start_col + 8 ]
 
 				pol_Hx, pol_Hy, pol_Ez = simulation.solve( polarizability_src )
 
@@ -619,6 +634,9 @@ class ColorSplittingOptimization2D():
 					device_start_col : device_end_col ] = ( eps_nought / 1j ) * omega * np.conj( fwd_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ] )
+				# polarizability_src_conj[
+				# device_start_row + 4,
+				# 	device_start_col + 8 ] = ( eps_nought / 1j ) * omega * np.conj( fwd_Ez[ device_start_row + 4, device_start_col + 8 ] )
 
 				pol_Hx_conj, pol_Hy_conj, pol_Ez_conj = simulation.solve( polarizability_src_conj )
 
@@ -666,13 +684,17 @@ class ColorSplittingOptimization2D():
 
 
 
-				# new_rel_eps = self.rel_eps_simulation.copy()
-				# test_delta = 0.005
-				# new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += test_delta
-				# new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
-				# check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
+				new_rel_eps = self.rel_eps_simulation.copy()
+				test_delta = 0.005
+				new_rel_eps[ device_start_row : device_end_row, device_start_col : device_end_col ] += test_delta
+				new_polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, new_rel_eps, [ self.pml_voxels, self.pml_voxels ] )
+				check_Hx, check_Hy, check_Ez = new_polarizability_sim.solve( self.fwd_source )
 
-				# check_pind = ( new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez ) / test_delta
+				check_pind = ( new_rel_eps * check_Ez - self.rel_eps_simulation * fwd_Ez ) / test_delta
+				check_pind_conj = ( new_rel_eps * np.conj( check_Ez ) - self.rel_eps_simulation * np.conj( fwd_Ez ) ) / test_delta
+
+
+
 
 				# beta_piece = self.rel_eps_simulation[
 				# 	device_start_row : device_end_row,
@@ -690,10 +712,35 @@ class ColorSplittingOptimization2D():
 				rel_eps_piece = self.rel_eps_simulation[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col ]
+				pol_piece_conj = pol_Ez_conj[ 
+						device_start_row : device_end_row,
+						device_start_col : device_end_col ]
+
 
 				# new_E = ( rel_eps_piece * pol_piece / ( eps_nought * omega ) ) + e_piece
-				# new_E = ( test_delta * rel_eps_piece * pol_piece ) + e_piece
+				new_E = ( test_delta * rel_eps_piece * pol_piece ) + e_piece
+				new_E_conj = ( test_delta * rel_eps_piece * pol_piece_conj ) + np.conj( e_piece )
 				# new_E = ( test_delta * pol_piece ) + e_piece
+				new_delta_E_conj = np.conj( new_E ) - np.conj( e_piece )
+				new_delta_E = test_delta * rel_eps_piece * pol_piece
+				
+				plt.subplot( 2, 2, 1 )
+				plt.imshow( np.real( new_E ) )
+				plt.title('New E')
+				plt.colorbar()
+				plt.subplot( 2, 2, 2 )
+				plt.imshow( np.real( new_E_conj ) )
+				plt.title('New E conj')
+				plt.colorbar()
+				plt.subplot( 2, 2, 3 )
+				plt.imshow( np.imag( new_E ) )
+				plt.title('New E')
+				plt.colorbar()
+				plt.subplot( 2, 2, 4 )
+				plt.imshow( np.imag( new_E_conj ) )
+				plt.title('New E conj')
+				plt.colorbar()
+				plt.show()	
 
 				# import matplotlib.pyplot as plt
 				# plt.subplot( 3, 2, 1 )
@@ -732,10 +779,53 @@ class ColorSplittingOptimization2D():
 
 				local_p_ind_conj = self.rel_eps_simulation[
 					device_start_row : device_end_row,
-					device_start_col : device_end_col ] * pol_Ez_conj[ 
+					device_start_col : device_end_col ] * np.conj( pol_Ez[ 
 						device_start_row : device_end_row,
 						device_start_col : device_end_col
-					] + e_piece_conj
+					] ) + e_piece_conj
+
+				plt.subplot( 4, 2, 1 )
+				plt.imshow( np.real( check_pind[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] ) )
+				plt.title('Check pind')
+				plt.colorbar()
+				plt.subplot( 4, 2, 2 )
+				plt.imshow( np.real( check_pind_conj[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] ) )
+				plt.title('Check pind conj')
+				plt.colorbar()
+				plt.subplot( 4, 2, 3 )
+				plt.imshow( np.imag( check_pind[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] ) )
+				plt.title('Check pind')
+				plt.colorbar()
+				plt.subplot( 4, 2, 4 )
+				plt.imshow( np.imag( check_pind_conj[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col ] ) )
+				plt.title('Check pind conj')
+				plt.colorbar()
+
+				plt.subplot( 4, 2, 5 )
+				plt.imshow( np.real( local_p_ind ) )
+				plt.title('New P')
+				plt.colorbar()
+				plt.subplot( 4, 2, 6 )
+				plt.imshow( np.real( local_p_ind_conj ) )
+				plt.title('New P conj')
+				plt.colorbar()
+				plt.subplot( 4, 2, 7 )
+				plt.imshow( np.imag( local_p_ind ) )
+				plt.title('New P')
+				plt.colorbar()
+				plt.subplot( 4, 2, 8 )
+				plt.imshow( np.imag( local_p_ind_conj ) )
+				plt.title('New P conj')
+				plt.colorbar()
+				plt.show()	
 
 				# local_p_ind =  e_piece
 
@@ -771,6 +861,8 @@ class ColorSplittingOptimization2D():
 				plt.show()
 
 				print( calc_0 + calc_1 )
+				print('\n\n\n---------\n\n\n')
+				print(2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j ))
 
 
 				import matplotlib.pyplot as plt
