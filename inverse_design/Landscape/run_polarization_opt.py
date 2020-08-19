@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8
-density_coarsen_factor = 12
+density_coarsen_factor = 12#48
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -66,6 +66,8 @@ lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 10 * density_coarsen_factor
 device_height_voxels = 4 * density_coarsen_factor
+# device_width_voxels = 48
+# device_height_voxels = 48
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
@@ -143,18 +145,18 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 
 make_optimizer.init_density_with_uniform( 0.5 )
 
-# make_optimizer.optimize(
-# 	int( num_iterations ),
-# 	save_folder + "/opt",
-# 	True,
-# 	# False,
-# 	False, 20, 20, 0.95,
-# 	None,
-# 	use_log_fom,
-# 	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-# 	binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
-# 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+make_optimizer.optimize(
+	int( num_iterations ),
+	save_folder + "/opt",
+	True,
+	# False,
+	False, 20, 20, 0.95,
+	None,
+	use_log_fom,
+	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+	binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
+	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
-make_optimizer.verify_adjoint_against_finite_difference_lambda_design( save_folder + "/opt" )
+# make_optimizer.verify_adjoint_against_finite_difference_lambda_design( save_folder + "/opt" )
 
-# make_optimizer.save_optimization_data( save_folder + "/opt" )
+make_optimizer.save_optimization_data( save_folder + "/opt" )

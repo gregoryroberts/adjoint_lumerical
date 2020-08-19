@@ -466,10 +466,14 @@ class ColorSplittingOptimization2D():
 		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
 
+		bare_simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
+		bare_adj_Hx, bare_adj_Hy, bare_adj_Ez = bare_simulation.solve( adj_source )
+
 		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
 
 		gradient_design = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
 		gradient_design_orig = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
+		# save_p_ind = np.zeros( fwd_Ez.shape, dtype=np.complex )
 
 		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 
@@ -531,16 +535,25 @@ class ColorSplittingOptimization2D():
 					device_start_row : device_end_row,
 					device_start_col : device_end_col
 				]
+				bare_local_adj_Ez = bare_adj_Ez[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col
+				]
 
-				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
+				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
+				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( 1j * local_p_ind * bare_local_adj_Ez / 1j )
 				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
 
 				local_gradient_device_orig = fom_scaling * 2 * omega * eps_nought * np.real( fwd_Ez[ device_start_row : device_end_row,
 					device_start_col : device_end_col ] * local_adj_Ez / 1j )
+
+
 				gradient_design_orig[ design_row, design_col ] = np.mean( local_gradient_device_orig )
 
+				# save_p_ind[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind
 
-		return fom, gradient_design, gradient_design_orig
+
+		return fom, gradient_design, gradient_design_orig#, save_p_ind
 
 
 
@@ -1042,12 +1055,64 @@ class ColorSplittingOptimization2D():
 		get_density = upsample( self.design_density, self.coarsen_factor )
 		get_permittivity = self.density_to_permittivity( get_density )
 
-
 		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
 		fd_grad = np.zeros( self.design_density.shape )
 		fd_grad_second = np.zeros( self.design_density.shape )
-		fom_init, adj_grad, adj_grad_orig = self.compute_fom_and_gradient_with_polarizability(
+		fom_init, adj_grad, adj_grad_orig, save_p_ind = self.compute_fom_and_gradient_with_polarizability(
 			self.omega_values[ 0 ], get_permittivity, fd_focal_x_loc )
+
+		save_p_ind = save_p_ind[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+
+		num = 11
+		mid_num = int( 0.5 * num )
+		h = np.linspace( -1e-3, 1e-3, num )
+
+		import matplotlib.pyplot as plt
+		choose_row = int( 0.3 * self.device_width_voxels )
+		choose_col = int( 0.65 * self.device_height_voxels )
+
+		ez_vals = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
+		ez_diff = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
+		del_p = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
+		for idx in range( 0, num ):
+			copy_density = self.design_density.copy()
+			copy_density[ 0, 0 ] += ( h[ idx ] / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+			fd_density = upsample( copy_density, self.coarsen_factor )
+			fd_permittivity = self.density_to_permittivity( fd_density )
+
+			ez = self.compute_forward_fields( self.omega_values[ 0 ], fd_permittivity )
+			ez_vals[ idx ] = ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ].copy()
+
+			# del_p[ idx ] = (
+			# 	fd_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ idx ] -
+			# 	get_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ mid_num ] )
+			# del_p[ idx ] = (
+			# 	# fd_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ idx ] -
+			# 	h[ idx ] * ez_vals[ 0 ] )
+
+		for idx in range( 0, num ):
+			copy_density = self.design_density.copy()
+			copy_density[ 0, 0 ] += ( h[ idx ] / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+			fd_density = upsample( copy_density, self.coarsen_factor )
+			fd_permittivity = self.density_to_permittivity( fd_density )
+
+			ez_diff[ idx ] = ez_vals[ idx ] - ez_vals[ mid_num ]
+
+			del_p[ idx ] = (
+				fd_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ idx ] -
+				get_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ mid_num ] )
+
+
+		# plt.subplot( 1, 2, 1 )
+		plt.plot( h, np.real( del_p[ :, choose_row, choose_col ] ), color='b' )
+		plt.plot( h, np.imag( del_p[ :, choose_row, choose_col ] ), color='g' )
+		plt.plot( h, h * np.real( ez_vals[ mid_num, choose_row, choose_col ] ), color='b', linestyle='--' )
+		plt.plot( h, h * np.imag( ez_vals[ mid_num, choose_row, choose_col ] ), color='g', linestyle='--' )
+		plt.plot( h, h * np.real( save_p_ind[ choose_row, choose_col ] ), color='b', linestyle=':' )
+		plt.plot( h, h * np.imag( save_p_ind[ choose_row, choose_col ] ), color='g', linestyle=':' )
+		plt.show()
+
+		adsf
 
 
 		h = 1e-3
@@ -1916,8 +1981,8 @@ class ColorSplittingOptimization2D():
 				if compute_polarizability:
 					scale_gradient_for_wl = get_grad
 
-					np.save( folder_for_saving + '_get_grad_' + str( iter_idx ) + '.npy', get_grad )
-					np.save( folder_for_saving + '_get_grad_orig_' + str( iter_idx ) + '.npy', get_grad_orig )
+					# np.save( folder_for_saving + '_get_grad_' + str( iter_idx ) + '.npy', get_grad )
+					# np.save( folder_for_saving + '_get_grad_orig_' + str( iter_idx ) + '.npy', get_grad_orig )
 
 				else:
 					upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
