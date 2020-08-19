@@ -518,7 +518,8 @@ class ColorSplittingOptimization2D():
 				]
 
 				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( make_current * bare_local_adj_Ez / 1j )
-				local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * bare_local_adj_Ez / 1j )
+				# local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * bare_local_adj_Ez / 1j )
+				local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * local_adj_Ez / 1j )
 
 				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * bare_local_adj_Ez / 1j )
