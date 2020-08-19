@@ -295,7 +295,7 @@ def gradient(
 		weighting_start_idx = focal_spot_idx * num_design_frequency_points
 		weighting_end_idx = weighting_start_idx + num_design_frequency_points
 
-		get_weightings = fom_weightings[ weighting_start_idx : weighting_end_idx ]
+		get_weightings = fom_weightings[ weighting_start_idx : weighting_end_idx ] * extra_weighting_by_polarization[ focal_spot_idx ]
 
 		alpha = jones_sorting_vectors[ focal_spot_idx ][ 0 ]
 		beta = jones_sorting_vectors[ focal_spot_idx ][ 1 ]

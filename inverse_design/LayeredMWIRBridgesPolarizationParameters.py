@@ -8,10 +8,11 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_polarization_10layers_3p5to4um_fixed_step_addcage_30x30x25um_f36um'
+project_name = 'layered_mwir_2d_lithography_bridges_polarization_extra_circular_10layers_3p5to4um_30x30x25um_f36um'
 
 
 optimized_focal_spots = [ 0, 1, 2, 3 ]
+extra_weighting_by_polarization = [ 2, 1, 1, 1 ]
 
 
 init_permittivity_0_1_scale = 0.5
