@@ -508,10 +508,6 @@ class ColorSplittingOptimization2D():
 				# make_current = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
 				make_current = omega**2 * eps_nought * local_p_ind
 
-				bare_simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
-				bare_Hx, bare_Hy, bare_Ez = bare_simulation.solve( make_current )				
-
-
 				local_adj_Ez = adj_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col
