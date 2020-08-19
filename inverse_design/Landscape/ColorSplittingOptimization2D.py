@@ -533,7 +533,8 @@ class ColorSplittingOptimization2D():
 				save_p_ind[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind
 
 
-		return fom, gradient_design, gradient_design_orig#, save_p_ind
+		# return fom, gradient_design, gradient_design_orig#, save_p_ind
+		return fom, gradient_design_orig, gradient_design#, save_p_ind
 
 
 
