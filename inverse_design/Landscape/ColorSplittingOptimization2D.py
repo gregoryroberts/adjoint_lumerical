@@ -516,7 +516,8 @@ class ColorSplittingOptimization2D():
 				# 		device_start_col : device_end_col
 				# 	]
 
-				guess_pind = fwd_Ez + self.rel_eps_simulation * pol_Ez
+				# guess_pind = fwd_Ez + self.rel_eps_simulation * pol_Ez
+				guess_pind = fwd_Ez + ( self.rel_eps_simulation - 1 ) * pol_Ez
 				local_p_ind = guess_pind[ device_start_row : device_end_row,
 					device_start_col : device_end_col ]
 
