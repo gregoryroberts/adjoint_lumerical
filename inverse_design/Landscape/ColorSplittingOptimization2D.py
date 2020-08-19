@@ -1055,14 +1055,14 @@ class ColorSplittingOptimization2D():
 		for row in range( 0, self.design_width_voxels ):
 			for col in range( 0, self.design_height_voxels ):
 				copy_density = self.design_density.copy()
-				copy_density[ row, col ] += h
+				copy_density[ row, col ] += ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
 				fd_density = upsample( copy_density, self.coarsen_factor )
 				fd_permittivity = self.density_to_permittivity( fd_density )
 
 				fom_up = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )			
 
 				copy_density = self.design_density.copy()
-				copy_density[ row, col ] -= h
+				copy_density[ row, col ] -= ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
 				fd_density = upsample( copy_density, self.coarsen_factor )
 				fd_permittivity = self.density_to_permittivity( fd_density )
 
@@ -1095,8 +1095,8 @@ class ColorSplittingOptimization2D():
 		lambda_low_um = lambda_value_um - h
 		lambda_high_um = lambda_value_um + h
 
-		omega_low = c / ( 1e-6 * lambda_low_um )
-		omega_high = c / ( 1e-6 * lambda_high_um )
+		omega_low = 2 * np.pi * c / ( 1e-6 * lambda_low_um )
+		omega_high = 2 * np.pi * c / ( 1e-6 * lambda_high_um )
 
 		# fd_init_device = 1.5 * np.ones( ( self.device_width_voxels, self.device_height_voxels ) )
 		import_density = upsample( self.design_density, self.coarsen_factor )
