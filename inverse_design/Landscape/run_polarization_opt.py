@@ -39,7 +39,7 @@ density_coarsen_factor = 12#24#12#32#24#48#12#48
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
-num_lambda_values = 2
+num_lambda_values = 1
 
 # bandwidth_um = lambda_max_um - lambda_min_um
 # exclusion_um = 0.030
@@ -62,7 +62,8 @@ def density_bound_from_eps( eps_val ):
 	return ( eps_val - min_relative_permittivity ) / ( max_relative_permittivity - min_relative_permittivity )
 
 # lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
-lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
+# lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
+lambda_values_um = np.array( list( lambda_left ) )# + list( lambda_right ) )
 
 device_width_voxels = 10 * density_coarsen_factor
 device_height_voxels = 4 * density_coarsen_factor
