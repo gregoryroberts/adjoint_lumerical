@@ -473,7 +473,7 @@ class ColorSplittingOptimization2D():
 
 		gradient_design = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
 		gradient_design_orig = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
-		# save_p_ind = np.zeros( fwd_Ez.shape, dtype=np.complex )
+		save_p_ind = np.zeros( fwd_Ez.shape, dtype=np.complex )
 
 		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 
@@ -499,49 +499,32 @@ class ColorSplittingOptimization2D():
 
 				pol_Hx, pol_Hy, pol_Ez = simulation.solve( polarizability_src )
 
-				# e_piece = fwd_Ez[ device_start_row : device_end_row,
-				# 				device_start_col : device_end_col ]
-
-				# local_p_ind = self.rel_eps_simulation[
-				# 	device_start_row : device_end_row,
-				# 	device_start_col : device_end_col ] * pol_Ez[ 
-				# 		device_start_row : device_end_row,
-				# 		device_start_col : device_end_col
-				# 	] + e_piece
-
-				# local_p_ind = self.rel_eps_simulation[
-				# 	device_start_row : device_end_row,
-				# 	device_start_col : device_end_col ] * pol_Ez[ 
-				# 		device_start_row : device_end_row,
-				# 		device_start_col : device_end_col
-				# 	]
-
-				# guess_pind = fwd_Ez + self.rel_eps_simulation * pol_Ez
-				guess_pind = fwd_Ez + ( self.rel_eps_simulation - 1 ) * pol_Ez
+				guess_pind = fwd_Ez + self.rel_eps_simulation * pol_Ez
+				# guess_pind = fwd_Ez + ( self.rel_eps_simulation - 1 ) * pol_Ez
 				local_p_ind = guess_pind[ device_start_row : device_end_row,
 					device_start_col : device_end_col ]
 
 
-				# print(np.max(np.abs(e_piece)))
-				# print(np.max(np.abs(self.rel_eps_simulation[
-				# 	device_start_row : device_end_row,
-				# 	device_start_col : device_end_col ] * pol_Ez[ 
-				# 		device_start_row : device_end_row,
-				# 		device_start_col : device_end_col
-				# 	])))
-				# print()
+				# make_current = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
+				make_current = omega**2 * eps_nought * local_p_ind
+
+				bare_simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
+				bare_Hx, bare_Hy, bare_Ez = bare_simulation.solve( make_current )				
 
 
 				local_adj_Ez = adj_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col
 				]
-				bare_local_adj_Ez = bare_adj_Ez[
-					device_start_row : device_end_row,
-					device_start_col : device_end_col
-				]
+				# bare_local_adj_Ez = bare_adj_Ez[
+				# 	device_start_row : device_end_row,
+				# 	device_start_col : device_end_col
+				# ]
 
-				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
+				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( make_current * bare_local_adj_Ez / 1j )
+				local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * bare_local_adj_Ez / 1j )
+
+				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * bare_local_adj_Ez / 1j )
 				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
 
@@ -551,7 +534,7 @@ class ColorSplittingOptimization2D():
 
 				gradient_design_orig[ design_row, design_col ] = np.mean( local_gradient_device_orig )
 
-				# save_p_ind[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind
+				save_p_ind[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind
 
 
 		return fom, gradient_design, gradient_design_orig#, save_p_ind
@@ -1052,7 +1035,6 @@ class ColorSplittingOptimization2D():
 		return net_fom
 
 	def verify_adjoint_against_finite_difference_lambda_design( self, save_loc ):
-
 		get_density = upsample( self.design_density, self.coarsen_factor )
 		get_permittivity = self.density_to_permittivity( get_density )
 
@@ -1062,11 +1044,128 @@ class ColorSplittingOptimization2D():
 		fom_init, adj_grad, adj_grad_orig, save_p_ind = self.compute_fom_and_gradient_with_polarizability(
 			self.omega_values[ 0 ], get_permittivity, fd_focal_x_loc )
 
+		first_ez = self.compute_forward_fields( self.omega_values[ 0 ], get_permittivity )
+
+
+		make_current = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
+		make_current_ = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
+
+		diff = adj_grad - adj_grad_orig
+		import matplotlib.pyplot as plt
+		# plt.subplot( 1, 2, 1 )
+		# plt.imshow( np.abs( diff ) )
+		# plt.colorbar()
+		# plt.subplot( 1, 2, 2 )
+		# plt.imshow( np.abs( adj_grad_orig ) )
+		# plt.colorbar()
+		# plt.show()
+
+		np.random.seed( 23123 )
+		test_delta = 1e-3 * 2 * ( np.random.random( self.design_density.shape ) - 0.5 )#+ 0.5 )
+		# test_delta = np.zeros( test_delta_.shape )
+		# test_delta[ 0, 0 ] = test_delta_[ 0, 0 ]
+
+		for row in range( 0, self.design_density.shape[ 0 ] ):
+			for col in range( 0, self.design_density.shape[ 1 ] ):
+				make_current[
+					self.device_width_start + row * self.coarsen_factor : self.device_width_start + ( row + 1 ) * self.coarsen_factor,
+					self.device_height_start + col * self.coarsen_factor : self.device_height_start + ( col + 1 ) * self.coarsen_factor ] = (
+					# ( get_permittivity - 1 ) *
+					self.omega_values[ 0 ] * test_delta[ row, col ] * eps_nought *
+					save_p_ind[
+						self.device_width_start + row * self.coarsen_factor : self.device_width_start + ( row + 1 ) * self.coarsen_factor,
+						self.device_height_start + col * self.coarsen_factor : self.device_height_start + ( col + 1 ) * self.coarsen_factor ] / 1j
+				)
+
+				# make_current[
+				# 	self.device_width_start + row * self.coarsen_factor : self.device_width_start + ( row + 1 ) * self.coarsen_factor,
+				# 	self.device_height_start + col * self.coarsen_factor : self.device_height_start + ( col + 1 ) * self.coarsen_factor ] += (
+				# 	( get_permittivity[ row * self.coarsen_factor : ( row + 1 ) * self.coarsen_factor, col * self.coarsen_factor : ( col + 1 ) * self.coarsen_factor ] - 1 ) *
+				# 	self.omega_values[ 0 ] * eps_nought *
+				# 	first_ez[
+				# 		self.device_width_start + row * self.coarsen_factor : self.device_width_start + ( row + 1 ) * self.coarsen_factor,
+				# 		self.device_height_start + col * self.coarsen_factor : self.device_height_start + ( col + 1 ) * self.coarsen_factor ] / 1j
+				# )
+
+				make_current_[
+					self.device_width_start + row * self.coarsen_factor : self.device_width_start + ( row + 1 ) * self.coarsen_factor,
+					self.device_height_start + col * self.coarsen_factor : self.device_height_start + ( col + 1 ) * self.coarsen_factor ] = (
+					# ( get_permittivity - 1 ) *
+					self.omega_values[ 0 ] * (
+						( get_permittivity[
+							row * self.coarsen_factor : ( row + 1 ) * self.coarsen_factor,
+							col * self.coarsen_factor : ( col + 1 ) * self.coarsen_factor ] - 1 ) + test_delta[ row, col ] ) * eps_nought *
+					first_ez[
+						self.device_width_start + row * self.coarsen_factor : self.device_width_start + ( row + 1 ) * self.coarsen_factor,
+						self.device_height_start + col * self.coarsen_factor : self.device_height_start + ( col + 1 ) * self.coarsen_factor ] / 1j
+				)
+
+
+		# print( make_current )
+		# make_current += self.fwd_source
+		make_current_ += self.fwd_source
+
+		bare_simulation = ceviche.fdfd_ez( self.omega_values[ 0 ], self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
+		bare_Hx, bare_Hy, bare_Ez = bare_simulation.solve( make_current )
+		bare_Hx_, bare_Hy_, bare_Ez_ = bare_simulation.solve( make_current_ )
+
+		test_density = self.design_density.copy()
+		test_density += ( test_delta / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+		get_density = upsample( test_density, self.coarsen_factor )
+		get_permittivity = self.density_to_permittivity( get_density )
+
+		fom_up = self.compute_fom( self.omega_values[ 0 ], get_permittivity, fd_focal_x_loc )
+
+		other_ez = self.compute_forward_fields( self.omega_values[ 0 ], get_permittivity )
+
+		plt.subplot( 1, 3, 1 )
+		plt.imshow( np.real( bare_Ez_ ) )
+		plt.colorbar()
+		plt.subplot( 1, 3, 2 )
+		plt.imshow( np.real( bare_Ez ) )
+		plt.colorbar()
+		plt.subplot( 1, 3, 3 )
+		plt.imshow( np.real( other_ez ) )
+		plt.colorbar()
+		plt.show()
+
+		# plt.plot( np.real( bare_Ez_[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] ), color='g', linestyle='-' )
+		# plt.plot( np.real( first_ez[ :, self.focal_point_y ] ), color='b', linestyle='--' )
+		# plt.plot( np.real( other_ez[ :, self.focal_point_y ] ), color='r', linestyle=':' )
+		# plt.show()
+
+		plt.plot( np.real( other_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] - first_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] ), color='b' )
+		plt.plot( np.real( bare_Ez_[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] - first_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] ), color='g', linestyle='--' )
+		plt.plot( np.real( bare_Ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] - 0 * first_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] ), color='r', linestyle='--' )
+
+		plt.plot( 3e-10 + np.imag( other_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] - first_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] ), color='k' )
+		plt.plot( 3e-10 + np.imag( bare_Ez_[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] - first_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] ), color='c', linestyle='--' )
+		plt.plot( 3e-10 + np.imag( bare_Ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] - 0 * first_ez[ self.pml_voxels : self.simulation_width_voxels - self.pml_voxels, self.focal_point_y ] ), color='m', linestyle='--' )
+
+		plt.show()
+
+		asdfas
+
+
+		print( adj_grad.shape )
+
+		predicted_grad_delta = self.coarsen_factor**2 * ( np.sum( test_delta * adj_grad_orig ) + np.sum( test_delta**2 * diff ) )
+		predicted_grad_delta_orig = self.coarsen_factor**2 * np.sum( test_delta * adj_grad_orig )
+		print( predicted_grad_delta )
+		print( predicted_grad_delta_orig )
+
+
+		print( ( fom_up - fom_init ) )
+
+		asdfads
+
+
+
 		save_p_ind = save_p_ind[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 
-		num = 11
+		num = 9
 		mid_num = int( 0.5 * num )
-		h = np.linspace( -1e-3, 1e-3, num )
+		h = np.linspace( -0.01, 0.01, num )
 
 		import matplotlib.pyplot as plt
 		choose_row = int( 0.3 * self.device_width_voxels )
