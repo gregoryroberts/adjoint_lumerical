@@ -1146,6 +1146,7 @@ class ColorSplittingOptimization2D():
 	def verify_adjoint_against_finite_difference_lambda_design_anisotropic( self, save_loc ):
 		# get_density = upsample( self.design_density, self.coarsen_factor )
 		# get_permittivity = self.density_to_permittivity( get_density )
+		np.random.seed( 23123 )
 
 		random_density = upsample( np.random.random( ( int( self.device_width_voxels / 4 ), int( self.device_height_voxels / 4 ) ) ), 4 )
 		random_perm = self.density_to_permittivity( random_density )
@@ -1156,11 +1157,6 @@ class ColorSplittingOptimization2D():
 		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
 			self.omega_values[ 0 ], random_perm, fd_focal_x_loc )
 
-		np.random.seed( 23123 )
-
-		random_density = upsample( np.random.random( int( self.device_width_voxels / 4 ), int( self.design_height_voxels / 4 ) ), 4 )
-		random_perm = self.density_to_permittivity( random_density )
-	
 		for row in range( 0, self.design_width_voxels ):
 			for col in range( 0, self.design_height_voxels ):
 				copy_density = random_density.copyt()
