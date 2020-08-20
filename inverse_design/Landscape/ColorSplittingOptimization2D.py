@@ -1147,7 +1147,7 @@ class ColorSplittingOptimization2D():
 		# get_density = upsample( self.design_density, self.coarsen_factor )
 		# get_permittivity = self.density_to_permittivity( get_density )
 
-		random_density = upsample( np.random.random( int( self.device_width_voxels / 4 ), int( self.design_height_voxels / 4 ) ), 4 )
+		random_density = upsample( np.random.random( ( int( self.device_width_voxels / 4 ), int( self.design_height_voxels / 4 ) ) ), 4 )
 		random_perm = self.density_to_permittivity( random_density )
 	
 		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
