@@ -537,7 +537,8 @@ class ColorSplittingOptimization2D():
 						gradient_design_orig[ design_row, design_col ] = np.mean( local_gradient_device_orig )
 
 
-		return fom, gradient_design, gradient_design_orig#, save_p_ind, save_p_ind2, save_p_ind3
+		# return fom, gradient_design, gradient_design_orig#, save_p_ind, save_p_ind2, save_p_ind3
+		return fom, gradient_design_orig, gradient_design#, save_p_ind, save_p_ind2, save_p_ind3
 
 
 	def compute_fom_and_gradient_with_polarizability__( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
