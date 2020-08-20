@@ -474,6 +474,8 @@ class ColorSplittingOptimization2D():
 		gradient_design = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
 		gradient_design_orig = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
 		save_p_ind = np.zeros( fwd_Ez.shape, dtype=np.complex )
+		save_p_ind2 = np.zeros( fwd_Ez.shape, dtype=np.complex )
+		save_p_ind3 = np.zeros( fwd_Ez.shape, dtype=np.complex )
 
 		# polarizability_sim = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 
@@ -500,8 +502,14 @@ class ColorSplittingOptimization2D():
 				pol_Hx, pol_Hy, pol_Ez = simulation.solve( polarizability_src )
 
 				guess_pind = fwd_Ez + self.rel_eps_simulation * pol_Ez
+				guess_pind2 = fwd_Ez
+				guess_pind3 = self.rel_eps_simulation * pol_Ez
 				# guess_pind = fwd_Ez + ( self.rel_eps_simulation - 1 ) * pol_Ez
 				local_p_ind = guess_pind[ device_start_row : device_end_row,
+					device_start_col : device_end_col ]
+				local_p_ind2 = guess_pind2[ device_start_row : device_end_row,
+					device_start_col : device_end_col ]
+				local_p_ind3 = guess_pind3[ device_start_row : device_end_row,
 					device_start_col : device_end_col ]
 
 
@@ -521,28 +529,35 @@ class ColorSplittingOptimization2D():
 				# local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * bare_local_adj_Ez / 1j )
 				# local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * local_adj_Ez / 1j )
 
+				test_mask = np.zeros( ( self.coarsen_factor, self.coarsen_factor ) )
+				quarter_width = int( 0.25 * self.coarsen_factor )
+				test_mask[ quarter_width : ( self.coarsen_factor - quarter_width ), quarter_width : ( self.coarsen_factor - quarter_width ) ] = 1
+
 				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * bare_local_adj_Ez / 1j )
-				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
+				gradient_design[ design_row, design_col ] = np.mean( test_mask * local_gradient_device )
 
 				local_gradient_device_orig = fom_scaling * 2 * omega * eps_nought * np.real( fwd_Ez[ device_start_row : device_end_row,
 					device_start_col : device_end_col ] * local_adj_Ez / 1j )
 
 
-				gradient_design_orig[ design_row, design_col ] = np.mean( local_gradient_device_orig )
+				gradient_design_orig[ design_row, design_col ] = np.mean( test_mask local_gradient_device_orig )
 
 				save_p_ind[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind
+				save_p_ind2[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind2
+				save_p_ind3[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind3
 
 
 
 		# gradient_design = gradient_design_orig.copy()
-		save00 = gradient_design[ 0, 0 ]
-		savem1m1 = gradient_design[ self.design_width_voxels - 1, self.design_height_voxels - 1 ]
-		gradient_design = np.zeros( gradient_design.shape )
-		gradient_design[ 0, 0, ] = save00
-		gradient_design[ self.design_width_voxels - 1, self.design_height_voxels - 1 ] = savem1m1
-		return fom, gradient_design, gradient_design_orig#, save_p_ind
-		# return fom, gradient_design_orig, gradient_design#, save_p_ind
+		# save00 = gradient_design[ 0, 0 ]
+		# savem1m1 = gradient_design[ self.design_width_voxels - 1, self.design_height_voxels - 1 ]
+		# gradient_design = np.zeros( gradient_design.shape )
+		# gradient_design[ 0, 0 ] = save00
+		# gradient_design[ self.design_width_voxels - 1, self.design_height_voxels - 1 ] = savem1m1
+		return fom, gradient_design, gradient_design_orig#, save_p_ind, save_p_ind2, save_p_ind3
+		# return fom, gradient_design, gradient_design_orig, save_p_ind, save_p_ind2, save_p_ind3
+		# return fom, gradient_design_orig, gradient_design#, save_p_ind, save_p_ind2, save_p_ind3
 
 
 
@@ -1046,7 +1061,7 @@ class ColorSplittingOptimization2D():
 		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
 		fd_grad = np.zeros( self.design_density.shape )
 		fd_grad_second = np.zeros( self.design_density.shape )
-		fom_init, adj_grad, adj_grad_orig, save_p_ind = self.compute_fom_and_gradient_with_polarizability(
+		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
 			self.omega_values[ 0 ], get_permittivity, fd_focal_x_loc )
 
 		# first_ez = self.compute_forward_fields( self.omega_values[ 0 ], get_permittivity )
@@ -1167,26 +1182,59 @@ class ColorSplittingOptimization2D():
 
 
 		save_p_ind = save_p_ind[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+		save_p_ind2 = save_p_ind2[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+		save_p_ind3 = save_p_ind3[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 
 		num = 9
 		mid_num = int( 0.5 * num )
-		h = np.linspace( -0.01, 0.01, num )
+		h = np.linspace( -5e-2, 5e-2, num )
 
 		import matplotlib.pyplot as plt
-		choose_row = int( 0.3 * self.device_width_voxels )
-		choose_col = int( 0.65 * self.device_height_voxels )
+		# choose_row = int( 0.5 * 0.25 * self.device_width_voxels )
+		# choose_col = int( 0.85 * 0.25 * self.device_height_voxels )
+
+		choose_row = int( 0.25 * self.coarsen_factor )
+		choose_col = int( 0.85 * self.coarsen_factor )
+
+		choose_row = self.coarsen_factor - 1
+		choose_col = int( 0.5 * self.coarsen_factor )# - 1
 
 		ez_vals = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
 		ez_diff = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
 		del_p = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
+
+		movement = adj_grad_orig / np.max( np.abs( adj_grad_orig ) )
+		movement *= 0.01
+
 		for idx in range( 0, num ):
 			copy_density = self.design_density.copy()
+			# copy_density[ 0, 0 ] += ( 0.5 * h[ idx ] / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
 			copy_density[ 0, 0 ] += ( h[ idx ] / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+			
+			# copy_density[ 1, 0 ] += movement[ 1, 0 ]# ( 0.02 / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+			# copy_density[ 1, 1 ] += movement[ 1, 1 ]# ( 0.1 / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+			# copy_density[ 0, 1 ] += movement[ 0, 1 ]# ( -0.05 / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+
+			# copy_density[ 1, 0 ] += ( 0.02 / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+			# copy_density[ 1, 1 ] += ( 0.1 / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+			# copy_density[ 0, 1 ] += ( -0.05 / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+
+			# if not ( idx == mid_num ):
+
+			for row in range( 0, self.design_density.shape[ 0 ] ):
+				for col in range( 0, self.design_density.shape[ 1 ] ):
+					if ( row == 0 ) and ( col == 0 ):
+						continue
+					copy_density[ row, col ] += movement[ row, col ]
+
+
+
 			fd_density = upsample( copy_density, self.coarsen_factor )
 			fd_permittivity = self.density_to_permittivity( fd_density )
+			# fd_permittivity[ choose_row, choose_col ] += ( 0.5 * h[ idx ] / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
 
 			ez = self.compute_forward_fields( self.omega_values[ 0 ], fd_permittivity )
-			ez_vals[ idx ] = ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ].copy()
+			ez_vals[ idx ] = ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 
 			# del_p[ idx ] = (
 			# 	fd_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ idx ] -
@@ -1201,20 +1249,26 @@ class ColorSplittingOptimization2D():
 			fd_density = upsample( copy_density, self.coarsen_factor )
 			fd_permittivity = self.density_to_permittivity( fd_density )
 
-			ez_diff[ idx ] = ez_vals[ idx ] - ez_vals[ mid_num ]
-
 			del_p[ idx ] = (
 				fd_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ idx ] -
 				get_permittivity[ 0 : self.device_width_voxels, 0 : self.device_height_voxels ] * ez_vals[ mid_num ] )
 
 
+		print( np.real( ez_vals[ mid_num, choose_row, choose_col ] ) )
+		# print( save_p_ind2[ choose_row, choose_col ] )
+		# print( save_p_ind2[ choose_row + 3, choose_col - 6 ] )
+		# print( save_p_ind3[ choose_row, choose_col ] )
 		# plt.subplot( 1, 2, 1 )
-		plt.plot( h, np.real( del_p[ :, choose_row, choose_col ] ), color='b' )
-		plt.plot( h, np.imag( del_p[ :, choose_row, choose_col ] ), color='g' )
-		plt.plot( h, h * np.real( ez_vals[ mid_num, choose_row, choose_col ] ), color='b', linestyle='--' )
-		plt.plot( h, h * np.imag( ez_vals[ mid_num, choose_row, choose_col ] ), color='g', linestyle='--' )
-		plt.plot( h, h * np.real( save_p_ind[ choose_row, choose_col ] ), color='b', linestyle=':' )
-		plt.plot( h, h * np.imag( save_p_ind[ choose_row, choose_col ] ), color='g', linestyle=':' )
+		plt.plot( h, np.real( del_p[ :, choose_row, choose_col ] ), color='b', linewidth=2 )
+		plt.plot( h, np.imag( del_p[ :, choose_row, choose_col ] ), color='r', linewidth=2 )
+		# plt.plot( h, h * np.real( ez_vals[ mid_num, choose_row, choose_col ] ), color='k', linestyle='--', linewidth=2 )
+		# plt.plot( h, h * np.imag( ez_vals[ mid_num, choose_row, choose_col ] ), color='orange', linestyle='--', linewidth=2 )
+		plt.plot( h, h * np.real( save_p_ind[ choose_row, choose_col ] ), color='c', linestyle=':' )
+		plt.plot( h, h * np.imag( save_p_ind[ choose_row, choose_col ] ), color='m', linestyle=':' )
+		# plt.plot( h, h * np.real( save_p_ind2[ choose_row, choose_col ] + save_p_ind3[ choose_row, choose_col ] ), color='c', linestyle=':' )
+		# plt.plot( h, h * np.imag( save_p_ind2[ choose_row, choose_col ] + save_p_ind3[ choose_row, choose_col ] ), color='m', linestyle=':' )
+		plt.plot( h, h * np.real( save_p_ind2[ choose_row, choose_col ] ), color='g', linestyle='--' )
+		plt.plot( h, h * np.imag( save_p_ind2[ choose_row, choose_col ] ), color='purple', linestyle='--' )
 		plt.show()
 
 		adsf
