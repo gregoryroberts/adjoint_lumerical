@@ -67,8 +67,8 @@ lambda_values_um = np.array( list( lambda_left ) )# + list( lambda_right ) )
 
 # device_width_voxels = 10 * density_coarsen_factor
 # device_height_voxels = 4 * density_coarsen_factor
-device_width_voxels = 2#24#12#24#12#64#8#48
-device_height_voxels = 2#24#24#12#64#8#48
+device_width_voxels = 8#24#12#24#12#64#8#48
+device_height_voxels = 8#24#24#12#64#8#48
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
