@@ -466,6 +466,91 @@ class ColorSplittingOptimization2D():
 		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
 
+		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
+
+		gradient_design = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
+		gradient_design_orig = np.zeros( ( self.design_width_voxels, self.design_height_voxels ) )
+		save_p_ind = np.zeros( fwd_Ez.shape, dtype=np.complex )
+		save_p_ind2 = np.zeros( fwd_Ez.shape, dtype=np.complex )
+		save_p_ind3 = np.zeros( fwd_Ez.shape, dtype=np.complex )
+
+
+		for design_row in range( 0, self.design_width_voxels ):
+			for design_col in range( 0, self.design_height_voxels ):
+
+				local_adj_Ez = adj_Ez[
+					device_start_row : device_end_row,
+					device_start_col : device_end_col
+				]
+				guess_pind = fwd_Ez
+
+				local_p_ind = guess_pind[ device_start_row : device_end_row,
+					device_start_col : device_end_col ] * local_adj_Ez
+
+				for design_row_other in range( 0, self.design_width_voxels ):
+					for design_col_other in range( 0, self.design_height_voxels ):
+						if ( design_row_other == design_row ) and ( design_col_other == design_col ):
+							continue
+
+						device_start_row = self.device_width_start + self.coarsen_factor * design_row
+						device_end_row = device_start_row + self.coarsen_factor
+
+						device_start_col = self.device_height_start + self.coarsen_factor * design_col
+						device_end_col = device_start_col + self.coarsen_factor
+
+						device_start_row_other = self.device_width_start + self.coarsen_factor * design_row_other
+						device_end_row_other = device_start_row_other + self.coarsen_factor
+
+						device_start_col_other = self.device_height_start + self.coarsen_factor * design_col_other
+						device_end_col_other = device_start_col_other + self.coarsen_factor
+
+						polarizability_src = np.zeros( self.fwd_source.shape, dtype=self.fwd_source.dtype )
+
+						#
+						# Oh wait, you should only have to do this once per forward source! Wasteful, but ok for now
+						#
+						polarizability_src[
+							device_start_row : device_end_row,
+							device_start_col : device_end_col ] = eps_nought * omega * ( 1 / 1j ) * fwd_Ez[
+							device_start_row : device_end_row,
+							device_start_col : device_end_col ]
+
+						pol_Hx, pol_Hy, pol_Ez = simulation.solve( polarizability_src )
+
+						local_adj_Ez_other = adj_Ez[
+							device_start_row_other : device_end_row_other,
+							device_start_col_other : device_end_col_other
+						]
+						guess_pind_other = self.rel_eps_simulation * pol_Ez
+
+						local_p_ind += guess_pind_other[ device_start_row : device_end_row,
+							device_start_col : device_end_col ] * local_adj_Ez_other
+
+
+						local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind / 1j )
+						gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
+
+						local_gradient_device_orig = fom_scaling * 2 * omega * eps_nought * np.real( fwd_Ez[ device_start_row : device_end_row,
+							device_start_col : device_end_col ] * local_adj_Ez / 1j )
+
+						gradient_design_orig[ design_row, design_col ] = np.mean( local_gradient_device_orig )
+
+
+		return fom, gradient_design, gradient_design_orig#, save_p_ind, save_p_ind2, save_p_ind3
+
+
+	def compute_fom_and_gradient_with_polarizability__( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+		assert not self.field_blur, "Field blur not supported with polarizability"
+
+		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
+		fom = fom_scaling * np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
+		
+		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
+		adj_source[ focal_point_x_loc, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+
+		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
+
 		# bare_simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
 		# bare_adj_Hx, bare_adj_Hy, bare_adj_Ez = bare_simulation.solve( adj_source )
 
@@ -556,7 +641,7 @@ class ColorSplittingOptimization2D():
 		# gradient_design = np.zeros( gradient_design.shape )
 		# gradient_design[ 0, 0 ] = save00
 		# gradient_design[ self.design_width_voxels - 1, self.design_height_voxels - 1 ] = savem1m1
-		return fom, gradient_design, gradient_design_orig#, save_p_ind, save_p_ind2, save_p_ind3
+		return fom, gradient_design, gradient_design_orig, save_p_ind, save_p_ind2, save_p_ind3
 		# return fom, gradient_design, gradient_design_orig, save_p_ind, save_p_ind2, save_p_ind3
 		# return fom, gradient_design_orig, gradient_design#, save_p_ind, save_p_ind2, save_p_ind3
 
@@ -1197,8 +1282,8 @@ class ColorSplittingOptimization2D():
 		choose_row = int( 0.25 * self.coarsen_factor )
 		choose_col = int( 0.85 * self.coarsen_factor )
 
-		choose_row = self.coarsen_factor - 1
-		choose_col = int( 0.5 * self.coarsen_factor )# - 1
+		# choose_row = self.coarsen_factor - 1
+		# choose_col = int( 0.5 * self.coarsen_factor )# - 1
 
 		ez_vals = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
 		ez_diff = np.zeros( ( num, self.device_width_voxels, self.device_height_voxels ), dtype=np.complex )
@@ -1222,11 +1307,11 @@ class ColorSplittingOptimization2D():
 
 			# if not ( idx == mid_num ):
 
-			for row in range( 0, self.design_density.shape[ 0 ] ):
-				for col in range( 0, self.design_density.shape[ 1 ] ):
-					if ( row == 0 ) and ( col == 0 ):
-						continue
-					copy_density[ row, col ] += movement[ row, col ]
+			# for row in range( 0, self.design_density.shape[ 0 ] ):
+			# 	for col in range( 0, self.design_density.shape[ 1 ] ):
+			# 		if ( row == 0 ) and ( col == 0 ):
+			# 			continue
+			# 		copy_density[ row, col ] += movement[ row, col ]
 
 
 
@@ -1264,8 +1349,8 @@ class ColorSplittingOptimization2D():
 		plt.plot( h, np.imag( del_p[ :, choose_row, choose_col ] ), color='r', linewidth=2 )
 		# plt.plot( h, h * np.real( ez_vals[ mid_num, choose_row, choose_col ] ), color='k', linestyle='--', linewidth=2 )
 		# plt.plot( h, h * np.imag( ez_vals[ mid_num, choose_row, choose_col ] ), color='orange', linestyle='--', linewidth=2 )
-		plt.plot( h, h * np.real( save_p_ind[ choose_row, choose_col ] ), color='c', linestyle=':' )
-		plt.plot( h, h * np.imag( save_p_ind[ choose_row, choose_col ] ), color='m', linestyle=':' )
+		plt.plot( h, h * np.real( save_p_ind[ choose_row, choose_col ] ), color='orange', linestyle=':' )
+		plt.plot( h, h * np.imag( save_p_ind[ choose_row, choose_col ] ), color='k', linestyle=':' )
 		# plt.plot( h, h * np.real( save_p_ind2[ choose_row, choose_col ] + save_p_ind3[ choose_row, choose_col ] ), color='c', linestyle=':' )
 		# plt.plot( h, h * np.imag( save_p_ind2[ choose_row, choose_col ] + save_p_ind3[ choose_row, choose_col ] ), color='m', linestyle=':' )
 		plt.plot( h, h * np.real( save_p_ind2[ choose_row, choose_col ] ), color='g', linestyle='--' )

@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8
-density_coarsen_factor = 12#24#12#32#24#48#12#48
+density_coarsen_factor = 1#12#24#12#32#24#48#12#48
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -65,10 +65,10 @@ def density_bound_from_eps( eps_val ):
 # lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 lambda_values_um = np.array( list( lambda_left ) )# + list( lambda_right ) )
 
-device_width_voxels = 10 * density_coarsen_factor
-device_height_voxels = 4 * density_coarsen_factor
-# device_width_voxels = 12#24#12#64#8#48
-# device_height_voxels = 12#24#12#64#8#48
+# device_width_voxels = 10 * density_coarsen_factor
+# device_height_voxels = 4 * density_coarsen_factor
+device_width_voxels = 2#24#12#24#12#64#8#48
+device_height_voxels = 2#24#24#12#64#8#48
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 100
 focal_points_x_relative = [ 0.25, 0.75 ]
@@ -142,7 +142,10 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
 # test_density = np.load( 'opt_with_pol_v1/opt_1p5/opt_optimized_density.npy' )
-# make_optimizer.init_density_directly( test_density )
+
+# random_density = np.random.random( ( design_width, design_height ) )
+
+# make_optimizer.init_density_directly( random_density )
 
 make_optimizer.init_density_with_uniform( 0.5 )
 
