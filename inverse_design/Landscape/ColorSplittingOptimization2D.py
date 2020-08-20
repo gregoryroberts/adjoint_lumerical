@@ -454,7 +454,7 @@ class ColorSplittingOptimization2D():
 		
 		return fom
 
-	def compute_fom_and_gradient_with_polarizability( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+	def compute_fom_and_gradient_with_polarizability__( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
@@ -541,7 +541,7 @@ class ColorSplittingOptimization2D():
 		return fom, gradient_design_orig, gradient_design#, save_p_ind, save_p_ind2, save_p_ind3
 
 
-	def compute_fom_and_gradient_with_polarizability__( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+	def compute_fom_and_gradient_with_polarizability( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
@@ -1142,6 +1142,52 @@ class ColorSplittingOptimization2D():
 
 		return net_fom
 
+
+	def verify_adjoint_against_finite_difference_lambda_design_anisotropic( self, save_loc ):
+		# get_density = upsample( self.design_density, self.coarsen_factor )
+		# get_permittivity = self.density_to_permittivity( get_density )
+
+		random_density = upsample( np.random.random( int( self.device_width_voxels / 4 ), int( self.design_height_voxels / 4 ) ), 4 )
+		random_perm = self.density_to_permittivity( random_density )
+	
+		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
+		fd_grad = np.zeros( self.design_density.shape )
+		fd_grad_second = np.zeros( self.design_density.shape )
+		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
+			self.omega_values[ 0 ], random_perm, fd_focal_x_loc )
+
+		np.random.seed( 23123 )
+
+		random_density = upsample( np.random.random( int( self.device_width_voxels / 4 ), int( self.design_height_voxels / 4 ) ), 4 )
+		random_perm = self.density_to_permittivity( random_density )
+	
+		for row in range( 0, self.design_width_voxels ):
+			for col in range( 0, self.design_height_voxels ):
+				copy_density = random_density.copyt()
+				copy_density[ row, col ] += ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+				fd_density = upsample( copy_density, self.coarsen_factor )
+				fd_permittivity = self.density_to_permittivity( fd_density )
+
+				fom_up = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )			
+
+				copy_density = random_density.copy()
+				copy_density[ row, col ] -= ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+				fd_density = upsample( copy_density, self.coarsen_factor )
+				fd_permittivity = self.density_to_permittivity( fd_density )
+
+				fom_down = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )
+
+				fd_grad[ row, col ] = ( fom_up - fom_down ) / ( 2 * h )
+
+				fd_grad_second[ row, col ] = ( fom_up + fom_down - 2 * fom_init ) / ( h**2 )
+
+
+		np.save( save_loc + "_fd_grad.npy", fd_grad )
+		np.save( save_loc + "_fd_grad_second.npy", fd_grad_second )
+		np.save( save_loc + "_adj_grad.npy", adj_grad )
+		np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
+
+
 	def verify_adjoint_against_finite_difference_lambda_design( self, save_loc ):
 		get_density = upsample( self.design_density, self.coarsen_factor )
 		get_permittivity = self.density_to_permittivity( get_density )
@@ -1149,7 +1195,7 @@ class ColorSplittingOptimization2D():
 		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
 		fd_grad = np.zeros( self.design_density.shape )
 		fd_grad_second = np.zeros( self.design_density.shape )
-		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
+		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability__(
 			self.omega_values[ 0 ], get_permittivity, fd_focal_x_loc )
 
 		# first_ez = self.compute_forward_fields( self.omega_values[ 0 ], get_permittivity )
@@ -2040,7 +2086,7 @@ class ColorSplittingOptimization2D():
 
 		function_for_fom_and_gradient = self.compute_fom_and_gradient
 		if compute_polarizability:
-			function_for_fom_and_gradient = self.compute_fom_and_gradient_with_polarizability
+			function_for_fom_and_gradient = self.compute_fom_and_gradient_with_polarizability__
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
