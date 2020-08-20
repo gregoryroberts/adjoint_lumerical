@@ -1161,17 +1161,33 @@ class ColorSplittingOptimization2D():
 
 		for row in range( 0, self.design_width_voxels ):
 			for col in range( 0, self.design_height_voxels ):
-				copy_density = random_density.copy()
-				copy_density[ row, col ] += ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
-				fd_density = upsample( copy_density, self.coarsen_factor )
-				fd_permittivity = self.density_to_permittivity( fd_density )
+				# copy_density = random_density.copy()
+				copy_perm = random_perm.copy()
+
+				copy_perm[ row * self.coarsen_factor : (row + 1) * self.coarsen_factor, col * self.coarsen_factor : ( col + 1 ) * self.coarsen_factor ] += h
+
+				# copy_density[ row, col ] += ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+				# fd_density = upsample( copy_density, self.coarsen_factor )
+				fd_permittivity = copy_perm.copy()#self.density_to_permittivity( fd_density )
 
 				fom_up = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )			
 
-				copy_density = random_density.copy()
-				copy_density[ row, col ] -= ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
-				fd_density = upsample( copy_density, self.coarsen_factor )
-				fd_permittivity = self.density_to_permittivity( fd_density )
+
+
+
+				copy_perm = random_perm.copy()
+
+				copy_perm[ row * self.coarsen_factor : (row + 1) * self.coarsen_factor, col * self.coarsen_factor : ( col + 1 ) * self.coarsen_factor ] -= h
+
+				# copy_density[ row, col ] += ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+				# fd_density = upsample( copy_density, self.coarsen_factor )
+				fd_permittivity = copy_perm#self.density_to_permittivity( fd_density )
+
+
+				# copy_density = random_density.copy()
+				# copy_density[ row, col ] -= ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
+				# fd_density = upsample( copy_density, self.coarsen_factor )
+				fd_permittivity = copy_perm.copy()#self.density_to_permittivity( fd_density )
 
 				fom_down = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )
 
