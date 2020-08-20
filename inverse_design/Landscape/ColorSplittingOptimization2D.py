@@ -1159,7 +1159,7 @@ class ColorSplittingOptimization2D():
 
 		for row in range( 0, self.design_width_voxels ):
 			for col in range( 0, self.design_height_voxels ):
-				copy_density = random_density.copyt()
+				copy_density = random_density.copy()
 				copy_density[ row, col ] += ( h / ( self.max_relative_permittivity - self.min_relative_permittivity ) )
 				fd_density = upsample( copy_density, self.coarsen_factor )
 				fd_permittivity = self.density_to_permittivity( fd_density )
