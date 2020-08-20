@@ -535,7 +535,7 @@ class ColorSplittingOptimization2D():
 
 
 
-		# gradient_design = gradient_design_orig.copy()
+		gradient_design = gradient_design_orig.copy()
 		save00 = gradient_design[ 0, 0 ]
 		savem1m1 = gradient_design[ self.design_width_voxels - 1, self.design_height_voxels - 1 ]
 		gradient_design = np.zeros( gradient_design.shape )
