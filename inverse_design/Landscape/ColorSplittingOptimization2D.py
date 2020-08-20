@@ -478,6 +478,13 @@ class ColorSplittingOptimization2D():
 		for design_row in range( 0, self.design_width_voxels ):
 			for design_col in range( 0, self.design_height_voxels ):
 
+				device_start_row = self.device_width_start + self.coarsen_factor * design_row
+				device_end_row = device_start_row + self.coarsen_factor
+
+				device_start_col = self.device_height_start + self.coarsen_factor * design_col
+				device_end_col = device_start_col + self.coarsen_factor
+
+
 				local_adj_Ez = adj_Ez[
 					device_start_row : device_end_row,
 					device_start_col : device_end_col
@@ -491,12 +498,6 @@ class ColorSplittingOptimization2D():
 					for design_col_other in range( 0, self.design_height_voxels ):
 						if ( design_row_other == design_row ) and ( design_col_other == design_col ):
 							continue
-
-						device_start_row = self.device_width_start + self.coarsen_factor * design_row
-						device_end_row = device_start_row + self.coarsen_factor
-
-						device_start_col = self.device_height_start + self.coarsen_factor * design_col
-						device_end_col = device_start_col + self.coarsen_factor
 
 						device_start_row_other = self.device_width_start + self.coarsen_factor * design_row_other
 						device_end_row_other = device_start_row_other + self.coarsen_factor
