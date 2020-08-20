@@ -531,7 +531,8 @@ class ColorSplittingOptimization2D():
 
 				test_mask = np.zeros( ( self.coarsen_factor, self.coarsen_factor ) )
 				quarter_width = int( 0.25 * self.coarsen_factor )
-				test_mask[ quarter_width : ( self.coarsen_factor - quarter_width ), quarter_width : ( self.coarsen_factor - quarter_width ) ] = 1
+				# test_mask[ quarter_width : ( self.coarsen_factor - quarter_width ), quarter_width : ( self.coarsen_factor - quarter_width ) ] = 1
+				test_mask[ int( 0.5 * self.coarsen_factor ), int( 0.5 * self.coarsen_factor ) ] = 1
 
 				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * bare_local_adj_Ez / 1j )
