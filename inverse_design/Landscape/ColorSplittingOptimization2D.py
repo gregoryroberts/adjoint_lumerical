@@ -1161,7 +1161,7 @@ class ColorSplittingOptimization2D():
 		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
 			self.omega_values[ 0 ], random_perm, fd_focal_x_loc )
 
-		h = 1e-3
+		h = 1e-3 / ( self.coarsen_factor**2 )
 
 		for row in range( 0, self.design_width_voxels ):
 			for col in range( 0, self.design_height_voxels ):
