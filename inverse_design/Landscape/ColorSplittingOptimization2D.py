@@ -1160,7 +1160,9 @@ class ColorSplittingOptimization2D():
 		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
 		fd_grad = np.zeros( self.design_density.shape )
 		fd_grad_second = np.zeros( self.design_density.shape )
-		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
+		# fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
+		# 	self.omega_values[ 0 ], random_perm, fd_focal_x_loc )
+		fom_init, adj_grad = self.compute_fom_and_gradient(
 			self.omega_values[ 0 ], random_perm, fd_focal_x_loc )
 
 		choose_row = int( 0.5 * self.design_width_voxels )
@@ -1190,7 +1192,7 @@ class ColorSplittingOptimization2D():
 		np.save( save_loc + "_h_values.npy", h_values )
 		np.save( save_loc + "_fd_line.npy", fom_line )
 		np.save( save_loc + "_adj_grad.npy", adj_grad )
-		np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
+		# np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
 
 
 	def verify_adjoint_against_finite_difference_lambda_design_anisotropic( self, save_loc ):
