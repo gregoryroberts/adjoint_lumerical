@@ -92,8 +92,8 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 	focal_map[ idx ] = 1
 
 np.random.seed( 5234234 )
-get_density_1 = 1.0 * np.greater( np.random.uniform( 0.5, 0.5, ( design_width_voxels, design_height_voxels ) ) )
-get_density_2 = 1.0 * np.greater( np.random.uniform( 0.5, 0.5, ( design_width_voxels, design_height_voxels ) ) )
+get_density_1 = 1.0 * np.greater( np.random.normal( 0.5, 0.5, ( design_width_voxels, design_height_voxels ) ) )
+get_density_2 = 1.0 * np.greater( np.random.normal( 0.5, 0.5, ( design_width_voxels, design_height_voxels ) ) )
 
 # get_density_1 = np.load( opt_folder_base + "/" + opt1_name + "/opt_optimized_density.npy" )
 # get_density_2 = np.load( opt_folder_base + "/" + opt2_name + "/opt_optimized_density.npy" )
