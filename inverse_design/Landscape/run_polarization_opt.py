@@ -162,6 +162,7 @@ make_optimizer.init_density_with_uniform( 0.5 )
 # 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
 # make_optimizer.verify_adjoint_against_finite_difference_lambda_design( save_folder + "/opt" )
-make_optimizer.verify_adjoint_against_finite_difference_lambda_design_anisotropic( save_folder + "/opt" )
+# make_optimizer.verify_adjoint_against_finite_difference_lambda_design_anisotropic( save_folder + "/opt" )
+make_optimizer.verify_adjoint_against_finite_difference_lambda_design_line( save_folder + "/opt" )
 
 # make_optimizer.save_optimization_data( save_folder + "/opt" )
