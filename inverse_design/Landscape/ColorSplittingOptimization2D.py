@@ -1176,12 +1176,12 @@ class ColorSplittingOptimization2D():
 
 		for h_idx in range( 0, num_h ):
 			copy_perm = random_perm.copy()
-			# copy_perm[
-			# 	choose_row * self.coarsen_factor : ( choose_row + 1 ) * self.coarsen_factor,
-			# 	choose_col * self.coarsen_factor : ( choose_col + 1 ) * self.coarsen_factor ] += h_values[ h_idx ]
 			copy_perm[
-				choose_row * self.coarsen_factor,
-				choose_col * self.coarsen_factor ] += h_values[ h_idx ]
+				choose_row * self.coarsen_factor : ( choose_row + 1 ) * self.coarsen_factor,
+				choose_col * self.coarsen_factor : ( choose_col + 1 ) * self.coarsen_factor ] += h_values[ h_idx ]
+			# copy_perm[
+			# 	choose_row * self.coarsen_factor,
+			# 	choose_col * self.coarsen_factor ] += h_values[ h_idx ]
 
 			fd_permittivity = copy_perm.copy()
 
