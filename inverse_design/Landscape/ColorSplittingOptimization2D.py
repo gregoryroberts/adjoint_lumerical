@@ -1179,12 +1179,13 @@ class ColorSplittingOptimization2D():
 			copy_perm = random_perm.copy()
 			copy_perm[
 				choose_row * self.coarsen_factor : ( choose_row + 1 ) * self.coarsen_factor,
-				choose_col * self.coarsen_factor : ( choose_col + 1 ) * self.coarsen_factor ] += h[ h_idx ]
+				choose_col * self.coarsen_factor : ( choose_col + 1 ) * self.coarsen_factor ] += h_values[ h_idx ]
 
 			fd_permittivity = copy_perm.copy()
 
 			fom_line[ h_idx ] = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )			
 
+		np.save( save_loc + "_h_values.npy", h_values )
 		np.save( save_loc + "_fd_line.npy", fom_line )
 		np.save( save_loc + "_adj_grad.npy", adj_grad )
 		np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
