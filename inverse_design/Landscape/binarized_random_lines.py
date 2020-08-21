@@ -65,8 +65,8 @@ lambda_right = np.linspace( right_middle_bound_um, lambda_max_um, num_right_lamb
 # better way to ensure the same parameters are being used in both places!
 #
 
-# lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
-lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
+lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
+# lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 120
 device_height_voxels = 104#100
