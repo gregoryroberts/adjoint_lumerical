@@ -616,20 +616,20 @@ class ColorSplittingOptimization2D():
 				# local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * bare_local_adj_Ez / 1j )
 				# local_gradient_device = fom_scaling * 2 * ( 1. / omega ) * np.real( make_current * local_adj_Ez / 1j )
 
-				test_mask = np.zeros( ( self.coarsen_factor, self.coarsen_factor ) )
-				quarter_width = int( 0.25 * self.coarsen_factor )
+				# test_mask = np.zeros( ( self.coarsen_factor, self.coarsen_factor ) )
+				# quarter_width = int( 0.25 * self.coarsen_factor )
 				# test_mask[ quarter_width : ( self.coarsen_factor - quarter_width ), quarter_width : ( self.coarsen_factor - quarter_width ) ] = 1
-				test_mask[ int( 0.5 * self.coarsen_factor ), int( 0.5 * self.coarsen_factor ) ] = 1
+				# test_mask[ int( 0.5 * self.coarsen_factor ), int( 0.5 * self.coarsen_factor ) ] = 1
 
 				local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * local_adj_Ez / 1j )
 				# local_gradient_device = fom_scaling * 2 * omega * eps_nought * np.real( local_p_ind * bare_local_adj_Ez / 1j )
-				gradient_design[ design_row, design_col ] = np.mean( test_mask * local_gradient_device )
+				gradient_design[ design_row, design_col ] = np.mean( local_gradient_device )
 
 				local_gradient_device_orig = fom_scaling * 2 * omega * eps_nought * np.real( fwd_Ez[ device_start_row : device_end_row,
 					device_start_col : device_end_col ] * local_adj_Ez / 1j )
 
 
-				gradient_design_orig[ design_row, design_col ] = np.mean( test_mask * local_gradient_device_orig )
+				gradient_design_orig[ design_row, design_col ] = np.mean( local_gradient_device_orig )
 
 				save_p_ind[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind
 				save_p_ind2[ device_start_row : device_end_row, device_start_col : device_end_col ] = local_p_ind2
