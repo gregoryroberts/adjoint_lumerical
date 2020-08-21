@@ -38,7 +38,7 @@ if not os.path.isdir(save_folder):
 	os.mkdir(save_folder)
 
 mesh_size_nm = 8
-density_coarsen_factor = 8#4
+density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -70,6 +70,10 @@ lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 120
 device_height_voxels = 104#100
+
+design_width_voxels = int( device_width_voxels / density_coarsen_factor )
+design_height_voxels = int( device_height_voxels / density_coarsen_factor )
+
 # device_height_voxels = 72
 # device_height_voxels = 52
 # device_height_voxels = 32
@@ -88,8 +92,8 @@ for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 	focal_map[ idx ] = 1
 
 np.random.seed( 5234234 )
-get_density_1 = 1.0 * np.greater( np.random.uniform( 0.5, 0.5 ) )
-get_density_2 = 1.0 * np.greater( np.random.uniform( 0.5, 0.5 ) )
+get_density_1 = 1.0 * np.greater( np.random.uniform( 0.5, 0.5, ( design_width_voxels, design_height_voxels ) ) )
+get_density_2 = 1.0 * np.greater( np.random.uniform( 0.5, 0.5, ( design_width_voxels, design_height_voxels ) ) )
 
 # get_density_1 = np.load( opt_folder_base + "/" + opt1_name + "/opt_optimized_density.npy" )
 # get_density_2 = np.load( opt_folder_base + "/" + opt2_name + "/opt_optimized_density.npy" )
