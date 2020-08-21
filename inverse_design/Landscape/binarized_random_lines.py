@@ -69,7 +69,8 @@ lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values 
 # lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
 device_width_voxels = 120
-device_height_voxels = 104#100
+# device_height_voxels = 104#100
+device_height_voxels = 32
 
 design_width_voxels = int( device_width_voxels / density_coarsen_factor )
 design_height_voxels = int( device_height_voxels / density_coarsen_factor )
