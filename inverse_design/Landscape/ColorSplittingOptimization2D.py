@@ -1152,7 +1152,7 @@ class ColorSplittingOptimization2D():
 		# random_perm = self.density_to_permittivity( random_density )
 
 		# random_density = np.random.random( ( self.design_width_voxels, self.design_height_voxels ) )
-		random_density = 0.5 * np.ones( random_density.shape )
+		random_density = 0.5 * np.ones( ( self.design_width_voxels, self.design_height_voxels ) )
 		random_density = upsample( random_density, self.coarsen_factor )
 		random_perm = self.density_to_permittivity( random_density )
 	
