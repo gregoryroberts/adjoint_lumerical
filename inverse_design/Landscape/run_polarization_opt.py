@@ -65,8 +65,8 @@ def density_bound_from_eps( eps_val ):
 # lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 lambda_values_um = np.array( list( lambda_left ) )# + list( lambda_right ) )
 
-device_width_voxels = 10 * density_coarsen_factor / 2
-device_height_voxels = 4 * density_coarsen_factor / 2
+device_width_voxels = int( 10 * density_coarsen_factor / 2 )
+device_height_voxels = int( 4 * density_coarsen_factor / 2 )
 # device_width_voxels = 8#24#12#24#12#64#8#48
 # device_height_voxels = 8#24#24#12#64#8#48
 device_voxels_total = device_width_voxels * device_height_voxels
