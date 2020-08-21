@@ -1143,6 +1143,53 @@ class ColorSplittingOptimization2D():
 		return net_fom
 
 
+	def verify_adjoint_against_finite_difference_lambda_design_line( self, save_loc ):
+		# get_density = upsample( self.design_density, self.coarsen_factor )
+		# get_permittivity = self.density_to_permittivity( get_density )
+		np.random.seed( 23123 )
+
+		# random_density = upsample( np.random.random( ( int( self.device_width_voxels / 4 ), int( self.device_height_voxels / 4 ) ) ), 4 )
+		# random_perm = self.density_to_permittivity( random_density )
+
+		# random_density = np.random.random( ( self.design_width_voxels, self.design_height_voxels ) )
+		random_density = 0.5 * np.ones( ( self.design_width_voxels, self.design_height_voxels ) )
+		random_density = upsample( random_density, self.coarsen_factor )
+		random_perm = self.density_to_permittivity( random_density )
+
+
+		fd_focal_x_loc = self.focal_spots_x_voxels[ 0 ]
+		fd_grad = np.zeros( self.design_density.shape )
+		fd_grad_second = np.zeros( self.design_density.shape )
+		fom_init, adj_grad, adj_grad_orig, save_p_ind, save_p_ind2, save_p_ind3 = self.compute_fom_and_gradient_with_polarizability(
+			self.omega_values[ 0 ], random_perm, fd_focal_x_loc )
+
+
+		choose_row = int( 0.5 * self.design_width_voxels )
+		choose_col = int( 0.5 * self.device_height_voxels )
+
+		h_min = -0.1
+		h_max = 0.1
+		num_h = 101
+
+		h_values = np.linspace( h_min, h_max, num_h )
+
+		fom_line = np.zeros( num_h )
+
+		for h_idx in range( 0, num_h ):
+			copy_perm = random_perm.copy()
+			copy_perm[
+				choose_row * self.coarsen_factor : ( choose_row + 1 ) * self.coarsen_factor,
+				choose_col * self.coarsen_factor : ( choose_col + 1 ) * self.coarsen_factor ] += h[ h_idx ]
+
+			fd_permittivity = copy_perm.copy()
+
+			fom_line[ h_idx ] = self.compute_fom( self.omega_values[ 0 ], fd_permittivity, fd_focal_x_loc )			
+
+		np.save( save_loc + "_fd_line.npy", fom_line )
+		np.save( save_loc + "_adj_grad.npy", adj_grad )
+		np.save( save_loc + "_adj_grad_orig.npy", adj_grad_orig )
+
+
 	def verify_adjoint_against_finite_difference_lambda_design_anisotropic( self, save_loc ):
 		# get_density = upsample( self.design_density, self.coarsen_factor )
 		# get_permittivity = self.density_to_permittivity( get_density )
