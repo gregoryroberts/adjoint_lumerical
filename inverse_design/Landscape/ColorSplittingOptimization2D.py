@@ -1166,8 +1166,8 @@ class ColorSplittingOptimization2D():
 		choose_row = int( 0.5 * self.design_width_voxels )
 		choose_col = int( 0.5 * self.design_height_voxels )
 
-		h_min = -0.0001
-		h_max = 0.0001
+		h_min = -0.05
+		h_max = 0.05
 		num_h = 201
 
 		h_values = np.linspace( h_min, h_max, num_h )
