@@ -2400,11 +2400,13 @@ class ColorSplittingOptimization2D():
 
 			self.binarization_evolution[ iter_idx ] = compute_binarization( self.design_density.flatten() )
 
+			real_gradient = np.real( norm_scaled_gradient )
+
 			if binarize:
-				proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
+				proposed_step = self.step_binarize( -real_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
 				self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
 			else:
-				self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
+				self.design_density += max_density_change * real_gradient / np.max( np.abs( real_gradient ) )
 				self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
 
 			if self.do_density_pairings:
