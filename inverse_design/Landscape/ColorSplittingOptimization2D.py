@@ -244,7 +244,7 @@ class ColorSplittingOptimization2D():
 		self.fwd_src_y = int( self.pml_voxels + self.height_gap_voxels_bottom + np.maximum( self.focal_length_y_voxels, 0 ) + self.device_height_voxels + 0.75 * self.height_gap_voxels_top )
 		self.focal_point_y = int( self.pml_voxels + self.height_gap_voxels_bottom - np.minimum( self.focal_length_y_voxels, 0 ) )
 
-		self.rel_eps_simulation = np.ones( ( self.simulation_width_voxels, self.simulation_height_voxels ) )
+		self.rel_eps_simulation = np.ones( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 
 		fwd_src_x_range = np.arange( 0, self.simulation_width_voxels )
 		fwd_src_y_range = self.fwd_src_y * np.ones( fwd_src_x_range.shape, dtype=int )
@@ -2098,7 +2098,6 @@ class ColorSplittingOptimization2D():
 	def optimize(
 		self, num_iterations,
 		folder_for_saving,
-		compute_polarizability=False,
 		random_globals=False, random_global_iteration_frequency=10, random_global_scan_points=10, bounds_cutoff=0.9,
 		opt_mask=None,
 		use_log_fom=False,
@@ -2159,8 +2158,6 @@ class ColorSplittingOptimization2D():
 		self.dense_plots = []
 
 		function_for_fom_and_gradient = self.compute_fom_and_gradient
-		if compute_polarizability:
-			function_for_fom_and_gradient = self.compute_fom_and_gradient_with_polarizability__
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
@@ -2345,15 +2342,8 @@ class ColorSplittingOptimization2D():
 
 				scale_fom_for_wl = get_fom
 
-				if compute_polarizability:
-					scale_gradient_for_wl = get_grad
-
-					# np.save( folder_for_saving + '_get_grad_' + str( iter_idx ) + '.npy', get_grad )
-					# np.save( folder_for_saving + '_get_grad_orig_' + str( iter_idx ) + '.npy', get_grad_orig )
-
-				else:
-					upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
-					scale_gradient_for_wl = upsampled_device_grad
+				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+				scale_gradient_for_wl = upsampled_device_grad
 
 				gradient_by_wl.append( scale_gradient_for_wl )
 				fom_by_wl.append( scale_fom_for_wl )
@@ -2379,8 +2369,7 @@ class ColorSplittingOptimization2D():
 			#
 			# Otherwise we are already in design space! Sloppy here, but want to try it out
 			#
-			if not compute_polarizability:
-				net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
+			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
 
 			#
 			# Now, we should zero out non-designable regions and average over designable layers
