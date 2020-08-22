@@ -329,6 +329,7 @@ else:
 
 		make_optimizer_mid_focus.optimize(
 			int( num_iterations / 1.5 ),
+			save_folder + "/opt",
 			False, 20, 20, 0.95,
 			opt_mask_mid_focus,
 			use_log_fom,
@@ -347,6 +348,7 @@ else:
 
 		make_optimizer.optimize(
 			int( num_iterations / 1.5 ),
+			save_folder + "/opt",
 			False, 20, 20, 0.95,
 			opt_mask_splitter,
 			use_log_fom,
@@ -361,6 +363,7 @@ else:
 
 		make_optimizer.optimize(
 			int( num_iterations ),
+			save_folder + "/opt",
 			False, 20, 20, 0.95,
 			None,
 			use_log_fom,
