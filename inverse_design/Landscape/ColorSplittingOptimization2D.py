@@ -2020,6 +2020,8 @@ class ColorSplittingOptimization2D():
 		projected_binarization_increase = 0
 
 		c = flatten_fom_gradients
+		print( c.shape )
+		print( c.dtype )
 
 		initial_binarization = compute_binarization( flatten_design_cuts, self.binarization_set_point )
 
