@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8
-density_coarsen_factor = 24#1#12#1#8#4#1#12#1#12#24#12#32#24#48#12#48
+density_coarsen_factor = 18#24#1#12#1#8#4#1#12#1#12#24#12#32#24#48#12#48
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
