@@ -2020,8 +2020,6 @@ class ColorSplittingOptimization2D():
 		projected_binarization_increase = 0
 
 		c = flatten_fom_gradients
-		print( c.shape )
-		print( c.dtype )
 
 		initial_binarization = compute_binarization( flatten_design_cuts, self.binarization_set_point )
 
@@ -2401,9 +2399,6 @@ class ColorSplittingOptimization2D():
 			)
 
 			self.binarization_evolution[ iter_idx ] = compute_binarization( self.design_density.flatten() )
-
-			print( norm_scaled_gradient.shape )
-			print( norm_scaled_gradient.dtype )
 
 			if binarize:
 				proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
