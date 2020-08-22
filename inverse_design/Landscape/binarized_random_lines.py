@@ -70,7 +70,7 @@ lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values 
 
 device_width_voxels = 120
 # device_height_voxels = 104#100
-device_height_voxels = 16#32
+device_height_voxels = 100#16#32
 
 single_pass_transmittance = 0.9
 height_nm = device_height_voxels * mesh_size_nm
