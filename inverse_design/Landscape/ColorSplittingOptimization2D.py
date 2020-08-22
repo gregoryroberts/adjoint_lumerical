@@ -1165,8 +1165,7 @@ class ColorSplittingOptimization2D():
 		fom_init, adj_grad = self.compute_fom_and_gradient(
 			self.omega_values[ 0 ], random_perm, fd_focal_x_loc )
 
-		adj_grad = reinterpolate_average( adj_grad, self.coarsen_factor )
-
+		adj_grad = ( self.coarsen_factor )**2 * reinterpolate_average( adj_grad, self.coarsen_factor )
 
 		choose_row = int( 0.5 * self.design_width_voxels )
 		choose_col = int( 0.5 * self.design_height_voxels )
