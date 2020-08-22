@@ -2332,11 +2332,11 @@ class ColorSplittingOptimization2D():
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
-					get_fom_, get_grad, get_grad_orig = function_for_fom_and_gradient(
+					get_fom_, get_grad = function_for_fom_and_gradient(
 						opt_omega_value, device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						wl_intensity_scaling )
 				else:
-					get_fom, get_grad, get_grad_orig = function_for_fom_and_gradient(
+					get_fom, get_grad = function_for_fom_and_gradient(
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
