@@ -58,13 +58,14 @@ min_relative_permittivity = 1.0**2
 # min_relative_permittivity = min_index**2
 max_relative_permittivity = max_index**2
 
+
 def density_bound_from_eps( eps_val ):
 	return ( eps_val - min_relative_permittivity ) / ( max_relative_permittivity - min_relative_permittivity )
 
 # lambda_values_um = np.linspace( lambda_min_um, lambda_max_um, num_lambda_values )
 lambda_values_um = np.array( list( lambda_left ) + list( lambda_right ) )
 
-feature_test = True
+feature_test = False#True
 
 if feature_test:
 
@@ -262,6 +263,14 @@ else:
 	# density = np.load( save_folder + "/opt_optimized_density.npy" )
 	# make_optimizer.init_density_directly( density )
 
+	include_loss = True
+	if include_loss:
+		single_pass_transmittance = 0.9
+		height_nm = device_height_voxels * mesh_size_nm
+		loss_permittivity = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index**2 )
+		max_relative_permittivity += 1j * loss_permittivity
+
+
 	binarize = True
 	# binarize_movement_per_step = 0.005
 	# binarize_max_movement_per_voxel = 0.005
@@ -281,7 +290,7 @@ else:
 	wavelength_adversary = False#True
 	adversary_update_iters = 10
 
-	dual_opt = True
+	dual_opt = False
 
 	make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 		[ device_width_voxels, device_height_voxels ],
@@ -351,7 +360,7 @@ else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
 		make_optimizer.optimize(
-			int( num_iterations / 1.5 ),
+			int( num_iterations ),
 			False, 20, 20, 0.95,
 			None,
 			use_log_fom,
