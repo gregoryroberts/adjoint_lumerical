@@ -72,7 +72,7 @@ device_width_voxels = 120
 # device_height_voxels = 104#100
 device_height_voxels = 100#16#32
 
-single_pass_transmittance = 0.9
+single_pass_transmittance = 0.75#0.9
 height_nm = device_height_voxels * mesh_size_nm
 loss_permittivity_1 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index1**2 )
 loss_permittivity_2 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index2**2 )
