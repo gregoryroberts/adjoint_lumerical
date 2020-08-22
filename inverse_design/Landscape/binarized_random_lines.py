@@ -74,8 +74,8 @@ device_height_voxels = 100#16#32
 
 single_pass_transmittance = 0.9
 height_nm = device_height_voxels * mesh_size_nm
-loss_permittivity_1 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_relative_permittivity1 )
-loss_permittivity_2 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_relative_permittivity2 )
+loss_permittivity_1 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index1**2 )
+loss_permittivity_2 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index2**2 )
 
 design_width_voxels = int( device_width_voxels / density_coarsen_factor )
 design_height_voxels = int( device_height_voxels / density_coarsen_factor )
