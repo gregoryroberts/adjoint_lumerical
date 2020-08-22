@@ -263,7 +263,7 @@ else:
 	# density = np.load( save_folder + "/opt_optimized_density.npy" )
 	# make_optimizer.init_density_directly( density )
 
-	include_loss = True
+	include_loss = False
 	if include_loss:
 		single_pass_transmittance = 0.9
 		height_nm = device_height_voxels * mesh_size_nm
