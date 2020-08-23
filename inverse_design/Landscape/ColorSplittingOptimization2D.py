@@ -1,4 +1,10 @@
 #
+# System
+#
+import sys
+import os
+
+#
 # Math
 #
 import numpy as np
@@ -7,11 +13,9 @@ import scipy.optimize
 from scipy.ndimage import gaussian_filter
 from scipy.interpolate import RectBivariateSpline
 
-#
-# System
-#
-import sys
-import os
+sys.path.insert(1, '../')
+import heaviside
+
 
 #
 # Electromagnetics
@@ -1124,11 +1128,11 @@ class ColorSplittingOptimization2D():
 
 		return fom, gradient
 
-	# CODE DUPLICATION! FIX
-	def compute_net_fom( self ):
+
+	def compute_net_fom_from_density( self, input_density ):
 		fom_by_wl = []
 
-		import_density = upsample( self.design_density, self.coarsen_factor )
+		import_density = upsample( input_density, self.coarsen_factor )
 		device_permittivity = self.density_to_permittivity( import_density )
 
 		for wl_idx in range( 0, self.num_wavelengths ):
@@ -1141,6 +1145,10 @@ class ColorSplittingOptimization2D():
 		net_fom = np.product( fom_by_wl )
 
 		return net_fom
+
+	# CODE DUPLICATION! FIX
+	def compute_net_fom( self ):
+		return self.compute_net_fom_from_density( self.design_density )
 
 
 	def verify_adjoint_against_finite_difference_lambda_design_line( self, save_loc ):
@@ -2415,6 +2423,137 @@ class ColorSplittingOptimization2D():
 			np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
 			np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
 			np.save( folder_for_saving + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
+
+	def optimize_sciopt( self, folder_for_saving, second_order=False ):
+
+		heaviside_bandwidth = 1.0
+		make_heaviside = heaviside.Heaviside( heaviside_bandwidth )
+
+		def min_func( x_density ):
+			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
+
+			shape_density = np.reshape( apply_heaviside, self.design_density.shape )
+			return ( -self.compute_net_fom_from_density( shape_density ) )
+
+		def jac_func_with_weights( x_density, fom_by_wl_for_weighting ):
+			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
+
+			shape_density = np.reshape( apply_heaviside, self.design_density.shape )
+			upsample_density = upsample( shape_density, self.coarsen_factor )
+			device_permittivity = self.density_to_permittivity( upsample_density )
+
+			for wl_idx in range( 0, self.num_wavelengths ):
+				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+
+				get_fom, get_grad = self.compute_fom_and_gradient(
+					self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+					self.wavelength_intensity_scaling[ wl_idx ] )
+
+				scale_fom_for_wl = get_fom
+
+				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+				scale_gradient_for_wl = upsampled_device_grad
+				scale_gradient_for_wl = reinterpolate_average( scale_gradient_for_wl )
+				scale_gradient_for_wl = heaviside.chain_rule( scale_gradient_for_wl, apply_heaviside, x_density )
+
+				gradient_by_wl.append( scale_gradient_for_wl )
+				fom_by_wl.append( scale_fom_for_wl )
+
+			net_fom = np.product( fom_by_wl )
+			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
+
+			# We are currently not doing a performance based weighting here, but we can add it in
+			for wl_idx in range( 0, self.num_wavelengths ):
+				wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
+				weighting = net_fom / fom_by_wl_for_weighting[ wl_idx ]
+
+				net_gradient += ( weighting * wl_gradient )
+
+			return net_gradient.flatten()
+
+		def jac_func( x_density ):
+			fom_by_wl = np.zeros( self.num_wavelengths )
+
+			shape_density = np.reshape( x_density, self.design_density.shape )
+			upsample_density = upsample( shape_density, self.coarsen_factor )
+			device_permittivity = self.density_to_permittivity( upsample_density )
+
+			for wl_idx in range( 0, self.num_wavelengths ):
+				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+
+				fom_by_wl[ wl_idx ] = self.compute_fom(
+					self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+					self.wavelength_intensity_scaling[ wl_idx ] )
+
+			return jac_func_with_weights( x_density, fom_by_wl )
+
+		def hess_func( x_density ):
+			hessian = np.zeros( ( len( x_density ), len( x_density ) ) )
+
+			fom_by_wl_for_weighting = np.zeros( self.num_wavelengths )
+
+			shape_density = np.reshape( x_density, self.design_density.shape )
+			upsample_density = upsample( shape_density, self.coarsen_factor )
+			device_permittivity = self.density_to_permittivity( upsample_density )
+
+			for wl_idx in range( 0, self.num_wavelengths ):
+				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+
+				fom_by_wl_for_weighting[ wl_idx ] = self.compute_fom(
+					self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+					self.wavelength_intensity_scaling[ wl_idx ] )
+
+
+			h = 1e-4
+			for hess_idx in range( 0, len( x_density ) ):
+				copy_density = x_density.copy()
+				copy_density[ hess_idx ] += h
+
+				jac_up = jac_func_with_weights( copy_density, fom_by_wl_for_weighting )
+
+				copy_density = x_density.copy()
+				copy_density[ hess_idx ] -= h
+
+				jac_down = jac_func_with_weights( copy_density, fom_by_wl_for_weighting )
+
+				hessian[ hess_idx, : ] = ( jac_up - jac_down ) / ( 2 * h )
+
+			return hessian
+
+		# solution_bounds = [ [ 0, 1 ] for idx in range( 0, self.design_width_voxels * self.design_height_voxels ) ]
+		init_guess = 0.5 * np.ones( self.design_width_voxels * self.design_height_voxels )
+
+		fom_evolution = []
+		binarization_evolution = []
+
+		def optimize_callback( xk, state ):
+			fom_evolution.append( state.fun )
+			binarization_evolution.append( compute_binarization( xk ) )
+
+		solution = None
+		if second_order:
+			solution = scipy.optimize.minimize(
+				min_func,
+				init_guess,
+				method='Newton-CG',
+				jac=jac_func,
+				hess=hess_func,
+				callback=optimize_callback )
+		else:
+			solution = scipy.optimize.minimize(
+				min_func,
+				init_guess,
+				method='CG',
+				jac=jac_func,
+				callback=optimize_callback )
+
+		final_density = solution.x
+		fom_evolution.append( solution.fun )
+		binarization_evolution.append( compute_binarization( solution.x ) )
+
+		np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
+		np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
+		np.save( folder_for_saving + "_optimized_density.npy", solution.x )
 
 
 	def optimize_with_level_set( self, num_iterations ):
