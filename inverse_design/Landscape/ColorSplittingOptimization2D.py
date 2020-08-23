@@ -2453,8 +2453,8 @@ class ColorSplittingOptimization2D():
 
 				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 				scale_gradient_for_wl = upsampled_device_grad
-				scale_gradient_for_wl = reinterpolate_average( scale_gradient_for_wl )
-				scale_gradient_for_wl = heaviside.chain_rule( scale_gradient_for_wl, apply_heaviside, x_density )
+				scale_gradient_for_wl = reinterpolate_average( scale_gradient_for_wl, self.coarsen_factor )
+				scale_gradient_for_wl = heaviside.chain_rule( scale_gradient_for_wl, apply_heaviside, x_density - 0.5 )
 
 				gradient_by_wl.append( scale_gradient_for_wl )
 				fom_by_wl.append( scale_fom_for_wl )
@@ -2472,11 +2472,13 @@ class ColorSplittingOptimization2D():
 			return net_gradient.flatten()
 
 		def jac_func( x_density ):
-			fom_by_wl = np.zeros( self.num_wavelengths )
+			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
 
-			shape_density = np.reshape( x_density, self.design_density.shape )
+			shape_density = np.reshape( apply_heaviside, self.design_density.shape )
 			upsample_density = upsample( shape_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( upsample_density )
+
+			fom_by_wl = np.zeros( self.num_wavelengths )
 
 			for wl_idx in range( 0, self.num_wavelengths ):
 				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
@@ -2553,7 +2555,8 @@ class ColorSplittingOptimization2D():
 
 		np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
 		np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
-		np.save( folder_for_saving + "_optimized_density.npy", solution.x )
+		np.save( folder_for_saving + "_optimized_density.npy", np.reshape( solution.x, self.design_density.shape ) )
+		np.save( folder_for_saving + "_optimized_density_heaviside.npy", np.reshape( 0.5 + make_heaviside.forward( solution.x - 0.5 ), self.design_density.shape ) )
 
 
 	def optimize_with_level_set( self, num_iterations ):
