@@ -2424,7 +2424,7 @@ class ColorSplittingOptimization2D():
 			np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
 			np.save( folder_for_saving + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 
-	def optimize_sciopt( self, folder_for_saving, second_order=False ):
+	def optimize_sciopt( self, folder_for_saving, max_iterations, second_order=False ):
 
 		heaviside_bandwidth = 1.0
 		make_heaviside = heaviside.Heaviside( heaviside_bandwidth )
@@ -2531,6 +2531,7 @@ class ColorSplittingOptimization2D():
 		fom_evolution = []
 		binarization_evolution = []
 
+		iter_idx = 0
 		def optimize_callback( xk ):
 			fom_evolution.append( min_func( xk ) )
 			binarization_evolution.append( compute_binarization( xk ) )
@@ -2538,7 +2539,11 @@ class ColorSplittingOptimization2D():
 			np.save( folder_for_saving + "_fom_evolution.npy", fom_evolution )
 			np.save( folder_for_saving + "_binarization_evolution.npy", binarization_evolution )
 
-			return False
+			iter_idx += 1
+			if iter_idx >= num_iterations:
+				return True
+			else:
+				return False
 
 		solution = None
 		if second_order:
@@ -2548,6 +2553,7 @@ class ColorSplittingOptimization2D():
 				method='Newton-CG',
 				jac=jac_func,
 				hess=hess_func,
+				tol=1e-12,
 				callback=optimize_callback )
 		else:
 			solution = scipy.optimize.minimize(
@@ -2555,6 +2561,7 @@ class ColorSplittingOptimization2D():
 				init_guess,
 				method='CG',
 				jac=jac_func,
+				tol=1e-12,
 				callback=optimize_callback )
 
 		final_density = solution.x
