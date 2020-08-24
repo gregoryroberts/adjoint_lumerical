@@ -2443,6 +2443,7 @@ class ColorSplittingOptimization2D():
 			device_permittivity = self.density_to_permittivity( upsample_density )
 
 			gradient_by_wl = []
+			fom_by_wl = []
 
 			for wl_idx in range( 0, self.num_wavelengths ):
 				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
@@ -2459,8 +2460,10 @@ class ColorSplittingOptimization2D():
 				scale_gradient_for_wl = make_heaviside.chain_rule( scale_gradient_for_wl.flatten(), apply_heaviside, x_density - 0.5 )
 
 				gradient_by_wl.append( scale_gradient_for_wl )
+				fom_by_wl.append( scale_fom_for_wl )
 
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
+			net_fom = np.product( fom_by_wl )
 
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
