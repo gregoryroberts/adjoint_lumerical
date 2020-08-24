@@ -361,7 +361,7 @@ else:
 	else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
-		second_order = False
+		second_order = True
 		make_optimizer.optimize_sciopt( save_folder + "/opt", second_order )
 
 		# make_optimizer.optimize(
