@@ -77,9 +77,9 @@ if feature_test:
 
 else:
 
-	device_width_voxels = 120#160#120
+	device_width_voxels = 48#120#160#120
 	# device_width_voxels = 200
-	device_height_voxels = 96#104#100#132#100
+	device_height_voxels = 24#96#104#100#132#100
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
 	# device_height_voxels = 48#32
@@ -361,7 +361,7 @@ else:
 	else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
-		second_order = True
+		second_order = False
 		make_optimizer.optimize_sciopt( save_folder + "/opt", second_order )
 
 		# make_optimizer.optimize(
