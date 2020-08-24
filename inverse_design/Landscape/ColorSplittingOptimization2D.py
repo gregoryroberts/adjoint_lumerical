@@ -17,6 +17,8 @@ sys.path.insert(1, '../')
 import heaviside
 
 iter_idx = 0
+fom_evolution = []
+binarization_evolution = []
 
 #
 # Electromagnetics
@@ -2532,11 +2534,11 @@ class ColorSplittingOptimization2D():
 
 			return hessian
 
-		fom_evolution = []
-		binarization_evolution = []
 
 		def optimize_callback( xk ):
 			global iter_idx
+			global fom_evolution
+			global binarization_evolution
 
 			fom_evolution.append( min_func( xk ) )
 			binarization_evolution.append( compute_binarization( xk ) )
