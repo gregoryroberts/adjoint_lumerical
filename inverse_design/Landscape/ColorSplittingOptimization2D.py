@@ -2478,7 +2478,8 @@ class ColorSplittingOptimization2D():
 
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
-				wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
+				# wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
+				wl_gradient = gradient_by_wl[ wl_idx ]
 				weighting = net_fom / fom_by_wl[ wl_idx ]
 
 				net_gradient += ( weighting * wl_gradient )
