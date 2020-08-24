@@ -2426,14 +2426,20 @@ class ColorSplittingOptimization2D():
 
 	def optimize_sciopt( self, folder_for_saving, max_iterations, second_order=False ):
 
-		heaviside_bandwidth = 1.0
+		heaviside_bandwidth = 0.5
 		make_heaviside = heaviside.Heaviside( heaviside_bandwidth )
+		init_guess = 0.5 * np.ones( self.design_width_voxels * self.design_height_voxels )
+
+		apply_init_heaviside = make_heaviside.forward( init_guess - 0.5 ) + 0.5
+		init_fom_abs = np.abs( self.compute_net_fom_from_density( np.reshape( apply_init_heaviside, self.design_density.shape ) ) )
+
 
 		def min_func( x_density ):
 			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
 
 			shape_density = np.reshape( apply_heaviside, self.design_density.shape )
-			return ( -self.compute_net_fom_from_density( shape_density ) )
+			return ( -self.compute_net_fom_from_density( shape_density ) / init_fom_abs )
+
 
 		def jac_func_with_weights( x_density, fom_by_wl_for_weighting ):
 			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
@@ -2472,7 +2478,7 @@ class ColorSplittingOptimization2D():
 
 				net_gradient += ( weighting * wl_gradient )
 
-			return ( -net_gradient )
+			return ( -net_gradient ) / init_fom_abs
 
 		def jac_func( x_density ):
 			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
@@ -2525,9 +2531,6 @@ class ColorSplittingOptimization2D():
 
 			return hessian
 
-		# solution_bounds = [ [ 0, 1 ] for idx in range( 0, self.design_width_voxels * self.design_height_voxels ) ]
-		init_guess = 0.5 * np.ones( self.design_width_voxels * self.design_height_voxels )
-
 		fom_evolution = []
 		binarization_evolution = []
 
@@ -2536,6 +2539,7 @@ class ColorSplittingOptimization2D():
 			fom_evolution.append( min_func( xk ) )
 			binarization_evolution.append( compute_binarization( xk ) )
 
+			np.save( folder_for_saving + "_init_fom_abs.npy", init_fom_abs )
 			np.save( folder_for_saving + "_fom_evolution.npy", fom_evolution )
 			np.save( folder_for_saving + "_binarization_evolution.npy", binarization_evolution )
 
@@ -2553,7 +2557,6 @@ class ColorSplittingOptimization2D():
 				method='Newton-CG',
 				jac=jac_func,
 				hess=hess_func,
-				options={'xtol': 1e-12},
 				callback=optimize_callback )
 		else:
 			solution = scipy.optimize.minimize(
@@ -2561,13 +2564,13 @@ class ColorSplittingOptimization2D():
 				init_guess,
 				method='CG',
 				jac=jac_func,
-				options={'gtol': 1e-12},
 				callback=optimize_callback )
 
 		final_density = solution.x
 		fom_evolution.append( solution.fun )
 		binarization_evolution.append( compute_binarization( solution.x ) )
 
+		np.save( folder_for_saving + "_init_fom_abs.npy", init_fom_abs )
 		np.save( folder_for_saving + "_fom_evolution.npy", fom_evolution )
 		np.save( folder_for_saving + "_binarization_evolution.npy", binarization_evolution )
 		np.save( folder_for_saving + "_optimized_density.npy", np.reshape( solution.x, self.design_density.shape ) )
