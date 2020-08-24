@@ -2531,9 +2531,14 @@ class ColorSplittingOptimization2D():
 		fom_evolution = []
 		binarization_evolution = []
 
-		def optimize_callback( xk, state ):
-			fom_evolution.append( state.fun )
+		def optimize_callback( xk ):
+			fom_evolution.append( min_func( xk ) )
 			binarization_evolution.append( compute_binarization( xk ) )
+
+			np.save( folder_for_saving + "_fom_evolution.npy", fom_evolution )
+			np.save( folder_for_saving + "_binarization_evolution.npy", binarization_evolution )
+
+			return False
 
 		solution = None
 		if second_order:
