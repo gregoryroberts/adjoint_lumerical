@@ -2433,19 +2433,19 @@ class ColorSplittingOptimization2D():
 		make_heaviside = heaviside.Heaviside( heaviside_bandwidth )
 		init_guess = 0.5 * np.ones( self.design_width_voxels * self.design_height_voxels )
 
-		apply_init_heaviside = make_heaviside.forward( init_guess - 0.5 ) + 0.5
+		apply_init_heaviside = make_heaviside.forward( init_guess - 0.5 )
 		init_fom_abs = np.abs( self.compute_net_fom_from_density( np.reshape( apply_init_heaviside, self.design_density.shape ) ) )
 
 
 		def min_func( x_density ):
-			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
+			apply_heaviside = make_heaviside.forward( x_density - 0.5 )
 
 			shape_density = np.reshape( apply_heaviside, self.design_density.shape )
 			return ( -self.compute_net_fom_from_density( shape_density ) / init_fom_abs )
 
 
-		def jac_func_with_weights( x_density, fom_by_wl_for_weighting ):
-			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
+		def jac_func( x_density ):
+			apply_heaviside = make_heaviside.forward( x_density - 0.5 )
 
 			shape_density = np.reshape( apply_heaviside, self.design_density.shape )
 			upsample_density = upsample( shape_density, self.coarsen_factor )
@@ -2472,34 +2472,17 @@ class ColorSplittingOptimization2D():
 				fom_by_wl.append( scale_fom_for_wl )
 
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
-			net_fom = np.product( fom_by_wl )
+			net_fom = np.product( fom_by_wl_for_weighting )
 
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
 				wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
-				weighting = net_fom / fom_by_wl_for_weighting[ wl_idx ]
+				weighting = net_fom / fom_by_wl[ wl_idx ]
 
 				net_gradient += ( weighting * wl_gradient )
 
 			return ( -net_gradient ) / init_fom_abs
 
-		def jac_func( x_density ):
-			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
-
-			shape_density = np.reshape( apply_heaviside, self.design_density.shape )
-			upsample_density = upsample( shape_density, self.coarsen_factor )
-			device_permittivity = self.density_to_permittivity( upsample_density )
-
-			fom_by_wl = np.zeros( self.num_wavelengths )
-
-			for wl_idx in range( 0, self.num_wavelengths ):
-				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
-
-				fom_by_wl[ wl_idx ] = self.compute_fom(
-					self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
-					self.wavelength_intensity_scaling[ wl_idx ] )
-
-			return jac_func_with_weights( x_density, fom_by_wl )
 
 		def hess_func( x_density ):
 			hessian = np.zeros( ( len( x_density ), len( x_density ) ) )
