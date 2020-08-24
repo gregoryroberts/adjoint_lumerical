@@ -2553,7 +2553,7 @@ class ColorSplittingOptimization2D():
 				method='Newton-CG',
 				jac=jac_func,
 				hess=hess_func,
-				tol=1e-12,
+				tol=1e-15,
 				callback=optimize_callback )
 		else:
 			solution = scipy.optimize.minimize(
@@ -2561,7 +2561,7 @@ class ColorSplittingOptimization2D():
 				init_guess,
 				method='CG',
 				jac=jac_func,
-				tol=1e-12,
+				tol=1e-15,
 				callback=optimize_callback )
 
 		final_density = solution.x
