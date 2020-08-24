@@ -2556,8 +2556,8 @@ class ColorSplittingOptimization2D():
 		fom_evolution.append( solution.fun )
 		binarization_evolution.append( compute_binarization( solution.x ) )
 
-		np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
-		np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
+		np.save( folder_for_saving + "_fom_evolution.npy", fom_evolution )
+		np.save( folder_for_saving + "_binarization_evolution.npy", binarization_evolution )
 		np.save( folder_for_saving + "_optimized_density.npy", np.reshape( solution.x, self.design_density.shape ) )
 		np.save( folder_for_saving + "_optimized_density_heaviside.npy", np.reshape( 0.5 + make_heaviside.forward( solution.x - 0.5 ), self.design_density.shape ) )
 
