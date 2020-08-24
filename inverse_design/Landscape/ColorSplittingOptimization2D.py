@@ -2561,7 +2561,7 @@ class ColorSplittingOptimization2D():
 				init_guess,
 				method='CG',
 				jac=jac_func,
-				tol=1e-15,
+				gtol=1e-15,
 				callback=optimize_callback )
 
 		final_density = solution.x
