@@ -2546,7 +2546,7 @@ class ColorSplittingOptimization2D():
 			np.save( folder_for_saving + "_binarization_evolution.npy", binarization_evolution )
 
 			iter_idx += 1
-			if iter_idx >= num_iterations:
+			if iter_idx >= max_iterations:
 				return True
 			else:
 				return False
