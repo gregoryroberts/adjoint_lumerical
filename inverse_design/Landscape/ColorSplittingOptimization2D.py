@@ -2161,6 +2161,7 @@ class ColorSplittingOptimization2D():
 
 		self.gradient_norm_evolution = np.zeros( num_iterations )
 		self.fom_evolution = np.zeros( num_iterations )
+		self.fom_evolution_no_loss = np.zeros( num_iterations )
 		self.binarization_evolution = np.zeros( num_iterations )
 		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
 		self.gradient_directions = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
@@ -2257,6 +2258,7 @@ class ColorSplittingOptimization2D():
 
 			gradient_by_wl = []
 			fom_by_wl = []
+			fom_no_loss_by_wl = []
 			dense_plot = []
 
 			if ( iter_idx % dense_plot_iters ) == 0:
@@ -2351,6 +2353,10 @@ class ColorSplittingOptimization2D():
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
+					get_fom_no_loss = compute_fom(
+						self.omega_values[ wl_idx ], np.real( device_permittivity ), self.focal_spots_x_voxels[ get_focal_point_idx ],
+						self.wavelength_intensity_scaling[ wl_idx ] )
+
 				scale_fom_for_wl = get_fom
 
 				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
@@ -2358,8 +2364,10 @@ class ColorSplittingOptimization2D():
 
 				gradient_by_wl.append( scale_gradient_for_wl )
 				fom_by_wl.append( scale_fom_for_wl )
+				fom_no_loss_by_wl.append( scale_fom_for_wl )
 
 			net_fom = np.product( fom_by_wl )
+			net_fom_no_loss = np.product( fom_no_loss_by_wl )
 
 			if use_log_fom:
 				net_fom = np.log( net_fom )
@@ -2394,6 +2402,7 @@ class ColorSplittingOptimization2D():
 			gradient_norm = vector_norm( net_gradient )
 
 			self.fom_evolution[ iter_idx ] = net_fom
+			self.fom_evolution_no_loss[ iter_idx ] = net_fom_no_loss
 			self.fom_by_wl_evolution[ iter_idx ] = np.array( fom_by_wl )
 			self.gradient_norm_evolution[ iter_idx ] = gradient_norm
 
@@ -2564,7 +2573,7 @@ class ColorSplittingOptimization2D():
 		np.save( folder_for_saving + "_fom_evolution.npy", fom_evolution )
 		np.save( folder_for_saving + "_binarization_evolution.npy", binarization_evolution )
 		np.save( folder_for_saving + "_optimized_density.npy", np.reshape( solution.x, self.design_density.shape ) )
-		np.save( folder_for_saving + "_optimized_density_heaviside.npy", np.reshape( 0.5 + make_heaviside.forward( solution.x - 0.5 ), self.design_density.shape ) )
+		np.save( folder_for_saving + "_optimized_density_heaviside.npy", np.reshape( make_heaviside.forward( solution.x - 0.5 ), self.design_density.shape ) )
 
 
 	def optimize_with_level_set( self, num_iterations ):
@@ -2685,6 +2694,7 @@ class ColorSplittingOptimization2D():
 	def save_optimization_data( self, file_base ):
 		np.save( file_base + "_gradient_norm_evolution.npy", self.gradient_norm_evolution )
 		np.save( file_base + "_fom_evolution.npy", self.fom_evolution )
+		np.save( file_base + "_fom_evolution_no_loss.npy", self.fom_evolution_no_loss )
 		np.save( file_base + "_binarization_evolution.npy", self.binarization_evolution )
 		np.save( file_base + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 		np.save( file_base + "_gradient_directions.npy", self.gradient_directions )

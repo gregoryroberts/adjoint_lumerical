@@ -368,7 +368,7 @@ else:
 			None,
 			use_log_fom,
 			wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-			binarize, 1.5 * binarize_movement_per_step, 1.5 * binarize_max_movement_per_voxel,
+			binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
 			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
 
