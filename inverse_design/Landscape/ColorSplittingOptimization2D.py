@@ -2536,6 +2536,8 @@ class ColorSplittingOptimization2D():
 
 		iter_idx = 0
 		def optimize_callback( xk ):
+			global iter_idx
+			
 			fom_evolution.append( min_func( xk ) )
 			binarization_evolution.append( compute_binarization( xk ) )
 
