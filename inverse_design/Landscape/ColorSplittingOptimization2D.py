@@ -2472,7 +2472,7 @@ class ColorSplittingOptimization2D():
 				fom_by_wl.append( scale_fom_for_wl )
 
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
-			net_fom = np.product( fom_by_wl_for_weighting )
+			net_fom = np.product( fom_by_wl )
 
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
