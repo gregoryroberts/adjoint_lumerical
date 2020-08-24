@@ -2442,6 +2442,8 @@ class ColorSplittingOptimization2D():
 			upsample_density = upsample( shape_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( upsample_density )
 
+			gradient_by_wl = []
+
 			for wl_idx in range( 0, self.num_wavelengths ):
 				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
 
@@ -2454,12 +2456,10 @@ class ColorSplittingOptimization2D():
 				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 				scale_gradient_for_wl = upsampled_device_grad
 				scale_gradient_for_wl = reinterpolate_average( scale_gradient_for_wl, self.coarsen_factor )
-				scale_gradient_for_wl = heaviside.chain_rule( scale_gradient_for_wl, apply_heaviside, x_density - 0.5 )
+				scale_gradient_for_wl = make_heaviside.chain_rule( scale_gradient_for_wl.flatten(), apply_heaviside, x_density - 0.5 )
 
 				gradient_by_wl.append( scale_gradient_for_wl )
-				fom_by_wl.append( scale_fom_for_wl )
 
-			net_fom = np.product( fom_by_wl )
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
 
 			# We are currently not doing a performance based weighting here, but we can add it in
@@ -2469,7 +2469,7 @@ class ColorSplittingOptimization2D():
 
 				net_gradient += ( weighting * wl_gradient )
 
-			return net_gradient.flatten()
+			return ( -net_gradient )
 
 		def jac_func( x_density ):
 			apply_heaviside = make_heaviside.forward( x_density - 0.5 ) + 0.5
