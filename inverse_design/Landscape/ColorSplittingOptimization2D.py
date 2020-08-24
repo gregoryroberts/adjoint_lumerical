@@ -16,6 +16,7 @@ from scipy.interpolate import RectBivariateSpline
 sys.path.insert(1, '../')
 import heaviside
 
+iter_idx = 0
 
 #
 # Electromagnetics
@@ -2534,10 +2535,9 @@ class ColorSplittingOptimization2D():
 		fom_evolution = []
 		binarization_evolution = []
 
-		iter_idx = 0
 		def optimize_callback( xk ):
 			global iter_idx
-			
+
 			fom_evolution.append( min_func( xk ) )
 			binarization_evolution.append( compute_binarization( xk ) )
 
