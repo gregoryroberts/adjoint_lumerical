@@ -2436,6 +2436,8 @@ class ColorSplittingOptimization2D():
 		apply_init_heaviside = make_heaviside.forward( init_guess - 0.5 )
 		init_fom_abs = np.abs( self.compute_net_fom_from_density( np.reshape( apply_init_heaviside, self.design_density.shape ) ) )
 
+		np.save( folder_for_saving + "_init_density_heaviside.npy", np.reshape( apply_init_heaviside, self.design_density.shape ) )
+
 
 		def min_func( x_density ):
 			apply_heaviside = make_heaviside.forward( x_density - 0.5 )
