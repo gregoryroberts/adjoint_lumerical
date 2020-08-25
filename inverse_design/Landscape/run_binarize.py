@@ -265,11 +265,13 @@ else:
 
 	include_loss = True
 	if include_loss:
-		# single_pass_transmittance = 0.9
-		single_pass_transmittance = 0.8
-		height_nm = device_height_voxels * mesh_size_nm
-		loss_permittivity = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index**2 )
-		max_relative_permittivity += 1j * loss_permittivity
+		single_pass_transmittance = 0.9
+		device_height_m = device_height_voxels * mesh_size_nm * 1e-9
+		lambda_min_m = lambda_min_um * 1e-6
+		loss_index = -lambda_min_m * np.log( single_pass_transmittance ) / ( device_height_m * 2 * np.pi )
+		real_permittivity = max_index**2 - loss_index**2
+		imag_permittivity = 2 * np.sqrt( real_permittivity ) * loss_index
+		max_relative_permittivity = real_permittivity + 1j * imag_permittivity
 
 
 	binarize = True

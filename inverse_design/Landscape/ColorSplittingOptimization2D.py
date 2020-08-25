@@ -455,6 +455,15 @@ class ColorSplittingOptimization2D():
 
 		return fwd_Ez
 
+	def eval_loss( self, omega ):
+		print( self.max_relative_permittivity )
+		self.rel_eps_simulation[ :, : ] = self.max_relative_permittivity
+
+		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		fwd_Hx, fwd_Hy, fwd_Ez = simulation.solve( self.fwd_source )
+
+		return fwd_Ez
+
 	def compute_fom( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
 		fom = fom_scaling * np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
