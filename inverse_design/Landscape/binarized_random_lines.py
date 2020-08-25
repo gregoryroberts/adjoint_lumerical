@@ -72,10 +72,23 @@ device_width_voxels = 120
 # device_height_voxels = 104#100
 device_height_voxels = 100#16#32
 
-single_pass_transmittance = 0.75#0.9
-height_nm = device_height_voxels * mesh_size_nm
-loss_permittivity_1 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index1**2 )
-loss_permittivity_2 = -lambda_min_um * np.log( single_pass_transmittance ) / ( height_nm * 4 * np.pi * max_index2**2 )
+
+single_pass_transmittance = 0.9
+device_height_m = device_height_voxels * mesh_size_nm * 1e-9
+lambda_min_m = lambda_min_um * 1e-6
+loss_index = -lambda_min_m * np.log( single_pass_transmittance ) / ( device_height_m * 2 * np.pi )
+
+real_permittivity_1 = max_index1**2 - loss_index**2
+imag_permittivity_1 = 2 * np.sqrt( real_permittivity_1 ) * loss_index
+
+real_permittivity_2 = max_index2**2 - loss_index**2
+imag_permittivity_2 = 2 * np.sqrt( real_permittivity_2 ) * loss_index
+
+
+
+
+
+
 
 design_width_voxels = int( device_width_voxels / density_coarsen_factor )
 design_height_voxels = int( device_height_voxels / density_coarsen_factor )
@@ -108,8 +121,8 @@ get_density_2 = 1.0 * np.greater( np.random.normal( 0.5, 0.5, ( design_width_vox
 # get_density_2 = get_densities_2[ get_densities_2.shape[ 0 ] - 1 ]
 
 min_relative_permittivity = 1.0**2
-max_relative_permittivity1 = max_index1**2 + 1j * loss_permittivity_1
-max_relative_permittivity2 = max_index2**2 + 1j * loss_permittivity_2
+max_relative_permittivity1 = real_permittivity_1 + 1j * imag_permittivity_1
+max_relative_permittivity2 = real_permittivity_2 + 1j * imag_permittivity_2
 
 max_relative_permittivity_both_opts = np.maximum( max_relative_permittivity1, max_relative_permittivity2 )
 
