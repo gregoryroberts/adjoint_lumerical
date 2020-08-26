@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8
-density_coarsen_factor = 12#4
+density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -205,8 +205,8 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
 
-# num_design_steps = design_height
-num_design_steps = 1
+num_design_steps = design_height
+# num_design_steps = 1
 
 assert ( design_height % num_design_steps ) == 0, "Expected an even number of blocks in design!"
 
