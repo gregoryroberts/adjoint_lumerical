@@ -2362,9 +2362,12 @@ class ColorSplittingOptimization2D():
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
-					get_fom_no_loss = self.compute_fom(
-						self.omega_values[ wl_idx ], np.real( device_permittivity ), self.focal_spots_x_voxels[ get_focal_point_idx ],
-						self.wavelength_intensity_scaling[ wl_idx ] )
+					if np.max( np.abs( np.imag( device_permittivity ) ) ) > 0:
+						get_fom_no_loss = self.compute_fom(
+							self.omega_values[ wl_idx ], np.real( device_permittivity ), self.focal_spots_x_voxels[ get_focal_point_idx ],
+							self.wavelength_intensity_scaling[ wl_idx ] )
+					else:
+						get_fom_no_loss = get_fom
 
 				scale_fom_for_wl = get_fom
 
