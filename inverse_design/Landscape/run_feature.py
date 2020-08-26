@@ -205,8 +205,8 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
 
 
-num_design_steps = design_height
-# num_design_steps = 1
+# num_design_steps = design_height
+num_design_steps = 1
 
 assert ( design_height % num_design_steps ) == 0, "Expected an even number of blocks in design!"
 
