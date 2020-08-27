@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_rgb_5layers_rebinned_2x2x2um'
+project_name = 'layered_rgb_5layers_rebinned_rerun_2x2x2um'
 
 #
 # Optical
@@ -115,7 +115,7 @@ adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 
 #
 # Optimization
 #
-start_epoch = 3
+start_epoch = 0
 num_epochs = 8
 num_iterations_per_epoch = 25
 
