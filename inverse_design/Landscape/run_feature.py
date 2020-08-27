@@ -219,9 +219,9 @@ for design_step_idx in range( 0, num_design_steps ):
 	start = design_step_idx * blocks_per_step
 	opt_mask_design_step[ :, start : ( start + blocks_per_step ) ] = 1
 
-	num_iterations_design_step = int( num_iterations / num_design_steps )
-	binarize_movement_per_step_design_step = binarize_movement_per_step / num_design_steps
-	binarize_max_movement_per_voxel_design_step = binarize_max_movement_per_voxel / num_design_steps
+	num_iterations_design_step = num_iterations# int( num_iterations / num_design_steps )
+	binarize_movement_per_step_design_step = binarize_movement_per_step# binarize_movement_per_step * num_design_steps
+	binarize_max_movement_per_voxel_design_step = binarize_max_movement_per_voxel# binarize_max_movement_per_voxel * num_design_steps
 
 	make_optimizer.optimize(
 		int( num_iterations_design_step ),
