@@ -8,14 +8,10 @@ import numpy as np
 # Files
 #
 
-#
-# With the recent bugfix for the symmetric based designs, you should try these designs with
-# thicker layers to see if that gets more performance.
-#
-
 # project_name = 'layered_infrared_3layers_pol_insensitive_even_thinner_layers_6x6x2p25um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_v2_6x6x2p25um_weighting_f4'
-project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_v2_6x6x3p375um_weighting_f4'
+# project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_v2_6x6x3p375um_weighting_f4'
+
 # project_name = 'layered_infrared_3layers_pol_insensitive_fix_binarization_fn_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_tio2_zep_init_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_sio2_air_init_6x6x3p84um_weighting_f4'
@@ -24,6 +20,9 @@ project_name = 'layered_infrared_3layers_pol_insensitive_thinner_layers_v2_6x6x3
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_finer_6x6x3p84um_weighting_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_6x6x4p32um_f4'
 # project_name = 'layered_infrared_3layers_pol_insensitive_thicker_layers_and_spacers_6x6x4p32um_f4_v3'
+
+
+project_name = 'layered_infrared_3layers_pol_insensitive_single_layer_v3_6x6x1p125um_weighting_f4'
 
 #
 # Optical
@@ -73,7 +72,7 @@ resample_factor = 3
 #
 # Pesky size to get the number of voxels to be a multiple of 3
 #
-num_vertical_layers = 3
+num_vertical_layers = 1#3
 
 # device_size_lateral_um = 2.0 * 3.0#3.06#3.6
 device_size_lateral_um = 6.0
