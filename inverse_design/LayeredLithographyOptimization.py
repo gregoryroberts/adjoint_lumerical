@@ -112,7 +112,7 @@ design_efield_monitor['y span'] = device_size_lateral_um * 1e-6
 design_efield_monitor['z max'] = device_vertical_maximum_um * 1e-6
 design_efield_monitor['z min'] = device_vertical_minimum_um * 1e-6
 design_efield_monitor['override global monitor settings'] = 1
-design_efield_monitor['use linear wavelength spacing'] = 1
+design_efield_monitor['use wavelength spacing'] = 1
 design_efield_monitor['use source limits'] = 1
 design_efield_monitor['frequency points'] = num_design_frequency_points
 design_efield_monitor['output Hx'] = 0
@@ -134,7 +134,7 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
 	focal_monitor['z'] = adjoint_vertical_um * 1e-6
 	focal_monitor['override global monitor settings'] = 1
-	focal_monitor['use linear wavelength spacing'] = 1
+	focal_monitor['use wavelength spacing'] = 1
 	focal_monitor['use source limits'] = 1
 	focal_monitor['frequency points'] = num_design_frequency_points
 
