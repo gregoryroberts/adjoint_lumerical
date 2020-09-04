@@ -4,7 +4,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from MultiStageForceBinarization2DMultiDeviceParameters import *
+# from MultiStageForceBinarization2DMultiDeviceParameters import *
+from MultiStageBinarizationSteppedParameters import *
 
 # import imp
 # imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
@@ -204,6 +205,14 @@ design_index_monitor['name'] = 'design_index_monitor'
 design_index_monitor['x span'] = device_size_lateral_um * 1e-6
 design_index_monitor['y min'] = designable_device_vertical_minimum_um * 1e-6
 design_index_monitor['y max'] = designable_device_vertical_maximum_um * 1e-6
+
+
+substrate = fdtd_hook.addrect()
+substrate['name'] = 'substrate'
+substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
+substrate['y min'] = designable_device_vertical_maximum_um * 1e-6
+substrate['y max'] = fdtd_region_maximum_vertical_um * 1e-6
+substrate['index'] = substrate_index
 
 
 #
