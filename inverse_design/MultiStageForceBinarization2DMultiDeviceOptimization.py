@@ -213,6 +213,8 @@ substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
 substrate['y min'] = designable_device_vertical_maximum_um * 1e-6
 substrate['y max'] = fdtd_region_maximum_vertical_um * 1e-6
 substrate['index'] = substrate_index
+substrate['z min'] = -0.51 * 1e-6
+substrate['z max'] = 0.51 * 1e-6
 
 
 #
