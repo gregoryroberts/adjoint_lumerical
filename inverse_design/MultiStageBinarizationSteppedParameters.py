@@ -138,7 +138,7 @@ optimization_stages = []
 optimization_conversion_functions = []
 
 num_density_layered_binarize_iterations = 50
-num_density_layered_binarize_epochs = 4
+num_density_layered_binarize_epochs = 1
 binarize_max_movement = 0.005
 binarize_desired_change = 0.005
 binarize_middle_device = 0
