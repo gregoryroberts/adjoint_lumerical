@@ -10,7 +10,7 @@ import OptimizationLayersSpacersMultiDevice
 import OptimizationLayersSpacersGlobalBinarization2DMultiDevice
 
 # import FreeBayerFilterWithBlur2D
-import FreeBayerFilterDualPhaseBlur2D
+# import FreeBayerFilterDualPhaseBlur2D
 
 #
 # Files
