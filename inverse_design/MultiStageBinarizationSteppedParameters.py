@@ -132,6 +132,8 @@ for layer_idx in range( 1, len( layer_thicknesses_um ) ):
 # Change lower index to air for the backfilled design where we etch oxide out first
 #
 
+device_size_um = np.array( [ device_size_lateral_um, device_size_verical_um ] )
+
 optimization_stages = []
 optimization_conversion_functions = []
 
