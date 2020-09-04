@@ -404,9 +404,9 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 
 		# Try this! Not sure how well it will work
 		if starting_binarization < 0.1:
-			alpha = binarize_amount
+			alpha = self.desired_binarize_change
 		else:
-			alpha = np.minimum( starting_binarization * max_possible_binarization_change, binarize_amount )
+			alpha = np.minimum( starting_binarization * max_possible_binarization_change, self.desired_binarize_change )
 
 
 		def ramp( x ):
