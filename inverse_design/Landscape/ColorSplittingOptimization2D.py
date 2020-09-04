@@ -2031,10 +2031,26 @@ class ColorSplittingOptimization2D():
 		density_for_binarizing = self.design_density.flatten()
 		flatten_gradient = gradient.flatten()
 
-		flatten_design_cuts = density_for_binarizing.copy()
-		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
-		flatten_fom_gradients = flatten_gradient.copy()
+		# flatten_design_cuts = density_for_binarizing.copy()
+		extract_binarization_gradient_full = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
+		# flatten_fom_gradients = flatten_gradient.copy()
 		flatten_opt_mask = opt_mask.flatten()
+
+
+		flatten_design_cuts = []
+		flatten_fom_gradients = []
+		extract_binarization_gradient = []
+
+		for idx in range( 0, len( flatten_opt_mask ) ):
+			if flatten_opt_mask[ idx ] > 0:
+				flatten_design_cuts.append( density_for_binarizing[ idx ] )
+				flatten_fom_gradients.append( flatten_gradient[ idx ] )
+				extract_binarization_gradient.append( extract_binarization_gradient_full[ idx ] )
+
+		flatten_design_cuts = np.array( flatten_design_cuts )
+		flatten_fom_gradients = np.array( flatten_fom_gradients )
+		extract_binarization_gradient = np.array( extract_binarization_gradient )
+
 
 		beta = binarize_max_movement
 		projected_binarization_increase = 0
@@ -2049,9 +2065,8 @@ class ColorSplittingOptimization2D():
 		upper_bounds = np.zeros( len( c ) )
 
 		for idx in range( 0, len( c ) ):
-			if flatten_opt_mask[ idx ] > 0:
-				upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
-				lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+			upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+			lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
 
 		max_possible_binarization_change = 0
 		for idx in range( 0, len( c ) ):
@@ -2061,7 +2076,10 @@ class ColorSplittingOptimization2D():
 				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
 		
 		# Try this! Not sure how well it will work
-		alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
+		if initial_binarization < 0.1:
+			alpha = binarize_amount
+		else:
+			alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
 
 		def ramp( x ):
 			return np.maximum( x, 0 )
@@ -2086,13 +2104,16 @@ class ColorSplittingOptimization2D():
 			else:
 				x_star[ idx ] = lower_bounds[ idx ]
 
+
 		proposed_design_variable = flatten_design_cuts + x_star
 		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
-		# print( initial_binarization )
-		# print( compute_binarization( proposed_design_variable.flatten() ) )
+		refill_design_variable = density_for_binarizing.copy()
+		for idx in range( 0, len( flatten_opt_mask ) ):
+			if flatten_opt_mask[ idx ] > 0:
+				refill_design_variable[ idx ] = proposed_design_variable[ idx ]
 
-		return np.reshape( proposed_design_variable, self.design_density.shape )
+		return np.reshape( refill_design_variable, self.design_density.shape )
 
 	def get_device_permittivity( self ):
 		import_density = upsample( self.design_density, self.coarsen_factor )
