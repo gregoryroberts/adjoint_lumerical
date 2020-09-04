@@ -2108,10 +2108,12 @@ class ColorSplittingOptimization2D():
 		proposed_design_variable = flatten_design_cuts + x_star
 		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
+		refill_idx = 0
 		refill_design_variable = density_for_binarizing.copy()
 		for idx in range( 0, len( flatten_opt_mask ) ):
 			if flatten_opt_mask[ idx ] > 0:
-				refill_design_variable[ idx ] = proposed_design_variable[ idx ]
+				refill_design_variable[ idx ] = proposed_design_variable[ refill_idx ]
+				refill_idx += 1
 
 		return np.reshape( refill_design_variable, self.design_density.shape )
 
