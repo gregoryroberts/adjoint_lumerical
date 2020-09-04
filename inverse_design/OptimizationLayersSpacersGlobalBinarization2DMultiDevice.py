@@ -299,18 +299,29 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 		flatten_fom_gradients = np.array( flatten_fom_gradients )
 		flatten_design_cuts = np.array( flatten_design_cuts )
 	
-		def compute_binarization( input_variable ):
-			return ( 2 / np.sqrt( len( input_variable ) ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
-		def compute_binarization_gradient( input_variable ):
-			return ( 4 / len( input_variable ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
+
+		def compute_binarization_permittivity( input_perm, min_p, max_p, set_point=0.5 ):
+			input_variable = ( input_perm - min_p ) / ( max_p - min_p )
+			total_shape = np.product( input_variable.shape )
+			return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - set_point )**2 ) )
+
+		def compute_binarization_gradient_permittivity( input_perm, min_p, max_p, set_point=0.5 ):
+			input_variable = ( input_perm - min_p ) / ( max_p - min_p )
+			total_shape = np.product( input_variable.shape )
+			return ( 2. / total_shape ) * np.sign( input_variable - set_point )
+
+		# def compute_binarization( input_variable ):
+		# 	return ( 2 / np.sqrt( len( input_variable ) ) ) * np.sqrt( np.sum( ( input_variable - 0.5 )**2 ) )
+		# def compute_binarization_gradient( input_variable ):
+		# 	return ( 4 / len( input_variable ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
 
-		def compute_binarization_permittivity( input_variable, min_p, max_p ):
-			density = ( input_variable - min_p ) / ( max_p - min_p )
-			return compute_binarization( density )
-		def compute_binarization_gradient_permittivity( input_variable, min_p, max_p ):
-			density = ( input_variable - min_p ) / ( max_p - min_p )
-			return ( max_p - min_p ) * compute_binarization_gradient( density )
+		# def compute_binarization_permittivity( input_variable, min_p, max_p ):
+		# 	density = ( input_variable - min_p ) / ( max_p - min_p )
+		# 	return compute_binarization( density )
+		# def compute_binarization_gradient_permittivity( input_variable, min_p, max_p ):
+		# 	density = ( input_variable - min_p ) / ( max_p - min_p )
+		# 	return ( max_p - min_p ) * compute_binarization_gradient( density )
 
 
 		starting_binarization = 0
@@ -389,7 +400,13 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 			else:
 				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
 		
-		alpha = np.minimum( max_possible_binarization_change / 3., self.desired_binarize_change )
+		# alpha = np.minimum( max_possible_binarization_change / 3., self.desired_binarize_change )
+
+		# Try this! Not sure how well it will work
+		if initial_binarization < 0.1:
+			alpha = binarize_amount
+		else:
+			alpha = np.minimum( starting_binarization * max_possible_binarization_change, binarize_amount )
 
 
 		def ramp( x ):
