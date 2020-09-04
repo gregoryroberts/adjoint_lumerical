@@ -2032,7 +2032,7 @@ class ColorSplittingOptimization2D():
 		flatten_gradient = gradient.flatten()
 
 		# flatten_design_cuts = density_for_binarizing.copy()
-		extract_binarization_gradient_full = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
+		extract_binarization_gradient_full = compute_binarization_gradient( density_for_binarizing, self.binarization_set_point )
 		# flatten_fom_gradients = flatten_gradient.copy()
 		flatten_opt_mask = opt_mask.flatten()
 
