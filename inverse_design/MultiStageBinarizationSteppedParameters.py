@@ -80,13 +80,13 @@ layer_thicknesses_um = [
 layer_thicknesses_voxels = [ ( 1 + int( x / mesh_spacing_um ) ) for x in layer_thicknesses_um ]
 
 layer_background_index = [
-	design_index_background, design_index_background,       # M7
-	design_index_background, design_index_background, design_index_background, # M6
-	design_index_background, design_index_background, design_index_background, # M5
-	design_index_background, design_index_background, design_index_background, # M4
-	design_index_background, design_index_background, design_index_background, # M3
-	design_index_background, design_index_background, design_index_background, # M2
-	design_index_background, design_index_background, design_index_background # part of M1 until the copper reflecting layer on M1
+	0.5 * design_index_background, design_index_background,       # M7
+	design_index_background, 0.5 * design_index_background, design_index_background, # M6
+	design_index_background, 0.5 * design_index_background, design_index_background, # M5
+	design_index_background, 0.5 * design_index_background, design_index_background, # M4
+	design_index_background, 0.5 * design_index_background, design_index_background, # M3
+	design_index_background, 0.5 * design_index_background, design_index_background, # M2
+	design_index_background, 0.5 * design_index_background, design_index_background # part of M1 until the copper reflecting layer on M1
 ]
 
 # is_layer_designable = [
