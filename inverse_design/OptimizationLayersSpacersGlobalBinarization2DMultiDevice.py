@@ -403,7 +403,7 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 		# alpha = np.minimum( max_possible_binarization_change / 3., self.desired_binarize_change )
 
 		# Try this! Not sure how well it will work
-		if initial_binarization < 0.1:
+		if starting_binarization < 0.1:
 			alpha = binarize_amount
 		else:
 			alpha = np.minimum( starting_binarization * max_possible_binarization_change, binarize_amount )
