@@ -143,6 +143,17 @@ binarize_max_movement = 0.005
 binarize_desired_change = 0.005
 binarize_middle_device = 0
 
+def density_layered_binarize_bayer_create( layer_size_voxels, num_internal_layers, bayer_idx ):
+    single_layer = 1
+    return FreeBayerFilter2D.FreeBayerFilter2D(
+        layer_size_voxels, permittivity_bounds, init_permittivity_0_1_scale, single_layer )
+
+layered_creator_fns = [
+    density_layered_binarize_bayer_create
+]
+
+
+
 num_opt_layers = 7
 for opt_layer_idx in range( 0, num_opt_layers ):
     opt_layer_designability = [
