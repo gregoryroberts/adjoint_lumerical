@@ -2051,7 +2051,6 @@ class ColorSplittingOptimization2D():
 		flatten_fom_gradients = np.array( flatten_fom_gradients )
 		extract_binarization_gradient = np.array( extract_binarization_gradient )
 
-
 		beta = binarize_max_movement
 		projected_binarization_increase = 0
 
@@ -2079,7 +2078,8 @@ class ColorSplittingOptimization2D():
 		if initial_binarization < 0.1:
 			alpha = binarize_amount
 		else:
-			alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
+			# alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
+			alpha = np.minimum( max_possible_binarization_change, binarize_amount )
 
 		def ramp( x ):
 			return np.maximum( x, 0 )
