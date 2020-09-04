@@ -439,7 +439,6 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 				x_star[ idx ] = lower_bounds[ idx ]
 
 
-
 		proposed_design_variable = flatten_design_cuts + x_star
 		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
 
@@ -461,7 +460,6 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 
 			get_design_cut = proposed_design_variable[ cur_reshape_idx : ( cur_reshape_idx + gradient_lengths[ bayer_idx ] ) ]
 
-
 			for y_idx in range( 0, get_design_variable.shape[ 1 ] ):
 				new_design_variable[ :, y_idx ] = get_design_cut
 			
@@ -476,7 +474,6 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 		ending_binarization_divisor = 0
 
 		bayer_idx = 0
-		collect_output_permittivity_final = []
 		for layer_idx in range( 0, self.num_total_layers ):
 			layer_bottom_voxel = int( self.layer_start_coordinates_um[ layer_idx ] / self.optimization_mesh_step_um )
 			layer_top_voxel = int( ( self.layer_start_coordinates_um[ layer_idx ] + self.layer_thicknesses_um[ layer_idx ] ) / self.optimization_mesh_step_um )
@@ -498,6 +495,7 @@ class OptimizationLayersSpacersGlobalBinarization2DMultiDevice( OptimizationStat
 		expected_fom_change = np.dot( x_star, -c )
 		print( "Expected delta = " + str( np.dot( x_star, b ) ) )
 		print( "Desired delta = " + str( self.desired_binarize_change ) )
+		print( "Alpha = " + str( alpha ) )
 		print( "Limit on delta = " + str( max_possible_binarization_change ) )
 		print( "Expected scaled FOM change = " + str( expected_fom_change ) )
 		print( "Ending binarization = " + str( ending_binarization ) )
