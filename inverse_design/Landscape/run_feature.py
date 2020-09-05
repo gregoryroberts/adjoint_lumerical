@@ -180,8 +180,10 @@ binarize = True
 # binarize_movement_per_step_nominal = 0.0075
 # binarize_max_movement_per_voxel_nominal = 0.0075
 
-binarize_movement_per_step_nominal = 0.0015
-binarize_max_movement_per_voxel_nominal = 0.0015
+# binarize_movement_per_step_nominal = 0.0015
+# binarize_max_movement_per_voxel_nominal = 0.0015
+binarize_movement_per_step_nominal = 0.0015 * 2.5
+binarize_max_movement_per_voxel_nominal = 0.0015 * 2.5
 
 
 rho_delta_scaling = ( 1.5**2 - np.real( min_relative_permittivity ) ) / np.real( max_relative_permittivity - min_relative_permittivity )
