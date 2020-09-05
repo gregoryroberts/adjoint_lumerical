@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8
-density_coarsen_factor = 4
+density_coarsen_factor = 12#4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -177,8 +177,12 @@ make_optimizer.init_density_with_uniform( mean_density )
 binarize = True
 # binarize_movement_per_step = 0.005
 # binarize_max_movement_per_voxel = 0.005
-binarize_movement_per_step_nominal = 0.0075
-binarize_max_movement_per_voxel_nominal = 0.0075
+# binarize_movement_per_step_nominal = 0.0075
+# binarize_max_movement_per_voxel_nominal = 0.0075
+
+binarize_movement_per_step_nominal = 0.0015
+binarize_max_movement_per_voxel_nominal = 0.0015
+
 
 rho_delta_scaling = ( 1.5**2 - np.real( min_relative_permittivity ) ) / np.real( max_relative_permittivity - min_relative_permittivity )
 binarize_movement_per_step = binarize_movement_per_step_nominal * rho_delta_scaling
@@ -206,7 +210,7 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 
 
 # num_design_steps = design_height
-num_design_steps = 1
+num_design_steps = 6#1
 
 assert ( design_height % num_design_steps ) == 0, "Expected an even number of blocks in design!"
 
