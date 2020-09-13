@@ -130,73 +130,73 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 		# always undoing the same changes
 		#
 
-		for profile_idx in range( 0, len( self.layer_profiles ) ):
-			get_profile = self.level_sets[ profile_idx ].device_density_from_level_set()
-			get_profile = np.squeeze( get_profile[ :, 1 ] )
+		# for profile_idx in range( 0, len( self.layer_profiles ) ):
+		# 	get_profile = self.level_sets[ profile_idx ].device_density_from_level_set()
+		# 	get_profile = np.squeeze( get_profile[ :, 1 ] )
 
-			flip = np.random.random( 1 )[ 0 ] > 0.5
+		# 	flip = np.random.random( 1 )[ 0 ] > 0.5
 
-			if flip:
-				get_profile = np.flip( get_profile )
+		# 	if flip:
+		# 		get_profile = np.flip( get_profile )
 
-			cur_loc = int( np.random.random( 1 )[ 0 ] * self.opt_width_num_voxels )
-			start_value = get_profile[ cur_loc ] > 0.5
+		# 	cur_loc = int( np.random.random( 1 )[ 0 ] * self.opt_width_num_voxels )
+		# 	start_value = get_profile[ cur_loc ] > 0.5
 
-			while ( cur_loc > 0 ):
-				cur_loc -= 1
+		# 	while ( cur_loc > 0 ):
+		# 		cur_loc -= 1
 
-				cur_value = get_profile[ cur_loc ] > 0.5
+		# 		cur_value = get_profile[ cur_loc ] > 0.5
 
-				if cur_value != start_value:
-					cur_loc += 1
-					break
+		# 		if cur_value != start_value:
+		# 			cur_loc += 1
+		# 			break
 
-			num_voxels_scanned = 0
-			while ( num_voxels_scanned < self.opt_width_num_voxels ):
+		# 	num_voxels_scanned = 0
+		# 	while ( num_voxels_scanned < self.opt_width_num_voxels ):
 
-				num_voxels_feature_gap = 0
+		# 		num_voxels_feature_gap = 0
 
-				cur_value = get_profile[ cur_loc ] > 0.5
-				start_loc = cur_loc
-				hit_end = False
+		# 		cur_value = get_profile[ cur_loc ] > 0.5
+		# 		start_loc = cur_loc
+		# 		hit_end = False
 
-				while ( cur_value == start_value ) and ( num_voxels_feature_gap < self.opt_width_num_voxels ):
-					num_voxels_feature_gap += 1
+		# 		while ( cur_value == start_value ) and ( num_voxels_feature_gap < self.opt_width_num_voxels ):
+		# 			num_voxels_feature_gap += 1
 
-					cur_loc += 1
+		# 			cur_loc += 1
 
-					if cur_loc == self.opt_width_num_voxels:
-						hit_end = True
-						cur_loc = 0
-						break
+		# 			if cur_loc == self.opt_width_num_voxels:
+		# 				hit_end = True
+		# 				cur_loc = 0
+		# 				break
 
-					cur_value = get_profile[ cur_loc ] > 0.5
+		# 			cur_value = get_profile[ cur_loc ] > 0.5
 
-					num_voxels_scanned += 1
-
-
-				if ( num_voxels_feature_gap < self.minimum_feature_gap_spacing_voxels[ profile_idx ] ):
-					if ( start_loc > 0 ) and ( not hit_end ):
-						while ( num_voxels_feature_gap < self.minimum_feature_gap_spacing_voxels[ profile_idx ] ) and ( cur_loc < self.opt_width_num_voxels ):
-							get_profile[ cur_loc ] = 1.0 * start_value
-
-							cur_loc += 1
-							num_voxels_feature_gap += 1
-							num_voxels_scanned += 1
-
-				cur_loc = ( cur_loc % self.opt_width_num_voxels )
-				start_value = get_profile[ cur_loc ] > 0.5
-
-			if flip:
-				get_profile = np.flip( get_profile )
+		# 			num_voxels_scanned += 1
 
 
-			new_layer_density = np.zeros( ( self.opt_width_num_voxels, 3 ) )
+		# 		if ( num_voxels_feature_gap < self.minimum_feature_gap_spacing_voxels[ profile_idx ] ):
+		# 			if ( start_loc > 0 ) and ( not hit_end ):
+		# 				while ( num_voxels_feature_gap < self.minimum_feature_gap_spacing_voxels[ profile_idx ] ) and ( cur_loc < self.opt_width_num_voxels ):
+		# 					get_profile[ cur_loc ] = 1.0 * start_value
 
-			for internal_idx in range( 0, 3 ):
-				new_layer_density[ :, internal_idx ] = get_profile
+		# 					cur_loc += 1
+		# 					num_voxels_feature_gap += 1
+		# 					num_voxels_scanned += 1
 
-			self.level_sets[ profile_idx ].init_with_density( new_layer_density )
+		# 		cur_loc = ( cur_loc % self.opt_width_num_voxels )
+		# 		start_value = get_profile[ cur_loc ] > 0.5
+
+		# 	if flip:
+		# 		get_profile = np.flip( get_profile )
+
+
+		# 	new_layer_density = np.zeros( ( self.opt_width_num_voxels, 3 ) )
+
+		# 	for internal_idx in range( 0, 3 ):
+		# 		new_layer_density[ :, internal_idx ] = get_profile
+
+		# 	self.level_sets[ profile_idx ].init_with_density( new_layer_density )
 
 	def save_design( self, filebase, epoch ):
 		return
