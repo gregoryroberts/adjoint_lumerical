@@ -86,7 +86,8 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_continued"
+projects_directory_location_old += "/" + project_name + "_genetic_no_opt"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -418,6 +419,13 @@ for individual_idx in range( 0, num_devices_per_generation ):
 
 individuals_by_generation[ 0 ] = generation_0
 
+should_reload = True
+
+if should_reload:
+	old_devices = np.load( projects_directory_location_old + "/search_devices.npy" )
+	old_devices_shape = old_devices.shape
+
+	individuals_by_generation[ 0 ] = old_devices[ old_devices_shape[ 0 ] - 1 ]
 
 search_fom = []
 search_devices = []
