@@ -419,6 +419,7 @@ for individual_idx in range( 0, num_devices_per_generation ):
 
 individuals_by_generation[ 0 ] = generation_0
 
+# Note that this will assume random parameters for the layer creations when passing onto offspring
 should_reload = True
 
 if should_reload:
