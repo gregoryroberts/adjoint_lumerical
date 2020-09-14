@@ -87,7 +87,7 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 projects_directory_location += "/" + project_name + "_genetic_no_opt_continued"
-projects_directory_location_old += "/" + project_name + "_genetic_no_opt"
+projects_directory_location_old = projects_directory_location + "/" + project_name + "_genetic_no_opt"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -397,6 +397,8 @@ max_feature_density = 0.75
 min_size_variability = 0.01
 max_size_variability = 0.1
 
+should_reload = True
+
 for individual_idx in range( 0, num_devices_per_generation ):
 	my_optimization_state = level_set_cmos.LevelSetCMOS(
 		[ min_real_permittivity, max_real_permittivity ],
@@ -415,18 +417,16 @@ for individual_idx in range( 0, num_devices_per_generation ):
 
 	my_optimization_state.randomize_layer_profiles( int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
 
+	if should_reload:
+		old_devices = np.load( projects_directory_location_old + "/search_devices.npy" )
+		old_devices_shape = old_devices.shape
+
+		individuals_by_generation[ 0 ] = old_devices[ old_devices_shape[ 0 ] - 1 ]
+		my_optimization_state.init_profiles_with_density( old_devices[ old_devices_shape[ 0 ] - 1, individual_idx ] )
+
 	generation_0.append( my_optimization_state )
 
 individuals_by_generation[ 0 ] = generation_0
-
-# Note that this will assume random parameters for the layer creations when passing onto offspring
-should_reload = True
-
-if should_reload:
-	old_devices = np.load( projects_directory_location_old + "/search_devices.npy" )
-	old_devices_shape = old_devices.shape
-
-	individuals_by_generation[ 0 ] = old_devices[ old_devices_shape[ 0 ] - 1 ]
 
 search_fom = []
 search_devices = []

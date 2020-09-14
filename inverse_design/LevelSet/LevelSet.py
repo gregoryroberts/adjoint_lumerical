@@ -223,6 +223,8 @@ class LevelSet():
 
 							border_points_x.append( x_idx + b_hat_x - 1 )
 							border_points_y.append( y_idx + b_hat_y - 1 )
+							# border_points_x.append( x_idx )
+							# border_points_y.append( y_idx )
 
 		return border_points_x, border_points_y
 
