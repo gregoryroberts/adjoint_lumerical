@@ -84,7 +84,10 @@ designable_device_vertical_minimum_um = 0
 # Spectral
 #
 num_bands = 3
-num_points_per_band = 10#15
+num_points_per_band = 5#10#15
+
+band_weights = [ 1, 1, 1 ]#1, 1 ]
+pol_weights = [ 1, 1 ]
 
 lambda_min_um = 0.45
 lambda_max_um = 0.65
@@ -159,6 +162,6 @@ adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_latera
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 10#80
+num_iterations_per_epoch = 4#80
 init_optimization_epoch = 0
 

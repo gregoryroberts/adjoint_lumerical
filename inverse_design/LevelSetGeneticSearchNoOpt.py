@@ -86,8 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_continued"
-projects_directory_location_old = projects_directory_location + "/" + project_name + "_genetic_no_opt"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -314,7 +313,11 @@ for wl_idx in range( 0, num_points_per_band ):
 	gaussian_normalization[ wl_idx ] =  ( 1. / half_bandwidth ) * np.sqrt( 1 / ( 2 * np.pi ) ) * np.exp( -0.5 * ( wl_idx - middle_point )**2 / ( half_bandwidth**2 ) )
 	
 gaussian_normalization /= np.sum( gaussian_normalization )
-gaussian_normalization_all = np.array( [ gaussian_normalization for i in range( 0, num_bands ) ] ).flatten()
+
+
+flat_normalization = np.ones( gaussian_normalization.shape )
+
+normalization_all = np.array( [ flat_normalization for i in range( 0, num_bands ) ] ).flatten()
 
 
 reversed_field_shape = [1, designable_device_voxels_vertical, device_voxels_lateral]
@@ -328,9 +331,9 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # put under one umbrella.  Because there are so many versions where this needs to be changed, but there is so much code re-use not getting used.
 #
 
-num_generations = 10
-num_devices_per_generation = 100
-num_parents_new_generation = 25
+num_generations = 20#10
+num_devices_per_generation = 160#100
+num_parents_new_generation = 40#25
 
 # Probability that on each layer you will just create a random new layer somewhere in a child
 mutation_probability_start = 0.25
@@ -391,13 +394,11 @@ individuals_by_generation = [ None for idx in range( 0, num_generations ) ]
 
 generation_0 = []
 
-min_feature_density = 0.25
-max_feature_density = 0.75
+min_feature_density = 0.15#0.25
+max_feature_density = 0.85#0.75
 
-min_size_variability = 0.01
-max_size_variability = 0.1
-
-should_reload = True
+min_size_variability = 0.01#0.01
+max_size_variability = 0.25#0.1
 
 for individual_idx in range( 0, num_devices_per_generation ):
 	my_optimization_state = level_set_cmos.LevelSetCMOS(
@@ -417,20 +418,12 @@ for individual_idx in range( 0, num_devices_per_generation ):
 
 	my_optimization_state.randomize_layer_profiles( int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
 
-	if should_reload:
-		old_devices = np.load( projects_directory_location_old + "/search_devices.npy" )
-		old_devices_shape = old_devices.shape
-
-		individuals_by_generation[ 0 ] = old_devices[ old_devices_shape[ 0 ] - 1 ]
-		my_optimization_state.init_profiles_with_density( old_devices[ old_devices_shape[ 0 ] - 1, individual_idx ] )
-
 	generation_0.append( my_optimization_state )
 
 individuals_by_generation[ 0 ] = generation_0
 
 search_fom = []
 search_devices = []
-
 
 for generation_idx in range( 0, num_generations ):
 
@@ -535,7 +528,7 @@ for generation_idx in range( 0, num_generations ):
 				fom_weighting = np.maximum( fom_weighting, 0 )
 				fom_weighting /= np.sum( fom_weighting )
 
-				figure_of_merit_by_pol[ pol_idx ] = np.sum( gaussian_normalization_all * figure_of_merit_total )
+				figure_of_merit_by_pol[ pol_idx ] = np.sum( normalization_all * figure_of_merit_total )
 				figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
 				figure_of_merit_by_device[ device ] = figure_of_merit
 
