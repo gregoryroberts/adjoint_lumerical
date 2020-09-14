@@ -561,6 +561,9 @@ for generation_idx in range( 0, num_generations ):
 
 		individuals_by_generation[ generation_idx + 1 ] = new_generation
 
+	np.save( projects_directory_location + "/search_fom.npy", search_fom )
+	np.save( projects_directory_location + "/search_devices.npy", search_devices )
+
 
 np.save( projects_directory_location + "/search_fom.npy", search_fom )
 np.save( projects_directory_location + "/search_devices.npy", search_devices )
