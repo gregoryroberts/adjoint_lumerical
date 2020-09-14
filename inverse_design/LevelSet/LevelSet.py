@@ -28,7 +28,7 @@ class LevelSet():
 	# The boundary_smoothing_width controls the blurring over the boundary to use when computing a density from
 	# the level set function.  It controls the width of the approximate Heaviside function used across boundaries.
 	#
-	def __init__( self, dimension, boundary_smoothing_width ):
+	def __init__( self, dimension, boundary_smoothing_width, connected=8 ):
 		self.dimension = dimension
 		self.padded_dimension = [ ( d + 4 ) for d in dimension ]
 		self.search_bounds = [ [ 2, 2 + dim ] for dim in dimension ]
@@ -36,6 +36,8 @@ class LevelSet():
 		self.level_set_function = np.zeros( self.padded_dimension )
 
 		self.boundary_smoothing_width = boundary_smoothing_width
+
+		self.connected = connected
 
 		self.padded_meshgrid_x = np.zeros( ( self.padded_dimension[ 0 ], self.padded_dimension[ 1 ] ) )
 		self.padded_meshgrid_y = np.zeros( ( self.padded_dimension[ 0 ], self.padded_dimension[ 1 ] ) )
@@ -132,7 +134,6 @@ class LevelSet():
 	#
 	def binarize( self ):
 		padded_lsf = 1.0 * np.greater( self.level_set_function, 0.0 )
-		print( padded_lsf[ self.search_bounds[ 0 ][ 0 ] : self.search_bounds[ 0 ][ 1 ], self.search_bounds[ 1 ][ 0 ] : self.search_bounds[ 1 ][ 1 ] ].shape )
 		return padded_lsf[ self.search_bounds[ 0 ][ 0 ] : self.search_bounds[ 0 ][ 1 ], self.search_bounds[ 1 ][ 0 ] : self.search_bounds[ 1 ][ 1 ] ]
 
 	#
@@ -143,6 +144,42 @@ class LevelSet():
 		binary_representation = 1.0 * np.greater( self.level_set_function, 0.0 )
 
 		border_representation = np.zeros( binary_representation.shape )
+
+		# border_points_x, border_points_y = self.find_border_points()
+
+		# for point_idx in range( 0, len( border_points_x ) ):
+		# 	x_coord = border_points_x[ point_idx ]
+		# 	y_coord = border_points_y[ point_idx ]
+
+		# 	lower_x = int( x_coord )
+		# 	lower_y = int( y_coord )
+		# 	upper_x = int( x_coord + 1 )
+		# 	upper_y = int( y_coord + 1 )
+
+		# 	diff_lower_x = x_coord - lower_x
+		# 	diff_lower_y = y_coord - lower_y
+		# 	diff_upper_x = upper_x - x_coord
+		# 	diff_upper_y = upper_y - y_coord
+
+		# 	choose_x = upper_x
+		# 	choose_y = upper_y
+		# 	if diff_lower_x < diff_upper_x:
+		# 		choose_x = lower_x
+		# 	if diff_lower_y < diff_upper_y:
+		# 		choose_y = lower_y
+
+		# 	border_representation[ choose_x, choose_y ] = 1
+
+			# border_representation[ lower_x, lower_y ] = np.sqrt( ( 1 - diff_lower_x )**2 + ( 1 - diff_lower_y )**2 )
+			# border_representation[ upper_x, lower_y ] = np.sqrt( ( 1 - diff_upper_x )**2 + ( 1 - diff_lower_y )**2 )
+			# border_representation[ lower_x, upper_y ] = np.sqrt( ( 1 - diff_lower_x )**2 + ( 1 - diff_upper_y )**2 )
+
+			# if self.connected == 8:
+			# 	border_representation[ upper_x, upper_y ] = np.sqrt( ( 1 - diff_upper_x )**2 + ( 1 - diff_upper_y )**2 )
+
+		# import matplotlib.pyplot as plt
+		# plt.plot( border_representation[ :, 3 ] )
+		# plt.show()
 
 		for x_idx in range( self.search_bounds[ 0 ][ 0 ], self.search_bounds[ 0 ][ 1 ] ):
 			for y_idx in range( self.search_bounds[ 1 ][ 0 ], self.search_bounds[ 1 ][ 1 ] ):
@@ -173,6 +210,9 @@ class LevelSet():
 						for shift_y in range( 0, 3 ):
 							lsf_shift = surroundings[ shift_x, shift_y ]
 							if ( ( shift_x == 1 ) and ( shift_y == 1 ) ) or ( lsf_shift > 0 ):
+								continue
+
+							if ( self.connected == 4 ) and ( ( np.abs( shift_y - 1 ) + np.abs( shift_x - 1 ) ) >= 2 ):
 								continue
 
 							m_hat_x = ( shift_x - 1 ) / ( lsf_shift - lsf_center )
@@ -266,8 +306,14 @@ class LevelSet():
 	def update( self, velocity_field, delta_t, num_steps=1 ):
 
 		padded_velocity_field = np.pad( velocity_field, ( ( 2, 2 ), ( 2, 2 ) ), mode='constant' )
+		# padded_velocity_field = np.pad( velocity_field, ( ( 2, 2 ), ( 2, 2 ) ), mode='edge' )
 
 		extended_velocity = self.extend_velocity_hilbertian( padded_velocity_field )
+
+		# import matplotlib.pyplot as plt
+		# plt.plot( extended_velocity[ :, 3 ] )
+		# plt.plot( padded_velocity_field[ :, 3 ], linestyle='--' )
+		# plt.show()
 
 		delta_ij_plus = np.zeros( self.level_set_function.shape )
 		delta_ij_minus = np.zeros( self.level_set_function.shape )
@@ -300,3 +346,10 @@ class LevelSet():
 			self.level_set_function -= delta_t * (
 				np.maximum( -extended_velocity, 0 ) * delta_ij_plus + np.minimum( -extended_velocity, 0 ) * delta_ij_minus
 			)
+
+		core_lsf = self.level_set_function[
+			self.search_bounds[ 0 ][ 0 ] : self.search_bounds[ 0 ][ 1 ], 
+			self.search_bounds[ 1 ][ 0 ] : self.search_bounds[ 1 ][ 1 ] ]
+
+		self.level_set_function = np.pad( core_lsf, ( ( 2, 2 ), ( 2, 2 ) ), mode='edge' )
+

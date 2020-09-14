@@ -86,7 +86,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name
+projects_directory_location += "/" + project_name + "_genetic_no_opt"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -327,215 +327,240 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # put under one umbrella.  Because there are so many versions where this needs to be changed, but there is so much code re-use not getting used.
 #
 
-my_optimization_state = level_set_cmos.LevelSetCMOS(
-	[ min_real_permittivity, max_real_permittivity ],
-	lsf_mesh_spacing_um,
-	designable_device_vertical_minimum_um,
-	device_size_lateral_um,
-	feature_size_voxels_by_profiles,
-	device_layer_thicknesses_um,
-	device_spacer_thicknesses_um,
-	num_iterations_per_epoch,
-	1,
-	"level_set_optimize" )
-my_optimization_state.randomize_layer_profiles( int( 0.05 / lsf_mesh_spacing_um ), 0.5 )
-my_optimization_state.assemble_level_sets()
+num_generations = 10
+num_devices_per_generation = 100
+num_parents_new_generation = 25
 
-start_epoch = init_optimization_epoch
-epoch = start_epoch
+# Probability that on each layer you will just create a random new layer somewhere in a child
+mutation_probability_start = 0.25
+mutation_probability_end = 0.05
+mutation_probability = np.linspace( mutation_probability_start, mutation_probability_end, num_generations - 1 )
 
-num_epochs = my_optimization_state.num_epochs
-num_iterations_per_epoch = my_optimization_state.num_iterations
 
-get_index = my_optimization_state.assemble_index( 0 )
-device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
-device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
-device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
+def offspring( parent_1, parent_2, mutate_layer_probability ):
+	profiles_1 = parent_1.get_layer_profiles()
+	profiles_2 = parent_2.get_layer_profiles()
 
-for iteration in range( 0, num_iterations_per_epoch ):
+	num_profiles = len( profiles_1 )
 
-	figure_of_merit_by_device = np.zeros( my_optimization_state.num_devices )
+	child_profiles = [ None for idx in range( 0, num_profiles ) ]
 
-	field_shape_with_devices = [ my_optimization_state.num_devices ]
-	field_shape_with_devices.extend( np.flip( reversed_field_shape ) )
-	gradients_real = np.zeros( field_shape_with_devices )
-	gradients_imag = np.zeros( field_shape_with_devices )
+	crossover_point = np.maximum( int( np.random.uniform( 0, 1 ) * num_profiles ), num_profiles - 1 )
 
-	gradients_real_lsf = np.zeros( field_shape_with_devices )
-	gradients_imag_lsf = np.zeros( field_shape_with_devices )
+	for fill_idx in range( 0, crossover_point ):
+		child_profiles[ fill_idx ] = profiles_1[ fill_idx ].copy()
 
-	for device in range( 0, my_optimization_state.num_devices ):
-		#
-		# Start here tomorrow!  Need to do this operation for every device.  Really, the single device operation should
-		# be able to fold into here!  You need to get all these code changes under one umbrella.  Including the binarization
-		# in the 3D code should be part of a single library.  And add all the postprocessing and evaluation code under
-		# the same python library.  Can do things like angled evaluations, ...
-		#
+	for fill_idx in range( crossover_point, num_profiles ):
+		child_profiles[ fill_idx ] = profiles_2[ fill_idx ].copy()
 
-		print( "Working on iteration " + str( iteration ) + " and device " + str( device ) )
+	for mutate_idx in range( 0, num_profiles ):
+		if np.random.uniform( 0, 1 ) < mutate_layer_probability:
+			random_layer = None
+			if mutate_idx < crossover_point:
+				random_layer = parent_1.single_random_layer_profile( mutate_idx )
+			else:
+				random_layer = parent_2.single_random_layer_profile( mutate_idx )
+			
+			child_profiles[ mutate_idx ] = random_layer.copy()
 
-		fdtd_hook.switchtolayout()
-		get_index = my_optimization_state.assemble_index( device )
-		inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
-		inflate_index[ :, :, 0 ] = get_index
-		inflate_index[ :, :, 1 ] = get_index
+	child = level_set_cmos.LevelSetCMOS(
+		[ min_real_permittivity, max_real_permittivity ],
+		lsf_mesh_spacing_um,
+		designable_device_vertical_minimum_um,
+		device_size_lateral_um,
+		feature_size_voxels_by_profiles,
+		device_layer_thicknesses_um,
+		device_spacer_thicknesses_um,
+		num_iterations_per_epoch,
+		1,
+		"level_set_optimize" )
 
-		fdtd_hook.select( device_import[ 'name' ] )
-		fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
+	if np.random.uniform( 0, 1 ) < 0.5:
+		child.randomize_layer_profiles( parent_1.feature_gap_width_sigma_voxels, parent_1.feature_probability )
+	else:
+		child.randomize_layer_profiles( parent_2.feature_gap_width_sigma_voxels, parent_2.feature_probability )
 
-		xy_polarized_gradients_by_pol = np.zeros(reversed_field_shape_with_pol, dtype=np.complex)
-		xy_polarized_gradients = np.zeros(reversed_field_shape, dtype=np.complex)
-		xy_polarized_gradients_by_pol_lsf = np.zeros(reversed_field_shape_with_pol, dtype=np.complex)
-		xy_polarized_gradients_lsf = np.zeros(reversed_field_shape, dtype=np.complex)
-		figure_of_merit_by_pol = np.zeros( num_polarizations )
+	child.set_layer_profiles( child_profiles )
 
-		figure_of_merit = 0
-		for pol_idx in range( 0, num_polarizations ):
+	return child
 
-			affected_coords = affected_coords_by_polarization[ pol_idx ]
+# Feels crazy, but you should verify the gradient for when you do level set optimized devices!
 
+individuals_by_generation = [ None for idx in range( 0, num_generations ) ]
+
+generation_0 = []
+
+min_feature_density = 0.25
+max_feature_density = 0.75
+
+min_size_variability = 0.01
+max_size_variability = 0.1
+
+for individual_idx in range( 0, num_devices_per_generation ):
+	my_optimization_state = level_set_cmos.LevelSetCMOS(
+		[ min_real_permittivity, max_real_permittivity ],
+		lsf_mesh_spacing_um,
+		designable_device_vertical_minimum_um,
+		device_size_lateral_um,
+		feature_size_voxels_by_profiles,
+		device_layer_thicknesses_um,
+		device_spacer_thicknesses_um,
+		num_iterations_per_epoch,
+		1,
+		"level_set_optimize" )
+
+	random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
+	random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+
+	my_optimization_state.randomize_layer_profiles( int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
+
+	generation_0.append( my_optimization_state )
+
+individuals_by_generation[ 0 ] = generation_0
+
+
+search_fom = []
+search_devices = []
+
+
+for generation_idx in range( 0, num_generations ):
+
+	generation_fom = [ 0 for idx in range( 0, num_devices_per_generation ) ]
+	generation_devices = [ None for idx in range( 0, num_devices_per_generation ) ]
+
+	for individual_idx in range( 0, num_devices_per_generation ):
+
+		my_optimization_state = individuals_by_generation[ generation_idx ][ individual_idx ]
+
+		get_index = my_optimization_state.assemble_index( 0 )
+		device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
+		device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
+		device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
+
+		figure_of_merit_by_device = np.zeros( my_optimization_state.num_devices )
+
+		field_shape_with_devices = [ my_optimization_state.num_devices ]
+		field_shape_with_devices.extend( np.flip( reversed_field_shape ) )
+		gradients_real = np.zeros( field_shape_with_devices )
+		gradients_imag = np.zeros( field_shape_with_devices )
+
+		gradients_real_lsf = np.zeros( field_shape_with_devices )
+		gradients_imag_lsf = np.zeros( field_shape_with_devices )
+
+		for device in range( 0, my_optimization_state.num_devices ):
 			#
-			# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
+			# Start here tomorrow!  Need to do this operation for every device.  Really, the single device operation should
+			# be able to fold into here!  You need to get all these code changes under one umbrella.  Including the binarization
+			# in the 3D code should be part of a single library.  And add all the postprocessing and evaluation code under
+			# the same python library.  Can do things like angled evaluations, ...
 			#
-			disable_all_sources()
-			forward_sources[ pol_idx ].enabled = 1
-			fdtd_hook.run()
 
-			shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_" + str( epoch ) + ".fsp" )
+			fdtd_hook.switchtolayout()
+			get_index = my_optimization_state.assemble_index( device )
+			inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
+			inflate_index[ :, :, 0 ] = get_index
+			inflate_index[ :, :, 1 ] = get_index
 
-			forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+			generation_devices[ individual_idx ] = get_index
 
-			focal_data = []
-			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data.append(
-					get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E') )
+			fdtd_hook.select( device_import[ 'name' ] )
+			fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
 
-			#
-			# Step 2: Compute the figure of merit
-			#
-			normalized_intensity_focal_point_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
-			conjugate_weighting_focal_point_wavelength = np.zeros( ( 3, num_focal_spots, num_design_frequency_points ), dtype=np.complex )
+			xy_polarized_gradients_by_pol = np.zeros(reversed_field_shape_with_pol, dtype=np.complex)
+			xy_polarized_gradients = np.zeros(reversed_field_shape, dtype=np.complex)
+			xy_polarized_gradients_by_pol_lsf = np.zeros(reversed_field_shape_with_pol, dtype=np.complex)
+			xy_polarized_gradients_lsf = np.zeros(reversed_field_shape, dtype=np.complex)
+			figure_of_merit_by_pol = np.zeros( num_polarizations )
 
-			figure_of_merit_total = np.zeros( num_design_frequency_points )
-			conjugate_weighting_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ), dtype=np.complex )
+			figure_of_merit = 0
+			for pol_idx in range( 0, num_polarizations ):
 
-			for focal_idx in range(0, num_focal_spots):
-				spectral_indices = spectral_focal_plane_map[ focal_idx ]
-				num_points = spectral_indices[ 1 ] - spectral_indices[ 0 ]
-				# normalize = 1. / num_design_frequency_points                    
+				affected_coords = affected_coords_by_polarization[ pol_idx ]
 
-				for wl_idx in range( 0, num_design_frequency_points ):
-					weighting = 0
-					if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
-						weighting = 1.0
+				#
+				# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
+				#
+				disable_all_sources()
+				forward_sources[ pol_idx ].enabled = 1
+				fdtd_hook.run()
 
-					for coord_idx in range( 0, len( affected_coords ) ):
-						current_coord = affected_coords[ coord_idx ]
+				forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-						figure_of_merit_total[ wl_idx ] +=  weighting * (
-							np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
-						) / max_intensity_by_wavelength[ wl_idx ]
+				focal_data = []
+				for adj_src_idx in range(0, num_adjoint_sources):
+					focal_data.append(
+						get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E') )
 
-						conjugate_weighting_wavelength[ focal_idx, current_coord, wl_idx ] = weighting * np.conj(
-							focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx ] )
+				#
+				# Step 2: Compute the figure of merit
+				#
+				normalized_intensity_focal_point_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
+				conjugate_weighting_focal_point_wavelength = np.zeros( ( 3, num_focal_spots, num_design_frequency_points ), dtype=np.complex )
 
-			# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
-			figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )#np.min( figure_of_merit_total )
-			fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
-			fom_weighting = np.maximum( fom_weighting, 0 )
-			fom_weighting /= np.sum( fom_weighting )
+				figure_of_merit_total = np.zeros( num_design_frequency_points )
+				conjugate_weighting_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ), dtype=np.complex )
 
-			figure_of_merit_by_pol[ pol_idx ] = np.sum( gaussian_normalization_all * figure_of_merit_total )
-			figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
-			figure_of_merit_by_device[ device ] = figure_of_merit
-
-			#
-			# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
-			# gradients for x- and y-polarized forward sources.
-			#
-			polarized_gradient = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
-			polarized_gradient_lsf = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
-
-			current_index = np.real( get_non_struct_data( design_index_monitor[ 'name' ], 'index_x' ) )
-			current_permittivity = np.sqrt( np.squeeze( current_index ) )
-
-			for coord_idx in range( 0, len( affected_coords ) ):
-				current_coord = affected_coords[ coord_idx ]
-				for adj_src_idx in range( 0, num_adjoint_sources ):
-					disable_all_sources()
-					(adjoint_sources[current_coord][adj_src_idx]).enabled = 1
-					fdtd_hook.run()
-
-					adjoint_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-
-					spectral_indices = spectral_focal_plane_map[ adj_src_idx ]
+				for focal_idx in range(0, num_focal_spots):
+					spectral_indices = spectral_focal_plane_map[ focal_idx ]
 					num_points = spectral_indices[ 1 ] - spectral_indices[ 0 ]
+					# normalize = 1. / num_design_frequency_points                    
 
-					# for spectral_idx in range(0, num_points ):
-					for spectral_idx in range(0, num_design_frequency_points ):
-						for polarization_idx in range( 0, 3 ):
-							# x-coordinate is the perpendicular coorinate to the level set boundary that can be actually changed
-							if polarization_idx == 0:
-								# todo: the gaussian norm is weird here, the normalization all alredy stacks up all the bands and the spectral indices are counting from 0 to something
-								# feels like you want to access at spectral_indices[0] + spectral_idx - effectively I think this is just what is happening
-								polarized_gradient_lsf += ( ( ( 1. / min_real_permittivity ) - ( 1. / max_real_permittivity ) ) *
-									gaussian_normalization_all[ spectral_idx ] * ( conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx] ) *
-									current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
-									current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
-								)
-							else:
-								polarized_gradient_lsf += ( ( max_real_permittivity - min_real_permittivity ) *
-									gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
-									current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
-									current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
-								)
+					for wl_idx in range( 0, num_design_frequency_points ):
+						weighting = 0
+						if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
+							weighting = 1.0
 
-					for spectral_idx in range(0, num_design_frequency_points):
-						polarized_gradient += np.sum(
-							gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
-							adjoint_e_fields[:, spectral_idx, :, :, :] *
-							forward_e_fields[:, spectral_idx, :, :, :],
-							axis=0)
+						for coord_idx in range( 0, len( affected_coords ) ):
+							current_coord = affected_coords[ coord_idx ]
+
+							figure_of_merit_total[ wl_idx ] +=  weighting * (
+								np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
+							) / max_intensity_by_wavelength[ wl_idx ]
+
+							conjugate_weighting_wavelength[ focal_idx, current_coord, wl_idx ] = weighting * np.conj(
+								focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx ] )
+
+				# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
+				figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )#np.min( figure_of_merit_total )
+				fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
+				fom_weighting = np.maximum( fom_weighting, 0 )
+				fom_weighting /= np.sum( fom_weighting )
+
+				figure_of_merit_by_pol[ pol_idx ] = np.sum( gaussian_normalization_all * figure_of_merit_total )
+				figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
+				figure_of_merit_by_device[ device ] = figure_of_merit
+
+		generation_fom[ individual_idx ] = figure_of_merit_by_device[ 0 ]
+
+	search_fom.append( generation_fom )
+	search_devices.append( generation_devices )
+
+	sorted_generation_fom = sorted( generation_fom, reverse=True )
+	cutoff_fom = sorted_generation_fom[ num_parents_new_generation ]
+
+	new_parents = []
+
+	for parent_idx in range( 0, len( generation_fom ) ):
+		if generation_fom[ parent_idx ] > cutoff_fom:
+			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+
+	new_children = []
+
+	if generation_idx < ( num_generations - 1 ):
+		new_generation = []
+
+		for child_idx in range( 0, num_devices_per_generation ):
+			parent_1_idx = int( np.random.uniform( 0, 1 ) * len( new_parents ) )
+			parent_2_idx = int( np.random.uniform( 0, 1 ) * len( new_parents ) )
+
+			new_generation.append( offspring(
+				new_parents[ parent_1_idx ],
+				new_parents[ parent_2_idx ],
+				mutation_probability[ generation_idx ]
+			) )
+
+		individuals_by_generation[ generation_idx + 1 ] = new_generation
 
 
-			xy_polarized_gradients_by_pol[ pol_idx ] = polarized_gradient
-			xy_polarized_gradients_by_pol_lsf[ pol_idx ] = polarized_gradient
-
-		weight_grad_by_pol = ( 2. / num_polarizations ) - figure_of_merit_by_pol**2 / np.sum( figure_of_merit_by_pol**2 )
-		weight_grad_by_pol = np.maximum( weight_grad_by_pol, 0 )
-		weight_grad_by_pol /= np.sum( weight_grad_by_pol )
-
-		for pol_idx in range( 0, num_polarizations ):
-			xy_polarized_gradients += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol[ pol_idx ]
-			xy_polarized_gradients_lsf += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol_lsf[ pol_idx ]
-
-		#
-		# Step 4: Step the design variable.
-		#
-		device_gradient_real = 2 * np.real( xy_polarized_gradients )
-		device_gradient_imag = 2 * np.imag( xy_polarized_gradients )
-		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
-		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
-		device_gradient_real = np.swapaxes(device_gradient_real, 0, 2)
-		device_gradient_imag = np.swapaxes(device_gradient_imag, 0, 2)
-
-		device_gradient_real_lsf = 2 * np.real( xy_polarized_gradients_lsf )
-		device_gradient_imag_lsf = 2 * np.imag( xy_polarized_gradients_lsf )
-		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
-		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
-		device_gradient_real_lsf = np.swapaxes(device_gradient_real_lsf, 0, 2)
-		device_gradient_imag_lsf = np.swapaxes(device_gradient_imag_lsf, 0, 2)
-
-		gradients_real[ device, : ] = device_gradient_real
-		gradients_imag[ device, : ] = device_gradient_imag
-		gradients_real_lsf[ device, : ] = device_gradient_real_lsf
-		gradients_imag_lsf[ device, : ] = device_gradient_imag_lsf
-
-	print( 'Figure of merit by device = ' + str( figure_of_merit_by_device ) )
-	my_optimization_state.submit_figure_of_merit( figure_of_merit_by_device, iteration, epoch )
-	my_optimization_state.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, epoch, iteration )
-	#
-	# Save out the devices and the current Lumerical project file
-	#
-	my_optimization_state.save( projects_directory_location, epoch )
-	shutil.copy( projects_directory_location + "/optimization.fsp", projects_directory_location + "/" + my_optimization_state.filename_prefix + "optimization_" + str( epoch ) + ".fsp" )
+np.save( projects_directory_location + "/search_fom.npy", search_fom )
+np.save( projects_directory_location + "/search_devices.npy", search_devices )
