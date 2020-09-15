@@ -86,7 +86,9 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 fdtd_hook = lumapi.FDTD()
 
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
