@@ -6,11 +6,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from LevelSetGlobalOptimize2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = False
 
 if run_on_cluster:
 	import imp
 	imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+# else:
+# 	import imp
+# 	imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
 
 import lumapi
 
@@ -94,7 +97,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_Hz_v3"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -373,7 +376,6 @@ def offspring( parent_1, parent_2, mutate_layer_probability ):
 
 	for mutate_idx in range( 0, num_profiles ):
 		if np.random.uniform( 0, 1 ) < mutate_layer_probability:
-			random_layer = None
 			if mutate_idx < crossover_point:
 				random_layer = parent_1.single_random_layer_profile( mutate_idx )
 			else:
@@ -408,11 +410,13 @@ individuals_by_generation = [ None for idx in range( 0, num_generations ) ]
 
 generation_0 = []
 
-min_feature_density = 0.15#0.25
-max_feature_density = 0.85#0.75
+min_feature_density = 0.2#0.25
+max_feature_density = 0.75#0.75
 
 min_size_variability = 0.01#0.01
-max_size_variability = 0.25#0.1
+max_size_variability = 0.15#0.1
+
+np.random.seed( 123123 )
 
 for individual_idx in range( 0, num_devices_per_generation ):
 	my_optimization_state = level_set_cmos.LevelSetCMOS(
