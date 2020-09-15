@@ -8,7 +8,12 @@ from LevelSetGlobalOptimize2DParameters import *
 
 # import imp
 # imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+# import lumapi
+
+import imp
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
 import lumapi
+
 
 import functools
 import h5py
@@ -86,7 +91,7 @@ projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__fil
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_v2"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_Hz_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -331,6 +336,9 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # put under one umbrella.  Because there are so many versions where this needs to be changed, but there is so much code re-use not getting used.
 #
 
+# Propagate forward good parents
+# Level set optimize best parents? Or level set optimize everything?
+
 num_generations = 20#10
 num_devices_per_generation = 160#100
 num_parents_new_generation = 40#25
@@ -528,8 +536,8 @@ for generation_idx in range( 0, num_generations ):
 				fom_weighting = np.maximum( fom_weighting, 0 )
 				fom_weighting /= np.sum( fom_weighting )
 
-				figure_of_merit_by_pol[ pol_idx ] = np.sum( normalization_all * figure_of_merit_total )
-				figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
+				figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.sum( normalization_all * figure_of_merit_total )
+				figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
 				figure_of_merit_by_device[ device ] = figure_of_merit
 
 		generation_fom[ individual_idx ] = figure_of_merit_by_device[ 0 ]
