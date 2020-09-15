@@ -90,8 +90,8 @@ band_weights = [ 1, 1, 1 ]#1, 1 ]
 pol_weights = [ 1, 1 ]
 # pol_weights = [ 1, 0 ]
 
-lambda_min_um = 0.45
-lambda_max_um = 0.65
+lambda_min_um = 0.4
+lambda_max_um = 0.7
 
 num_design_frequency_points = num_bands * num_points_per_band
 num_wavelengths = num_design_frequency_points
