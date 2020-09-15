@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from LevelSetGlobalOptimize2DParameters import *
 
-run_on_cluster = False
+run_on_cluster = True
 
 if run_on_cluster:
 	import imp
@@ -97,7 +97,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_v2"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_Hz_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
