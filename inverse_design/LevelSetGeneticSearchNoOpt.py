@@ -6,14 +6,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from LevelSetGlobalOptimize2DParameters import *
 
-# import imp
-# imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
-# import lumapi
+run_on_cluster = False
 
-import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+if run_on_cluster:
+	import imp
+	imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+
 import lumapi
-
 
 import functools
 import h5py
@@ -86,14 +85,16 @@ def get_complex_monitor_data(monitor_name, monitor_field):
 fdtd_hook = lumapi.FDTD()
 
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+
+if run_on_cluster:
+	projects_directory_location = "/central/groups/Faraon_Computing/projects" 
 
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_Hz_v2"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -105,7 +106,8 @@ log_file.close()
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/MultiStageForceBinarization2DMultiDeviceParameters.py", projects_directory_location + "/MultiStageForceBinarization2DMultiDeviceParameters.py")
+shutil.copy2(python_src_directory + "/LevelSetGlobalOptimize2DParameters.py", projects_directory_location + "/LevelSetGlobalOptimize2DParameters.py")
+shutil.copy2(python_src_directory + "/LevelSetGeneticSearchNoOpt.py", projects_directory_location + "/LevelSetGeneticSearchNoOpt.py")
 
 
 
@@ -338,12 +340,14 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # put under one umbrella.  Because there are so many versions where this needs to be changed, but there is so much code re-use not getting used.
 #
 
-# Propagate forward good parents
+# Propagate forward good parents? - added
 # Level set optimize best parents? Or level set optimize everything?
 
 num_generations = 20#10
-num_devices_per_generation = 160#100
-num_parents_new_generation = 40#25
+num_devices_per_generation = 150#100
+num_parents_new_generation = 30#25
+
+num_parents_propagated = 5
 
 # Probability that on each layer you will just create a random new layer somewhere in a child
 mutation_probability_start = 0.25
@@ -359,7 +363,7 @@ def offspring( parent_1, parent_2, mutate_layer_probability ):
 
 	child_profiles = [ None for idx in range( 0, num_profiles ) ]
 
-	crossover_point = np.maximum( int( np.random.uniform( 0, 1 ) * num_profiles ), num_profiles - 1 )
+	crossover_point = np.minimum( int( np.random.uniform( 0, 1 ) * num_profiles ), num_profiles - 1 )
 
 	for fill_idx in range( 0, crossover_point ):
 		child_profiles[ fill_idx ] = profiles_1[ fill_idx ].copy()
@@ -549,27 +553,33 @@ for generation_idx in range( 0, num_generations ):
 
 	sorted_generation_fom = sorted( generation_fom, reverse=True )
 	cutoff_fom = sorted_generation_fom[ num_parents_new_generation ]
+	cutoff_fom_propagation = sorted_generation_fom[ num_parents_propagated ]
 
 	new_parents = []
+	new_parents_propagated = []
 
 	for parent_idx in range( 0, len( generation_fom ) ):
 		if generation_fom[ parent_idx ] > cutoff_fom:
 			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
-
-	new_children = []
+		if generation_fom[ parent_idx ] > cutoff_fom_propagation:
+			new_parents_propagated.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
 
 	if generation_idx < ( num_generations - 1 ):
 		new_generation = []
 
 		for child_idx in range( 0, num_devices_per_generation ):
-			parent_1_idx = int( np.random.uniform( 0, 1 ) * len( new_parents ) )
-			parent_2_idx = int( np.random.uniform( 0, 1 ) * len( new_parents ) )
 
-			new_generation.append( offspring(
-				new_parents[ parent_1_idx ],
-				new_parents[ parent_2_idx ],
-				mutation_probability[ generation_idx ]
-			) )
+			if ( child_idx < num_parents_propagated ) and ( child_idx < len( new_parents_propagated ) ):
+				new_generation.append( individuals_by_generation[ generation_idx ][ child_idx ] )
+			else:
+				parent_1_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+				parent_2_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+
+				new_generation.append( offspring(
+					new_parents[ parent_1_idx ],
+					new_parents[ parent_2_idx ],
+					mutation_probability[ generation_idx ]
+				) )
 
 		individuals_by_generation[ generation_idx + 1 ] = new_generation
 
