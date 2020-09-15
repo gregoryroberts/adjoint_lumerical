@@ -94,7 +94,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_Hz_v3"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_Ez_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
