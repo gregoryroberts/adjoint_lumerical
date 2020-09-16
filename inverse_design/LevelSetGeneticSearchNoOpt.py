@@ -97,7 +97,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_Hz_v4"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_blue_Hz_v4"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -536,11 +536,11 @@ for generation_idx in range( 0, num_generations ):
 						for coord_idx in range( 0, len( affected_coords ) ):
 							current_coord = affected_coords[ coord_idx ]
 
-							figure_of_merit_total[ wl_idx ] +=  weighting * (
+							figure_of_merit_total[ wl_idx ] +=  band_weights[ focal_idx ] * weighting * (
 								np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
 							) / max_intensity_by_wavelength[ wl_idx ]
 
-							figure_of_merit_by_band[ focal_idx ] +=  weighting * (
+							figure_of_merit_by_band[ focal_idx ] +=  band_weights[ focal_idx ] * weighting * (
 								np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
 							) / max_intensity_by_wavelength[ wl_idx ]
 
