@@ -554,7 +554,13 @@ for generation_idx in range( 0, num_generations ):
 				# fom_weighting /= np.sum( fom_weighting )
 				figure_of_merit_by_band = np.maximum( figure_of_merit_by_band, 0 )
 
-				figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.product( figure_of_merit_by_band )
+				reselect_fom_by_band = []
+				for idx in range( 0, len( reselect_fom_by_band ) ):
+					if band_weights[ idx ] > 0:
+						reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
+				reselect_fom_by_band = np.array( reselect_fom_by_band )
+
+				figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.product( reselect_fom_by_band )
 				# figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.sum( normalization_all * figure_of_merit_total )
 				figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
 				figure_of_merit_by_device[ device ] = figure_of_merit
