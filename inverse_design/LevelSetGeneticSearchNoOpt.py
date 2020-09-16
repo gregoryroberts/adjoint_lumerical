@@ -586,7 +586,7 @@ for generation_idx in range( 0, num_generations ):
 		for child_idx in range( 0, num_devices_per_generation ):
 
 			if ( child_idx < num_parents_propagated ) and ( child_idx < len( new_parents_propagated ) ):
-				new_generation.append( new_parents_propagated[ generation_idx ][ child_idx ] )
+				new_generation.append( new_parents_propagated[ child_idx ] )
 			else:
 				parent_1_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
 				parent_2_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
