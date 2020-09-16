@@ -97,7 +97,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_no_opt_Ez_v3"
+projects_directory_location += "/" + project_name + "_genetic_no_opt_Hz_v4"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -441,11 +441,13 @@ for individual_idx in range( 0, num_devices_per_generation ):
 individuals_by_generation[ 0 ] = generation_0
 
 search_fom = []
+search_fom_by_wl = []
 search_devices = []
 
 for generation_idx in range( 0, num_generations ):
 
 	generation_fom = [ 0 for idx in range( 0, num_devices_per_generation ) ]
+	generation_fom_by_wl = [ np.zeros( num_design_frequency_points ) for idx in range( 0, num_devices_per_generation ) ]
 	generation_devices = [ None for idx in range( 0, num_devices_per_generation ) ]
 
 	for individual_idx in range( 0, num_devices_per_generation ):
@@ -519,6 +521,7 @@ for generation_idx in range( 0, num_generations ):
 
 				figure_of_merit_total = np.zeros( num_design_frequency_points )
 				conjugate_weighting_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ), dtype=np.complex )
+				figure_of_merit_by_band = np.zeros( num_focal_spots )
 
 				for focal_idx in range(0, num_focal_spots):
 					spectral_indices = spectral_focal_plane_map[ focal_idx ]
@@ -537,18 +540,27 @@ for generation_idx in range( 0, num_generations ):
 								np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
 							) / max_intensity_by_wavelength[ wl_idx ]
 
+							figure_of_merit_by_band[ focal_idx ] +=  weighting * (
+								np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
+							) / max_intensity_by_wavelength[ wl_idx ]
+
 							conjugate_weighting_wavelength[ focal_idx, current_coord, wl_idx ] = weighting * np.conj(
 								focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx ] )
 
 				# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
 				figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )#np.min( figure_of_merit_total )
-				fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
-				fom_weighting = np.maximum( fom_weighting, 0 )
-				fom_weighting /= np.sum( fom_weighting )
+				# fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
+				# fom_weighting = np.maximum( fom_weighting, 0 )
+				# fom_weighting /= np.sum( fom_weighting )
+				figure_of_merit_by_band = np.maximum( figure_of_merit_by_band, 0 )
 
-				figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.sum( normalization_all * figure_of_merit_total )
+				figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.prodcut( normalization_all * figure_of_merit_by_band )
+				# figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.sum( normalization_all * figure_of_merit_total )
 				figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
 				figure_of_merit_by_device[ device ] = figure_of_merit
+
+				generation_fom_by_wl[ individual_idx ] += pol_weights[ pol_idx ] * figure_of_merit_total
+
 
 		generation_fom[ individual_idx ] = figure_of_merit_by_device[ 0 ]
 
@@ -574,7 +586,7 @@ for generation_idx in range( 0, num_generations ):
 		for child_idx in range( 0, num_devices_per_generation ):
 
 			if ( child_idx < num_parents_propagated ) and ( child_idx < len( new_parents_propagated ) ):
-				new_generation.append( individuals_by_generation[ generation_idx ][ child_idx ] )
+				new_generation.append( new_parents_propagated[ generation_idx ][ child_idx ] )
 			else:
 				parent_1_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
 				parent_2_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
@@ -588,8 +600,10 @@ for generation_idx in range( 0, num_generations ):
 		individuals_by_generation[ generation_idx + 1 ] = new_generation
 
 	np.save( projects_directory_location + "/search_fom.npy", search_fom )
+	np.save( projects_directory_location + "/search_fom_by_wl.npy", search_fom_by_wl )
 	np.save( projects_directory_location + "/search_devices.npy", search_devices )
 
 
 np.save( projects_directory_location + "/search_fom.npy", search_fom )
+np.save( projects_directory_location + "/search_fom_by_wl.npy", search_fom_by_wl )
 np.save( projects_directory_location + "/search_devices.npy", search_devices )
