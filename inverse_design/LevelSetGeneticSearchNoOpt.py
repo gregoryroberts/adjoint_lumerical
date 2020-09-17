@@ -556,7 +556,7 @@ for generation_idx in range( 0, num_generations ):
 
 				reselect_fom_by_band = []
 				for idx in range( 0, len( figure_of_merit_by_band ) ):
-					if band_mapping[ idx ] > 0:
+					if band_weights[ idx ] > 0:
 						reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
 				reselect_fom_by_band = np.array( reselect_fom_by_band )
 
