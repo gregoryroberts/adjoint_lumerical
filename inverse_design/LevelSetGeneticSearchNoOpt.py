@@ -567,8 +567,10 @@ for generation_idx in range( 0, num_generations ):
 
 				generation_fom_by_wl[ individual_idx ] += pol_weights[ pol_idx ] * figure_of_merit_total
 
-
 		generation_fom[ individual_idx ] = figure_of_merit_by_device[ 0 ]
+
+		if np.isnan( figure_of_merit_by_device[ 0 ] ):
+			np.save( projects_directory_location + '/nan_device_' + str( generation_idx ) + "_" + str( individual_idx ) + ".npy", get_index )
 
 	search_fom.append( generation_fom )
 	search_devices.append( generation_devices )
