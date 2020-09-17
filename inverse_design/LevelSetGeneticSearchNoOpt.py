@@ -590,7 +590,7 @@ for generation_idx in range( 0, num_generations ):
 
 	log_file = open( projects_directory_location + "/log.txt", 'a' )
 	log_file.write( "Number of new parents = " + str( len( new_parents ) ) + " and propagated parents = " + str( len( new_parents_propagated ) ) + "\n" )
-	log_file.write( "FOM Cutoffs = " + str( cutoff_fom ) + ", " + str( cutoff_fom_propagation ) + "\n" )
+	log_file.write( "FOM Cutoffs = " + str( cutoff_fom ) + ", " + str( cutoff_fom_propagation ) + "\n\n" )
 	log_file.close()
 
 	if generation_idx < ( num_generations - 1 ):
