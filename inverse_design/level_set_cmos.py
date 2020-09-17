@@ -40,7 +40,16 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 
 		self.level_sets = [ None for idx in range( 0, len( self.layer_thicknesses_um ) ) ]
 		self.level_set_boundary_smoothing = 1
+		# self.level_set_boundary_smoothing = 7
 
+	def init_profiles_with_density( self, density ):
+		for profile_idx in range( 0, len( self.layer_profiles ) ):
+			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
+			get_mid = int( get_start + 0.5 * self.layer_thicknesses_voxels[ profile_idx ] )
+
+			self.layer_profiles[ profile_idx ] = density[ :, get_mid ]
+
+		self.assemble_level_sets()
 
 	def randomize_layer_profiles( self, feature_gap_width_sigma_voxels, feature_probability ):
 		self.feature_gap_width_sigma_voxels = feature_gap_width_sigma_voxels
@@ -67,9 +76,29 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 			end_pt = space_remaining_voxels
 			start_pt = np.maximum( end_pt - choose_width_voxels, 0 )
 
+			if start_pt < self.minimum_feature_gap_spacing_voxels[ profile_idx ]:
+				# Final feature would be too small
+				break
+
 			space_remaining_voxels -= choose_width_voxels
 
 			random_profile[ start_pt : end_pt ] = choose_density_value
+
+
+		fixup_edge = False
+		fixup_edge_value = -1
+
+		if int( np.sum( random_profile ) ) == 0:
+			fixup_edge = True
+			fixup_edge_value = 1
+		elif int( np.sum( random_profile ) ) == len( random_profile ):
+			fixup_edge = True
+			fixup_edge_value = 0
+		
+		if fixup_edge:
+			edge_start_point = int( np.random.uniform( 0, 1 ) * ( len( random_profile ) - self.minimum_feature_gap_spacing_voxels[ profile_idx ] ) )
+			edge_start_point = np.minimum( edge_start_point, len( random_profile ) - self.minimum_feature_gap_spacing_voxels[ profile_idx ] )
+			random_profile[ edge_start_point : edge_start_point + self.minimum_feature_gap_spacing_voxels[ profile_idx ] ] = fixup_edge_value
 
 		return random_profile
 
@@ -106,7 +135,7 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 			get_profile = get_profile[ :, 1 ]
 
 			for internal_idx in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
-				device_density[ :, get_start + internal_idx ] = get_profile#self.layer_profiles[ profile_idx ]
+				device_density[ :, get_start + internal_idx ] = get_profile
 
 		return device_density
 
@@ -213,8 +242,10 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 
 
 			get_lsf_layer.update( expand_velocity, 5 )
+			# get_lsf_layer.update( expand_velocity, 1 )
 			get_lsf_layer.signed_distance_reinitialization()
 
+		# return
 
 		# post_density = self.assemble_density()
 
