@@ -87,7 +87,7 @@ num_bands = 3
 num_points_per_band = 5#10#15
 
 # band_weights = [ 1, 1, 1 ]
-band_weights = [ 0, 1, 0 ]
+band_weights = [ 0, 0, 1 ]
 # pol_weights = [ 1, 1 ]
 pol_weights = [ 0, 1 ]
 
