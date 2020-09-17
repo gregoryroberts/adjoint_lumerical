@@ -555,8 +555,8 @@ for generation_idx in range( 0, num_generations ):
 				figure_of_merit_by_band = np.maximum( figure_of_merit_by_band, 0 )
 
 				reselect_fom_by_band = []
-				for idx in range( 0, len( reselect_fom_by_band ) ):
-					if band_weights[ idx ] > 0:
+				for idx in range( 0, len( figure_of_merit_by_band ) ):
+					if band_mapping[ idx ] > 0:
 						reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
 				reselect_fom_by_band = np.array( reselect_fom_by_band )
 
@@ -585,6 +585,11 @@ for generation_idx in range( 0, num_generations ):
 			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
 		if generation_fom[ parent_idx ] > cutoff_fom_propagation:
 			new_parents_propagated.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+
+	log_file = open( projects_directory_location + "/log.txt", 'a' )
+	log_file.write( "Number of new parents = " + str( len( new_parents ) ) + " and propagated parents = " + str( len( new_parents_propagated ) ) + "\n" )
+	log_file.write( "FOM Cutoffs = " + str( cutoff_fom ) + ", " + str( cutoff_fom_propagation ) + "\n" )
+	log_file.close()
 
 	if generation_idx < ( num_generations - 1 ):
 		new_generation = []
