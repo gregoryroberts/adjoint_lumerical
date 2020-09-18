@@ -164,6 +164,6 @@ adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_latera
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 4#80
+num_iterations_per_epoch = 10#10#80
 init_optimization_epoch = 0
 

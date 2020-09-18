@@ -315,6 +315,10 @@ for wl_idx in range( 0, num_points_per_band ):
 gaussian_normalization /= np.sum( gaussian_normalization )
 gaussian_normalization_all = np.array( [ gaussian_normalization for i in range( 0, num_bands ) ] ).flatten()
 
+flat_normalization = np.ones( gaussian_normalization.shape )
+
+normalization_all = np.array( [ flat_normalization for i in range( 0, num_bands ) ] ).flatten()
+
 
 reversed_field_shape = [1, designable_device_voxels_vertical, device_voxels_lateral]
 reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_vertical, device_voxels_lateral]
@@ -338,8 +342,24 @@ my_optimization_state = level_set_cmos.LevelSetCMOS(
 	num_iterations_per_epoch,
 	1,
 	"level_set_optimize" )
-my_optimization_state.randomize_layer_profiles( int( 0.05 / lsf_mesh_spacing_um ), 0.5 )
-my_optimization_state.assemble_level_sets()
+# my_optimization_state.randomize_layer_profiles( int( 0.05 / lsf_mesh_spacing_um ), 0.5 )
+# my_optimization_state.assemble_level_sets()
+
+# generation = 7
+# device = 0
+
+# fom = np.load( '/Users/gregory/Downloads/search_fom.npy' )
+# devices = np.load( '/Users/gregory/Downloads/search_devices.npy' )
+
+load_index = np.load( '/Users/gregory/Downloads/best_device_gen_15_hz.npy' )
+
+# load_index = devices[ generation, np.argmax( fom[ generation ] ) ]
+load_density = 1.0 * np.greater( load_index, 0.5 * ( np.sqrt( min_real_permittivity ) + np.sqrt( max_real_permittivity ) ) )
+
+my_optimization_state.init_profiles_with_density( load_density )
+
+
+
 
 start_epoch = init_optimization_epoch
 epoch = start_epoch
@@ -418,6 +438,8 @@ for iteration in range( 0, num_iterations_per_epoch ):
 
 			figure_of_merit_total = np.zeros( num_design_frequency_points )
 			conjugate_weighting_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ), dtype=np.complex )
+				
+			figure_of_merit_by_band = np.zeros( num_focal_spots )
 
 			for focal_idx in range(0, num_focal_spots):
 				spectral_indices = spectral_focal_plane_map[ focal_idx ]
@@ -427,26 +449,45 @@ for iteration in range( 0, num_iterations_per_epoch ):
 				for wl_idx in range( 0, num_design_frequency_points ):
 					weighting = 0
 					if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
-						weighting = 1.0
+						# weighting = 1.0
+						weighting = band_weights[ focal_idx ]
 
 					for coord_idx in range( 0, len( affected_coords ) ):
 						current_coord = affected_coords[ coord_idx ]
 
-						figure_of_merit_total[ wl_idx ] +=  weighting * (
+						figure_of_merit_total[ wl_idx ] += weighting * (
+							np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
+						) / max_intensity_by_wavelength[ wl_idx ]
+
+						figure_of_merit_by_band[ focal_idx ] +=  band_weights[ focal_idx ] * weighting * (
 							np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ])**2 )
 						) / max_intensity_by_wavelength[ wl_idx ]
 
 						conjugate_weighting_wavelength[ focal_idx, current_coord, wl_idx ] = weighting * np.conj(
 							focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx ] )
 
+			wl_weighting_denominator = num_points_per_band * np.sum( band_weights )
+
+			figure_of_merit_by_band = np.maximum( figure_of_merit_by_band, 0 )
+
+			reselect_fom_by_band = []
+			for idx in range( 0, len( figure_of_merit_by_band ) ):
+				if band_weights[ idx ] > 0:
+					reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
+			reselect_fom_by_band = np.array( reselect_fom_by_band )
+
 			# todo: make sure this figure of merit weighting makes sense the way it is done across wavelengths and focal points
 			figure_of_merit_total = np.maximum( figure_of_merit_total, 0 )#np.min( figure_of_merit_total )
-			fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
+			# fom_weighting = ( 2. / len( figure_of_merit_total ) ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
+			fom_weighting = ( 2. / wl_weighting_denominator ) - figure_of_merit_total**2 / np.sum( figure_of_merit_total**2 )
 			fom_weighting = np.maximum( fom_weighting, 0 )
+
 			fom_weighting /= np.sum( fom_weighting )
 
-			figure_of_merit_by_pol[ pol_idx ] = np.sum( gaussian_normalization_all * figure_of_merit_total )
-			figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
+			# figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.sum( normalization_all * figure_of_merit_total )
+			figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.product( reselect_fom_by_band )
+			# figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
+			figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
 			figure_of_merit_by_device[ device ] = figure_of_merit
 
 			#
@@ -471,28 +512,34 @@ for iteration in range( 0, num_iterations_per_epoch ):
 					spectral_indices = spectral_focal_plane_map[ adj_src_idx ]
 					num_points = spectral_indices[ 1 ] - spectral_indices[ 0 ]
 
+					prefactor = 0
+					if band_weights[ adj_src_idx ] > 0:
+						prefactor = np.product( reselect_fom_by_band ) / figure_of_merit_by_band[ adj_src_idx ]
+
 					# for spectral_idx in range(0, num_points ):
 					for spectral_idx in range(0, num_design_frequency_points ):
+
 						for polarization_idx in range( 0, 3 ):
 							# x-coordinate is the perpendicular coorinate to the level set boundary that can be actually changed
 							if polarization_idx == 0:
 								# todo: the gaussian norm is weird here, the normalization all alredy stacks up all the bands and the spectral indices are counting from 0 to something
 								# feels like you want to access at spectral_indices[0] + spectral_idx - effectively I think this is just what is happening
-								polarized_gradient_lsf += ( ( ( 1. / min_real_permittivity ) - ( 1. / max_real_permittivity ) ) *
-									gaussian_normalization_all[ spectral_idx ] * ( conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx] ) *
+								polarized_gradient_lsf += prefactor * ( ( ( 1. / min_real_permittivity ) - ( 1. / max_real_permittivity ) ) *
+									normalization_all[ spectral_idx ] * ( conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx] ) *
 									current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
 									current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
 								)
+
 							else:
-								polarized_gradient_lsf += ( ( max_real_permittivity - min_real_permittivity ) *
-									gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+								polarized_gradient_lsf += prefactor * ( ( max_real_permittivity - min_real_permittivity ) *
+									normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
 									current_permittivity * adjoint_e_fields[polarization_idx, spectral_idx, :, :, :] *
 									current_permittivity * forward_e_fields[polarization_idx, spectral_idx, :, :, :]
 								)
 
 					for spectral_idx in range(0, num_design_frequency_points):
-						polarized_gradient += np.sum(
-							gaussian_normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
+						polarized_gradient += prefactor * np.sum(
+							normalization_all[ spectral_idx ] * (conjugate_weighting_wavelength[adj_src_idx, current_coord, spectral_idx] * fom_weighting[spectral_idx]) *
 							adjoint_e_fields[:, spectral_idx, :, :, :] *
 							forward_e_fields[:, spectral_idx, :, :, :],
 							axis=0)
@@ -501,9 +548,15 @@ for iteration in range( 0, num_iterations_per_epoch ):
 			xy_polarized_gradients_by_pol[ pol_idx ] = polarized_gradient
 			xy_polarized_gradients_by_pol_lsf[ pol_idx ] = polarized_gradient
 
-		weight_grad_by_pol = ( 2. / num_polarizations ) - figure_of_merit_by_pol**2 / np.sum( figure_of_merit_by_pol**2 )
+		pol_weighting_denominator = np.sum( pol_weights )
+		weight_grad_by_pol = ( 2. / pol_weighting_denominator ) - figure_of_merit_by_pol**2 / np.sum( figure_of_merit_by_pol**2 )
 		weight_grad_by_pol = np.maximum( weight_grad_by_pol, 0 )
+
+		for idx in range( 0, len( weight_grad_by_pol ) ):
+			weight_grad_by_pol[ pol_idx ] *= pol_weights[ pol_idx ]
+
 		weight_grad_by_pol /= np.sum( weight_grad_by_pol )
+
 
 		for pol_idx in range( 0, num_polarizations ):
 			xy_polarized_gradients += weight_grad_by_pol[ pol_idx ] * xy_polarized_gradients_by_pol[ pol_idx ]
