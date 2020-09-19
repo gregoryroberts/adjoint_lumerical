@@ -815,8 +815,8 @@ for generation_idx in range( 0, num_generations ):
 		optimized_parents_fom.append( fom_track )
 		optimized_parents_final_fom.append( fom_track[ -1 ] )
 
-		search_fom[ new_parents_idxs[ parent_idx ] ] = fom_track[ -1 ]
-		search_devices[ new_parents_idxs[ parent_idx ] ] = optimized_new_parent.assemble_index( 0 )
+		search_fom[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = fom_track[ -1 ]
+		search_devices[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = optimized_new_parent.assemble_index( 0 )
 
 	sorted_optimized_parents_fom = sorted( optimized_parents_final_fom, reverse=True )
 	cutoff_fom_propagation = sorted_optimized_parents_fom[ num_parents_propagated ]
