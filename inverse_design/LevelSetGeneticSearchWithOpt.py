@@ -97,7 +97,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_v1"
+projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_sio2_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -110,7 +110,7 @@ fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
 shutil.copy2(python_src_directory + "/LevelSetGlobalOptimize2DParameters.py", projects_directory_location + "/LevelSetGlobalOptimize2DParameters.py")
-shutil.copy2(python_src_directory + "/LevelSetGeneticSearchNoOpt.py", projects_directory_location + "/LevelSetGeneticSearchNoOpt.py")
+shutil.copy2(python_src_directory + "/LevelSetGeneticSearchWithOpt.py", projects_directory_location + "/LevelSetGeneticSearchWithOpt.py")
 
 
 
@@ -793,6 +793,7 @@ for generation_idx in range( 0, num_generations ):
 	cutoff_fom = sorted_generation_fom[ num_parents_new_generation ]
 
 	new_parents = []
+	new_parents_idxs = []
 	new_parents_propagated = []
 	optimized_parents_fom = []
 	optimized_parents_final_fom = []
@@ -800,6 +801,7 @@ for generation_idx in range( 0, num_generations ):
 	for parent_idx in range( 0, len( generation_fom ) ):
 		if ( generation_fom[ parent_idx ] > cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
 			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+			new_parents_idxs.append( parent_idx )
 		
 
 	#
@@ -812,6 +814,9 @@ for generation_idx in range( 0, num_generations ):
 		new_parents[ parent_idx ] = optimized_new_parent
 		optimized_parents_fom.append( fom_track )
 		optimized_parents_final_fom.append( fom_track[ -1 ] )
+
+		search_fom[ new_parents_idxs[ parent_idx ] ] = fom_track[ -1 ]
+		search_devices[ new_parents_idxs[ parent_idx ] ] = optimized_new_parent.assemble_index( 0 )
 
 	sorted_optimized_parents_fom = sorted( optimized_parents_final_fom, reverse=True )
 	cutoff_fom_propagation = sorted_optimized_parents_fom[ num_parents_propagated ]
