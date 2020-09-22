@@ -341,7 +341,8 @@ my_optimization_state = level_set_cmos.LevelSetCMOS(
 	device_spacer_thicknesses_um,
 	num_iterations_per_epoch,
 	1,
-	"level_set_optimize" )
+	"level_set_optimize",
+	device_lateral_background_density )
 # my_optimization_state.randomize_layer_profiles( int( 0.05 / lsf_mesh_spacing_um ), 0.5 )
 # my_optimization_state.assemble_level_sets()
 
@@ -351,7 +352,7 @@ my_optimization_state = level_set_cmos.LevelSetCMOS(
 # fom = np.load( '/Users/gregory/Downloads/search_fom.npy' )
 # devices = np.load( '/Users/gregory/Downloads/search_devices.npy' )
 
-load_index = np.load( '/Users/gregory/Downloads/best_device_gen_15_hz.npy' )
+load_index = np.load( '/Users/gregory/Downloads/best_device_gen_10_hz_opt_v1.npy' )
 
 # load_index = devices[ generation, np.argmax( fom[ generation ] ) ]
 load_density = 1.0 * np.greater( load_index, 0.5 * ( np.sqrt( min_real_permittivity ) + np.sqrt( max_real_permittivity ) ) )
@@ -484,6 +485,8 @@ for iteration in range( 0, num_iterations_per_epoch ):
 
 			fom_weighting /= np.sum( fom_weighting )
 
+			fom_weighting = ( 1. / len( fom_weighting ) ) * np.ones( fom_weighting.shape )
+
 			# figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.sum( normalization_all * figure_of_merit_total )
 			figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.product( reselect_fom_by_band )
 			# figure_of_merit += ( 1. / num_polarizations ) * figure_of_merit_by_pol[ pol_idx ]
@@ -546,7 +549,7 @@ for iteration in range( 0, num_iterations_per_epoch ):
 
 
 			xy_polarized_gradients_by_pol[ pol_idx ] = polarized_gradient
-			xy_polarized_gradients_by_pol_lsf[ pol_idx ] = polarized_gradient
+			xy_polarized_gradients_by_pol_lsf[ pol_idx ] = polarized_gradient_lsf
 
 		pol_weighting_denominator = np.sum( pol_weights )
 		weight_grad_by_pol = ( 2. / pol_weighting_denominator ) - figure_of_merit_by_pol**2 / np.sum( figure_of_merit_by_pol**2 )
