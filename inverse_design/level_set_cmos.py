@@ -6,12 +6,15 @@ import OptimizationState
 
 class LevelSetCMOS( OptimizationState.OptimizationState ):
 
+	#
+	# TODO: Is it bad to have a default value of 1.0 for background density?
+	#
 	def __init__(
 		self,
 		permittivity_bounds,
 		opt_mesh_size_um, opt_vertical_start_um, opt_width_um,
 		minimum_feature_gap_spacing_voxels, layer_thicknesses_um, layer_spacings_um,
-		num_iterations, num_epochs, filename_prefix ):
+		num_iterations, num_epochs, filename_prefix, device_background_density ):
 
 		super( LevelSetCMOS, self ).__init__( num_iterations, num_epochs, filename_prefix )
 
@@ -41,6 +44,8 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 		self.level_sets = [ None for idx in range( 0, len( self.layer_thicknesses_um ) ) ]
 		self.level_set_boundary_smoothing = 1
 		# self.level_set_boundary_smoothing = 7
+
+		self.device_background_density = device_background_density
 
 	def init_profiles_with_density( self, density ):
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
@@ -150,29 +155,56 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 
 		return profiles
 
+	def check_size_violations( self, profile, profile_size_voxel_limit ):
+
+		def report_sizes( binary_profile ):
+			get_sizes = []
+
+			counter = 0
+
+			while counter < len( binary_profile ):
+				if not binary_profile[ counter ]:
+					counter += 1
+					continue
+				else:
+					sub_counter = counter
+
+					while sub_counter < len( binary_profile ):
+						if binary_profile[ sub_counter ]:
+							sub_counter += 1
+						else:
+							break
+
+					get_sizes.append( sub_counter - counter )
+
+					counter = sub_counter
+
+			return np.array( get_sizes )
+
+		# We are implicitly assuming that on the edges, it is ok to have a small feature as long as it is of the high index variety
+		pad_profile = np.pad(
+			profile,
+			( profile_size_voxel_limit, profile_size_voxel_limit ),
+			mode='constant',
+			constant_values=( self.device_background_density, self.device_background_density ) )
+
+		binarize_profile = np.greater( profile, 0.5 )
+		binarize_profile_negative = np.less_equal( profile, 0.5 )
+		feature_sizes = report_sizes( binarize_profile )
+		gap_sizes = report_sizes( binarize_profile_negative )
+
+		feature_size_violations = np.sum( 1.0 * np.less( 0.5 + feature_sizes - profile_size_voxel_limit, 0 ) )
+		gap_size_violations = np.sum( 1.0 * np.less( 0.5 + gap_sizes - profile_size_voxel_limit, 0 ) )
+		total_size_violations = int( feature_size_violations + gap_size_violations )
+
+		return ( total_size_violations > 0 )
+
 
 	def update( self, gradient_real, graident_imag, gradient_real_lsf, gradient_imag_lsf, epoch, iteration ):
 
-		# if iteration == 0:
-		# 	self.orig_bps_x, self.orig_bps_y = self.level_sets[ 0 ].find_border_points()
+		save_pre_lsfs = self.level_sets.copy()
 
-		# import matplotlib.pyplot as plt
-		# lsf = self.level_sets[ 0 ].level_set_function[ :, 2 ]
-		# lsf2 = self.level_sets[ 0 ].level_set_function[ :, 3 ]
-		# lsf3 = self.level_sets[ 0 ].level_set_function[ :, 4 ]
-		# print( self.level_sets[ 0 ].level_set_function.shape )
-		# norm_lsf = lsf / np.max(np.abs(lsf))
-		# norm_lsf2 = lsf2 / np.max(np.abs(lsf2))
-		# norm_lsf3 = lsf3 / np.max(np.abs(lsf))
-		# plt.plot( 0 + norm_lsf2, linewidth=2, color='m', linestyle='--' )
-		# plt.show()
-
-
-		# bps_x, bps_y = self.level_sets[ 0 ].find_border_points()
-		# plt.scatter( bps_x, bps_y )
-		# plt.scatter( self.orig_bps_x, self.orig_bps_y, color='r' )
-		# # plt.plot( self.level_sets[ 0 ].level_set_function[ 10, : ] )
-		# plt.show()
+		pre_update_profiles = self.get_layer_profiles()
 
 		gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 
@@ -195,34 +227,7 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 			avg_movement += ( 1. / len( self.layer_profiles ) ) * np.mean( np.abs( average_velocity ) )
 
 
-		# get_start = np.sum( self.layer_thicknesses_voxels[ 0 : 0 ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : 0 ] )
-		# get_end = get_start + self.layer_thicknesses_voxels[ 0 ]
-		# average_velocity = np.mean( -gradient_real_interpolate[ :, get_start : get_end ], axis=1 )
-
-		# border_rep = self.level_sets[ 0 ].find_border_representation()
-		# border_vel = border_rep[ 2 : -2, 3 ] * average_velocity / max_abs_movement
-
-		# sum_pos = 0
-		# total_num = 0
-		# pattern = []
-		# for x in range( 0, 600 ):
-		# 	if border_rep[ 2 + x, 3 ] > 0:
-		# 		total_num += 1
-		# 		pattern.append( 1.0 * ( self.level_sets[ 0 ].level_set_function[ x, 3 ] > 0 ) )
-		# 		sum_pos += ( self.level_sets[ 0 ].level_set_function[ x, 3 ] > 0 )
-
-		# print( 'pos = ' + str( sum_pos ) + " out of " + str( total_num ) )
-		# print( pattern )
-
-		# plt.plot( border_rep[ 2 : -2, 3 ] )
-		# plt.plot( border_vel )
-		# plt.plot( average_velocity / max_abs_movement, linestyle='--' )
-		# plt.plot( 0 + norm_lsf2, linewidth=2, color='m', linestyle='--' )
-		# plt.show()
-
-		# print( 'max abs velocity = ' + str( max_abs_movement ) )
-		# print( 'avg velocity = ' + str( avg_movement ) )
-
+		# todo: gdroberts - Why is level set function still fragmenting in the y-direction?
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
 			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
@@ -234,38 +239,87 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 				expand_velocity[ :, internal_idx ] = average_velocity
 
 			get_lsf_layer = self.level_sets[ profile_idx ]
+
+			# This step size is tricky!
 			# get_lsf_layer.update( expand_velocity, 5 )
-			# import matplotlib.pyplot as plt
-			# plt.plot( get_lsf_layer.level_set_function[ :, 3 ] )
-			# plt.plot( average_velocity, linestyle='--' )
-			# plt.show()
-
-
-			get_lsf_layer.update( expand_velocity, 5 )
+			get_lsf_layer.update( expand_velocity, 2 )
 			# get_lsf_layer.update( expand_velocity, 1 )
 			get_lsf_layer.signed_distance_reinitialization()
 
 		# return
 
-		# post_density = self.assemble_density()
+		post_update_profiles = self.get_layer_profiles()
 
-		# plt.subplot( 2, 2, 1 )
-		# plt.imshow( pre_density, cmap='Greens' )
-		# plt.subplot( 2, 2, 2 )
-		# plt.imshow( post_density, cmap='Greens' )
-		# plt.subplot( 2, 2, 3 )
-		# plt.imshow( pre_density - post_density, cmap='Reds' )
-		# plt.colorbar()
-		# # plt.show()
+		for profile_idx in range( 0, len( self.layer_profiles ) ):
+			pre_update_profile = pre_update_profiles[ profile_idx ]
+			post_update_profile = post_update_profiles[ profile_idx ]
 
-		# plt.subplot( 2, 2, 4 )
-		# for profile_idx in range( 0, len( self.layer_profiles ) ):
-		# 	get_profile = self.level_sets[ profile_idx ].device_density_from_level_set()
-		# 	get_profile = get_profile[ :, 1 ]
-		# 	plt.plot( profile_idx + get_profile, linewidth=2, color='g' )
-		# 	plt.plot( profile_idx + pre_profiles[ profile_idx ], linewidth=2, linestyle='--', color='r' )
-		# plt.show()
+			size_voxel_limit = self.minimum_feature_gap_spacing_voxels[ profile_idx ]
 
+			check_sizes = self.check_size_violations( post_update_profile, size_voxel_limit )
+			if not check_sizes:
+				continue
+
+			save_pre_profile = pre_update_profile.copy()
+
+			delta_profile = np.greater( np.abs( 1.0 * np.greater( pre_update_profile, 0.5 ) - 1.0 * np.greater( post_update_profile, 0.5 ) ), 0.5 )
+
+			flip = np.random.random( 1 )[ 0 ] > 0.5
+
+			if flip:
+				pre_update_profile = np.flip( pre_update_profile )
+				post_update_profile = np.flip( post_update_profile )
+				delta_profile = np.flip( delta_profile )
+				save_pre_profile = np.flip( save_pre_profile )
+
+			while np.sum( 1.0 * delta_profile ) > 0:
+			
+				random_start_point = int( np.random.random( 1 )[ 0 ] * self.opt_width_num_voxels ) % self.opt_width_num_voxels
+				while delta_profile[ random_start_point ] == 0:
+					random_start_point = ( ( random_start_point + 1 ) % self.opt_width_num_voxels )
+
+				test_update_profile = pre_update_profile.copy()
+
+				feature_type_at_delta = post_update_profile[ random_start_point ]
+				
+				fill_feature_or_gap_idx = random_start_point
+
+				while ( fill_feature_or_gap_idx < self.opt_width_num_voxels ) and ( delta_profile[ fill_feature_or_gap_idx ] ):
+					test_update_profile[ fill_feature_or_gap_idx ] = post_update_profile[ fill_feature_or_gap_idx ]
+					delta_profile[ fill_feature_or_gap_idx ] = False
+					fill_feature_or_gap_idx += 1
+
+				fill_feature_or_gap_idx = random_start_point
+
+				while ( fill_feature_or_gap_idx >= 0 ) and ( delta_profile[ fill_feature_or_gap_idx ] ):
+					test_update_profile[ fill_feature_or_gap_idx ] = feature_type_at_delta
+					delta_profile[ fill_feature_or_gap_idx ] = False
+					fill_feature_or_gap_idx -= 1
+
+				if not self.check_size_violations( test_update_profile, size_voxel_limit ):
+					pre_update_profile = test_update_profile.copy()
+
+
+			if flip:
+				pre_update_profile = np.flip( pre_update_profile )
+				post_update_profile = np.flip( post_update_profile )
+				delta_profile = np.flip( delta_profile )
+				save_pre_profile = np.flip( save_pre_profile )
+
+			# import matplotlib.pyplot as plt
+			# plt.plot( self.level_sets[ profile_idx ].device_density_from_level_set()[ :, 1 ], color='g' )
+			# plt.plot( 1 + self.level_sets[ profile_idx ].device_density_from_level_set()[ :, 1 ], color='g' )
+
+			new_layer_density = np.zeros( ( self.opt_width_num_voxels, 3 ) )
+
+			for internal_idx in range( 0, 3 ):
+				new_layer_density[ :, internal_idx ] = pre_update_profile
+
+			self.level_sets[ profile_idx ].init_with_density( new_layer_density )
+
+			# plt.plot( 1 + save_pre_lsfs[ profile_idx ].device_density_from_level_set()[ :, 1 ], color='k', linestyle='--' )
+			# plt.plot( self.level_sets[ profile_idx ].device_density_from_level_set()[ :, 1 ], color='r', linestyle='--' )
+			# plt.show()
 
 		#
 		# After each update, we need to go through and make sure nothing violates the feature size.
@@ -276,6 +330,8 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 		# We will pick a random starting point each time through the profile and fix it up that way.  This way we aren't
 		# always undoing the same changes
 		#
+
+		'''
 
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_profile = self.level_sets[ profile_idx ].device_density_from_level_set()
@@ -344,6 +400,7 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 				new_layer_density[ :, internal_idx ] = get_profile
 
 			self.level_sets[ profile_idx ].init_with_density( new_layer_density )
+		'''
 
 	def save_design( self, filebase, epoch ):
 		return

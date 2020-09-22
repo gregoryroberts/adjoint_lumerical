@@ -25,7 +25,8 @@ project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_lsf_
 # Check binarized device and look at feature sizes!
 background_index = 1.0
 design_index_background = 1.0#1.35
-device_background_index = 1.0#1.35# 2.5
+device_background_index = 1.46#1.35# 2.5
+device_lateral_background_density = 1.0
 # high_index_backfill = 2.5
 high_index_backfill = 1.46
 substrate_index = 1.0
@@ -167,4 +168,6 @@ adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_latera
 num_epochs = 1
 num_iterations_per_epoch = 10#10#80
 init_optimization_epoch = 0
+
+fom_quotient_regularization = 0.1
 
