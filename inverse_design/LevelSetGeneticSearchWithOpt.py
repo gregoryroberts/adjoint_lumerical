@@ -25,6 +25,14 @@ import time
 
 import level_set_cmos
 
+
+def softplus( x_in ):
+	return np.log( 1 + np.exp( x_in ) )
+
+def softplus_prime( x_in ):
+	return ( 1. / ( 1 + np.exp( -x_in ) ) )
+
+
 def permittivity_to_index( permittivity ):
 	eps_real = np.real( permittivity )
 	eps_imag = np.imag( permittivity )
@@ -461,9 +469,9 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	fom_track = []
 	for iteration in range( 0, num_iterations ):
 
-		figure_of_merit_by_device = np.zeros( parent_object.num_devices )
+		figure_of_merit_by_device = np.zeros( my_optimization_state.num_devices )
 
-		field_shape_with_devices = [ parent_object.num_devices ]
+		field_shape_with_devices = [ my_optimization_state.num_devices ]
 		field_shape_with_devices.extend( np.flip( reversed_field_shape ) )
 		gradients_real = np.zeros( field_shape_with_devices )
 		gradients_imag = np.zeros( field_shape_with_devices )
@@ -471,7 +479,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 		gradients_real_lsf = np.zeros( field_shape_with_devices )
 		gradients_imag_lsf = np.zeros( field_shape_with_devices )
 
-		for device in range( 0, parent_object.num_devices ):
+		for device in range( 0, my_optimization_state.num_devices ):
 			#
 			# Start here tomorrow!  Need to do this operation for every device.  Really, the single device operation should
 			# be able to fold into here!  You need to get all these code changes under one umbrella.  Including the binarization
@@ -480,7 +488,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			#
 
 			fdtd_hook.switchtolayout()
-			get_index = parent_object.assemble_index( device )
+			get_index = my_optimization_state.assemble_index( device )
 			inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
 			inflate_index[ :, :, 0 ] = get_index
 			inflate_index[ :, :, 1 ] = get_index
@@ -565,7 +573,6 @@ def optimize_parent_locally( parent_object, num_iterations ):
 								# figure_of_merit_by_band[ focal_idx ] += ( np.log( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] / ( fom_quotient_regularization + incorrect_focal_by_wl[ wl_idx ] ) ) )
 								figure_of_merit_by_band[ focal_idx ] += ( ( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] ) - incorrect_focal_by_wl[ wl_idx ] )
 
-
 				# wl_weighting_denominator = num_points_per_band * np.sum( band_weights )
 
 				# figure_of_merit_by_band = np.maximum( figure_of_merit_by_band, 0 )
@@ -573,7 +580,8 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				reselect_fom_by_band = []
 				for idx in range( 0, len( figure_of_merit_by_band ) ):
 					if band_weights[ idx ] > 0:
-						reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
+						reselect_fom_by_band.append( softplus( figure_of_merit_by_band[ idx ] ) )
+						# reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
 				reselect_fom_by_band = np.array( reselect_fom_by_band )
 				# print( reselect_fom_by_band )
 
@@ -628,7 +636,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 						prefactor = 0
 						if band_weights[ adj_src_idx ] > 0:
-							prefactor = band_weights[ adj_src_idx ] * np.product( reselect_fom_by_band ) / figure_of_merit_by_band[ adj_src_idx ]
+							prefactor = band_weights[ adj_src_idx ] * softplus_prime( reselect_fom_by_band[ adj_src_idx ] ) * np.product( reselect_fom_by_band ) / reselect_fom_by_band[ adj_src_idx ]
 
 						# for spectral_idx in range(0, num_points ):
 						# for spectral_idx in range(0, num_design_frequency_points ):
@@ -726,8 +734,10 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			gradients_imag_lsf[ device, : ] = device_gradient_imag_lsf
 
 		fom_track.append( figure_of_merit_by_device[ 0 ] )
-		parent_object.submit_figure_of_merit( figure_of_merit_by_device, iteration, 0 )
-		parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
+
+		if num_iterations > 0:
+			parent_object.submit_figure_of_merit( figure_of_merit_by_device, iteration, 0 )
+			parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
 
 	return parent_object, fom_track
 
@@ -1172,6 +1182,7 @@ for generation_idx in range( 0, num_generations ):
 
 		search_fom[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = fom_track[ -1 ]
 		search_devices[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = optimized_new_parent.assemble_index( 0 )
+
 
 	sorted_optimized_parents_fom = sorted( optimized_parents_final_fom, reverse=True )
 	cutoff_fom_propagation = sorted_optimized_parents_fom[ num_parents_propagated ]
