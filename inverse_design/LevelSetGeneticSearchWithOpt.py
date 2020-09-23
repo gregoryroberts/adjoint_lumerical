@@ -734,10 +734,8 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			gradients_imag_lsf[ device, : ] = device_gradient_imag_lsf
 
 		fom_track.append( figure_of_merit_by_device[ 0 ] )
-
-		if num_iterations > 0:
-			parent_object.submit_figure_of_merit( figure_of_merit_by_device, iteration, 0 )
-			parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
+		parent_object.submit_figure_of_merit( figure_of_merit_by_device, iteration, 0 )
+		parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
 
 	return parent_object, fom_track
 
@@ -1175,13 +1173,20 @@ for generation_idx in range( 0, num_generations ):
 	# num_optimization_cycles_per_parent = 2#10
 
 	for parent_idx in range( 0, len( new_parents ) ):
-		optimized_new_parent, fom_track = optimize_parent_locally( new_parents[ parent_idx ], num_optimization_cycles_per_parent )
-		new_parents[ parent_idx ] = optimized_new_parent
-		optimized_parents_fom.append( fom_track )
-		optimized_parents_final_fom.append( fom_track[ -1 ] )
 
-		search_fom[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = fom_track[ -1 ]
-		search_devices[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = optimized_new_parent.assemble_index( 0 )
+		if num_optimization_cycles_per_parent > 0:
+
+			optimized_new_parent, fom_track = optimize_parent_locally( new_parents[ parent_idx ], num_optimization_cycles_per_parent )
+			new_parents[ parent_idx ] = optimized_new_parent
+			optimized_parents_fom.append( fom_track )
+			optimized_parents_final_fom.append( fom_track[ -1 ] )
+
+			search_fom[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = fom_track[ -1 ]
+			search_devices[ generation_idx ][ new_parents_idxs[ parent_idx ] ] = optimized_new_parent.assemble_index( 0 )
+
+		else:
+			optimized_parents_final_fom.append( generation_fom[ new_parents_idxs[ parent_idx ] ] )
+
 
 
 	sorted_optimized_parents_fom = sorted( optimized_parents_final_fom, reverse=True )
