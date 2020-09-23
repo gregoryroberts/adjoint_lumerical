@@ -105,7 +105,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_sio2_v3"
+projects_directory_location += "/" + project_name + "_genetic_with_noopt_Hz_sio2_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -1170,7 +1170,7 @@ for generation_idx in range( 0, num_generations ):
 	#
 	# Let's optimize all the parents we are sending forward!
 	#
-	num_optimization_cycles_per_parent = 10
+	num_optimization_cycles_per_parent = 0#10
 
 	# num_optimization_cycles_per_parent = 2#10
 
