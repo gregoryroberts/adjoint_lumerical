@@ -105,7 +105,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_with_noopt_Hz_sio2_v5"
+projects_directory_location += "/" + project_name + "_genetic_with_noopt_Hz_sio2_v6"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -362,10 +362,10 @@ num_parents_propagated = 5
 
 
 num_generations = 20
-num_devices_per_generation = 100
-num_parents_new_generation = 20
+num_devices_per_generation = 200#100
+num_parents_new_generation = 50#20
 
-num_parents_propagated = 5
+num_parents_propagated = 8
 
 
 
