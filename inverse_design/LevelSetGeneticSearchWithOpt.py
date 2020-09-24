@@ -469,9 +469,9 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	fom_track = []
 	for iteration in range( 0, num_iterations ):
 
-		figure_of_merit_by_device = np.zeros( my_optimization_state.num_devices )
+		figure_of_merit_by_device = np.zeros( parent_object.num_devices )
 
-		field_shape_with_devices = [ my_optimization_state.num_devices ]
+		field_shape_with_devices = [ parent_object.num_devices ]
 		field_shape_with_devices.extend( np.flip( reversed_field_shape ) )
 		gradients_real = np.zeros( field_shape_with_devices )
 		gradients_imag = np.zeros( field_shape_with_devices )
@@ -479,7 +479,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 		gradients_real_lsf = np.zeros( field_shape_with_devices )
 		gradients_imag_lsf = np.zeros( field_shape_with_devices )
 
-		for device in range( 0, my_optimization_state.num_devices ):
+		for device in range( 0, parent_object.num_devices ):
 			#
 			# Start here tomorrow!  Need to do this operation for every device.  Really, the single device operation should
 			# be able to fold into here!  You need to get all these code changes under one umbrella.  Including the binarization
@@ -488,7 +488,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			#
 
 			fdtd_hook.switchtolayout()
-			get_index = my_optimization_state.assemble_index( device )
+			get_index = parent_object.assemble_index( device )
 			inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
 			inflate_index[ :, :, 0 ] = get_index
 			inflate_index[ :, :, 1 ] = get_index
