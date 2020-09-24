@@ -105,7 +105,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_with_noopt_Hz_sio2_v3"
+projects_directory_location += "/" + project_name + "_genetic_with_noopt_Hz_sio2_v4"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)

@@ -50,7 +50,8 @@ lsf_end_step_size = 0.05
 # For the focal length, should we put these things in a near field regime.  In the nature photonics, with very
 # simple scatterers made of SiN, they can get fairly impressive splitting.  The "focal length" seems to be smaller
 # there (not sure if it would be considered near field or not, but it would be right on the edge).
-focal_length_um = 1.5
+# focal_length_um = 1.5
+focal_length_um = 2.0
 
 
 #
