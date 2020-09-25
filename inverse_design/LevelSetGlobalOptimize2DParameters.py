@@ -51,8 +51,8 @@ lsf_end_step_size = 0.05
 # simple scatterers made of SiN, they can get fairly impressive splitting.  The "focal length" seems to be smaller
 # there (not sure if it would be considered near field or not, but it would be right on the edge).
 # focal_length_um = 1.5
-# focal_length_um = 2.0
-focal_length_um = 3.0
+focal_length_um = 2.0
+# focal_length_um = 3.0
 
 
 #
@@ -72,8 +72,8 @@ feature_size_voxels_by_profiles = [ int( 0.1 / lsf_mesh_spacing_um ) for idx in 
 feature_size_voxels_by_profiles.append( int( 0.09 / lsf_mesh_spacing_um ) )
 
 
-# device_size_lateral_um = 3.0
-device_size_lateral_um = 4.0
+device_size_lateral_um = 3.0
+# device_size_lateral_um = 4.0
 designable_size_vertical_um = np.sum( device_layer_thicknesses_um ) + np.sum( device_spacer_thicknesses_um )
 
 device_size_verical_um = designable_size_vertical_um
@@ -143,11 +143,18 @@ polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y']
 weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
+# spectral_focal_plane_map = [
+# 	[2 * num_points_per_band, 3 * num_points_per_band],
+# 	[0, num_points_per_band],
+# 	[num_points_per_band, 2 * num_points_per_band]
+# ]
+
 spectral_focal_plane_map = [
-	[2 * num_points_per_band, 3 * num_points_per_band],
 	[0, num_points_per_band],
 	[num_points_per_band, 2 * num_points_per_band],
+	[2 * num_points_per_band, 3 * num_points_per_band]
 ]
+
 
 # spectral_focal_plane_map = [
 # 	[0 * num_points_per_band, 2 * num_points_per_band],
