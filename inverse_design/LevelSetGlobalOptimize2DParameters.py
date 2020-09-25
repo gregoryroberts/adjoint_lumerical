@@ -151,8 +151,8 @@ polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 
 spectral_focal_plane_map = [
 	[0, num_points_per_band],
-	[num_points_per_band, 2 * num_points_per_band],
-	[2 * num_points_per_band, 3 * num_points_per_band]
+	[2 * num_points_per_band, 3 * num_points_per_band],
+	[num_points_per_band, 2 * num_points_per_band]
 ]
 
 
