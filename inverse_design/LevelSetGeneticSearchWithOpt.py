@@ -105,7 +105,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_with_noopt_Hz_sio2_v9"
+projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_sio2_v10"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -1164,12 +1164,17 @@ for generation_idx in range( 0, num_generations ):
 		if ( generation_fom[ parent_idx ] > cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
 			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
 			new_parents_idxs.append( parent_idx )
+
+	for parent_idx in range( 0, len( generation_fom ) ):
+		if ( generation_fom[ parent_idx ] == cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
+			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+			new_parents_idxs.append( parent_idx )
 		
 
 	#
 	# Let's optimize all the parents we are sending forward!
 	#
-	num_optimization_cycles_per_parent = 0#10
+	num_optimization_cycles_per_parent = 10
 
 	# num_optimization_cycles_per_parent = 2#10
 
@@ -1195,6 +1200,10 @@ for generation_idx in range( 0, num_generations ):
 
 	for parent_idx in range( 0, len( sorted_optimized_parents_fom ) ):
 		if ( optimized_parents_final_fom[ parent_idx ] > cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
+			new_parents_propagated.append( new_parents[ parent_idx ] )
+
+	for parent_idx in range( 0, len( sorted_optimized_parents_fom ) ):
+		if ( optimized_parents_final_fom[ parent_idx ] == cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
 			new_parents_propagated.append( new_parents[ parent_idx ] )
 
 	np.save( projects_directory_location + "/optimized_parents_fom_" + str( generation_idx ) + ".npy", optimized_parents_fom )
