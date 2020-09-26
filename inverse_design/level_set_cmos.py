@@ -66,24 +66,28 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 		self.assemble_level_sets()
 
 	def single_random_layer_profile( self, profile_idx ):
+		return self.single_random_layer_profile_specified( profile_idx, self.feature_gap_width_sigma_voxels, self.feature_probability )
+
+	def single_random_layer_profile_specified( self, profile_idx, input_feature_gap_width_sigma_voxels, input_feature_probability ):
 		space_remaining_voxels = self.opt_width_num_voxels
 
 		random_profile = self.layer_profiles[ 0 ].copy()
 		random_profile[ : ] = 1.0
 
 		while space_remaining_voxels >= self.minimum_feature_gap_spacing_voxels[ profile_idx ]:
-			choose_density_value = 1.0 * ( np.random.uniform( 0, 1 ) < self.feature_probability )
+			choose_density_value = 1.0 * ( np.random.uniform( 0, 1 ) < input_feature_probability )
 			choose_width_voxels = int(
 				np.minimum( space_remaining_voxels,
-					self.minimum_feature_gap_spacing_voxels[ profile_idx ] + np.maximum( 0, np.random.normal( 0, self.feature_gap_width_sigma_voxels, 1 ) ) )
+					self.minimum_feature_gap_spacing_voxels[ profile_idx ] + np.maximum( 0, np.random.normal( 0, input_feature_gap_width_sigma_voxels, 1 ) ) )
 			)
 
 			end_pt = space_remaining_voxels
 			start_pt = np.maximum( end_pt - choose_width_voxels, 0 )
 
-			if start_pt < self.minimum_feature_gap_spacing_voxels[ profile_idx ]:
-				# Final feature would be too small
-				break
+			# if start_pt < self.minimum_feature_gap_spacing_voxels[ profile_idx ]:
+				# Final feature would be too small, which is ok because it is high index which is the same
+				# as our background material
+				# break
 
 			space_remaining_voxels -= choose_width_voxels
 

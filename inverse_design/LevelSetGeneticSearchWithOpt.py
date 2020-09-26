@@ -105,7 +105,7 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_sio2_v10"
+projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_sio2_v11"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -368,8 +368,6 @@ num_parents_new_generation = 50#20
 num_parents_propagated = 8
 
 
-
-
 # Probability that on each layer you will just create a random new layer somewhere in a child
 mutation_probability_start = 0.25
 mutation_probability_end = 0.05
@@ -394,10 +392,15 @@ def offspring( parent_1, parent_2, mutate_layer_probability ):
 
 	for mutate_idx in range( 0, num_profiles ):
 		if np.random.uniform( 0, 1 ) < mutate_layer_probability:
-			if mutate_idx < crossover_point:
-				random_layer = parent_1.single_random_layer_profile( mutate_idx )
-			else:
-				random_layer = parent_2.single_random_layer_profile( mutate_idx )
+			random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
+			random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+
+			random_layer = parent_1.single_random_layer_profile_specified( mutate_idx, int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
+
+			# if mutate_idx < crossover_point:
+			# 	random_layer = parent_1.single_random_layer_profile( mutate_idx )
+			# else:
+			# 	random_layer = parent_2.single_random_layer_profile( mutate_idx )
 			
 			child_profiles[ mutate_idx ] = random_layer.copy()
 
