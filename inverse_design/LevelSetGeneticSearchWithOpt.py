@@ -475,7 +475,7 @@ if should_reload:
 			random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
 			random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
 
-			reload_optimization_state.feature_gap_width_sigma_voxels = random_size_variability
+			reload_optimization_state.feature_gap_width_sigma_voxels = int( random_size_variability / lsf_mesh_spacing_um )
 			reload_optimization_state.feature_probability = random_feature_density
 
 			reload_optimization_state.init_profiles_with_density( get_devices[ gen_idx ][ device_idx ] )
