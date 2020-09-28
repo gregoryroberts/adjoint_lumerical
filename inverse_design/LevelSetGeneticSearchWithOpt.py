@@ -511,35 +511,35 @@ if should_reload:
 		if ( reload_fom[ parent_idx ] == cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
 			new_parents_propagated.append( individuals_by_generation[ num_reload_gen - 1 ][ parent_idx ] )
 
-		new_generation = []
+	new_generation = []
 
-		start_child_time = time.time()
+	start_child_time = time.time()
 
-		for child_idx in range( 0, num_devices_per_generation ):
+	for child_idx in range( 0, num_devices_per_generation ):
 
-			if ( child_idx % 10 ) == 0:
-				end_child_time = time.time()
-				elapsed_child_time = end_child_time - start_child_time
+		if ( child_idx % 10 ) == 0:
+			end_child_time = time.time()
+			elapsed_child_time = end_child_time - start_child_time
 
-				log_file = open( projects_directory_location + "/log.txt", 'a' )
-				log_file.write( "In order to generate the next 10 children, it took " + str( elapsed_child_time ) + " seconds!" )
-				log_file.close()
+			log_file = open( projects_directory_location + "/log.txt", 'a' )
+			log_file.write( "In order to generate the next 10 children, it took " + str( elapsed_child_time ) + " seconds!" )
+			log_file.close()
 
-				start_child_time = end_child_time
+			start_child_time = end_child_time
 
-			if ( child_idx < num_parents_propagated ) and ( child_idx < len( new_parents_propagated ) ):
-				new_generation.append( new_parents_propagated[ child_idx ] )
-			else:
-				parent_1_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
-				parent_2_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+		if ( child_idx < num_parents_propagated ) and ( child_idx < len( new_parents_propagated ) ):
+			new_generation.append( new_parents_propagated[ child_idx ] )
+		else:
+			parent_1_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+			parent_2_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
 
-				new_generation.append( offspring(
-					new_parents[ parent_1_idx ],
-					new_parents[ parent_2_idx ],
-					mutation_probability[ num_reload_gen - 1 ]
-				) )
+			new_generation.append( offspring(
+				new_parents[ parent_1_idx ],
+				new_parents[ parent_2_idx ],
+				mutation_probability[ num_reload_gen - 1 ]
+			) )
 
-		individuals_by_generation[ generation_idx + 1 ] = new_generation
+	individuals_by_generation[ num_reload_gen ] = new_generation
 
 else:
 	for individual_idx in range( 0, num_devices_per_generation ):
