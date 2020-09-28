@@ -456,11 +456,29 @@ if should_reload:
 	start_generation = num_reload_gen
 
 	for gen_idx in range( 0, num_reload_gen ):
-		individuals_by_generation[ gen_idx ] = get_devices[ gen_idx ].copy()
+		for device_idx in range( 0, len( get_devices[ gen_idx ] ) ):
+
+			reload_optimization_state = level_set_cmos.LevelSetCMOS(
+				[ min_real_permittivity, max_real_permittivity ],
+				lsf_mesh_spacing_um,
+				designable_device_vertical_minimum_um,
+				device_size_lateral_um,
+				feature_size_voxels_by_profiles,
+				device_layer_thicknesses_um,
+				device_spacer_thicknesses_um,
+				num_iterations_per_epoch,
+				1,
+				"level_set_optimize",
+				device_lateral_background_density )
+
+			reload_optimization_state.init_profiles_with_density( get_devices[ gen_idx ][ device_idx ] )
+
+			individuals_by_generation[ gen_idx ].append( reload_optimization_state )
+
+
 		search_fom.append( get_fom[ gen_idx ].copy() )
 		search_devices.append( get_devices[ gen_idx ].copy() )
 
-	reload_generation = get_devices[ num_reload_gen - 1 ]
 	reload_fom = get_fom[ num_reload_gen - 1 ]
 
 	sorted_generation_fom = sorted( reload_fom, reverse=True )
