@@ -456,6 +456,7 @@ if should_reload:
 	start_generation = num_reload_gen
 
 	for gen_idx in range( 0, num_reload_gen ):
+		individuals_by_generation[ gen_idx ] = []
 		for device_idx in range( 0, len( get_devices[ gen_idx ] ) ):
 
 			reload_optimization_state = level_set_cmos.LevelSetCMOS(
