@@ -470,20 +470,20 @@ if should_reload:
 	new_parents = []
 	new_parents_propagated = []
 
-	for parent_idx in range( 0, len( generation_fom ) ):
-		if ( generation_fom[ parent_idx ] > cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
+	for parent_idx in range( 0, len( reload_fom ) ):
+		if ( reload_fom[ parent_idx ] > cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
 			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
 
-	for parent_idx in range( 0, len( generation_fom ) ):
-		if ( generation_fom[ parent_idx ] == cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
+	for parent_idx in range( 0, len( reload_fom ) ):
+		if ( reload_fom[ parent_idx ] == cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
 			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
 		
-	for parent_idx in range( 0, len( sorted_optimized_parents_fom ) ):
-		if ( optimized_parents_final_fom[ parent_idx ] > cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
+	for parent_idx in range( 0, len( reload_fom ) ):
+		if ( reload_fom[ parent_idx ] > cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
 			new_parents_propagated.append( new_parents[ parent_idx ] )
 
-	for parent_idx in range( 0, len( sorted_optimized_parents_fom ) ):
-		if ( optimized_parents_final_fom[ parent_idx ] == cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
+	for parent_idx in range( 0, len( reload_fom ) ):
+		if ( reload_fom[ parent_idx ] == cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
 			new_parents_propagated.append( new_parents[ parent_idx ] )
 
 		new_generation = []
