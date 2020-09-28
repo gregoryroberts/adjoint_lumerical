@@ -105,7 +105,9 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-projects_directory_location += "/" + project_name + "_genetic_with_noopt_Hz_sio2_v12"
+should_reload = True
+projects_directory_reload = projects_directory_reload + "/" + project_name + "_genetic_with_opt_Hz_sio2_v11"
+projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_sio2_v13"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -362,10 +364,10 @@ num_parents_propagated = 5
 
 
 num_generations = 20
-num_devices_per_generation = 200#100
-num_parents_new_generation = 50#20
+num_devices_per_generation = 150#200#100
+num_parents_new_generation = 40#50#20
 
-num_parents_propagated = 8
+num_parents_propagated = 5#8
 
 
 # Probability that on each layer you will just create a random new layer somewhere in a child
@@ -432,6 +434,12 @@ individuals_by_generation = [ None for idx in range( 0, num_generations ) ]
 
 generation_0 = []
 
+search_fom = []
+search_fom_by_wl = []
+search_devices = []
+
+start_generation = 0
+
 min_feature_density = 0.15#0.25
 max_feature_density = 0.75#0.75
 
@@ -440,32 +448,85 @@ max_size_variability = 0.15#0.1
 
 np.random.seed( 123123 )
 
-for individual_idx in range( 0, num_devices_per_generation ):
-	my_optimization_state = level_set_cmos.LevelSetCMOS(
-		[ min_real_permittivity, max_real_permittivity ],
-		lsf_mesh_spacing_um,
-		designable_device_vertical_minimum_um,
-		device_size_lateral_um,
-		feature_size_voxels_by_profiles,
-		device_layer_thicknesses_um,
-		device_spacer_thicknesses_um,
-		num_iterations_per_epoch,
-		1,
-		"level_set_optimize",
-		device_lateral_background_density )
+if should_reload:
+	get_fom = np.load( projects_directory_reload + "/search_fom.npy" )
+	get_devices = np.load( projects_directory_reload + "/search_devices.npy" )
+	num_reload_gen = len( get_fom )
 
-	random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
-	random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+	start_generation = num_reload_gen
 
-	my_optimization_state.randomize_layer_profiles( int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
+	for gen_idx in range( 0, num_reload_gen ):
+		individuals_by_generation[ gen_idx ] = get_devices[ gen_idx ].copy()
+		search_fom.append( get_fom[ gen_idx ].copy() )
+		search_devices.append( get_devices[ gen_idx ].copy() )
 
-	generation_0.append( my_optimization_state )
+	reload_generation = get_devices[ num_reload_gen - 1 ]
+	reload_fom = get_fom[ num_reload_gen - 1 ]
 
-individuals_by_generation[ 0 ] = generation_0
+	sorted_generation_fom = sorted( reload_fom, reverse=True )
+	cutoff_fom = sorted_generation_fom[ num_parents_new_generation ]
+	cutoff_fom_propagation = sorted_generation_fom[ num_parents_propagated ]
 
-search_fom = []
-search_fom_by_wl = []
-search_devices = []
+	new_parents = []
+	new_parents_propagated = []
+
+	for parent_idx in range( 0, len( generation_fom ) ):
+		if ( generation_fom[ parent_idx ] > cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
+			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+
+	for parent_idx in range( 0, len( generation_fom ) ):
+		if ( generation_fom[ parent_idx ] == cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
+			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+		
+	for parent_idx in range( 0, len( sorted_optimized_parents_fom ) ):
+		if ( optimized_parents_final_fom[ parent_idx ] > cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
+			new_parents_propagated.append( new_parents[ parent_idx ] )
+
+	for parent_idx in range( 0, len( sorted_optimized_parents_fom ) ):
+		if ( optimized_parents_final_fom[ parent_idx ] == cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
+			new_parents_propagated.append( new_parents[ parent_idx ] )
+
+		new_generation = []
+
+		for child_idx in range( 0, num_devices_per_generation ):
+
+			if ( child_idx < num_parents_propagated ) and ( child_idx < len( new_parents_propagated ) ):
+				new_generation.append( new_parents_propagated[ child_idx ] )
+			else:
+				parent_1_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+				parent_2_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+
+				new_generation.append( offspring(
+					new_parents[ parent_1_idx ],
+					new_parents[ parent_2_idx ],
+					mutation_probability[ num_reload_gen - 1 ]
+				) )
+
+		individuals_by_generation[ generation_idx + 1 ] = new_generation
+
+else:
+	for individual_idx in range( 0, num_devices_per_generation ):
+		my_optimization_state = level_set_cmos.LevelSetCMOS(
+			[ min_real_permittivity, max_real_permittivity ],
+			lsf_mesh_spacing_um,
+			designable_device_vertical_minimum_um,
+			device_size_lateral_um,
+			feature_size_voxels_by_profiles,
+			device_layer_thicknesses_um,
+			device_spacer_thicknesses_um,
+			num_iterations_per_epoch,
+			1,
+			"level_set_optimize",
+			device_lateral_background_density )
+
+		random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
+		random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+
+		my_optimization_state.randomize_layer_profiles( int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
+
+		generation_0.append( my_optimization_state )
+
+	individuals_by_generation[ 0 ] = generation_0
 
 
 def optimize_parent_locally( parent_object, num_iterations ):
@@ -953,7 +1014,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	return parent_object, fom_track
 '''
 
-for generation_idx in range( 0, num_generations ):
+for generation_idx in range( start_generation, num_generations ):
 
 	generation_fom = [ 0 for idx in range( 0, num_devices_per_generation ) ]
 	# generation_fom_by_wl = [ np.zeros( num_design_frequency_points ) for idx in range( 0, num_devices_per_generation ) ]
@@ -1177,7 +1238,7 @@ for generation_idx in range( 0, num_generations ):
 	#
 	# Let's optimize all the parents we are sending forward!
 	#
-	num_optimization_cycles_per_parent = 0#10
+	num_optimization_cycles_per_parent = 5#0#10
 
 	# num_optimization_cycles_per_parent = 2#10
 
