@@ -28,7 +28,8 @@ design_index_background = 1.0#1.35
 device_background_index = 1.46#1.35# 2.5
 device_lateral_background_density = 1.0
 # high_index_backfill = 2.5
-high_index_backfill = 1.46
+# high_index_backfill = 1.46
+high_index_backfill = 2.1
 substrate_index = 1.0
 
 min_real_permittivity = design_index_background**2
