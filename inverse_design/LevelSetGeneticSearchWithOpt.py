@@ -472,19 +472,19 @@ if should_reload:
 
 	for parent_idx in range( 0, len( reload_fom ) ):
 		if ( reload_fom[ parent_idx ] > cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
-			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+			new_parents.append( individuals_by_generation[ num_reload_gen - 1 ][ parent_idx ] )
 
 	for parent_idx in range( 0, len( reload_fom ) ):
 		if ( reload_fom[ parent_idx ] == cutoff_fom ) and ( len( new_parents ) < num_parents_new_generation ):
-			new_parents.append( individuals_by_generation[ generation_idx ][ parent_idx ] )
+			new_parents.append( individuals_by_generation[ num_reload_gen - 1 ][ parent_idx ] )
 		
 	for parent_idx in range( 0, len( reload_fom ) ):
 		if ( reload_fom[ parent_idx ] > cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
-			new_parents_propagated.append( new_parents[ parent_idx ] )
+			new_parents_propagated.append( individuals_by_generation[ num_reload_gen - 1 ][ parent_idx ] )
 
 	for parent_idx in range( 0, len( reload_fom ) ):
 		if ( reload_fom[ parent_idx ] == cutoff_fom_propagation ) and ( len( new_parents_propagated ) < num_parents_propagated ):
-			new_parents_propagated.append( new_parents[ parent_idx ] )
+			new_parents_propagated.append( individuals_by_generation[ num_reload_gen - 1 ][ parent_idx ] )
 
 		new_generation = []
 
