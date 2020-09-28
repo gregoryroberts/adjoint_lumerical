@@ -276,7 +276,7 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 				delta_profile = np.flip( delta_profile )
 				save_pre_profile = np.flip( save_pre_profile )
 
-			while np.sum( 1.0 * delta_profile ) > 0:
+			while np.sum( 1.0 * delta_profile ) > 0.5:
 			
 				random_start_point = int( np.random.random( 1 )[ 0 ] * self.opt_width_num_voxels ) % self.opt_width_num_voxels
 				while delta_profile[ random_start_point ] == 0:
