@@ -487,9 +487,6 @@ if should_reload:
 
 				reload_optimization_state.init_profiles_with_density( get_density )
 
-				np.save( projects_directory_location + "/reloaded_device_seed_" + str( device_idx ) + ".npy", get_devices[ gen_idx ][ device_idx ] )
-				np.save( projects_directory_location + "/reloaded_device_" + str( device_idx ) + ".npy", reload_optimization_state.assemble_index(0) )
-
 				individuals_by_generation[ gen_idx ].append( reload_optimization_state )
 
 
