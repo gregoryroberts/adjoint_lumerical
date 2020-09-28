@@ -480,7 +480,12 @@ if should_reload:
 				reload_optimization_state.feature_gap_width_sigma_voxels = int( random_size_variability / lsf_mesh_spacing_um )
 				reload_optimization_state.feature_probability = random_feature_density
 
-				reload_optimization_state.init_profiles_with_density( get_devices[ gen_idx ][ device_idx ] )
+				get_index = get_devices[ gen_idx ][ device_idx ]
+				get_density = get_index - min_real_index
+				get_density /= ( max_real_index - min_real_index )
+				get_density = 1.0 * np.greater_equal( get_density, 0.5 )
+
+				reload_optimization_state.init_profiles_with_density( get_density )
 
 				np.save( projects_directory_location + "/reloaded_device_seed_" + str( device_idx ) + ".npy", get_devices[ gen_idx ][ device_idx ] )
 				np.save( projects_directory_location + "/reloaded_device_" + str( device_idx ) + ".npy", reload_optimization_state.assemble_index(0) )
