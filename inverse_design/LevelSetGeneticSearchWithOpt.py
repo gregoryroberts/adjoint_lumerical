@@ -472,6 +472,12 @@ if should_reload:
 				"level_set_optimize",
 				device_lateral_background_density )
 
+			random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
+			random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+
+			reload_optimization_state.feature_gap_width_sigma_voxels = random_size_variability
+			reload_optimization_state.feature_probability = random_feature_density
+
 			reload_optimization_state.init_profiles_with_density( get_devices[ gen_idx ][ device_idx ] )
 
 			individuals_by_generation[ gen_idx ].append( reload_optimization_state )
@@ -507,7 +513,19 @@ if should_reload:
 
 		new_generation = []
 
+		start_child_time = time.time()
+
 		for child_idx in range( 0, num_devices_per_generation ):
+
+			if ( child_idx % 10 ) == 0:
+				end_child_time = time.time()
+				elapsed_child_time = end_child_time - start_child_time
+
+				log_file = open( projects_directory_location + "/log.txt", 'a' )
+				log_file.write( "In order to generate the next 10 children, it took " + str( elapsed_child_time ) + " seconds!" )
+				log_file.close()
+
+				start_child_time = end_child_time
 
 			if ( child_idx < num_parents_propagated ) and ( child_idx < len( new_parents_propagated ) ):
 				new_generation.append( new_parents_propagated[ child_idx ] )
