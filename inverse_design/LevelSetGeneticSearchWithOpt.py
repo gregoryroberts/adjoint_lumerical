@@ -524,7 +524,7 @@ if should_reload:
 			elapsed_child_time = end_child_time - start_child_time
 
 			log_file = open( projects_directory_location + "/log.txt", 'a' )
-			log_file.write( "In order to generate the next 10 children, it took " + str( elapsed_child_time ) + " seconds!" )
+			log_file.write( "In order to generate the next 10 children, it took " + str( elapsed_child_time ) + " seconds!\n" )
 			log_file.close()
 
 			start_child_time = end_child_time
