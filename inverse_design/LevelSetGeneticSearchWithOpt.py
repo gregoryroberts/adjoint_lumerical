@@ -457,30 +457,32 @@ if should_reload:
 
 	for gen_idx in range( 0, num_reload_gen ):
 		individuals_by_generation[ gen_idx ] = []
-		for device_idx in range( 0, len( get_devices[ gen_idx ] ) ):
 
-			reload_optimization_state = level_set_cmos.LevelSetCMOS(
-				[ min_real_permittivity, max_real_permittivity ],
-				lsf_mesh_spacing_um,
-				designable_device_vertical_minimum_um,
-				device_size_lateral_um,
-				feature_size_voxels_by_profiles,
-				device_layer_thicknesses_um,
-				device_spacer_thicknesses_um,
-				num_iterations_per_epoch,
-				1,
-				"level_set_optimize",
-				device_lateral_background_density )
+		if gen_idx == ( num_reload_gen - 1 ):
+			for device_idx in range( 0, len( get_devices[ gen_idx ] ) ):
 
-			random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
-			random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+				reload_optimization_state = level_set_cmos.LevelSetCMOS(
+					[ min_real_permittivity, max_real_permittivity ],
+					lsf_mesh_spacing_um,
+					designable_device_vertical_minimum_um,
+					device_size_lateral_um,
+					feature_size_voxels_by_profiles,
+					device_layer_thicknesses_um,
+					device_spacer_thicknesses_um,
+					num_iterations_per_epoch,
+					1,
+					"level_set_optimize",
+					device_lateral_background_density )
 
-			reload_optimization_state.feature_gap_width_sigma_voxels = int( random_size_variability / lsf_mesh_spacing_um )
-			reload_optimization_state.feature_probability = random_feature_density
+				random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
+				random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
 
-			reload_optimization_state.init_profiles_with_density( get_devices[ gen_idx ][ device_idx ] )
+				reload_optimization_state.feature_gap_width_sigma_voxels = int( random_size_variability / lsf_mesh_spacing_um )
+				reload_optimization_state.feature_probability = random_feature_density
 
-			individuals_by_generation[ gen_idx ].append( reload_optimization_state )
+				reload_optimization_state.init_profiles_with_density( get_devices[ gen_idx ][ device_idx ] )
+
+				individuals_by_generation[ gen_idx ].append( reload_optimization_state )
 
 
 		search_fom.append( get_fom[ gen_idx ].copy() )
