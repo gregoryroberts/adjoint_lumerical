@@ -105,8 +105,8 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-should_reload = False#True
-projects_directory_reload = projects_directory_location + "/" + project_name + "_genetic_with_opt_Hz_sio2_v11"
+should_reload = True
+projects_directory_reload = projects_directory_location + "/" + project_name + "_genetic_with_opt_Hz_tio2_v14"
 projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_tio2_v14"
 
 if not os.path.isdir(projects_directory_location):
