@@ -75,7 +75,7 @@ binarize_set_point = 0.5
 blur_fields_size_voxels = 0
 blur_fields = False
 
-num_iterations_nominal = 500#300
+num_iterations_nominal = 300
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
 
