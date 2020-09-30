@@ -2455,7 +2455,7 @@ class ColorSplittingOptimization2D():
 
 			self.binarization_evolution[ iter_idx ] = compute_binarization( self.design_density.flatten() )
 
-			print('pre binarize')
+			# print('pre binarize')
 
 			if binarize:
 				proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
