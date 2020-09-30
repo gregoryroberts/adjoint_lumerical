@@ -98,8 +98,8 @@ for idx in range( int( 0.5 * num_dense_wls ), num_dense_wls ):
 	dense_focal_map[ idx ] = 1
 
 binarize = True
-binarize_movement_per_step_nominal = 0.0075
-binarize_max_movement_per_voxel_nominal = 0.0075# / 10.
+binarize_movement_per_step_nominal = 0.0075 / 5.
+binarize_max_movement_per_voxel_nominal = 0.0075 / 5.# / 10.
 
 rho_delta_scaling = ( 1.5**2 - np.real( min_relative_permittivity ) ) / np.real( max_relative_permittivity - min_relative_permittivity )
 binarize_movement_per_step = binarize_movement_per_step_nominal * rho_delta_scaling
