@@ -99,7 +99,7 @@ for idx in range( int( 0.5 * num_dense_wls ), num_dense_wls ):
 
 binarize = True
 binarize_movement_per_step_nominal = 0.0075 / 3.
-binarize_max_movement_per_voxel_nominal = 0.0075 / 3.# / 10.
+binarize_max_movement_per_voxel_nominal = 0.0075 / 9.# / 10.
 
 rho_delta_scaling = ( 1.5**2 - np.real( min_relative_permittivity ) ) / np.real( max_relative_permittivity - min_relative_permittivity )
 binarize_movement_per_step = binarize_movement_per_step_nominal * rho_delta_scaling
@@ -123,6 +123,28 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 
 make_optimizer.init_density_with_uniform( mean_density )
 
+# make_optimizer.plot_geometry()
+
+# opt_density = np.load( '/Users/gregory/Downloads/opt_mwir_density.npy' )
+# opt_density = np.load( '/Users/gregory/Development/Photonics/adjoint_lumerical/inverse_design/Landscape/test/opt_optimized_density.npy' )
+
+# plt.plot( opt_density[ :, 4 ] )
+# plt.show()
+
+# make_optimizer.init_density_directly( opt_density )
+# import_density = ColorSplittingOptimization2D.upsample( make_optimizer.design_density, density_coarsen_factor )
+
+# device_permittivity = make_optimizer.density_to_permittivity( import_density )
+
+# fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_max_um * 1e-6 ), device_permittivity )
+
+# plt.imshow( np.abs( fwd_Ez ) )
+# plt.show()
+
+# plt.imshow( opt_density )
+# plt.colorbar()
+# plt.show()
+
 make_optimizer.optimize(
 	int( num_iterations ),
 	save_folder + "/opt",
@@ -130,7 +152,9 @@ make_optimizer.optimize(
 	None,
 	use_log_fom,
 	wavelength_adversary, adversary_update_iters, np.array( [ lambda_min_um ] ), np.array( [ lambda_max_um ] ),
-	binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+	False,
+	# binarize,
+	binarize_movement_per_step, binarize_max_movement_per_voxel,
 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
 make_optimizer.save_optimization_data( save_folder + "/opt" )
