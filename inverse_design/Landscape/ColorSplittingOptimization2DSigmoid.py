@@ -2225,7 +2225,7 @@ class ColorSplittingOptimization2DSigmoid():
 
 			# mask_density = opt_mask * self.design_density
 			import_density = upsample( self.design_density, self.coarsen_factor )
-			device_permittivity = self.density_to_permittivity( import_density )
+			device_permittivity = self.density_to_permittivity( import_density, epoch )
 
 
 			if random_globals and ( ( iter_idx % random_global_iteration_frequency ) == 0 ):
