@@ -20,7 +20,7 @@ import matplotlib.pylab as plt
 #
 # Optimizer
 #
-import ColorSplittingOptimization2D
+import ColorSplittingOptimization2DSigmoid
 
 if len( sys.argv ) < 3:
 	print( "Usage: python " + sys.argv[ 0 ] + " { save folder } { max index }" )
@@ -112,7 +112,7 @@ dropout_start = 0
 dropout_end = 0
 dropout_p = 0.1
 
-make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
+make_optimizer = ColorSplittingOptimization2DSigmoid.ColorSplittingOptimization2DSigmoid(
 	[ device_width_voxels, device_height_voxels ],
 	density_coarsen_factor, mesh_size_nm,
 	[ min_relative_permittivity, max_relative_permittivity ],
@@ -125,43 +125,43 @@ make_optimizer.init_density_with_uniform( mean_density )
 
 # make_optimizer.plot_geometry()
 
-# opt_density = np.load( '/Users/gregory/Downloads/opt_mwir_density.npy' )
+opt_density = np.load( '/Users/gregory/Downloads/opt_mwir_density.npy' )
 # opt_density = 1.0 * np.greater_equal( opt_density, 0.5 )
 # opt_density = np.load( '/Users/gregory/Development/Photonics/adjoint_lumerical/inverse_design/Landscape/test/opt_optimized_density.npy' )
 
-# plt.plot( opt_density[ :, 4 ] )
-# plt.show()
+plt.plot( opt_density[ :, 8 ] )
+plt.show()
 
-# make_optimizer.init_density_directly( opt_density )
-# import_density = ColorSplittingOptimization2D.upsample( make_optimizer.design_density, density_coarsen_factor )
+make_optimizer.init_density_directly( opt_density )
+import_density = ColorSplittingOptimization2DSigmoid.upsample( make_optimizer.design_density, density_coarsen_factor )
 
-# device_permittivity = make_optimizer.density_to_permittivity( import_density )
+device_permittivity = make_optimizer.density_to_permittivity( import_density )
 
-# fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_min_um * 1e-6 ), device_permittivity )
+fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_min_um * 1e-6 ), device_permittivity )
 
-# plt.imshow( np.abs( fwd_Ez ) )
-# plt.show()
+plt.imshow( np.abs( fwd_Ez ) )
+plt.show()
 
-# fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_max_um * 1e-6 ), device_permittivity )
+fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_max_um * 1e-6 ), device_permittivity )
 
-# plt.imshow( np.abs( fwd_Ez ) )
-# plt.show()
+plt.imshow( np.abs( fwd_Ez ) )
+plt.show()
 
 
-# plt.imshow( opt_density )
-# plt.colorbar()
-# plt.show()
+plt.imshow( opt_density )
+plt.colorbar()
+plt.show()
 
-make_optimizer.optimize(
-	int( num_iterations ),
-	save_folder + "/opt",
-	False, 20, 20, 0.95,
-	None,
-	use_log_fom,
-	wavelength_adversary, adversary_update_iters, np.array( [ lambda_min_um ] ), np.array( [ lambda_max_um ] ),
-	False,
-	# binarize,
-	binarize_movement_per_step, binarize_max_movement_per_voxel,
-	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+# make_optimizer.optimize(
+# 	int( num_iterations ),
+# 	save_folder + "/opt",
+# 	False, 20, 20, 0.95,
+# 	None,
+# 	use_log_fom,
+# 	wavelength_adversary, adversary_update_iters, np.array( [ lambda_min_um ] ), np.array( [ lambda_max_um ] ),
+# 	False,
+# 	# binarize,
+# 	binarize_movement_per_step, binarize_max_movement_per_voxel,
+# 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
 
-make_optimizer.save_optimization_data( save_folder + "/opt" )
+# make_optimizer.save_optimization_data( save_folder + "/opt" )
