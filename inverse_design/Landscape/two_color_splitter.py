@@ -50,7 +50,8 @@ def density_bound_from_eps( eps_val ):
 lambda_values_um = np.array( [ lambda_min_um, lambda_max_um ] )
 
 device_width_voxels = 240
-device_height_voxels = 240
+# device_height_voxels = 240
+device_height_voxels = 120
 
 device_voxels_total = device_width_voxels * device_height_voxels
 focal_length_voxels = 160
@@ -137,16 +138,40 @@ make_optimizer.init_density_with_uniform( mean_density )
 
 # import_density = 1.0 * np.greater( import_density, 0.5 )
 
-# device_permittivity = make_optimizer.density_to_permittivity( import_density, 8 )
+# device_permittivity = make_optimizer.density_to_permittivity( import_density, 12 )
 
 # fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_min_um * 1e-6 ), device_permittivity )
+
+# state_1_fwd_ez = np.abs( fwd_Ez[ :, make_optimizer.focal_point_y ] )**2
 
 # plt.imshow( np.abs( fwd_Ez ) )
 # plt.show()
 
 # fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_max_um * 1e-6 ), device_permittivity )
 
+# state_2_fwd_ez = np.abs( fwd_Ez[ :, make_optimizer.focal_point_y ] )**2
+
 # plt.imshow( np.abs( fwd_Ez ) )
+# plt.show()
+
+# plt.plot(
+# 	np.linspace(
+# 		-0.5 * make_optimizer.simulation_width_voxels * mesh_size_nm / 1000.,
+# 		0.5 * make_optimizer.simulation_width_voxels * mesh_size_nm / 1000.,
+# 		make_optimizer.simulation_width_voxels
+# 	),
+# 	state_1_fwd_ez,
+# 	color='g',
+# 	linewidth=2 )
+# plt.plot(
+# 	np.linspace(
+# 		-0.5 * make_optimizer.simulation_width_voxels * mesh_size_nm / 1000.,
+# 		0.5 * make_optimizer.simulation_width_voxels * mesh_size_nm / 1000.,
+# 		make_optimizer.simulation_width_voxels
+# 	),
+# 	state_2_fwd_ez,
+# 	color='b',
+# 	linewidth=2 )
 # plt.show()
 
 # plt.imshow( device_permittivity )
