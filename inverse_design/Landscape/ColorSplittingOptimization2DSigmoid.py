@@ -2212,7 +2212,7 @@ class ColorSplittingOptimization2DSigmoid():
 
 		function_for_fom_and_gradient = self.compute_fom_and_gradient
 
-		num_epochs = 8
+		num_epochs = 12
 
 		for iter_idx in range( 0, num_iterations ):
 			epoch = num_epochs * ( iter_idx / num_iterations )
@@ -2468,7 +2468,10 @@ class ColorSplittingOptimization2DSigmoid():
 				( iter_idx / ( num_iterations - 1 ) ) * ( self.max_density_change_per_iteration_end - self.max_density_change_per_iteration_start )
 			)
 
-			self.binarization_evolution[ iter_idx ] = compute_binarization( self.design_density.flatten() )
+			density_sigmoid = sigmoid.Sigmoid( 0.125 * ( 2**epoch ), 0.5 )
+			forward_density = density_sigmoid.forward( self.design_density )
+
+			self.binarization_evolution[ iter_idx ] = compute_binarization( forward_density.flatten() )
 
 			# print('pre binarize')
 

@@ -75,7 +75,7 @@ binarize_set_point = 0.5
 blur_fields_size_voxels = 0
 blur_fields = False
 
-num_iterations_nominal = 300
+num_iterations_nominal = 400#300
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
 
@@ -126,8 +126,8 @@ make_optimizer.init_density_with_uniform( mean_density )
 # make_optimizer.plot_geometry()
 
 # opt_density = np.load( '/Users/gregory/Downloads/opt_mwir_density.npy' )
-# opt_density = 1.0 * np.greater_equal( opt_density, 0.5 )
-# opt_density = np.load( '/Users/gregory/Development/Photonics/adjoint_lumerical/inverse_design/Landscape/test/opt_optimized_density.npy' )
+# # opt_density = 1.0 * np.greater_equal( opt_density, 0.5 )
+# # opt_density = np.load( '/Users/gregory/Development/Photonics/adjoint_lumerical/inverse_design/Landscape/test/opt_optimized_density.npy' )
 
 # plt.plot( opt_density[ :, 8 ] )
 # plt.show()
@@ -135,7 +135,9 @@ make_optimizer.init_density_with_uniform( mean_density )
 # make_optimizer.init_density_directly( opt_density )
 # import_density = ColorSplittingOptimization2DSigmoid.upsample( make_optimizer.design_density, density_coarsen_factor )
 
-# device_permittivity = make_optimizer.density_to_permittivity( import_density )
+# import_density = 1.0 * np.greater( import_density, 0.5 )
+
+# device_permittivity = make_optimizer.density_to_permittivity( import_density, 8 )
 
 # fwd_Ez = make_optimizer.compute_forward_fields( 2 * np.pi * 3.0 * 1e8 / ( lambda_min_um * 1e-6 ), device_permittivity )
 
@@ -147,8 +149,7 @@ make_optimizer.init_density_with_uniform( mean_density )
 # plt.imshow( np.abs( fwd_Ez ) )
 # plt.show()
 
-
-# plt.imshow( opt_density )
+# plt.imshow( device_permittivity )
 # plt.colorbar()
 # plt.show()
 
