@@ -2437,7 +2437,7 @@ class ColorSplittingOptimization2DSigmoid():
 			# Otherwise we are already in design space! Sloppy here, but want to try it out
 			#
 			import_density = upsample( self.design_density, self.coarsen_factor )
-			net_gradient = self.apply_sigmoid( import_density, upsample_density, epoch )
+			net_gradient = self.apply_sigmoid( net_gradient, import_density, epoch )
 			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
 
 			#
