@@ -25,10 +25,10 @@ project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_lsf_
 # Check binarized device and look at feature sizes!
 background_index = 1.0
 design_index_background = 1.0#1.35
-device_background_index = 2.1#1.46#1.35# 2.5
+device_background_index = 1.46#2.1#1.46#1.35# 2.5
 device_lateral_background_density = 1.0
 # high_index_backfill = 2.5
-high_index_backfill = 2.1#1.46
+high_index_backfill = 1.46#2.1#1.46
 # high_index_backfill = 2.1
 substrate_index = 1.0
 
@@ -73,14 +73,16 @@ feature_size_voxels_by_profiles = [ int( 0.1 / lsf_mesh_spacing_um ) for idx in 
 feature_size_voxels_by_profiles.append( int( 0.09 / lsf_mesh_spacing_um ) )
 
 
-device_size_lateral_um = 3.0
+# device_size_lateral_um = 3.0
+device_size_lateral_um = 3.025
 # device_size_lateral_um = 4.0
 designable_size_vertical_um = np.sum( device_layer_thicknesses_um ) + np.sum( device_spacer_thicknesses_um )
 
 device_size_verical_um = designable_size_vertical_um
 
 opt_device_voxels_lateral = 1 + int( device_size_lateral_um / lsf_mesh_spacing_um )
-device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
+# device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
+device_voxels_lateral = 1 + int( ( device_size_lateral_um + np.finfo(np.float64).eps ) / mesh_spacing_um )
 designable_device_voxels_vertical = 1 + int(designable_size_vertical_um / mesh_spacing_um)
 
 designable_device_vertical_maximum_um = designable_size_vertical_um

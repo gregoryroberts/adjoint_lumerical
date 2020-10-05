@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from LevelSet import LevelSet
 import OptimizationState
+from scipy import ndimage
 
 
 class LevelSetCMOS( OptimizationState.OptimizationState ):
@@ -46,6 +47,187 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 		# self.level_set_boundary_smoothing = 7
 
 		self.device_background_density = device_background_density
+
+	def profiles_from_swarm_particle_positions( self, profile_idx, positions ):
+		profiles = []
+
+		for particle_idx in range( 0, len( positions ) ):
+			profiles.append( self.profile_from_swarm_particle_position( profile_idx, positions[ particle_idx ] ) )
+
+		return profiles
+
+
+	def profile_from_swarm_particle_position( self, profile_idx, position ):
+		vector_dim = len( position )
+		erosion_dilation_limit = int( 0.5 * ( self.minimum_feature_gap_spacing_voxels[ profile_idx ] + 1 ) )
+		k_cutoff = int( 0.5 * vector_dim / self.minimum_feature_gap_spacing_voxels[ profile_idx ] )
+		vector_mid_pt = int( 0.5 * vector_dim )
+
+		assert ( vector_dim % 2 ) == 1, "We are expected positions to be odd-length vectors"
+
+		position[ vector_mid_pt ] = np.real( position[ vector_mid_pt ] )
+		position[ 0 : vector_mid_pt ] = np.flip( np.conj( position[ vector_mid_pt + 1 : ] ) )
+
+		position[ vector_mid_pt + k_cutoff + 1 : vector_dim ] = 0
+		position[ 0 : vector_mid_pt - k_cutoff ] = 0
+
+		spatial_profile = np.greater_equal( np.real( np.fft.ifft( np.fft.ifftshift( position ) ) ), 0 )
+
+		for idx in range( 0, erosion_dilation_limit ):
+			spatial_profile = ndimage.binary_dilation( spatial_profile ).astype( spatial_profile.dtype )
+
+		for idx in range( 0, erosion_dilation_limit ):
+			spatial_profile = ndimage.binary_erosion( spatial_profile ).astype( spatial_profile.dtype )
+
+		for idx in range( 0, erosion_dilation_limit ):
+			spatial_profile = ndimage.binary_erosion( spatial_profile ).astype( spatial_profile.dtype )
+
+		for idx in range( 0, erosion_dilation_limit ):
+			spatial_profile = ndimage.binary_dilation( spatial_profile ).astype( spatial_profile.dtype )
+	
+		return spatial_profile
+
+	def init_swarm_positions( self, profile_idx, num_particles ):
+		vector_dim = len( self.layer_profiles[ profile_idx ] )
+		erosion_dilation_limit = int( 0.5 * ( self.minimum_feature_gap_spacing_voxels[ profile_idx ] + 1 ) )
+		k_cutoff = int( 0.5 * vector_dim / self.minimum_feature_gap_spacing_voxels[ profile_idx ] )
+		vector_mid_pt = int( 0.5 * vector_dim )
+
+		assert ( vector_dim % 2 ) == 1, "We are expected positions to be odd-length vectors"
+
+		swarm_positions = []
+
+		for particle_idx in range( 0, num_particles ):
+			position = ( np.random.random( vector_dim ) - 0.5 ) + 1j * ( np.random.random( vector_dim ) - 0.5 )
+			position[ vector_mid_pt ] = np.real( position[ vector_mid_pt ] )
+			position[ 0 : vector_mid_pt ] = np.flip( np.conj( position[ vector_mid_pt + 1 : ] ) )
+			fft_cutoff = int( vector_dim / erosion_dilation_limit )
+
+			position[ vector_mid_pt + k_cutoff + 1 : vector_dim ] = 0
+			position[ 0 : vector_mid_pt - k_cutoff ] = 0
+
+			swarm_positions.append( position )
+
+		return swarm_positions
+
+	def run_swarm( self, profile_idx, num_particles, num_iterations, eval_fn, omega=1.0, phi_p=0.5, phi_g=0.5, learning_rate=1.0 ):
+		save_level_sets = self.level_sets.copy()
+		save_profiles = self.layer_profiles.copy()
+
+		baseline_performance = eval_fn( self.assemble_index() )
+
+		particle_positions = self.init_swarm_positions( profile_idx, num_particles )
+		best_positions = particle_positions.copy()
+
+		def run_iteration( particle_positions ):
+			foms = []
+
+			profiles = self.profiles_from_swarm_particle_positions( profile_idx, particle_positions )
+			for particle_idx in range( 0, num_particles ):
+				self.layer_profiles[ profile_idx ] = profiles[ particle_idx ]
+				self.assemble_level_sets()
+
+				foms.append( eval_fn( self.assemble_index() ) )
+
+			return foms
+
+		def search_best_fom( foms, positions ):
+			best_fom = -np.inf
+			best_position = None
+
+			for particle_idx in range( 0, num_particles ):
+				get_fom = foms[ particle_idx ]
+				if get_fom >= best_fom:
+					best_fom = get_fom
+					best_position = positions[ particle_idx ].copy()
+
+			return best_fom, best_position
+
+		def random_velocities( particle_length ):
+			velocities = []
+
+			for particle_idx in range( 0, num_particles ):
+				real_random_velocity = np.random.random( particle_length ) - 0.5
+				imag_random_velocity = np.random.random( particle_length ) - 0.5
+
+				norm = np.sqrt( np.sum( real_random_velocity**2 + imag_random_velocity**2 ) )
+				real_random_velocity /= norm
+				imag_random_velocity /= norm
+
+				velocities.append( real_random_velocity + 1j * real_random_velocity )
+
+			return velocities
+
+
+		particle_foms = run_iteration( particle_positions )
+		best_particle_foms = particle_foms.copy()
+
+		init_particle_foms = particle_foms.copy()
+
+		best_overall_fom, best_overall_position = search_best_fom( particle_foms, particle_positions )
+
+		particle_velocities = random_velocities( len( self.layer_profiles[ profile_idx ] ) )
+
+		for iter_idx in range( 1, num_iterations ):
+			for particle_idx in range( 0, num_particles ):
+
+				get_position = particle_positions[ particle_idx ]
+				new_position = get_position.copy()
+				best_position = best_positions[ particle_idx ]
+				get_velocity = particle_velocities[ particle_idx ]
+				new_velocity = get_velocity.copy()
+
+				for idx in range( 0, len( get_position ) ):
+					rp = np.random.random()
+					rg = np.random.random()
+
+					new_velocity[ idx ] = (
+						omega * get_velocity[ idx ] +
+						phi_p * rp * ( best_position[ idx ] - get_position[ idx ] ) +
+						phi_g * rg * ( best_overall_position[ idx ] - get_position[ idx ] ) )
+
+				new_position = get_position + learning_rate * new_velocity
+
+				particle_positions[ particle_idx ] = new_position
+
+
+			particle_foms = run_iteration( particle_positions )
+			for particle_idx in range( 0, num_particles ):
+				new_particle_fom = particle_foms[ particle_idx ]
+
+				if new_particle_fom >= best_particle_foms[ particle_idx ]:
+					best_particle_foms[ particle_idx ] = new_particle_fom
+					best_positions[ particle_idx ] = particle_positions[ particle_idx ].copy()
+
+				if new_particle_fom >= best_overall_fom:
+					best_overall_fom = new_particle_fom
+					best_overall_position = particle_positions[ particle_idx ].copy()
+
+
+		successful_swarming = False
+		if best_overall_fom >= baseline_performance:
+
+			self.layer_profiles[ profile_idx ] = self.profile_from_swarm_particle_position( profile_idx, best_overall_position )
+			successful_swarming = True
+
+		else:
+			self.layer_profiles[ profile_idx ] = save_profiles[ profile_idx ].copy()
+
+		self.assemble_level_sets()
+
+		return successful_swarming, init_particle_foms, particle_foms
+
+
+	# def swarm( self, profile_idx ):
+	'''
+		1. Initialize random profile and then optimize via level set until we find a local minimum for the device.
+			a. For this, likeley need a good way to measure some amount of convergence
+		2. Initialize a swarm on a random profile index
+			a. Choose number of particles
+			b. Choose a termination condition (maybe best device after certain number of iterations or wait until you
+			get a certain level better of a device)
+		3. Repeat local optimization to get to best spot with respect to the whole device
+	'''
 
 	def init_profiles_with_density( self, density ):
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
