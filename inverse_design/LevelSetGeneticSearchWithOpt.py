@@ -106,8 +106,8 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 should_reload = False
-projects_directory_reload = projects_directory_location + "/" + project_name + "_genetic_with_opt_Hz_tio2_v14"
-projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_tio2_v14"
+projects_directory_reload = projects_directory_location + "/" + project_name + "_genetic_with_opt_Hz_sio2_v15"
+projects_directory_location += "/" + project_name + "_genetic_with_opt_Hz_sio2_v15"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -121,7 +121,7 @@ fdtd_hook.save(projects_directory_location + "/optimization")
 
 shutil.copy2(python_src_directory + "/LevelSetGlobalOptimize2DParameters.py", projects_directory_location + "/LevelSetGlobalOptimize2DParameters.py")
 shutil.copy2(python_src_directory + "/LevelSetGeneticSearchWithOpt.py", projects_directory_location + "/LevelSetGeneticSearchWithOpt.py")
-
+shutil.copy2(python_src_directory + "/level_set_cmos.py", projects_directory_location + "/level_set_cmos.py")
 
 
 #
