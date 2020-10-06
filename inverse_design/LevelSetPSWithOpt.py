@@ -107,7 +107,7 @@ if not os.path.isdir(projects_directory_location):
 
 # should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_particle_swarm_Hz_sio2_v1"
-projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v1"
+projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -756,10 +756,10 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	return parent_object, fom_track
 
 
-num_local_cycles = 10
-num_particles = 20
-num_swarm_iterations = 10
-num_epochs = 20
+num_local_cycles = 15#10
+num_particles = 30#20
+num_swarm_iterations = 15#10
+num_epochs = 25
 
 last_swarm = True
 
