@@ -368,6 +368,8 @@ max_feature_density = 0.75
 min_size_variability = 0.01
 max_size_variability = 0.15
 
+num_local_cycles = 15#10
+
 np.random.seed( 123123 )
 
 my_optimization_state = level_set_cmos.LevelSetCMOS(
@@ -378,7 +380,7 @@ my_optimization_state = level_set_cmos.LevelSetCMOS(
 	feature_size_voxels_by_profiles,
 	device_layer_thicknesses_um,
 	device_spacer_thicknesses_um,
-	num_iterations_per_epoch,
+	num_local_cycles,
 	1,
 	"level_set_optimize",
 	device_lateral_background_density )
@@ -756,7 +758,6 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	return parent_object, fom_track
 
 
-num_local_cycles = 15#10
 num_particles = 30#20
 num_swarm_iterations = 15#10
 num_epochs = 25
