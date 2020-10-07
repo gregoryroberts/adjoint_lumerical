@@ -107,7 +107,7 @@ if not os.path.isdir(projects_directory_location):
 
 # should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_particle_swarm_Hz_sio2_v1"
-projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v2"
+projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -368,7 +368,7 @@ max_feature_density = 0.75
 min_size_variability = 0.01
 max_size_variability = 0.15
 
-num_local_cycles = 15#10
+num_local_cycles = 10#15#10
 
 np.random.seed( 123123 )
 
@@ -802,6 +802,8 @@ for epoch_idx in range( 0, num_epochs ):
 
 	init_swarm_foms_by_epoch.append( init_swarm_foms )
 	final_swarm_foms_by_epoch.append( final_swarm_foms )
+
+	np.save( projects_directory_location + "best_index_" + str( epoch_idx ) + ".npy", my_optimization_state.assemble_index( 0 ) )
 
 np.save( projects_directory_location + "/fom_evolution_pso.npy", figure_of_merit_evolution )
 np.save( projects_directory_location + "/init_swarm_foms_by_epoch.npy", init_swarm_foms_by_epoch )
