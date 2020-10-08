@@ -89,6 +89,19 @@ def get_monitor_data(monitor_name, monitor_field):
 def get_complex_monitor_data(monitor_name, monitor_field):
 	data = get_monitor_data(monitor_name, monitor_field)
 	return (data['real'] + np.complex(0, 1) * data['imag'])
+#
+# Figure of merit design, transmission for global search part?
+# Generate data for Terry
+# Try optimized bounds for binarization code in 2D
+# Analyze FTIR data and send update to Andrei
+# Shrinking the substrate platform on the mid-IR bayer filter reduces the transmission a good amount
+# Angular components on the mid-IR bayer filter do not seem like they will be properly imaged by the reflective microscope
+# What does that flat phase front effectively look like for the illumination?
+# RECEIPTS
+# Catch up on emails
+#
+
+
 
 #
 # Create FDTD hook
@@ -107,7 +120,7 @@ if not os.path.isdir(projects_directory_location):
 
 # should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_particle_swarm_Hz_sio2_v1"
-projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v3"
+projects_directory_location += "/" + project_name + "_particle_swarm_Hz_tio2_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -803,7 +816,7 @@ for epoch_idx in range( 0, num_epochs ):
 	init_swarm_foms_by_epoch.append( init_swarm_foms )
 	final_swarm_foms_by_epoch.append( final_swarm_foms )
 
-	np.save( projects_directory_location + "best_index_" + str( epoch_idx ) + ".npy", my_optimization_state.assemble_index( 0 ) )
+	np.save( projects_directory_location + "/best_index_" + str( epoch_idx ) + ".npy", my_optimization_state.assemble_index( 0 ) )
 
 np.save( projects_directory_location + "/fom_evolution_pso.npy", figure_of_merit_evolution )
 np.save( projects_directory_location + "/init_swarm_foms_by_epoch.npy", init_swarm_foms_by_epoch )
