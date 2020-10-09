@@ -85,18 +85,8 @@ while ( total_elapsed_seconds < number_of_seconds_to_run ):
 	densities.append( get_density )
 	focal_fields.append( get_fields )
 
-	plt.subplot( 1, 3, 1 )
-	plt.plot( np.imag( get_fields ), color='r' )
-	plt.subplot( 1, 3, 2 )
-	plt.imshow( np.real( deep_em.density_to_permittivity( deep_em.design_density ) ) )
-	plt.colorbar()
-	plt.subplot( 1, 3, 3 )
-	plt.imshow( np.imag( deep_em.density_to_permittivity( deep_em.design_density ) ) )
-	plt.colorbar()
-	plt.show()
-
 	end_time = time.time()
-	total_elapsed_seconds += end_time
+	total_elapsed_seconds += ( end_time - cur_time )
 
 	cur_time = end_time
 
