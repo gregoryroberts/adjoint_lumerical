@@ -72,8 +72,10 @@ total_elapsed_seconds = 0
 
 densities = []
 focal_fields = []
+num_before_saving = 500
 
-import matplotlib.pyplot as plt
+device_num = 0
+epoch_num = int( device_num / num_before_saving )
 
 while ( total_elapsed_seconds < number_of_seconds_to_run ):
 
@@ -90,9 +92,16 @@ while ( total_elapsed_seconds < number_of_seconds_to_run ):
 
 	cur_time = end_time
 
-	np.save( save_folder + "/generated_densities.npy", densities )
-	np.save( save_folder + "/generated_focal_fields.npy", focal_fields )
+	save_epoch_num = epoch_num
+	device_num += 1
+	epoch_num = int( device_num / num_before_saving )
 
-np.save( save_folder + "/generated_densities.npy", densities )
-np.save( save_folder + "/generated_focal_fields.npy", focal_fields )
+	if ( device_num % num_before_saving ) == 0:
+		np.save( save_folder + "/generated_densities_" + str( save_epoch_num ) + ".npy", densities )
+		np.save( save_folder + "/generated_focal_fields_" + str( save_epoch_num ) + ".npy", focal_fields )
 
+		del densities[ : ]
+		del focal_fields[ : ]
+
+np.save( save_folder + "/generated_densities_" + str( epoch_num ) + ".npy", densities )
+np.save( save_folder + "/generated_focal_fields_" + str( epoch_num ) + ".npy", focal_fields )
