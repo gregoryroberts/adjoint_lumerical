@@ -121,7 +121,7 @@ if not os.path.isdir(projects_directory_location):
 
 # should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_particle_swarm_Hz_sio2_v1"
-projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v4"
+projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v5"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
