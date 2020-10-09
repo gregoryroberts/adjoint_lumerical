@@ -16,10 +16,6 @@ from scipy.interpolate import RectBivariateSpline
 sys.path.insert(1, '../')
 import heaviside
 
-iter_idx = 0
-fom_evolution = []
-binarization_evolution = []
-
 #
 # Electromagnetics
 #
@@ -2075,11 +2071,11 @@ class ColorSplittingOptimization2D():
 				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
 		
 		# Try this! Not sure how well it will work
-		if initial_binarization < 0.1:
-			alpha = binarize_amount
-		else:
+		# if initial_binarization < 0.1:
+		# 	alpha = binarize_amount
+		# else:
 			# alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
-			alpha = np.minimum( max_possible_binarization_change, binarize_amount )
+		alpha = np.minimum( max_possible_binarization_change, binarize_amount )
 
 		def ramp( x ):
 			return np.maximum( x, 0 )
@@ -2458,8 +2454,39 @@ class ColorSplittingOptimization2D():
 			# print('pre binarize')
 
 			if binarize:
-				proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
-				self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+				min_binarize_step = 0.1 * binarize_max_movement_per_voxel
+				max_binarize_step = 1.2 * binarize_max_movement_per_voxel
+				num_steps = 30
+
+				binarization_steps = np.linspace( min_binarize_step, max_binarize_step, num_steps )
+
+				pre_binarization = compute_binarization( self.design_density.flatten() )
+
+				best_choice = None
+				best_fom_increase = -np.inf
+
+				for step_idx in range( 0, num_steps ):
+					scan_movement_per_voxel = binarization_steps[ step_idx ]
+					proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, scan_movement_per_voxel, opt_mask )
+					proposed_step = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+
+					achieved_binarization = compute_binarization( proposed_step.flatten() ) - pre_binarization
+
+					if achieved_binarization >= 0.9 * binarize_movement_per_step:
+						fom_increase = np.sum( ( proposed_step - self.design_density ) * norm_scaled_gradient )
+
+						if fom_increase > best_fom_increase:
+							best_fom_increase = fom_increase
+							best_choice = proposed_step.copy()
+
+				if best_choice is None:
+					proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
+					proposed_step = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+					best_choice = proposed_step.copy()
+
+				# proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
+				# self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+				self.design_density = best_choice
 			else:
 				self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
 				self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
