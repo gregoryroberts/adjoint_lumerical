@@ -25,10 +25,10 @@ project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_lsf_
 # Check binarized device and look at feature sizes!
 background_index = 1.0
 design_index_background = 1.0#1.35
-device_background_index = 1.46#2.1#1.46#1.35# 2.5
+device_background_index = 1.46#2.1#1.46#2.1#1.46#1.35# 2.5
 device_lateral_background_density = 1.0
 # high_index_backfill = 2.5
-high_index_backfill = 1.46#2.1#1.46
+high_index_backfill = 1.46#2.1#1.46#2.1#1.46
 # high_index_backfill = 2.1
 substrate_index = 1.0
 
@@ -148,17 +148,17 @@ polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y']
 weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
-spectral_focal_plane_map = [
-	[2 * num_points_per_band, 3 * num_points_per_band],
-	[0, num_points_per_band],
-	[num_points_per_band, 2 * num_points_per_band]
-]
-
 # spectral_focal_plane_map = [
-# 	[0, num_points_per_band],
-# 	[num_points_per_band, 2 * num_points_per_band],
 # 	[2 * num_points_per_band, 3 * num_points_per_band],
+# 	[0, num_points_per_band],
+# 	[num_points_per_band, 2 * num_points_per_band]
 # ]
+
+spectral_focal_plane_map = [
+	[0, num_points_per_band],
+	[num_points_per_band, 2 * num_points_per_band],
+	[2 * num_points_per_band, 3 * num_points_per_band],
+]
 
 
 # spectral_focal_plane_map = [
