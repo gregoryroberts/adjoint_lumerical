@@ -29,7 +29,10 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 projects_directory_location += "/cluster/mwir_081320/"
 
-fdtd_hook.load(projects_directory_location + "/dilate.fsp")
+fdtd_hook.load(projects_directory_location + "/dilate_base.fsp")
+
+fdtd_hook.save(projects_directory_location + "/dilate.fsp")
+
 
 from scipy import ndimage
 
