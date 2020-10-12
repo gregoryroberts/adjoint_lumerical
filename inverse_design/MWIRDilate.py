@@ -34,20 +34,32 @@ fdtd_hook.load(projects_directory_location + "/bayer_filter_for_Ian.fsp")
 from scipy import ndimage
 
 # fdtd_hook.run()
-index_data = fdtd_hook.getresult( 'monitor', 'index_x' )
-x_range = fdtd_hook.getresult( 'monitor', 'x' )
-y_range = fdtd_hook.getresult( 'monitor', 'y' )
-z_range = fdtd_hook.getresult( 'monitor', 'z' )
+index_data = np.squeeze( fdtd_hook.getresult( 'monitor', 'index_x' ) )
+x_range = np.squeeze( fdtd_hook.getresult( 'monitor', 'x' ) )
+y_range = np.squeeze( fdtd_hook.getresult( 'monitor', 'y' ) )
+z_range = np.squeeze( fdtd_hook.getresult( 'monitor', 'z' ) )
 
 print( index_data.shape )
 print( x_range.shape )
 print( y_range.shape )
 print( z_range.shape )
 
+binarize_index = np.greater( index_data, 1.25 )
+
+num_dilations = 1
+
 # get_index = np.load( '/Users/gregory/Downloads/swarm_epoch_18_sio2_v8.npy' )
 # threshold = np.greater_equal( get_index**2, 0.5 * ( min_real_permittivity + max_real_permittivity ) )
 
-# for num_dilation in range( 0, 3 ):
-# 	threshold = ndimage.binary_erosion( threshold ).astype( threshold.dtype )
+for num_dilation in range( 0, num_dilations ):
+	binarize_index = ndimage.binary_erosion( binarize_index ).astype( binarize_index.dtype )
+
+reassemble_index = 1.0 + 0.5 * binarize_index
+
+fdtd_hook.switchtolayout()
+fdtd_hook.select( 'design_import' )
+fdtd_hook.importnk2( reassemble_index, x_range, y_range, z_range )
+
+fdtd_hook.run()
 
 
