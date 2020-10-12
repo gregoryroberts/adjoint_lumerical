@@ -103,7 +103,7 @@ num_bands = 3
 num_points_per_band = 5#10#15
 
 band_weights = [ 1, 1, 1 ]
-# band_weights = [ 1, 0, 0 ]
+# band_weights = [ 1, 0, 1 ]
 # band_weights = [ 0, 1, 0 ]
 # band_weights = [ 0, 1, 1 ]
 # pol_weights = [ 1, 1 ]
@@ -195,7 +195,7 @@ adjoint_x_positions_um = [ -device_size_lateral_um / 3., 0.0, device_size_latera
 # Optimization
 #
 num_epochs = 1
-num_iterations_per_epoch = 10#10#80
+num_iterations_per_epoch = 25#10#80
 init_optimization_epoch = 0
 
 fom_quotient_regularization = 0.1
