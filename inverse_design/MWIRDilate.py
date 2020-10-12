@@ -55,7 +55,17 @@ num_dilations = 1
 # threshold = np.greater_equal( get_index**2, 0.5 * ( min_real_permittivity + max_real_permittivity ) )
 
 for num_dilation in range( 0, num_dilations ):
-	binarize_index = ndimage.binary_erosion( binarize_index ).astype( binarize_index.dtype )
+	binarize_index = ndimage.binary_dilation( binarize_index ).astype( binarize_index.dtype )
+
+# for num_dilation in range( 0, num_dilations ):
+# 	binarize_index = ndimage.binary_erosion( binarize_index ).astype( binarize_index.dtype )
+
+# for num_dilation in range( 0, num_dilations ):
+# 	binarize_index = ndimage.binary_erosion( binarize_index ).astype( binarize_index.dtype )
+
+# for num_dilation in range( 0, num_dilations ):
+	# binarize_index = ndimage.binary_dilation( binarize_index ).astype( binarize_index.dtype )
+
 
 reassemble_index = 1.0 + 0.5 * binarize_index
 
