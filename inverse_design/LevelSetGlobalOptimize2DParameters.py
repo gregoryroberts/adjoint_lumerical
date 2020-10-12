@@ -62,12 +62,20 @@ focal_length_um = 1.5
 mesh_spacing_um = 0.025
 lsf_mesh_spacing_um = 0.005
 
+# device_layer_thicknesses_um = np.array( [
+# 	0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.13
+# ] )
+# device_spacer_thicknesses_um = np.array( [
+# 	0.175, 0.175, 0.175, 0.175, 0.175, 0.175, 0.0
+# ] )
+
 device_layer_thicknesses_um = np.array( [
-	0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.13
+	0.13, 0.22, 0.22, 0.22, 0.22, 0.22, 0.22
 ] )
 device_spacer_thicknesses_um = np.array( [
 	0.175, 0.175, 0.175, 0.175, 0.175, 0.175, 0.0
 ] )
+
 
 feature_size_voxels_by_profiles = [ int( 0.1 / lsf_mesh_spacing_um ) for idx in range( 0, 6 ) ]
 feature_size_voxels_by_profiles.append( int( 0.09 / lsf_mesh_spacing_um ) )
