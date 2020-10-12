@@ -121,7 +121,7 @@ if not os.path.isdir(projects_directory_location):
 
 # should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_particle_swarm_Hz_sio2_v1"
-projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v9"
+projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v10"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -384,7 +384,8 @@ max_size_variability = 0.15
 
 num_local_cycles = 10#15#10
 
-np.random.seed( 123123 )
+# np.random.seed( 123123 )
+np.random.seed( 286342347 )
 
 my_optimization_state = level_set_cmos.LevelSetCMOS(
 	[ min_real_permittivity, max_real_permittivity ],
