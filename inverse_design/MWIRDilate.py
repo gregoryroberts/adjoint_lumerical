@@ -34,15 +34,15 @@ fdtd_hook.load(projects_directory_location + "/bayer_filter_for_Ian.fsp")
 from scipy import ndimage
 
 # fdtd_hook.run()
-index_data = fdtd_hook.get_result( 'monitor', 'index_x' )
-x_range = fdtd_hook.get_result( 'monitor', 'x' )
-y_range = fdtd_hook.get_result( 'monitor', 'y' )
-z_range = fdtd_hook.get_result( 'monitor', 'z' )
+index_data = fdtd_hook.getresult( 'monitor', 'index_x' )
+x_range = fdtd_hook.getresult( 'monitor', 'x' )
+y_range = fdtd_hook.getresult( 'monitor', 'y' )
+z_range = fdtd_hook.getresult( 'monitor', 'z' )
 
-print( index_data )
-print( x_range )
-print( y_range )
-print( z_range )
+print( index_data.shape )
+print( x_range.shape )
+print( y_range.shape )
+print( z_range.shape )
 
 # get_index = np.load( '/Users/gregory/Downloads/swarm_epoch_18_sio2_v8.npy' )
 # threshold = np.greater_equal( get_index**2, 0.5 * ( min_real_permittivity + max_real_permittivity ) )
