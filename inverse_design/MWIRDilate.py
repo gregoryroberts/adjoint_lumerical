@@ -29,7 +29,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 projects_directory_location += "/cluster/mwir_081320/"
 
-fdtd_hook.load(projects_directory_location + "/bayer_filter_for_Ian.fsp")
+fdtd_hook.load(projects_directory_location + "/dilate.fsp")
 
 from scipy import ndimage
 
