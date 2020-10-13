@@ -121,7 +121,7 @@ if not os.path.isdir(projects_directory_location):
 
 # should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_particle_swarm_Hz_sio2_v1"
-projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v11"
+projects_directory_location += "/" + project_name + "_particle_swarm_Hz_sio2_v12"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -405,6 +405,13 @@ random_feature_density = np.random.uniform( min_feature_density, max_feature_den
 random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
 
 my_optimization_state.randomize_layer_profiles( int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
+
+get_index = my_optimization_state.assemble_index()
+device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
+device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
+device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
+
+
 
 def evaluate_device( index_profile ):
 	fdtd_hook.switchtolayout()
@@ -778,6 +785,140 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	return parent_object, fom_track
 
 
+def offspring( parent_1, parent_2, mutate_layer_probability ):
+	profiles_1 = parent_1.get_layer_profiles()
+	profiles_2 = parent_2.get_layer_profiles()
+
+	num_profiles = len( profiles_1 )
+
+	child_profiles = [ None for idx in range( 0, num_profiles ) ]
+
+	crossover_point = np.minimum( int( np.random.uniform( 0, 1 ) * num_profiles ), num_profiles - 1 )
+
+	for fill_idx in range( 0, crossover_point ):
+		child_profiles[ fill_idx ] = profiles_1[ fill_idx ].copy()
+
+	for fill_idx in range( crossover_point, num_profiles ):
+		child_profiles[ fill_idx ] = profiles_2[ fill_idx ].copy()
+
+	for mutate_idx in range( 0, num_profiles ):
+		if np.random.uniform( 0, 1 ) < mutate_layer_probability:
+			random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
+			random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+
+			random_layer = parent_1.single_random_layer_profile_specified( mutate_idx, int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
+
+			child_profiles[ mutate_idx ] = random_layer.copy()
+
+	child = level_set_cmos.LevelSetCMOS(
+		[ min_real_permittivity, max_real_permittivity ],
+		lsf_mesh_spacing_um,
+		designable_device_vertical_minimum_um,
+		device_size_lateral_um,
+		feature_size_voxels_by_profiles,
+		device_layer_thicknesses_um,
+		device_spacer_thicknesses_um,
+		num_iterations_per_epoch,
+		1,
+		"level_set_optimize",
+		device_lateral_background_density )
+
+	if np.random.uniform( 0, 1 ) < 0.5:
+		child.randomize_layer_profiles( parent_1.feature_gap_width_sigma_voxels, parent_1.feature_probability )
+	else:
+		child.randomize_layer_profiles( parent_2.feature_gap_width_sigma_voxels, parent_2.feature_probability )
+
+	child.set_layer_profiles( child_profiles )
+
+	return child
+
+run_genetic_initializer = True
+
+if run_genetic_initializer:
+	num_generations = 3
+	num_individuals_per_generation = 100
+	num_parents_new_generation = 20
+
+	mutation_probability_start = 0.25
+	mutation_probability_end = 0.05
+	mutation_probability = np.linspace( mutation_probability_start, mutation_probability_end, num_generations )
+
+	individuals_by_generation = [ [ None for individual_idx in range( 0, num_individuals_per_generation ) ] for generation_idx in range( 0, num_generations ) ]
+	fitnesses = np.zeros( ( num_generations, num_individuals_per_generation ) )
+
+	for individual_idx in range( 0, num_individuals_per_generation ):
+		individual_opt_state = level_set_cmos.LevelSetCMOS(
+			[ min_real_permittivity, max_real_permittivity ],
+			lsf_mesh_spacing_um,
+			designable_device_vertical_minimum_um,
+			device_size_lateral_um,
+			feature_size_voxels_by_profiles,
+			device_layer_thicknesses_um,
+			device_spacer_thicknesses_um,
+			num_local_cycles,
+			1,
+			"level_set_optimize",
+			device_lateral_background_density )
+
+		random_feature_density = np.random.uniform( min_feature_density, max_feature_density )
+		random_size_variability = np.random.uniform( min_size_variability, max_size_variability )
+
+		individual_opt_state.randomize_layer_profiles( int( random_size_variability / lsf_mesh_spacing_um ), random_feature_density )
+
+		fitnesses[ 0, individual_idx ] = evaluate_device( individual_opt_state.assemble_index() )
+		individuals_by_generation[ 0 ][ individual_idx ] = individual_opt_state
+
+	for generation_idx in range( 1, num_generations ):
+		previous_gen = individuals_by_generation[ generation_idx - 1 ]
+		previous_fitnesses = fitnesses[ generation_idx - 1, : ]
+
+		sorted_fitness = sorted( previous_fitnesses, reverse=True )
+		cutoff_fitness = sorted_fitness[ num_parents_new_generation ]
+
+		new_parents = []
+		new_generation = []
+
+		for parent_idx in range( 0, len( sorted_fitness ) ):
+			if ( previous_fitnesses[ parent_idx ] > cutoff_fitness ) and ( len( new_parents ) < num_parents_new_generation ):
+				new_parents.append( previous_gen[ parent_idx ] )
+
+		for parent_idx in range( 0, len( sorted_fitness ) ):
+			if ( previous_fitnesses[ parent_idx ] == cutoff_fitness ) and ( len( new_parents ) < num_parents_new_generation ):
+				new_parents.append( previous_gen[ parent_idx ] )
+
+		for child_idx in range( 0, num_individuals_per_generation ):
+
+			parent_1_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+			parent_2_idx = np.minimum( int( np.random.uniform( 0, 1 ) * len( new_parents ) ), len( new_parents ) - 1 )
+
+			child = offspring(
+				new_parents[ parent_1_idx ],
+				new_parents[ parent_2_idx ],
+				mutation_probability[ generation_idx ]
+			)
+
+			fitnesses[ generation_idx, child_idx ] = evaluate_device( child.assemble_index() )
+			individuals_by_generation[ generation_idx ][ child_idx ] = child
+
+	last_gen = individuals_by_generation[ num_generations - 1 ]
+	last_fitnesses = fitnesses[ num_generations - 1, : ]
+
+	sorted_fitness = sorted( last_fitnesses, reverse=True )
+	cutoff_fitness = sorted_fitness[ 0 ]
+
+	best_state = None
+
+	for individual_idx in range( 0, num_individuals_per_generation ):
+		if last_fitnesses[ individual_idx ] >= cutoff_fitness:
+			print( last_fitnesses[ individual_idx ] )
+			best_state = last_gen[ individual_idx ]
+
+	print( sorted_fitness )
+
+	print( fitnesses )
+
+	my_optimization_state.init_profiles_with_density( best_state.assemble_density() )
+
 num_particles = 30#20
 num_swarm_iterations = 15#10
 num_epochs = 25
@@ -785,11 +926,6 @@ num_epochs = 25
 last_swarm = True
 
 figure_of_merit_evolution = []
-
-get_index = my_optimization_state.assemble_index()
-device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
-device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
-device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
 
 init_swarm_foms_by_epoch = []
 final_swarm_foms_by_epoch = []
