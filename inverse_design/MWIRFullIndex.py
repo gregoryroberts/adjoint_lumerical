@@ -119,6 +119,8 @@ imag_eps = np.squeeze( pack_imag_eps[ :, 0, 0 ] )
 full_perm = real_eps + 1j * imag_eps
 full_index = index_from_permittivity( full_perm )
 
+fdtd_hook.switchtolayout()
+
 polymer_import = fdtd_hook.addimport()
 polymer_import['name'] = 'polymer_import'
 polymer_import['x span'] = 25 * 1e-6
@@ -142,8 +144,6 @@ T2 = np.zeros( num_eval_wls )
 T3 = np.zeros( num_eval_wls )
 
 for eval_wl_idx in range( 0, num_eval_wls ):
-	fdtd_hook.switchtolayout()
-
 	get_wl_um = eval_wl_um[ eval_wl_idx ]
 
 	delta_n = full_index[ eval_wl_idx ] - min_index
