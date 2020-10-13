@@ -90,7 +90,7 @@ def index_from_permittivity( epsilon ):
 eps_infinity = 2.37
 delta_eps_infinity = eps_infinity - 1.0
 
-num_eval_wls = 3#45
+num_eval_wls = 45
 eval_wl_um = np.linspace( 3.0, 5.0, 45 )
 
 omega_values = np.linspace( 10000. / np.max( eval_wl_um ), 10000. / np.min( eval_wl_um ), num_eval_wls )
@@ -193,10 +193,15 @@ for eval_wl_idx in range( 0, num_eval_wls ):
 	T2[ eval_wl_idx ] = T2_data[ 0 ]
 	T3[ eval_wl_idx ] = T3_data[ 0 ]
 
-plt.plot( T0 )
-plt.plot( T1 )
-plt.plot( T2 )
-plt.plot( T3 )
+np.save( projects_directory_location + "/t0.npy", T0 )
+np.save( projects_directory_location + "/t1.npy", T1 )
+np.save( projects_directory_location + "/t2.npy", T2 )
+np.save( projects_directory_location + "/t3.npy", T3 )
+
+# plt.plot( T0 )
+# plt.plot( T1 )
+# plt.plot( T2 )
+# plt.plot( T3 )
 
 
 
