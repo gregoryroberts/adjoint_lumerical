@@ -148,7 +148,7 @@ for eval_wl_idx in range( 0, num_eval_wls ):
 
 	delta_n = full_index[ eval_wl_idx ] - min_index
 
-	polymer_data[ :, :, : ] = full_index
+	polymer_data[ : ] = full_index
 
 	reassemble_index = min_index + delta_n * binarize_index
 
