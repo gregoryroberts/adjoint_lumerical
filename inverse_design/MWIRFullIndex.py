@@ -188,10 +188,10 @@ for eval_wl_idx in range( 0, num_eval_wls ):
 	T2_data = fdtd_hook.getresult( 't2', 'T' )
 	T3_data = fdtd_hook.getresult( 't3', 'T' )
 
-	T0[ eval_wl_idx ] = T0_data[ 0 ]
-	T1[ eval_wl_idx ] = T1_data[ 0 ]
-	T2[ eval_wl_idx ] = T2_data[ 0 ]
-	T3[ eval_wl_idx ] = T3_data[ 0 ]
+	T0[ eval_wl_idx ] = T0_data[ 'T' ][ 0 ]
+	T1[ eval_wl_idx ] = T1_data[ 'T' ][ 0 ]
+	T2[ eval_wl_idx ] = T2_data[ 'T' ][ 0 ]
+	T3[ eval_wl_idx ] = T3_data[ 'T' ][ 0 ]
 
 np.save( projects_directory_location + "/t0.npy", T0 )
 np.save( projects_directory_location + "/t1.npy", T1 )
