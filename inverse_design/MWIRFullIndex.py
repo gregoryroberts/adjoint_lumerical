@@ -90,8 +90,8 @@ def index_from_permittivity( epsilon ):
 eps_infinity = 2.37
 delta_eps_infinity = eps_infinity - 1.0
 
-num_eval_wls = 135
-eval_wl_um = np.linspace( 2.5, 6.0, 100 )
+num_eval_wls = 100
+eval_wl_um = np.linspace( 2.5, 6.0, num_eval_wls )
 
 omega_values = 10000. / eval_wl_um
 eps_values = eps_infinity * np.ones( len( omega_values ), dtype=np.complex )
