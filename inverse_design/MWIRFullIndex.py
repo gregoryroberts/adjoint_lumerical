@@ -126,11 +126,11 @@ polymer_import['name'] = 'polymer_import'
 polymer_import['x span'] = 25 * 1e-6
 polymer_import['y span'] = 25 * 1e-6
 polymer_import['z min'] = 25 * 1e-6
-polymer_import['z max'] = 43 * 1e-6
+polymer_import['z max'] = 50 * 1e-6
 
 polymer_x = 1e-6 * np.linspace( -12.5, 12.5, 2 )
 polymer_y = 1e-6 * np.linspace( -12.5, 12.5, 2 )
-polymer_z = 1e-6 * np.linspace( 25, 43, 2 )
+polymer_z = 1e-6 * np.linspace( 25, 50, 2 )
 
 polymer_data = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 
@@ -138,62 +138,72 @@ binarize_index = np.greater( index_data, 1.25 )
 
 min_index = 1.0
 
-T0 = np.zeros( num_eval_wls )
-T1 = np.zeros( num_eval_wls )
-T2 = np.zeros( num_eval_wls )
-T3 = np.zeros( num_eval_wls )
+T0 = np.zeros( ( 2, num_eval_wls ) )
+T1 = np.zeros( ( 2, num_eval_wls ) )
+T2 = np.zeros( ( 2, num_eval_wls ) )
+T3 = np.zeros( ( 2, num_eval_wls ) )
+
+pol_source_appendices = [ 'x', 'y' ]
 
 for eval_wl_idx in range( 0, num_eval_wls ):
-	get_wl_um = eval_wl_um[ eval_wl_idx ]
+	for pol_idx in range( 0, 2 ):
+		get_wl_um = eval_wl_um[ eval_wl_idx ]
 
-	delta_n = full_index[ eval_wl_idx ] - min_index
+		delta_n = full_index[ eval_wl_idx ] - min_index
 
-	polymer_data[ : ] = full_index[ eval_wl_idx ]
+		polymer_data[ : ] = full_index[ eval_wl_idx ]
 
-	reassemble_index = min_index + delta_n * binarize_index
+		reassemble_index = min_index + delta_n * binarize_index
 
-	fdtd_hook.switchtolayout()
+		fdtd_hook.switchtolayout()
 
-	fdtd_hook.select( 't0' )
-	fdtd_hook.set( 'use source limits', 0 )
-	fdtd_hook.set( 'frequency points', 1 )
-	fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
+		for disable_src_idx in range( 0, 2 ):
+			fdtd_hook.select( 'forward_src_' + str( pol_source_appendices[ disable_src_idx ] ) )
+			fdtd_hook.set( 'enabled', 0 )
 
-	fdtd_hook.select( 't1' )
-	fdtd_hook.set( 'use source limits', 0 )
-	fdtd_hook.set( 'frequency points', 1 )
-	fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
+		fdtd_hook.select( 'forward_src_' + str( pol_source_appendices[ pol_idx ] ) )
+		fdtd_hook.set( 'enabled', 1 )
 
-	fdtd_hook.select( 't2' )
-	fdtd_hook.set( 'use source limits', 0 )
-	fdtd_hook.set( 'frequency points', 1 )
-	fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
+		fdtd_hook.select( 't0' )
+		fdtd_hook.set( 'use source limits', 0 )
+		fdtd_hook.set( 'frequency points', 1 )
+		fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
 
-	fdtd_hook.select( 't3' )
-	fdtd_hook.set( 'use source limits', 0 )
-	fdtd_hook.set( 'frequency points', 1 )
-	fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
+		fdtd_hook.select( 't1' )
+		fdtd_hook.set( 'use source limits', 0 )
+		fdtd_hook.set( 'frequency points', 1 )
+		fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
+
+		fdtd_hook.select( 't2' )
+		fdtd_hook.set( 'use source limits', 0 )
+		fdtd_hook.set( 'frequency points', 1 )
+		fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
+
+		fdtd_hook.select( 't3' )
+		fdtd_hook.set( 'use source limits', 0 )
+		fdtd_hook.set( 'frequency points', 1 )
+		fdtd_hook.set( 'wavelength center', get_wl_um * 1e-6 )
 
 
-	fdtd_hook.select( 'polymer_import' )
-	fdtd_hook.importnk2( polymer_data, polymer_x, polymer_y, polymer_z )
+		fdtd_hook.select( 'polymer_import' )
+		fdtd_hook.importnk2( polymer_data, polymer_x, polymer_y, polymer_z )
 
-	fdtd_hook.select( 'design_import' )
-	fdtd_hook.importnk2( reassemble_index, x_range, y_range, z_range )
+		fdtd_hook.select( 'design_import' )
+		fdtd_hook.importnk2( reassemble_index, x_range, y_range, z_range )
 
-	fdtd_hook.run()
+		fdtd_hook.run()
 
-	T0_data = fdtd_hook.getresult( 't0', 'T' )
-	T1_data = fdtd_hook.getresult( 't1', 'T' )
-	T2_data = fdtd_hook.getresult( 't2', 'T' )
-	T3_data = fdtd_hook.getresult( 't3', 'T' )
+		T0_data = fdtd_hook.getresult( 't0', 'T' )
+		T1_data = fdtd_hook.getresult( 't1', 'T' )
+		T2_data = fdtd_hook.getresult( 't2', 'T' )
+		T3_data = fdtd_hook.getresult( 't3', 'T' )
 
-	T0[ eval_wl_idx ] = T0_data[ 'T' ][ 0 ]
-	T1[ eval_wl_idx ] = T1_data[ 'T' ][ 0 ]
-	T2[ eval_wl_idx ] = T2_data[ 'T' ][ 0 ]
-	T3[ eval_wl_idx ] = T3_data[ 'T' ][ 0 ]
+		T0[ pol_idx, eval_wl_idx ] = T0_data[ 'T' ][ 0 ]
+		T1[ pol_idx, eval_wl_idx ] = T1_data[ 'T' ][ 0 ]
+		T2[ pol_idx, eval_wl_idx ] = T2_data[ 'T' ][ 0 ]
+		T3[ pol_idx, eval_wl_idx ] = T3_data[ 'T' ][ 0 ]
 
-np.save( projects_directory_location + "/t0_y.npy", T0 )
-np.save( projects_directory_location + "/t1_y.npy", T1 )
-np.save( projects_directory_location + "/t2_y.npy", T2 )
-np.save( projects_directory_location + "/t3_y.npy", T3 )
+np.save( projects_directory_location + "/t0.npy", T0 )
+np.save( projects_directory_location + "/t1.npy", T1 )
+np.save( projects_directory_location + "/t2.npy", T2 )
+np.save( projects_directory_location + "/t3.npy", T3 )
