@@ -197,8 +197,3 @@ np.save( projects_directory_location + "/t0_y.npy", T0 )
 np.save( projects_directory_location + "/t1_y.npy", T1 )
 np.save( projects_directory_location + "/t2_y.npy", T2 )
 np.save( projects_directory_location + "/t3_y.npy", T3 )
-
-
-
-
-
