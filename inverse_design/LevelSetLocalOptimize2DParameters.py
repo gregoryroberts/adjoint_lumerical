@@ -78,6 +78,8 @@ device_spacer_thicknesses_um = np.array( [
 # ] )
 
 
+feature_size_um_by_profiles = [ 0.1 for idx in range( 0, 6 ) ]
+feature_size_um_by_profiles.append( 0.09 )
 feature_size_voxels_by_profiles = [ int( 0.1 / lsf_mesh_spacing_um ) for idx in range( 0, 6 ) ]
 feature_size_voxels_by_profiles.append( int( 0.09 / lsf_mesh_spacing_um ) )
 

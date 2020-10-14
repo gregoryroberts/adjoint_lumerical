@@ -48,7 +48,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		self,
 		permittivity_bounds,
 		opt_mesh_size_um, opt_vertical_start_um, opt_width_um,
-		minimum_feature_gap_spacing_voxels, layer_thicknesses_um, layer_spacings_um,
+		minimum_feature_gap_spacing_um, layer_thicknesses_um, layer_spacings_um,
 		num_iterations, num_epochs, filename_prefix, device_background_density ):
 
 		super( ContinuousCMOS, self ).__init__( num_iterations, num_epochs, filename_prefix )
@@ -61,7 +61,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 		self.num_devices = 1
 
-		self.minimum_feature_gap_spacing_voxels = minimum_feature_gap_spacing_voxels
+		self.minimum_feature_gap_spacing_um = minimum_feature_gap_spacing_um
+		self.minimum_feature_gap_spacing_small_voxels = [ int( minimum_feature_gap_spacing_um[ i ] / opt_mesh_size_um ) for i in range( 0, len( minimum_feature_gap_spacing_um ) ) ]
 
 		self.layer_thicknesses_voxels = np.array( [ int( thickness_um / self.opt_mesh_size_um ) for thickness_um in self.layer_thicknesses_um ] )
 		self.spacer_thicknesses_voxels = np.array( [ int( spacing_um / self.opt_mesh_size_um ) for spacing_um in self.layer_spacings_um ] )
@@ -77,7 +78,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		self.layer_profiles = []
 
 		for profile_idx in range( 0, len( self.layer_thicknesses_um ) ):
-			profile_width_voxels = self.minimum_feature_gap_spacing_voxels[ profile_idx ]
+			# profile_width_voxels = self.minimum_feature_gap_spacing_voxels[ profile_idx ]
+			profile_width_voxels = int( self.opt_width_um / self.minimum_feature_gap_spacing_um[ profile_idx ] )
 			self.layer_profiles.append( np.zeros( profile_width_voxels ) )
 
 		self.level_sets = [ None for idx in range( 0, len( self.layer_thicknesses_um ) ) ]
@@ -410,7 +412,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			get_profile = self.layer_profiles[ profile_idx ]
 
-			downsampled_grad = downsample_average( average_gradient, self.minimum_feature_gap_spacing_voxels[ profile_idx ] )
+			downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
 			get_profile -= scaled_step_size * downsampled_grad
 
