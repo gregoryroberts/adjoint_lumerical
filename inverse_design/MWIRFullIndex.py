@@ -193,10 +193,10 @@ for eval_wl_idx in range( 0, num_eval_wls ):
 	T2[ eval_wl_idx ] = T2_data[ 'T' ][ 0 ]
 	T3[ eval_wl_idx ] = T3_data[ 'T' ][ 0 ]
 
-np.save( projects_directory_location + "/t0.npy", T0 )
-np.save( projects_directory_location + "/t1.npy", T1 )
-np.save( projects_directory_location + "/t2.npy", T2 )
-np.save( projects_directory_location + "/t3.npy", T3 )
+np.save( projects_directory_location + "/t0_y.npy", T0 )
+np.save( projects_directory_location + "/t1_y.npy", T1 )
+np.save( projects_directory_location + "/t2_y.npy", T2 )
+np.save( projects_directory_location + "/t3_y.npy", T3 )
 
 
 
