@@ -120,8 +120,8 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 should_reload = True
-projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2_reload"
+projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2_reload"
+projects_directory_location += "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2_reload2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -372,7 +372,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 
 # You likely should verify the gradient for when you do level set optimized devices!
 
-num_iterations = 100
+num_iterations = 150
 
 np.random.seed( 923447 )
 
