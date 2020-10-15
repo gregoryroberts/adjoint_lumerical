@@ -121,7 +121,7 @@ if not os.path.isdir(projects_directory_location):
 
 # should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_particle_swarm_Hz_sio2_v1"
-projects_directory_location += "/" + project_name + "_continuous_Hz_sio2_v1"
+projects_directory_location += "/" + project_name + "_continuous_Hz_sio2_no_constrast_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -603,8 +603,11 @@ def optimize_parent_locally( parent_object, num_iterations ):
 						if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
 							if band_weights[ focal_idx ] > 0:
 								# figure_of_merit_by_band[ focal_idx ] += ( np.log( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] / ( fom_quotient_regularization + incorrect_focal_by_wl[ wl_idx ] ) ) )
-								figure_of_merit_by_band[ focal_idx ] += ( ( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] ) - incorrect_focal_by_wl[ wl_idx ] )
+								# figure_of_merit_by_band[ focal_idx ] += ( ( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] ) - incorrect_focal_by_wl[ wl_idx ] )
 								# figure_of_merit_by_band[ focal_idx ] += ( incorrect_focal_by_wl[ wl_idx ] - ( ( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] ) ) )
+
+								figure_of_merit_by_band[ focal_idx ] += correct_focal_by_wl[ wl_idx ]
+
 
 				# wl_weighting_denominator = num_points_per_band * np.sum( band_weights )
 
@@ -613,8 +616,8 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				reselect_fom_by_band = []
 				for idx in range( 0, len( figure_of_merit_by_band ) ):
 					if band_weights[ idx ] > 0:
-						reselect_fom_by_band.append( softplus( figure_of_merit_by_band[ idx ] ) )
-						# reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
+						# reselect_fom_by_band.append( softplus( figure_of_merit_by_band[ idx ] ) )
+						reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
 				reselect_fom_by_band = np.array( reselect_fom_by_band )
 				print( reselect_fom_by_band )
 
@@ -672,7 +675,8 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 						prefactor = 0
 						if band_weights[ adj_src_idx ] > 0:
-							prefactor = band_weights[ adj_src_idx ] * softplus_prime( reselect_fom_by_band[ adj_src_idx ] ) * np.product( reselect_fom_by_band ) / reselect_fom_by_band[ adj_src_idx ]
+							# prefactor = band_weights[ adj_src_idx ] * softplus_prime( reselect_fom_by_band[ adj_src_idx ] ) * np.product( reselect_fom_by_band ) / reselect_fom_by_band[ adj_src_idx ]
+							prefactor = band_weights[ adj_src_idx ] * np.product( reselect_fom_by_band ) / reselect_fom_by_band[ adj_src_idx ]
 
 						# for spectral_idx in range(0, num_points ):
 						# for spectral_idx in range(0, num_design_frequency_points ):
@@ -706,7 +710,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 								log_weight = 1.0
 
 								# on_band_weight = np.log( num_focal_spots - 1. ) / ( incorrect_focal_by_wl[ spectral_idx ] + fom_quotient_regularization )
-								on_band_weight = ( num_focal_spots - 1. )
+								on_band_weight = 1.0#( num_focal_spots - 1. )
 								# on_band_weight = -( num_focal_spots - 1. )
 
 								polarized_gradient += log_weight * on_band_weight * prefactor * np.sum(
@@ -720,7 +724,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 										continue
 
 									# off_band_weight = -( num_focal_spots - 1. ) * correct_focal_by_wl[ spectral_idx ] / ( incorrect_focal_by_wl[ spectral_idx ] + fom_quotient_regularization )**2
-									off_band_weight = -1.0
+									off_band_weight = 0.0#-1.0
 									# off_band_weight = 1.0
 									off_focal_adjoint_fields = adjoint_e_fields_by_coord_and_focal[ current_coord ][ other_focal_idx ]
 
