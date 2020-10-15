@@ -21,6 +21,23 @@ def upsample_nearest( profile, upsampled_length ):
 
 	return upsampled_profile
 
+def downsample_nearest( profile, downsampled_length ):
+	cur_length = len( profile )
+
+	assert ( cur_length % downsampled_length ) == 0, "Expected an even nearest downsampling"
+
+	downsample_ratio = int( cur_length / downsampled_length )
+
+	downsampled_profile = np.zeros( downsampled_length )
+
+	for idx in range( 0, downsampled_length ):
+		up_idx = int( idx * downsample_ratio )
+
+		downsampled_profile[ idx ] = profile[ up_idx ]
+
+	return downsampled_profile
+
+
 def downsample_average( profile, downsampled_length ):
 	cur_length = len( profile )
 
@@ -274,7 +291,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
 			get_mid = int( get_start + 0.5 * self.layer_thicknesses_voxels[ profile_idx ] )
 
-			self.layer_profiles[ profile_idx ] = density[ :, get_mid ]
+			self.layer_profiles[ profile_idx ] = downsample_nearest( density[ :, get_mid ], len( self.layer_profiles[ profile_idx ] ) )
 
 	def randomize_layer_profiles( self, average_density, density_sigma ):
 		self.average_density = average_density
