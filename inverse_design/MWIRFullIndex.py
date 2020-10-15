@@ -149,9 +149,11 @@ for eval_wl_idx in range( 0, num_eval_wls ):
 	for pol_idx in range( 0, 2 ):
 		get_wl_um = eval_wl_um[ eval_wl_idx ]
 
-		delta_n = full_index[ eval_wl_idx ] - min_index
+		pull_index_value = np.real( full_index[ eval_wl_idx ] )
 
-		polymer_data[ : ] = full_index[ eval_wl_idx ]
+		delta_n = pull_index_value - min_index
+
+		polymer_data[ : ] = pull_index_value
 
 		reassemble_index = min_index + delta_n * binarize_index
 
@@ -203,7 +205,7 @@ for eval_wl_idx in range( 0, num_eval_wls ):
 		T2[ pol_idx, eval_wl_idx ] = T2_data[ 'T' ][ 0 ]
 		T3[ pol_idx, eval_wl_idx ] = T3_data[ 'T' ][ 0 ]
 
-np.save( projects_directory_location + "/t0.npy", T0 )
-np.save( projects_directory_location + "/t1.npy", T1 )
-np.save( projects_directory_location + "/t2.npy", T2 )
-np.save( projects_directory_location + "/t3.npy", T3 )
+np.save( projects_directory_location + "/t0_real.npy", T0 )
+np.save( projects_directory_location + "/t1_real.npy", T1 )
+np.save( projects_directory_location + "/t2_real.npy", T2 )
+np.save( projects_directory_location + "/t3_real.npy", T3 )
