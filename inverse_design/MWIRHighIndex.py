@@ -91,7 +91,8 @@ eps_infinity = 2.37
 delta_eps_infinity = eps_infinity - 1.0
 
 num_eval_wls = 100
-eval_wl_um = np.linspace( 2.5, 6.0, num_eval_wls )
+# eval_wl_um = np.linspace( 2.5, 6.0, num_eval_wls )
+eval_wl_um = np.linspace( 2.8, 5.5, num_eval_wls )
 
 omega_values = 10000. / eval_wl_um
 eps_values = eps_infinity * np.ones( len( omega_values ), dtype=np.complex )
@@ -137,7 +138,9 @@ polymer_data = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 binarize_index = np.greater( index_data, 1.25 )
 
 min_index = 1.0
-max_index = 1.5
+# max_index = 1.5
+
+max_index = np.mean( np.real( full_index ) ) + 1j * np.mean( np.imag( full_index ) )
 
 T0 = np.zeros( ( 2, num_eval_wls ) )
 T1 = np.zeros( ( 2, num_eval_wls ) )
@@ -205,7 +208,7 @@ for pol_idx in range( 0, 2 ):
 	T2[ pol_idx, : ] = T2_data[ 'T' ]
 	T3[ pol_idx, : ] = T3_data[ 'T' ]
 
-np.save( projects_directory_location + "/t0_1p5.npy", T0 )
-np.save( projects_directory_location + "/t1_1p5.npy", T1 )
-np.save( projects_directory_location + "/t2_1p5.npy", T2 )
-np.save( projects_directory_location + "/t3_1p5.npy", T3 )
+np.save( projects_directory_location + "/t0_avg.npy", T0 )
+np.save( projects_directory_location + "/t1_avg.npy", T1 )
+np.save( projects_directory_location + "/t2_avg.npy", T2 )
+np.save( projects_directory_location + "/t3_avg.npy", T3 )
