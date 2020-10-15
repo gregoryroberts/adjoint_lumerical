@@ -166,25 +166,25 @@ for pol_idx in range( 0, 2 ):
 	fdtd_hook.set( 'use source limits', 0 )
 	fdtd_hook.set( 'frequency points', num_eval_wls )
 	fdtd_hook.set( 'minimum wavelength', 2.5 * 1e-6 )
-	fdtd_hook.set( 'minimum wavelength', 6.0 * 1e-6 )
+	fdtd_hook.set( 'maximum wavelength', 6.0 * 1e-6 )
 
 	fdtd_hook.select( 't1' )
 	fdtd_hook.set( 'use source limits', 0 )
 	fdtd_hook.set( 'frequency points', num_eval_wls )
 	fdtd_hook.set( 'minimum wavelength', 2.5 * 1e-6 )
-	fdtd_hook.set( 'minimum wavelength', 6.0 * 1e-6 )
+	fdtd_hook.set( 'maximum wavelength', 6.0 * 1e-6 )
 
 	fdtd_hook.select( 't2' )
 	fdtd_hook.set( 'use source limits', 0 )
 	fdtd_hook.set( 'frequency points', num_eval_wls )
 	fdtd_hook.set( 'minimum wavelength', 2.5 * 1e-6 )
-	fdtd_hook.set( 'minimum wavelength', 6.0 * 1e-6 )
+	fdtd_hook.set( 'maximum wavelength', 6.0 * 1e-6 )
 
 	fdtd_hook.select( 't3' )
 	fdtd_hook.set( 'use source limits', 0 )
 	fdtd_hook.set( 'frequency points', num_eval_wls )
 	fdtd_hook.set( 'minimum wavelength', 2.5 * 1e-6 )
-	fdtd_hook.set( 'minimum wavelength', 6.0 * 1e-6 )
+	fdtd_hook.set( 'maximum wavelength', 6.0 * 1e-6 )
 
 
 	fdtd_hook.select( 'polymer_import' )
