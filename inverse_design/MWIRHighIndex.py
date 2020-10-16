@@ -138,9 +138,9 @@ polymer_data = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 binarize_index = np.greater( index_data, 1.25 )
 
 min_index = 1.0
-# max_index = 1.5
+max_index = 1.52 + 1j * 0.005
 
-max_index = np.mean( np.real( full_index ) ) + 1j * np.mean( np.imag( full_index ) )
+# max_index = np.mean( np.real( full_index ) ) + 1j * np.mean( np.imag( full_index ) )
 
 T0 = np.zeros( ( 2, num_eval_wls ) )
 T1 = np.zeros( ( 2, num_eval_wls ) )
@@ -208,7 +208,7 @@ for pol_idx in range( 0, 2 ):
 	T2[ pol_idx, : ] = T2_data[ 'T' ]
 	T3[ pol_idx, : ] = T3_data[ 'T' ]
 
-np.save( projects_directory_location + "/t0_avg.npy", T0 )
-np.save( projects_directory_location + "/t1_avg.npy", T1 )
-np.save( projects_directory_location + "/t2_avg.npy", T2 )
-np.save( projects_directory_location + "/t3_avg.npy", T3 )
+np.save( projects_directory_location + "/t0_handpicked.npy", T0 )
+np.save( projects_directory_location + "/t1_handpicked.npy", T1 )
+np.save( projects_directory_location + "/t2_handpicked.npy", T2 )
+np.save( projects_directory_location + "/t3_handpicked.npy", T3 )
