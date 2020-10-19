@@ -3,16 +3,18 @@
 #
 
 import numpy as np
+import ip_dip_dispersion
+
 # import sigmoid
 
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_polarization_extra_circular_10layers_3p5to4um_30x30x25um_f36um'
+project_name = 'layered_mwir_2d_lithography_bridges_polarization_reduced_platfrom_10layers_3p75to4p4um_30x30x25um_f36um'
 
 
 optimized_focal_spots = [ 0, 1, 2, 3 ]
-extra_weighting_by_polarization = [ 2, 1, 1, 1 ]
+extra_weighting_by_polarization = [ 1, 1, 1, 1 ]
 
 
 init_permittivity_0_1_scale = 0.5
@@ -41,8 +43,8 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 3.5
-lambda_max_um = 4.0
+lambda_min_um = 3.75
+lambda_max_um = 4.4
 
 num_design_frequency_points = 10
 num_eval_frequency_points = 60
@@ -140,9 +142,17 @@ epoch_range_permittivity_change_min = epoch_start_permittivity_change_min - epoc
 topology_num_free_iterations_between_patches = 8
 
 
+#
+# IP-Dip Material Model
+#
+ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
+dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( [ lambda_min_um, lambda_max_um ] )
+disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
+
+
 background_index = 1.0
 min_device_index = 1.0
-max_device_index = 1.5
+max_device_index = np.real( disperesive_max_index )# 1.5
 
 min_device_permittivity = min_device_index**2
 max_device_permittivity = max_device_index**2

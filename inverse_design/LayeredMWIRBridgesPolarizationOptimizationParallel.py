@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 from LayeredMWIRBridgesPolarizationParameters import *
 import LayeredMWIRPolarizationBayerFilter
 
-
 import imp
 # imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
 # imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
@@ -583,15 +582,15 @@ transmission_focal.enabled = 1
 
 
 #
-# Add SiO2 at the top
+# Add Polymer at the top
 #
-sio2_top = fdtd_hook.addrect()
-sio2_top['name'] = 'sio2_top'
-sio2_top['x span'] = fdtd_region_size_lateral_um * 1e-6
-sio2_top['y span'] = fdtd_region_size_lateral_um * 1e-6
-sio2_top['z min'] = device_vertical_maximum_um * 1e-6
-sio2_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-sio2_top['index'] = max_device_index
+polymer_top = fdtd_hook.addrect()
+polymer_top['name'] = 'polymer_top'
+polymer_top['x span'] = device_size_lateral_um * 1e-6
+polymer_top['y span'] = device_size_lateral_um * 1e-6
+polymer_top['z min'] = device_vertical_maximum_um * 1e-6
+polymer_top['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+polymer_top['index'] = max_device_index
 
 #
 # Add device region and create device permittivity
@@ -827,7 +826,7 @@ fdtd_hook.set( 'enabled', 1 )
 fdtd_hook.select( design_import['name'] )
 fdtd_hook.set( 'enabled', 0 )
 
-fdtd_hook.select( sio2_top['name'] )
+fdtd_hook.select( polymer_top['name'] )
 fdtd_hook.set( 'enabled', 0 )
 
 fdtd_hook.run()
@@ -845,7 +844,7 @@ fdtd_hook.switchtolayout()
 fdtd_hook.select( design_import['name'] )
 fdtd_hook.set( 'enabled', 1 )
 
-fdtd_hook.select( sio2_top['name'] )
+fdtd_hook.select( polymer_top['name'] )
 fdtd_hook.set( 'enabled', 1 )
 
 #
