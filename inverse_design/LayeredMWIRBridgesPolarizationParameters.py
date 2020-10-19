@@ -10,7 +10,7 @@ import ip_dip_dispersion
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_polarization_reduced_platfrom_10layers_3p75to4p4um_30x30x25um_f36um'
+project_name = 'layered_mwir_litho_brdgs_pol_10lyrs_3p75to4p4um_30x30x25um_f36um'
 
 
 optimized_focal_spots = [ 0, 1, 2, 3 ]
