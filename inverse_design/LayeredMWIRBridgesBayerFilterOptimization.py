@@ -409,11 +409,6 @@ for epoch in range(0, num_epochs):
 
 
 			for adj_src_idx in range(0, num_adjoint_sources):
-				polarizations = polarizations_focal_plane_map[adj_src_idx]
-				spectral_indices = spectral_focal_plane_map[adj_src_idx]
-
-				gradient_performance_weight = performance_weighting[adj_src_idx]
-
 				adjoint_e_fields = []
 				for xy_idx in range(0, 2):
 					disable_all_sources()
