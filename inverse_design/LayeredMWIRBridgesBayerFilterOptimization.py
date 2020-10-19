@@ -6,6 +6,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from LayeredMWIRBridgesBayerFilterParameters import *
 import LayeredMWIRBridgesBayerFilter
+import ip_dip_dispersion
+
 
 import imp
 imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
