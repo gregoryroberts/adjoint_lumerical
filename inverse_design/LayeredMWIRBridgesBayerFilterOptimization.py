@@ -10,7 +10,7 @@ import ip_dip_dispersion
 
 
 import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
 import lumapi
 
 import functools
@@ -548,7 +548,7 @@ for epoch in range(0, num_epochs):
 		# Step 4: Step the design variable.
 		#
 		# device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
-		device_gradient = 2 * xy_polarized_gradients[0] + xy_polarized_gradients[1]
+		device_gradient = 2 * ( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
 
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
