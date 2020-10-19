@@ -10,7 +10,7 @@ import ip_dip_dispersion
 #
 # Files
 #
-project_name = 'layered_mwir_litho_brdgs_pol_10lyrs_3p75to4p4um_30x30x25um_f36um'
+project_name = 'layered_mwir_litho_brdgs_pol_10lyrs_3p75to4p5um_30x30x25um_f36um'
 
 
 optimized_focal_spots = [ 0, 1, 2, 3 ]
@@ -44,9 +44,9 @@ device_vertical_minimum_um = 0
 # Spectral
 #
 lambda_min_um = 3.75
-lambda_max_um = 4.4
+lambda_max_um = 4.5
 
-num_design_frequency_points = 10
+num_design_frequency_points = 15#10
 num_eval_frequency_points = 60
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
