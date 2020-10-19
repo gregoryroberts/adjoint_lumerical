@@ -369,6 +369,8 @@ for epoch in range(0, num_epochs):
 	for iteration in range(0, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
+		job_names = {}
+
 		fdtd_hook.switchtolayout()
 		cur_density = bayer_filter.get_permittivity()
 
