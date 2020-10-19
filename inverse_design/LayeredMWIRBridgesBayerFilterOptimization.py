@@ -379,7 +379,7 @@ for epoch in range(0, num_epochs):
 		#
 		for dispersive_range_idx in range( 0, num_dispersive_ranges ):
 			dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( dispersive_ranges_um[ dispersive_range_idx ] )
-			disperesive_max_index = ip_dip_dispersion_model.index_from_permittivity( dispersive_max_permittivity )
+			disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
 
 			fdtd_hook.switchtolayout()
 
