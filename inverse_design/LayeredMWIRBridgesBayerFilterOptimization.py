@@ -13,9 +13,54 @@ import lumapi
 
 import functools
 import h5py
-# import matplotlib.pyplot as plt
 import numpy as np
 import time
+
+import queue
+
+import subprocess
+
+import platform
+
+import re
+
+
+def get_slurm_node_list( slurm_job_env_variable=None ):
+	if slurm_job_env_variable is None:
+		slurm_job_env_variable = os.getenv('SLURM_JOB_NODELIST')
+	if slurm_job_env_variable is None:
+		raise ValueError('Environment variable does not exist.')
+
+	solo_node_pattern = r'hpc-\d\d-[\w]+'
+	cluster_node_pattern = r'hpc-\d\d-\[.*?\]'
+	solo_nodes = re.findall(solo_node_pattern, slurm_job_env_variable)
+	cluster_nodes = re.findall(cluster_node_pattern, slurm_job_env_variable)
+	inner_bracket_pattern = r'\[(.*?)\]'
+
+	output_arr = solo_nodes
+	for cluster_node in cluster_nodes:
+		prefix = cluster_node.split('[')[0]
+		inside_brackets = re.findall(inner_bracket_pattern, cluster_node)[0]
+		# Split at commas and iterate through results
+		for group in inside_brackets.split(','):
+			# Split at hypen. Get first and last number. Create string in range
+			# from first to last.
+			node_clump_split = group.split('-')
+			starting_number = int(node_clump_split[0])
+			try:
+				ending_number = int(node_clump_split[1])
+			except IndexError:
+				ending_number = starting_number
+			for i in range(starting_number, ending_number+1):
+				# Can use print("{:02d}".format(1)) to turn a 1 into a '01'
+				# string. 111 -> 111 still, in case nodes hit triple-digits.
+				output_arr.append(prefix + "{:02d}".format(i))
+	return output_arr
+
+num_nodes_available = int( sys.argv[ 1 ] )
+num_cpus_per_node = 8
+cluster_hostnames = get_slurm_node_list()
+
 
 #
 # Create FDTD hook
@@ -26,8 +71,12 @@ fdtd_hook = lumapi.FDTD()
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-projects_directory_location += "/" + project_name
+# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+# projects_directory_location += "/" + project_name
+
+projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+projects_directory_location += "/" + project_name# + '_parallel'
+
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -145,16 +194,29 @@ for adj_src in range(0, num_adjoint_sources):
 #
 # Add a block of polymer at the top where the device will be adhered to a Silicon substrate
 #
-permittivity_layer_substrate = fdtd_hook.addrect()
-permittivity_layer_substrate['name'] = 'polymer_layer_substrate'
-permittivity_layer_substrate['x'] = 0
-permittivity_layer_substrate['x span'] = ( fdtd_region_size_lateral_um + 2 * lateral_gap_size_um ) * 1e-6
-permittivity_layer_substrate['y'] = 0
-permittivity_layer_substrate['y span'] = ( fdtd_region_size_lateral_um + 2 * lateral_gap_size_um ) * 1e-6
-permittivity_layer_substrate['z min'] = ( device_vertical_maximum_um ) * 1e-6
-# Send this outside the region FDTD and let the source sit inside of it
-permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + 1.5 * vertical_gap_size_um ) * 1e-6
-permittivity_layer_substrate['index'] = max_device_index
+# permittivity_layer_substrate = fdtd_hook.addrect()
+# permittivity_layer_substrate['name'] = 'polymer_layer_substrate'
+# permittivity_layer_substrate['x'] = 0
+# permittivity_layer_substrate['x span'] = ( device_size_lateral_um ) * 1e-6
+# permittivity_layer_substrate['y'] = 0
+# permittivity_layer_substrate['y span'] = ( device_size_lateral_um ) * 1e-6
+# permittivity_layer_substrate['z min'] = ( device_vertical_maximum_um ) * 1e-6
+# # Send this outside the region FDTD and let the source sit inside of it
+# permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + 1.5 * vertical_gap_size_um ) * 1e-6
+# permittivity_layer_substrate['index'] = max_device_index
+
+permittivity_layer_substrate = fdtd_hook.addimport()
+permittivity_layer_substrate['name'] = 'permittivity_layer_substrate'
+permittivity_layer_substrate['x span'] = device_size_lateral_um * 1e-6
+permittivity_layer_substrate['y span'] = device_size_lateral_um * 1e-6
+permittivity_layer_substrate['z min'] = device_vertical_maximum_um * 1e-6
+permittivity_layer_substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+
+platform_x_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
+platform_y_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
+platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, fdtd_region_maximum_vertical_um, 2 )
+
+platform_index = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 
 
 #
@@ -170,7 +232,8 @@ design_import['z min'] = device_vertical_minimum_um * 1e-6
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
 bayer_filter = LayeredMWIRBridgesBayerFilter.LayeredMWIRBridgesBayerFilter(
 	bayer_filter_size_voxels,
-	[min_device_permittivity, max_device_permittivity],
+	[ 0.0, 1.0 ]
+	# [min_device_permittivity, max_device_permittivity],
 	init_permittivity_0_1_scale,
 	num_vertical_layers,
 	topology_num_free_iterations_between_patches)
@@ -183,14 +246,17 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
 #
 def disable_all_sources():
-	fdtd_hook.switchtolayout()
+	lumapi.evalScript(fdtd_hook.handle, 'switchtolayout;')
 
 	for xy_idx in range(0, 2):
-		(forward_sources[xy_idx]).enabled = 0
+		fdtd_hook.select( forward_sources[xy_idx]['name'] )
+		fdtd_hook.set( 'enabled', 0 )
 
 	for adj_src_idx in range(0, num_adjoint_sources):
 		for xy_idx in range(0, 2):
-			(adjoint_sources[adj_src_idx][xy_idx]).enabled = 0
+			fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
+			fdtd_hook.set( 'enabled', 0 )
+
 
 #
 # Consolidate the data transfer functionality for getting data from Lumerical FDTD process to
@@ -240,6 +306,59 @@ max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_
 step_size_start = 1.
 
 #
+# Set up queue for parallel jobs
+#
+jobs_queue = queue.Queue()
+
+def add_job( job_name, queue_in ):
+	full_name = projects_directory_location + "/" + job_name
+	fdtd_hook.save( full_name )
+	queue_in.put( full_name )
+
+	return full_name
+
+def run_jobs( queue_in ):
+	small_queue = queue.Queue()
+
+	while not queue_in.empty():
+		for node_idx in range( 0, num_nodes_available ):
+			if queue_in.qsize() > 0:
+				small_queue.put( queue_in.get() )
+
+		run_jobs_inner( small_queue )
+
+def run_jobs_inner( queue_in ):
+	processes = []
+	job_idx = 0
+	while not queue_in.empty():
+		get_job_path = queue_in.get()
+
+		process = subprocess.Popen(
+			[
+				'/home/gdrobert/Develompent/adjoint_lumerical/inverse_design/run_proc.sh',
+				cluster_hostnames[ job_idx ],
+				get_job_path
+			]
+		)
+		processes.append( process )
+
+		job_idx += 1
+	
+	completed_jobs = [ 0 for i in range( 0, len( processes ) ) ]
+	while np.sum( completed_jobs ) < len( processes ):
+		for job_idx in range( 0, len( processes ) ):
+			if completed_jobs[ job_idx ] == 0:
+
+				poll_result = processes[ job_idx ].poll()
+				if not( poll_result is None ):
+					completed_jobs[ job_idx ] = 1
+
+		time.sleep( 1 )
+
+
+ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
+
+#
 # Run the optimization
 #
 for epoch in range(0, num_epochs):
@@ -249,29 +368,87 @@ for epoch in range(0, num_epochs):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
 		fdtd_hook.switchtolayout()
-		cur_permittivity = bayer_filter.get_permittivity()
-		fdtd_hook.select("design_import")
-		fdtd_hook.importnk2(np.sqrt(cur_permittivity), bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z)
-
+		cur_density = bayer_filter.get_permittivity()
 
 		#
-		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
+		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.  Run a different optimization for each color band so
+		# that you can input a different index into each of those cubes.  Further note that the polymer slab needs to also change index when
+		# the cube index changes.
 		#
-		for xy_idx in range(0, 2):
-			disable_all_sources()
-			(forward_sources[xy_idx]).enabled = 1
-			fdtd_hook.run()
+		for dispersive_range_idx in range( 0, num_dispersive_ranges ):
+			dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( dispersive_ranges_um[ dispersive_range_idx ] )
+			disperesive_max_index = ip_dip_dispersion_model.index_from_permittivity( dispersive_max_permittivity )
 
-			forward_e_fields[xy_names[xy_idx]] = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+			fdtd_hook.switchtolayout()
 
-			focal_data[xy_names[xy_idx]] = []
+			platform_index[ : ] = disperesive_max_index
+
+			fdtd_hook.select( 'permittivity_layer_substrate' )
+			fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
+
+			cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
+			cur_index = index_from_permittivity( cur_permittivity )
+
+			fdtd_hook.select( 'design_import' )
+			fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
+
+
+			for xy_idx in range(0, 2):
+				disable_all_sources()
+
+				fdtd_hook.select( forward_sources[xy_idx]['name'] )
+				fdtd_hook.set( 'enabled', 1 )
+
+				job_name = 'forward_job_' + str( xy_idx ) + "_" + str( dispersive_range_idx ) + '.fsp'
+				fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+				job_names[ ( 'forward', xy_idx, dispersive_range_idx ) ] = add_job( job_name, jobs_queue )
+
+
 			for adj_src_idx in range(0, num_adjoint_sources):
-				focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+				polarizations = polarizations_focal_plane_map[adj_src_idx]
+				spectral_indices = spectral_focal_plane_map[adj_src_idx]
+
+				gradient_performance_weight = performance_weighting[adj_src_idx]
+
+				adjoint_e_fields = []
+				for xy_idx in range(0, 2):
+					disable_all_sources()
+
+					fdtd_hook.select( adjoint_sources[adj_src_idx][xy_idx]['name'] )
+					fdtd_hook.set( 'enabled', 1 )
+
+					job_name = 'adjoint_job_' + str( adj_src_idx ) + '_' + str( xy_idx ) + '_' + str( dispersive_range_idx ) + '.fsp'
+					fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+					job_names[ ( 'adjoint', adj_src_idx, xy_idx, dispersive_range_idx ) ] = add_job( job_name, jobs_queue )
+
+
+		run_jobs( jobs_queue )
 
 
 		#
 		# Step 2: Compute the figure of merit
 		#
+		for dispersive_range_idx in range( 0, num_dispersive_ranges ):
+			for xy_idx in range(0, 2):
+				fdtd_hook.load( job_names[ ( 'forward', xy_idx, dispersive_range_idx ) ] )
+
+				fwd_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+
+				if ( dispersive_range_idx == 0 ) and ( xy_idx == 0)
+
+					forward_e_fields[xy_names[xy_idx]] = fwd_e_fields
+				else:
+					get_wavelength_bucket = spectral_focal_plane_map[ dispersive_range_to_adjoint_src_map[ dispersive_range_idx ][ 0 ] ]
+
+					for spectral_idx in get_wavelength_bucket:
+						forward_e_fields[xy_names[xy_idx]][ :, get_wavelength_bucket, :, :, : ] = fwd_e_fields[ :, get_wavelength_bucket, :, :, : ]
+
+				focal_data[xy_names[xy_idx]] = []
+				for adj_src_idx in dispersive_range_to_adjoint_src_map[ dispersive_range_idx ]:
+					focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+
+
+
 		figure_of_merit_per_focal_spot = []
 		for focal_idx in range(0, num_focal_spots):
 			compute_fom = 0
@@ -319,11 +496,15 @@ for epoch in range(0, num_epochs):
 
 			gradient_performance_weight = performance_weighting[adj_src_idx]
 
+			lookup_dispersive_range_idx = adjoint_src_to_dispersive_range_map[ adj_src_idx ]
+
+
 			adjoint_e_fields = []
 			for xy_idx in range(0, 2):
-				disable_all_sources()
-				(adjoint_sources[adj_src_idx][xy_idx]).enabled = 1
-				fdtd_hook.run()
+				#
+				# This is ok because we are only going to be using the spectral idx corresponding to this range in teh summation below
+				#
+				fdtd_hook.load( job_names[ ( 'adjoint', adj_src_idx, xy_idx, lookup_dispersive_range_idx ) ] )
 
 				adjoint_e_fields.append(
 					get_complex_monitor_data(design_efield_monitor['name'], 'E'))
@@ -340,17 +521,34 @@ for epoch in range(0, num_epochs):
 					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
 					total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
 
+					#
+					# We need to properly account here for the current real and imaginary index
+					#
+					dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( dispersive_ranges_um[ lookup_dispersive_range_idx ] )
+					delta_real_permittivity = np.real( dispersive_max_permittivity - min_device_permittivity )
+					delta_imag_permittivity = np.imag( dispersive_max_permittivity - min_device_permittivity )
+
+
 					for spectral_idx in range(0, source_weight.shape[0]):
-						xy_polarized_gradients[pol_name_to_idx] += np.sum(
+						gradient_component = np.sum(
 							(source_weight[spectral_idx] * gradient_performance_weight / total_weighting[spectral_idx]) *
 							adjoint_e_fields[xy_idx][:, spectral_indices[0] + spectral_idx, :, :, :] *
 							forward_e_fields[pol_name][:, spectral_indices[0] + spectral_idx, :, :, :],
 							axis=0)
 
+						real_part_gradient = np.real( gradient_component )
+						imag_part_gradient = np.imag( gradient_component )
+
+						get_grad_density = delta_real_permittivity * real_part_gradient + delta_imag_permittivity * imag_part_gradient
+
+						xy_polarized_gradients[pol_name_to_idx] += get_grad_density
+
 		#
 		# Step 4: Step the design variable.
 		#
-		device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		# device_gradient = 2 * np.real( xy_polarized_gradients[0] + xy_polarized_gradients[1] )
+		device_gradient = 2 * xy_polarized_gradients[0] + xy_polarized_gradients[1]
+
 		# Because of how the data transfer happens between Lumerical and here, the axes are ordered [z, y, x] when we expect them to be
 		# [x, y, z].  For this reason, we swap the 0th and 2nd axes to get them into the expected ordering.
 		device_gradient = np.swapaxes(device_gradient, 0, 2)
@@ -414,6 +612,7 @@ for epoch in range(0, num_epochs):
 		last_design_variable = cur_design_variable.copy()
 		bayer_filter.step(-device_gradient, step_size)
 		cur_design_variable = bayer_filter.get_design_variable()
+		cur_design = bayer_filter.get_permittivity()
 
 		average_design_variable_change = np.mean( np.abs(cur_design_variable - last_design_variable) )
 		max_design_variable_change = np.max( np.abs(cur_design_variable - last_design_variable) )
@@ -428,6 +627,7 @@ for epoch in range(0, num_epochs):
 		np.save(projects_directory_location + "/average_design_change_evolution.npy", average_design_variable_change_evolution)
 		np.save(projects_directory_location + "/max_design_change_evolution.npy", max_design_variable_change_evolution)
 		np.save(projects_directory_location + "/cur_design_variable.npy", cur_design_variable)
+		np.save(projects_directory_location + "/cur_design.npy", cur_design)
 
 
 

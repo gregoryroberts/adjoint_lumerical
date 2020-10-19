@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3to5um_fixed_step_addcage_25x25x25um_f30um'
+project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_fixed_step_addcage_25x25x25um_f30um'
 
 # todo(gdrobert): consider the contrast here like you are doing in the cmos designs.. minimize energy into wrong quadrant
 
@@ -44,8 +44,9 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 3
-lambda_max_um = 5
+lambda_min_um = 3.5
+lambda_max_um = 5.5
+bandwidth_um = lambda_max_um - lambda_min_um
 
 num_bands = 3
 num_points_per_band = 10
@@ -53,6 +54,15 @@ num_design_frequency_points = num_bands * num_points_per_band
 
 lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequency_points)
 max_intensity_by_wavelength = (device_size_lateral_um**2)**2 / (focal_length_um**2 * lambda_values_um**2)
+
+
+num_dispersive_ranges = 3
+dispersive_range_size_um = bandwidth_um / num_dispersive_ranges
+
+dispersive_ranges_um = [
+	[ lambda_min_um + idx * dispersive_range_size_um, lambda_min_um + ( idx + 1 ) * dispersive_range_size_um ] for idx in range( 0, num_dispersive_ranges )
+]
+
 
 #
 # Fabrication Constraints
@@ -89,7 +99,8 @@ src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 #
 # Spectral and polarization selectivity information
 #
-polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
+# polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
+polarizations_focal_plane_map = [ ['x', 'y'], ['x'], ['x', 'y'], ['y'] ]
 weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
@@ -108,6 +119,20 @@ num_focal_spots = 4
 num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
+
+dispersive_range_to_adjoint_src_map = [
+	[ 0 ],
+	[ 1, 3 ],
+	[ 2 ]
+]
+
+adjoint_src_to_dispersive_range_map = [
+	0,
+	1,
+	2,
+	1
+]
+
 
 #
 # Optimization
