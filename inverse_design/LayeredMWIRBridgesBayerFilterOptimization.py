@@ -433,7 +433,7 @@ for epoch in range(0, num_epochs):
 
 				fwd_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-				if ( dispersive_range_idx == 0 ) and ( xy_idx == 0 ):
+				if ( dispersive_range_idx == 0 ):
 
 					forward_e_fields[xy_names[xy_idx]] = fwd_e_fields
 				else:
