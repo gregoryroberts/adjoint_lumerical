@@ -439,7 +439,7 @@ for epoch in range(0, num_epochs):
 				else:
 					get_wavelength_bucket = spectral_focal_plane_map[ dispersive_range_to_adjoint_src_map[ dispersive_range_idx ][ 0 ] ]
 
-					for spectral_idx in get_wavelength_bucket:
+					for spectral_idx in range( get_wavelength_bucket[ 0 ], get_wavelength_bucket[ 1 ] ):
 						forward_e_fields[xy_names[xy_idx]][ :, spectral_idx, :, :, : ] = fwd_e_fields[ :, spectral_idx, :, :, : ]
 
 				focal_data[xy_names[xy_idx]] = []
