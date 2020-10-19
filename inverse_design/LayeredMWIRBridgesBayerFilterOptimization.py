@@ -389,7 +389,7 @@ for epoch in range(0, num_epochs):
 			fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
 
 			cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
-			cur_index = index_from_permittivity( cur_permittivity )
+			cur_index = ip_dip_dispersion( cur_permittivity )
 
 			fdtd_hook.select( 'design_import' )
 			fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
