@@ -372,7 +372,7 @@ for epoch in range(0, num_epochs):
 
 	start_iter = 0
 	if epoch == 0:
-		start_iter = 12
+		start_iter = 20
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
