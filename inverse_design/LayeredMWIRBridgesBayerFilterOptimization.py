@@ -367,6 +367,7 @@ bayer_filter.update_permittivity()
 #
 # Run the optimization
 #
+start_epoch = 2
 for epoch in range(0, num_epochs):
 	bayer_filter.update_filters(epoch)
 
@@ -545,7 +546,7 @@ for epoch in range(0, num_epochs):
 							axis=0)
 
 						real_part_gradient = np.real( gradient_component )
-						imag_part_gradient = np.imag( gradient_component )
+						imag_part_gradient = -np.imag( gradient_component )
 
 						get_grad_density = delta_real_permittivity * real_part_gradient + delta_imag_permittivity * imag_part_gradient
 
