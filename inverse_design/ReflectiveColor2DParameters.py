@@ -132,7 +132,7 @@ lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequenc
 # FDTD
 #
 vertical_gap_size_um = 1.5
-lateral_gap_size_um = 6.0
+lateral_gap_size_um = 4.0
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + 2 * device_to_mode_match_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
@@ -152,8 +152,8 @@ fdtd_simulation_time_fs = 3 * 2000
 #
 num_polarizations = 2
 
-lateral_aperture_um = 1.25 * device_size_lateral_um
-adjoint_aperture_um = device_size_lateral_um + lateral_gap_size_um
+lateral_aperture_um = 1.1 * device_size_lateral_um
+adjoint_aperture_um = 2.0 * device_size_lateral_um
 src_maximum_vertical_um = 0.5 * device_size_verical_um + 0.75 * device_to_mode_match_um
 src_minimum_vertical_um = -0.5 * device_to_mode_match_um - 0.5 * vertical_gap_size_um
 
