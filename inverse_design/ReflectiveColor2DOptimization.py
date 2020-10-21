@@ -27,11 +27,21 @@ import continuous_cmos
 
 from scipy import ndimage, misc
 
+# def softplus( x_in ):
+# 	return np.log( 1 + np.exp( x_in ) )
+
+# def softplus_prime( x_in ):
+# 	return ( 1. / ( 1 + np.exp( -x_in ) ) )
+
+
 def softplus( x_in ):
-	return np.log( 1 + np.exp( x_in ) )
+	k = 10
+	return ( np.log( 1 + np.exp( k * x_in ) ) / k )
 
 def softplus_prime( x_in ):
-	return ( 1. / ( 1 + np.exp( -x_in ) ) )
+	k = 10
+	return ( 1. / ( 1 + np.exp( -k * x_in ) ) )
+
 
 
 def permittivity_to_index( permittivity ):
@@ -122,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_blue_v1"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -769,7 +779,17 @@ def fom_and_gradient_with_rotations( pol_idx ):
 	fom_rotation_reflection, fom_rotation_transmission, grad_rotation_reflection, grad_rotation_transmission = fom_and_gradient(
 		pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
 
+	# print( fom_no_rotation_reflection )
+	# print( fom_rotation_reflection )
+	# print( fom_no_rotation_transmission )
+	# print( fom_rotation_transmission )
+	# print()
+
 	fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
+
+	# print( softplus( fom_no_rotation_transmission + fom_rotation_transmission ) )
+	# print( softplus( fom_no_rotation_reflection + fom_rotation_reflection ) )
+	# print()
 
 	grad_reflection = (
 		softplus( fom_no_rotation_transmission + fom_rotation_transmission ) * softplus_prime( fom_no_rotation_reflection + fom_rotation_reflection ) *
@@ -856,7 +876,7 @@ def check_gradient_full( pol_idx ):
 	print( "Before grad bump:" )
 	print( fom0 )
 
-	num_fd = 15
+	num_fd = 20
 	fd_x = int( 0.35 * fd_index.shape[ 0 ] )
 	fd_y_start = int( 0.5 * fd_index.shape[ 1 ] )
 	fd_y_end = fd_y_start + num_fd
@@ -1309,7 +1329,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_9_10p8_green_v3.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_9_contrast_3p6_red_v1.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
