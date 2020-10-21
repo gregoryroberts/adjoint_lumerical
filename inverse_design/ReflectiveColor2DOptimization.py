@@ -11,9 +11,9 @@ run_on_cluster = True
 if run_on_cluster:
 	import imp
 	imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
-# else:
-# 	import imp
-# 	imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+else:
+	import imp
+	imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
 
 import lumapi
 
@@ -122,7 +122,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_v3"
+projects_directory_location += "/" + project_name + "_continuous_reflective_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -1392,7 +1392,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 0 )
 
-# compute_gradient( np.load('/Users/gregory/Downloads/device_9_v2.npy') )
+# compute_gradient( np.load('/Users/gregory/Downloads/device_19_3p6_v3.npy') )
 
 # fdtd_hook.run()
 
