@@ -15,7 +15,7 @@ import sys
 #
 # Files
 #
-project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_3p6xtsmc_um'
+project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_10p8xtsmc_um'
 
 #
 # Optical
@@ -89,7 +89,7 @@ feature_size_voxels_by_profiles.append( int( 0.09 / lsf_mesh_spacing_um ) )
 
 
 # device_size_lateral_um = 3.0
-device_size_lateral_um = 3.6
+device_size_lateral_um = 3.6 * 3
 # device_size_lateral_um = 4.0
 designable_size_vertical_um = np.sum( device_layer_thicknesses_um ) + np.sum( device_spacer_thicknesses_um )
 

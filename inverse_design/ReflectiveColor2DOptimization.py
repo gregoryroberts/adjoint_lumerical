@@ -122,7 +122,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_v2"
+projects_directory_location += "/" + project_name + "_continuous_reflective_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -430,7 +430,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 
 # You likely should verify the gradient for when you do level set optimized devices!
 
-num_iterations = 100
+num_iterations = 200
 
 np.random.seed( 923447 )
 
@@ -1390,7 +1390,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 0 )
 
-# compute_gradient( np.load('/Users/gregory/Downloads/device_9.npy') )
+# compute_gradient( np.load('/Users/gregory/Downloads/device_9_v2.npy') )
 
 # fdtd_hook.run()
 
