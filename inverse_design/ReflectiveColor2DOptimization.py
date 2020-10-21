@@ -122,7 +122,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_v1"
+projects_directory_location += "/" + project_name + "_continuous_reflective_v2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -180,7 +180,7 @@ for pol_idx in range( 0, num_polarizations ):
 	forward_src['direction'] = 'Backward'
 	forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
 	forward_src['y'] = src_maximum_vertical_um * 1e-6
-	forward_src['waist radius w0'] = lateral_aperture_um * 1e-6
+	forward_src['waist radius w0'] = 0.5 * lateral_aperture_um * 1e-6
 	forward_src['distance from waist'] = ( designable_device_vertical_maximum_um - src_maximum_vertical_um ) * 1e-6
 	# forward_src['y max'] = src_maximum_vertical_um * 1e-6
 	# forward_src['y min'] = src_minimum_vertical_um * 1e-6
@@ -229,7 +229,7 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
-	adj_src_refl['waist radius w0'] = device_size_lateral_um * 1e-6
+	adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
 	adj_src_refl['distance from waist'] = ( adjoint_transmission_position_y_um - adjoint_reflection_position_y_um ) * 1e-6
 	adj_src_refl['wavelength start'] = lambda_min_um * 1e-6
 	adj_src_refl['wavelength stop'] = lambda_max_um * 1e-6
@@ -251,7 +251,7 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_trans['y'] = adjoint_transmission_position_y_um * 1e-6
 	# adj_src_trans['y max'] = ( device_size_verical_um + device_to_mode_match_um + 0.5 * vertical_gap_size_um ) * 1e-6
 	# adj_src_trans['y min'] = adjoint_transmission_position_y_um * 1e-6
-	adj_src_trans['waist radius w0'] = device_size_lateral_um * 1e-6
+	adj_src_trans['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
 	adj_src_trans['distance from waist'] = ( adjoint_transmission_position_y_um - adjoint_reflection_position_y_um ) * 1e-6
 	adj_src_trans['wavelength start'] = lambda_min_um * 1e-6
 	adj_src_trans['wavelength stop'] = lambda_max_um * 1e-6
@@ -306,7 +306,7 @@ design_index_monitor['y max'] = designable_device_vertical_maximum_um * 1e-6
 transmission_monitor = fdtd_hook.addpower()
 transmission_monitor['name'] = 'transmission_monitor'
 transmission_monitor['monitor type'] = 'Linear X'
-transmission_monitor['x span'] = ( adjoint_aperture_um - 2 * mesh_spacing_um ) * 1e-6
+transmission_monitor['x span'] = ( adjoint_aperture_um ) * 1e-6
 transmission_monitor['y'] = adjoint_transmission_position_y_um * 1e-6
 transmission_monitor['override global monitor settings'] = 1
 transmission_monitor['use wavelength spacing'] = 1
@@ -318,7 +318,7 @@ transmission_monitor['frequency points'] = num_design_frequency_points
 reflection_monitor = fdtd_hook.addpower()
 reflection_monitor['name'] = 'reflection_monitor'
 reflection_monitor['monitor type'] = 'Linear X'
-reflection_monitor['x span'] = ( adjoint_aperture_um - 2 * mesh_spacing_um ) * 1e-6
+reflection_monitor['x span'] = ( adjoint_aperture_um ) * 1e-6
 reflection_monitor['y'] = adjoint_reflection_position_y_um * 1e-6
 reflection_monitor['override global monitor settings'] = 1
 reflection_monitor['use wavelength spacing'] = 1
@@ -1388,7 +1388,9 @@ for adj_src_refl in adjoint_sources_reflection:
 fdtd_hook.select(device_and_backgrond_group['name'])
 fdtd_hook.set('enabled', 1)
 
-# check_gradient_full( 1 )
+# check_gradient_full( 0 )
+
+# compute_gradient( np.load('/Users/gregory/Downloads/device_9.npy') )
 
 # fdtd_hook.run()
 
