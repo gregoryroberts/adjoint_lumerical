@@ -15,8 +15,8 @@ import sys
 #
 # Files
 #
-# project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_3p6xtsmc_um'
-project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_10p8xtsmc_um'
+project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_3p6xtsmc_um'
+# project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_10p8xtsmc_um'
 
 #
 # Optical
@@ -90,8 +90,8 @@ feature_size_voxels_by_profiles.append( int( 0.09 / lsf_mesh_spacing_um ) )
 
 
 # device_size_lateral_um = 3.0
-# device_size_lateral_um = 3.6
-device_size_lateral_um = 3.6 * 3
+device_size_lateral_um = 3.6
+# device_size_lateral_um = 3.6 * 3
 # device_size_lateral_um = 4.0
 designable_size_vertical_um = np.sum( device_layer_thicknesses_um ) + np.sum( device_spacer_thicknesses_um )
 
@@ -172,9 +172,9 @@ polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # 	[num_points_per_band, 2 * num_points_per_band],
 # ]
 
-# optimize_reflection_band = [ 0, num_points_per_band ]
+optimize_reflection_band = [ 0, num_points_per_band ]
 # optimize_reflection_band = [ num_points_per_band, 2 * num_points_per_band ]
-optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
+# optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 
 # normal_reflection_weights = np.zeros( num_design_frequency_points )
 # normal_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0
@@ -182,9 +182,15 @@ optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 # angled_reflection_weights = np.zeros( num_design_frequency_points )
 
 angled_reflection_weights = np.zeros( num_design_frequency_points )
-angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0
+angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_points_per_band
 
-normal_reflection_weights = np.zeros( num_design_frequency_points )
+angled_transmission_weights = np.zeros( num_design_frequency_points )
+angled_transmission_weights[ 0 : optimize_reflection_band[ 0 ] ] = 1.0 / ( 2.0 * num_points_per_band )
+angled_transmission_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
+
+
+normal_reflection_weights = -angled_reflection_weights.copy()
+normal_transmission_weights = angled_transmission_weights.copy()
 
 
 device_rotation_angle_degrees = 12.0

@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from ReflectiveColor2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = False#True
 
 if run_on_cluster:
 	import imp
@@ -122,7 +122,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v4"
+projects_directory_location += "/" + project_name + "_continuous_reflective_blue_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -430,7 +430,8 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 
 # You likely should verify the gradient for when you do level set optimized devices!
 
-num_iterations = 200
+# num_iterations = 200
+num_iterations = 100
 
 np.random.seed( 923447 )
 
@@ -598,112 +599,20 @@ def mode_overlap_gradient_hz(
 	return -gradient
 	# return -gradient / num_wavelengths
 
-def evaluate_device( index_profile ):
-	fdtd_hook.switchtolayout()
-	get_index = index_profile
-	inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
-	inflate_index[ :, :, 0 ] = get_index
-	inflate_index[ :, :, 1 ] = get_index
-
-	fdtd_hook.select( device_and_backgrond_group['name'] + "::device_import" )
-	fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
-
-	figure_of_merit_by_pol = np.zeros( num_polarizations )
-
-	figure_of_merit = 0
-	for pol_idx in range( 0, num_polarizations ):
-
-		affected_coords = affected_coords_by_polarization[ pol_idx ]
-
-		#
-		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
-		#
-		disable_all_sources()
-		forward_sources[ pol_idx ].enabled = 1
-		fdtd_hook.run()
-
-		forward_e_fields = get_complex_monitor_data(design_efield_monitor['name'], 'E')
-
-		focal_data = []
-		for adj_src_idx in range(0, num_adjoint_sources):
-			focal_data.append(
-				get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E') )
-
-		#
-		# Step 2: Compute the figure of merit
-		#
-		normalized_intensity_focal_point_wavelength = np.zeros( ( num_focal_spots, num_design_frequency_points ) )
-		conjugate_weighting_focal_point_wavelength = np.zeros( ( 3, num_focal_spots, num_design_frequency_points ), dtype=np.complex )
-
-		figure_of_merit_total = np.zeros( num_design_frequency_points )
-		conjugate_weighting_wavelength = np.zeros( ( num_focal_spots, 3, num_design_frequency_points ), dtype=np.complex )
-			
-		figure_of_merit_by_band = np.zeros( num_focal_spots )
-
-		correct_focal_by_wl = np.zeros( num_design_frequency_points )
-		incorrect_focal_by_wl = np.zeros( num_design_frequency_points )
-
-		for focal_idx in range(0, num_focal_spots):
-			spectral_indices = spectral_focal_plane_map[ focal_idx ]
-			num_points = spectral_indices[ 1 ] - spectral_indices[ 0 ]
-
-			for wl_idx in range( 0, num_design_frequency_points ):
-				weighting = 0
-				if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
-					weighting = 1.0
-
-				for coord_idx in range( 0, len( affected_coords ) ):
-					current_coord = affected_coords[ coord_idx ]
-
-					normalize_intensity_k_k = np.sum( np.abs( focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_wavelength[ wl_idx ]
-
-					correct_focal_by_wl[ wl_idx ] += band_weights[ focal_idx ] * weighting * normalize_intensity_k_k
-
-					for other_focal_idx in range( 0, num_focal_spots ):
-						if other_focal_idx == focal_idx:
-							continue
-
-						normalize_intensity_k_j = np.sum( np.abs( focal_data[ other_focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_wavelength[ wl_idx ]
-
-						incorrect_focal_by_wl[ wl_idx ] += band_weights[ focal_idx ] * weighting * normalize_intensity_k_j
-
-					conjugate_weighting_wavelength[ focal_idx, current_coord, wl_idx ] = np.conj(
-						focal_data[ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_wavelength[ wl_idx ] )
-
-
-		for focal_idx in range(0, num_focal_spots):
-			spectral_indices = spectral_focal_plane_map[ focal_idx ]
-
-			for wl_idx in range( 0, num_design_frequency_points ):
-				if ( wl_idx < spectral_indices[ 1 ] ) and ( wl_idx >= spectral_indices[ 0 ] ):
-					if band_weights[ focal_idx ] > 0:
-						figure_of_merit_by_band[ focal_idx ] += ( ( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] ) - incorrect_focal_by_wl[ wl_idx ] )
-						# figure_of_merit_by_band[ focal_idx ] += ( incorrect_focal_by_wl[ wl_idx ] - ( ( num_focal_spots - 1. ) * correct_focal_by_wl[ wl_idx ] ) )
-
-		reselect_fom_by_band = []
-		for idx in range( 0, len( figure_of_merit_by_band ) ):
-			if band_weights[ idx ] > 0:
-				reselect_fom_by_band.append( softplus( figure_of_merit_by_band[ idx ] ) )
-
-		reselect_fom_by_band = np.array( reselect_fom_by_band )
-		figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.product( reselect_fom_by_band )
-		figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
-		
-	return figure_of_merit
 
 def reflection_transmission_figure_of_merit( reflection_by_wl, transmission_by_wl, reflection_weights_by_wl, transmission_weights_by_wl ):
 
-	assert np.all( np.greater_equal( transmission_weights_by_wl, 0.0 ) ), "Expected no negative weights!"
-	assert np.all( np.greater_equal( reflection_weights_by_wl, 0.0 ) ), "Expected no negative weights!"
+	# assert np.all( np.greater_equal( transmission_weights_by_wl, 0.0 ) ), "Expected no negative weights!"
+	# assert np.all( np.greater_equal( reflection_weights_by_wl, 0.0 ) ), "Expected no negative weights!"
 	assert len( reflection_by_wl ) == len( transmission_by_wl ), "Array sizes do not match up!"
 	assert len( reflection_by_wl ) == len( reflection_weights_by_wl ), "Array sizes do not match up!"
 
-	return np.mean( reflection_by_wl * reflection_weights_by_wl ), np.mean( transmission_by_wl * transmission_weights_by_wl )
+	return np.sum( reflection_by_wl * reflection_weights_by_wl ), np.sum( transmission_by_wl * transmission_weights_by_wl )
 
 #
 # todo(gdroberts): fom design on random configs to see how well this figure of merit is doing!
 #
-def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl ):
+def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl, transmission_weights_by_wl ):
 	rotation_angle_degrees = rotation_angle_radians * 180. / np.pi
 
 	fdtd_hook.switchtolayout()
@@ -744,7 +653,7 @@ def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl ):
 		-1.0, mode_overlap_norm_transmission[ pol_idx ] )
 
 	fom_reflection, fom_transmission = reflection_transmission_figure_of_merit(
-		mode_overlap_reflection, mode_overlap_transmission, reflection_weights_by_wl, 1. - reflection_weights_by_wl )
+		mode_overlap_reflection, mode_overlap_transmission, reflection_weights_by_wl, transmission_weights_by_wl )
 
 	fdtd_hook.switchtolayout()
 	device_and_backgrond_group['first axis'] = 'none'
@@ -753,7 +662,7 @@ def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl ):
 
 	return fom_reflection, fom_transmission
 
-def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl ):
+def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl, transmission_weights_by_wl ):
 	rotation_angle_degrees = rotation_angle_radians * 180. / np.pi
 
 	fdtd_hook.switchtolayout()
@@ -795,7 +704,7 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl 
 
 
 	fom_reflection, fom_transmission = reflection_transmission_figure_of_merit(
-		mode_overlap_reflection, mode_overlap_transmission, reflection_weights_by_wl, 1. - reflection_weights_by_wl )
+		mode_overlap_reflection, mode_overlap_transmission, reflection_weights_by_wl, transmission_weights_by_wl )
 
 	disable_all_sources()
 	adjoint_sources_reflection[ pol_idx ].enabled = 1
@@ -840,7 +749,7 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl 
 	adj_grad_reflection = np.swapaxes( adj_grad_reflection, 0, 2 )
 
 	adj_grad_transmission = np.real( overlap_gradient_by_pol[ pol_idx ](
-		1. - reflection_weights_by_wl,
+		transmission_weights_by_wl,
 		get_E_fwd_transmission, get_H_fwd_transmission,
 		mode_E_transmission[ pol_idx ], mode_H_transmission[ pol_idx ],
 		forward_e_fields, adjoint_e_fields_transmission,
@@ -855,22 +764,30 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl 
 	return fom_reflection, fom_transmission, adj_grad_reflection, adj_grad_transmission
 
 def fom_and_gradient_with_rotations( pol_idx ):
-	fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient( pol_idx, 0.0, normal_reflection_weights )
-	fom_rotation_reflection, fom_rotation_transmission, grad_rotation_reflection, grad_rotation_transmission = fom_and_gradient( pol_idx, device_rotation_angle_radians, angled_reflection_weights )
+	fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
+		pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
+	fom_rotation_reflection, fom_rotation_transmission, grad_rotation_reflection, grad_rotation_transmission = fom_and_gradient(
+		pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
 
-	fom_total = ( fom_no_rotation_reflection + fom_rotation_reflection ) * ( fom_no_rotation_transmission + fom_rotation_transmission )
+	fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
 
-	grad_reflection = ( fom_no_rotation_transmission + fom_rotation_transmission ) * ( grad_no_rotation_reflection + grad_rotation_reflection )
-	grad_transmission = ( fom_no_rotation_reflection + fom_rotation_reflection ) * ( grad_no_rotation_transmission + grad_rotation_transmission )
+	grad_reflection = (
+		softplus( fom_no_rotation_transmission + fom_rotation_transmission ) * softplus_prime( fom_no_rotation_reflection + fom_rotation_reflection ) *
+		( grad_no_rotation_reflection + grad_rotation_reflection )
+	)
+	grad_transmission = (
+		softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus_prime( fom_no_rotation_transmission + fom_rotation_transmission ) *
+		( grad_no_rotation_transmission + grad_rotation_transmission )
+	)
 	grad_total = grad_reflection + grad_transmission
 
 	return fom_total, grad_total
 
 def fom_with_rotations( pol_idx ):
-	fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, 0.0, normal_reflection_weights )
-	fom_rotation_reflection, fom_rotation_transmission = fom( pol_idx, device_rotation_angle_radians, angled_reflection_weights )
+	fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
+	fom_rotation_reflection, fom_rotation_transmission = fom( pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
 
-	fom_total = ( fom_no_rotation_reflection + fom_rotation_reflection ) * ( fom_no_rotation_transmission + fom_rotation_transmission )
+	fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
 
 	return fom_total
 
@@ -902,7 +819,7 @@ def compute_gradient( device_index, performance_weight_by_pol=False ):
 	grad_total = np.zeros( grad_by_pol[ 0 ].shape )
 
 	for pol_idx in range( 0, num_polarizations ):
-		fom_total += performance_weights[ pol_idx ] * pol_weights[ pol_idx ] * fom_by_pol[ pol_idx ]
+		fom_total += pol_weights[ pol_idx ] * fom_by_pol[ pol_idx ]
 		grad_total += performance_weights[ pol_idx ] * pol_weights[ pol_idx ] * grad_by_pol[ pol_idx ]
 
 	return fom_total, grad_total
@@ -939,7 +856,7 @@ def check_gradient_full( pol_idx ):
 	print( "Before grad bump:" )
 	print( fom0 )
 
-	num_fd = 8
+	num_fd = 15
 	fd_x = int( 0.35 * fd_index.shape[ 0 ] )
 	fd_y_start = int( 0.5 * fd_index.shape[ 1 ] )
 	fd_y_end = fd_y_start + num_fd
@@ -1390,9 +1307,11 @@ for adj_src_refl in adjoint_sources_reflection:
 fdtd_hook.select(device_and_backgrond_group['name'])
 fdtd_hook.set('enabled', 1)
 
-# check_gradient_full( 0 )
+# check_gradient_full( 1 )
 
-# compute_gradient( np.load('/Users/gregory/Downloads/device_19_3p6_v3.npy') )
+# load_index = np.load('/Users/gregory/Downloads/device_9_10p8_green_v3.npy')
+# bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
+# compute_gradient( load_index )
 
 # fdtd_hook.run()
 
