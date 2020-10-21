@@ -122,7 +122,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_v1"
+projects_directory_location += "/" + project_name + "_continuous_reflective_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -700,7 +700,9 @@ def reflection_transmission_figure_of_merit( reflection_by_wl, transmission_by_w
 
 	return np.mean( reflection_by_wl * reflection_weights_by_wl ), np.mean( transmission_by_wl * transmission_weights_by_wl )
 
-
+#
+# todo(gdroberts): fom design on random configs to see how well this figure of merit is doing!
+#
 def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl ):
 	rotation_angle_degrees = rotation_angle_radians * 180. / np.pi
 
