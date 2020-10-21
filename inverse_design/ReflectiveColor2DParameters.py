@@ -172,8 +172,8 @@ polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # 	[num_points_per_band, 2 * num_points_per_band],
 # ]
 
-optimize_reflection_band = [ 0, num_points_per_band ]
-# optimize_reflection_band = [ num_points_per_band, 2 * num_points_per_band ]
+# optimize_reflection_band = [ 0, num_points_per_band ]
+optimize_reflection_band = [ num_points_per_band, 2 * num_points_per_band ]
 # optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 
 # normal_reflection_weights = np.zeros( num_design_frequency_points )
