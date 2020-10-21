@@ -368,7 +368,7 @@ bayer_filter.update_permittivity()
 # Run the optimization
 #
 start_epoch = 2
-for epoch in range(0, num_epochs):
+for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 
 	start_iter = 0
