@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v6"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v7"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -409,13 +409,13 @@ for device_background_side_idx in range( 0, 2 ):
 	side_blocks.append( side_block )
 
 
-bottom_silicon = fdtd_hook.addrect()
-bottom_silicon['name'] = 'bottom_silicon'
-bottom_silicon['y min'] = fdtd_region_minimum_vertical_um * 1e-6
-bottom_silicon['y max'] = designable_device_vertical_minimum_um * 1e-6
-bottom_silicon['x span'] = 1.5 * fdtd_region_size_lateral_um * 1e-6
-bottom_silicon['material'] = 'Si (Silicon) - Palik'
-fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
+# bottom_silicon = fdtd_hook.addrect()
+# bottom_silicon['name'] = 'bottom_silicon'
+# bottom_silicon['y min'] = fdtd_region_minimum_vertical_um * 1e-6
+# bottom_silicon['y max'] = designable_device_vertical_minimum_um * 1e-6
+# bottom_silicon['x span'] = 1.5 * fdtd_region_size_lateral_um * 1e-6
+# bottom_silicon['material'] = 'Si (Silicon) - Palik'
+# fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
 
 
 gaussian_normalization = np.zeros( num_points_per_band )
@@ -1342,7 +1342,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_9_contrast_3p6_red_v3.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_contrast_3p6_red_v6.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
