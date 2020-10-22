@@ -16,7 +16,7 @@ import sys
 # Files
 #
 # project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_3p6xtsmc_um'
-project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_10p8xtsmc_um'
+project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_si_10p8xtsmc_um'
 
 #
 # Optical
@@ -57,7 +57,7 @@ lsf_end_step_size = 0.05
 # focal_length_um = 2.0
 # focal_length_um = 3.0
 
-device_to_mode_match_um = 0.7 * 5
+device_to_mode_match_um = 0.75 * 6
 
 
 
@@ -90,8 +90,8 @@ feature_size_voxels_by_profiles.append( int( 0.09 / lsf_mesh_spacing_um ) )
 
 
 # device_size_lateral_um = 3.0
-# device_size_lateral_um = 3.6
 device_size_lateral_um = 3.6 * 3
+# device_size_lateral_um = 3.6 * 3
 # device_size_lateral_um = 4.0
 designable_size_vertical_um = np.sum( device_layer_thicknesses_um ) + np.sum( device_spacer_thicknesses_um )
 
@@ -134,7 +134,7 @@ lambda_values_um = np.linspace(lambda_min_um, lambda_max_um, num_design_frequenc
 # FDTD
 #
 vertical_gap_size_um = 1.5
-lateral_gap_size_um = device_size_lateral_um
+lateral_gap_size_um = 0.75 * device_size_lateral_um
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + 2 * device_to_mode_match_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
@@ -180,6 +180,9 @@ optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 # normal_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0
 
 # angled_reflection_weights = np.zeros( num_design_frequency_points )
+
+#
+# We could also try to explicitly send it off to an angled mode instead of reducing the reflection mode overlap
 
 angled_reflection_weights = np.zeros( num_design_frequency_points )
 angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_points_per_band
