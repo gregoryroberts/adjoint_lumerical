@@ -373,9 +373,9 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
-bayer_filter.w[0] = cur_design_variable
-bayer_filter.update_permittivity()
+# cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
+# bayer_filter.w[0] = cur_design_variable
+# bayer_filter.update_permittivity()
 
 #
 # Run the optimization
