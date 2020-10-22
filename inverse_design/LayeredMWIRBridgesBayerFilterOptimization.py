@@ -221,6 +221,18 @@ platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, fdtd_region_m
 platform_index = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 
 
+silicon_substrate = fdtd_hook.addrect()
+silicon_substrate['name'] = 'silicon_substrate'
+silicon_substrate['x'] = 0
+silicon_substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
+silicon_substrate['y'] = 0
+silicon_substrate['y span'] = fdtd_region_size_lateral_um * 1e-6
+silicon_substrate['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+# Send this outside the region FDTD and let the source sit inside of it
+silicon_substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+silicon_substrate['material'] = 'Si (Silicon) - Palik'
+
+
 #
 # Add device region and create device permittivity
 #
@@ -301,6 +313,7 @@ forward_e_fields = {}
 focal_data = {}
 
 figure_of_merit_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
+figure_of_merit_by_wl_evolution = np.zeros((num_epochs, num_iterations_per_epoch, num_design_frequency_points))
 step_size_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 average_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
 max_design_variable_change_evolution = np.zeros((num_epochs, num_iterations_per_epoch))
@@ -367,13 +380,13 @@ bayer_filter.update_permittivity()
 #
 # Run the optimization
 #
-start_epoch = 2
+start_epoch = 0
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 
 	start_iter = 0
 	if epoch == 0:
-		start_iter = 20
+		start_iter = 0#20
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
@@ -488,8 +501,10 @@ for epoch in range(start_epoch, num_epochs):
 
 		figure_of_merit = np.sum(figure_of_merit_per_focal_spot)
 		figure_of_merit_evolution[epoch, iteration] = figure_of_merit
+		figure_of_merit_by_wl_evolution[epoch, iteration] = figure_of_merit_per_focal_spot
 
 		np.save(projects_directory_location + "/figure_of_merit.npy", figure_of_merit_evolution)
+		np.save(projects_directory_location + "/figure_of_merit_by_wl.npy", figure_of_merit_by_wl_evolution)
 
 		#
 		# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the

@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from ReflectiveColor2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = False#True
 
 if run_on_cluster:
 	import imp
@@ -1329,9 +1329,9 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_9_contrast_3p6_red_v2.npy')
+load_index = np.load('/Users/gregory/Downloads/device_6_contrast_3p6_red_v3.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
-# compute_gradient( load_index )
+compute_gradient( load_index )
 
 # fdtd_hook.run()
 
