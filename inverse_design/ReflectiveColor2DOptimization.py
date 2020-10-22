@@ -27,20 +27,20 @@ import continuous_cmos
 
 from scipy import ndimage, misc
 
-# def softplus( x_in ):
-# 	return np.log( 1 + np.exp( x_in ) )
-
-# def softplus_prime( x_in ):
-# 	return ( 1. / ( 1 + np.exp( -x_in ) ) )
-
-
 def softplus( x_in ):
-	k = 10
-	return ( np.log( 1 + np.exp( k * x_in ) ) / k )
+	return np.log( 1 + np.exp( x_in ) )
 
 def softplus_prime( x_in ):
-	k = 10
-	return ( 1. / ( 1 + np.exp( -k * x_in ) ) )
+	return ( 1. / ( 1 + np.exp( -x_in ) ) )
+
+
+# def softplus( x_in ):
+# 	k = 10
+# 	return ( np.log( 1 + np.exp( k * x_in ) ) / k )
+
+# def softplus_prime( x_in ):
+# 	k = 10
+# 	return ( 1. / ( 1 + np.exp( -k * x_in ) ) )
 
 
 
@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v2"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -1329,7 +1329,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_9_contrast_3p6_red_v1.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_9_contrast_3p6_red_v2.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 

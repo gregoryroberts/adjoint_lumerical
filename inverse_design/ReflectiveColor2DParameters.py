@@ -185,8 +185,8 @@ angled_reflection_weights = np.zeros( num_design_frequency_points )
 angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_points_per_band
 
 angled_transmission_weights = np.zeros( num_design_frequency_points )
-angled_transmission_weights[ 0 : optimize_reflection_band[ 0 ] ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
-angled_transmission_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
+# angled_transmission_weights[ 0 : optimize_reflection_band[ 0 ] ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
+# angled_transmission_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
 
 normal_reflection_weights = -angled_reflection_weights.copy()
 normal_transmission_weights = angled_transmission_weights.copy()
