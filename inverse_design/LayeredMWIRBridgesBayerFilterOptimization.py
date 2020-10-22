@@ -373,9 +373,9 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-# cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
-# bayer_filter.w[0] = cur_design_variable
-# bayer_filter.update_permittivity()
+cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
+bayer_filter.w[0] = cur_design_variable
+bayer_filter.update_permittivity()
 
 #
 # Run the optimization
@@ -386,7 +386,7 @@ for epoch in range(start_epoch, num_epochs):
 
 	start_iter = 0
 	if epoch == 0:
-		start_iter = 0#20
+		start_iter = 20
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
@@ -481,7 +481,7 @@ for epoch in range(start_epoch, num_epochs):
 				get_focal_data = focal_data[polarizations[polarization_idx]]
 
 				max_intensity_weighting = max_intensity_by_wavelength[spectral_focal_plane_map[focal_idx][0] : spectral_focal_plane_map[focal_idx][1] : 1]
-				total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
+				total_weighting = max_intensity_weighting / weight_focal_plane_map[focal_idx]
 
 				for spectral_idx in range(0, total_weighting.shape[0]):
 					compute_fom += np.sum(
@@ -543,7 +543,7 @@ for epoch in range(start_epoch, num_epochs):
 						get_focal_data[adj_src_idx][xy_idx, spectral_indices[0] : spectral_indices[1] : 1, 0, 0, 0])
 
 					max_intensity_weighting = max_intensity_by_wavelength[spectral_indices[0] : spectral_indices[1] : 1]
-					total_weighting = max_intensity_weighting * weight_focal_plane_map[focal_idx]
+					total_weighting = max_intensity_weighting / weight_focal_plane_map[focal_idx]
 
 					#
 					# We need to properly account here for the current real and imaginary index

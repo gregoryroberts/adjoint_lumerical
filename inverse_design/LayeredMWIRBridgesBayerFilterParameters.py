@@ -106,7 +106,7 @@ assert ( src_maximum_vertical_um + 1 ) < ( fdtd_region_maximum_vertical_um - sil
 #
 # polarizations_focal_plane_map = [ ['x', 'y'], ['x', 'y'], ['x', 'y'], ['x', 'y'] ]
 polarizations_focal_plane_map = [ ['x', 'y'], ['x'], ['x', 'y'], ['y'] ]
-weight_focal_plane_map = [ 1.0, 1.0, 1.0, 1.0 ]
+weight_focal_plane_map = [ 0.5, 1.0, 0.5, 1.0 ]
 polarization_name_to_idx = { 'x':0, 'y':1, 'z':2 }
 # We are assuming that the data is organized in order of increasing wavelength (i.e. - blue first, red last)
 spectral_focal_plane_map = [
