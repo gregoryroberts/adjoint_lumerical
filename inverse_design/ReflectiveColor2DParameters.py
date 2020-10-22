@@ -182,7 +182,7 @@ optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 # angled_reflection_weights = np.zeros( num_design_frequency_points )
 
 angled_reflection_weights = np.zeros( num_design_frequency_points )
-angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_points_per_band
+angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = -1.0 / num_points_per_band
 
 angled_transmission_weights = np.zeros( num_design_frequency_points )
 # angled_transmission_weights[ 0 : optimize_reflection_band[ 0 ] ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
@@ -190,7 +190,6 @@ angled_transmission_weights = np.zeros( num_design_frequency_points )
 
 normal_reflection_weights = -angled_reflection_weights.copy()
 normal_transmission_weights = angled_transmission_weights.copy()
-
 
 device_rotation_angle_degrees = 12.0
 device_rotation_angle_radians = device_rotation_angle_degrees * np.pi / 180.
