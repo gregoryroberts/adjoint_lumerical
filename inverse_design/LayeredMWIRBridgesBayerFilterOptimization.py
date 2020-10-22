@@ -449,7 +449,7 @@ for epoch in range(start_epoch, num_epochs):
 		# Step 2: Compute the figure of merit
 		#
 		for xy_idx in range(0, 2):
-			focal_data[xy_names[xy_idx]] = []
+			focal_data[xy_names[xy_idx]] = [ None for idx in range( 0, num_focal_spots ) ]
 
 		for dispersive_range_idx in range( 0, num_dispersive_ranges ):
 			for xy_idx in range(0, 2):
@@ -467,7 +467,7 @@ for epoch in range(start_epoch, num_epochs):
 						forward_e_fields[xy_names[xy_idx]][ :, spectral_idx, :, :, : ] = fwd_e_fields[ :, spectral_idx, :, :, : ]
 
 				for adj_src_idx in dispersive_range_to_adjoint_src_map[ dispersive_range_idx ]:
-					focal_data[xy_names[xy_idx]].append(get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E'))
+					focal_data[xy_names[xy_idx]][ adj_src_idx ] = get_complex_monitor_data(focal_monitors[adj_src_idx]['name'], 'E')
 
 
 
