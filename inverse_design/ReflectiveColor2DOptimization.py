@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from ReflectiveColor2DParameters import *
 
-run_on_cluster = False#True
+run_on_cluster = True
 
 if run_on_cluster:
 	import imp
@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v5"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v6"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -409,6 +409,15 @@ for device_background_side_idx in range( 0, 2 ):
 	side_blocks.append( side_block )
 
 
+bottom_silicon = fdtd_hook.addrect()
+bottom_silicon['name'] = 'bottom_silicon'
+bottom_silicon['y min'] = fdtd_region_minimum_vertical_um * 1e-6
+bottom_silicon['y max'] = designable_device_vertical_minimum_um * 1e-6
+bottom_silicon['x span'] = 1.5 * fdtd_region_size_lateral_um * 1e-6
+bottom_silicon['material'] = 'Si (Silicon) - Palik'
+fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
+
+
 gaussian_normalization = np.zeros( num_points_per_band )
 middle_point = num_points_per_band / 2.
 # spacing = 1. / ( num_points_per_band - 1 )
@@ -444,6 +453,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 num_iterations = 100
 
 np.random.seed( 923447 )
+np.random.seed( 344700 )
 
 my_optimization_state = continuous_cmos.ContinuousCMOS(
 	[ min_real_permittivity, max_real_permittivity ],
@@ -630,14 +640,14 @@ def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl, transmission
 	device_and_backgrond_group['first axis'] = 'z'
 	device_and_backgrond_group['rotation 1'] = rotation_angle_degrees
 
-	adjust_x_span_efield_monitor = design_efield_monitor['y span'] * np.sin( rotation_angle_radians )
-	adjust_y_span_efield_monitor = design_efield_monitor['x span'] * np.sin( rotation_angle_radians )
+	adjust_x_span_efield_monitor = design_efield_monitor['y span'] * np.abs( np.sin( rotation_angle_radians ) )
+	adjust_y_span_efield_monitor = design_efield_monitor['x span'] * np.abs( np.sin( rotation_angle_radians ) )
 
 	design_efield_monitor['x span'] += adjust_x_span_efield_monitor
 	design_efield_monitor['y span'] += adjust_y_span_efield_monitor
 
-	capture_x_offset_voxels = int( np.round( 0.5 * designable_device_voxels_vertical * np.sin( rotation_angle_radians ) ) )
-	capture_y_offset_voxels = int( np.round( 0.5 * device_voxels_lateral * np.sin( rotation_angle_radians ) ) )
+	capture_x_offset_voxels = int( np.round( 0.5 * designable_device_voxels_vertical * np.abs( np.sin( rotation_angle_radians ) ) ) )
+	capture_y_offset_voxels = int( np.round( 0.5 * device_voxels_lateral * np.abs( np.sin( rotation_angle_radians ) ) ) )
 
 
 	disable_all_sources()
@@ -680,14 +690,14 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl,
 	device_and_backgrond_group['first axis'] = 'z'
 	device_and_backgrond_group['rotation 1'] = rotation_angle_degrees
 
-	adjust_x_span_efield_monitor = design_efield_monitor['y span'] * np.sin( rotation_angle_radians )
-	adjust_y_span_efield_monitor = design_efield_monitor['x span'] * np.sin( rotation_angle_radians )
+	adjust_x_span_efield_monitor = design_efield_monitor['y span'] * np.abs( np.sin( rotation_angle_radians ) )
+	adjust_y_span_efield_monitor = design_efield_monitor['x span'] * np.abs( np.sin( rotation_angle_radians ) )
 
 	design_efield_monitor['x span'] += adjust_x_span_efield_monitor
 	design_efield_monitor['y span'] += adjust_y_span_efield_monitor
 
-	capture_x_offset_voxels = int( np.round( 0.5 * designable_device_voxels_vertical * np.sin( rotation_angle_radians ) ) )
-	capture_y_offset_voxels = int( np.round( 0.5 * device_voxels_lateral * np.sin( rotation_angle_radians ) ) )
+	capture_x_offset_voxels = int( np.round( 0.5 * designable_device_voxels_vertical * np.abs( np.sin( rotation_angle_radians ) ) ) )
+	capture_y_offset_voxels = int( np.round( 0.5 * device_voxels_lateral * np.abs( np.sin( rotation_angle_radians ) ) ) )
 
 
 	disable_all_sources()
@@ -774,40 +784,40 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl,
 	return fom_reflection, fom_transmission, adj_grad_reflection, adj_grad_transmission
 
 def fom_and_gradient_with_rotations( pol_idx ):
+	# fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
+	# 	pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
 	fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
-		pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
+		pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
 	fom_rotation_reflection, fom_rotation_transmission, grad_rotation_reflection, grad_rotation_transmission = fom_and_gradient(
 		pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
 
-	# print( fom_no_rotation_reflection )
-	# print( fom_rotation_reflection )
-	# print( fom_no_rotation_transmission )
-	# print( fom_rotation_transmission )
-	# print()
+	# fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
+	fom_total = fom_no_rotation_reflection + fom_rotation_reflection
+	# fom_total = fom_rotation_reflection
 
-	fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
+	# grad_reflection = (
+	# 	softplus( fom_no_rotation_transmission + fom_rotation_transmission ) * softplus_prime( fom_no_rotation_reflection + fom_rotation_reflection ) *
+	# 	( grad_no_rotation_reflection + grad_rotation_reflection )
+	# )
+	# grad_transmission = (
+	# 	softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus_prime( fom_no_rotation_transmission + fom_rotation_transmission ) *
+	# 	( grad_no_rotation_transmission + grad_rotation_transmission )
+	# )
+	# grad_total = grad_reflection + grad_transmission
 
-	# print( softplus( fom_no_rotation_transmission + fom_rotation_transmission ) )
-	# print( softplus( fom_no_rotation_reflection + fom_rotation_reflection ) )
-	# print()
-
-	grad_reflection = (
-		softplus( fom_no_rotation_transmission + fom_rotation_transmission ) * softplus_prime( fom_no_rotation_reflection + fom_rotation_reflection ) *
-		( grad_no_rotation_reflection + grad_rotation_reflection )
-	)
-	grad_transmission = (
-		softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus_prime( fom_no_rotation_transmission + fom_rotation_transmission ) *
-		( grad_no_rotation_transmission + grad_rotation_transmission )
-	)
-	grad_total = grad_reflection + grad_transmission
+	grad_total = ( grad_no_rotation_reflection + grad_rotation_reflection )
+	# grad_total = ( grad_rotation_reflection )
 
 	return fom_total, grad_total
 
 def fom_with_rotations( pol_idx ):
-	fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
+	# fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
+	fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
 	fom_rotation_reflection, fom_rotation_transmission = fom( pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
 
-	fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
+	# fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
+	fom_total = fom_no_rotation_reflection + fom_rotation_reflection
+	# fom_total = fom_rotation_reflection
 
 	return fom_total
 
@@ -876,7 +886,7 @@ def check_gradient_full( pol_idx ):
 	print( "Before grad bump:" )
 	print( fom0 )
 
-	num_fd = 20
+	num_fd = 1
 	fd_x = int( 0.35 * fd_index.shape[ 0 ] )
 	fd_y_start = int( 0.5 * fd_index.shape[ 1 ] )
 	fd_y_end = fd_y_start + num_fd
@@ -933,7 +943,6 @@ def check_gradient_full( pol_idx ):
 
 	print( "After grad bump:" )
 	print( fom1 )
-
 
 
 def check_gradient( pol_idx ):
@@ -1208,7 +1217,12 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 		fom, gradient = compute_gradient( cur_index )
 
-		print( fom )
+		print( "Current fom = " + str( fom ) )
+
+		log_file = open(projects_directory_location + "/log.txt", 'a')
+		log_file.write( "Current fom = " + str( fom ) + "\n" )
+		log_file.close()
+
 
 		fom_track.append( fom )
 
@@ -1311,7 +1325,6 @@ for pol_idx in range( 0, num_polarizations ):
 		1.0 )
 	)
 
-
 print( mode_overlap_norm_transmission )
 print( mode_overlap_norm_reflection )
 
@@ -1329,9 +1342,9 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-load_index = np.load('/Users/gregory/Downloads/device_6_contrast_3p6_red_v3.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_9_contrast_3p6_red_v3.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
-compute_gradient( load_index )
+# compute_gradient( load_index )
 
 # fdtd_hook.run()
 
