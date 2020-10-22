@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v8"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v9"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)

@@ -26,10 +26,10 @@ project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_3p6xtsmc_um'
 # Check binarized device and look at feature sizes!
 background_index = 1.0
 design_index_background = 1.0#1.35
-device_background_index = 2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
+device_background_index = 1.46#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
 device_lateral_background_density = 1.0
 # high_index_backfill = 2.5
-high_index_backfill = 2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46
+high_index_backfill = 1.46#2.1#1.46#2.1#1.46#2.1#1.46
 # high_index_backfill = 2.1
 # substrate_index = 1.0
 
@@ -184,11 +184,25 @@ optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 angled_reflection_weights = np.zeros( num_design_frequency_points )
 angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_points_per_band
 
+angled_reflection_weights[ 0 : optimize_reflection_band[ 0 ] ] = -1.0 / ( 2.0 * num_points_per_band )
+angled_reflection_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = -1.0 / ( 2.0 * num_points_per_band )
+
+
 angled_transmission_weights = np.zeros( num_design_frequency_points )
 # angled_transmission_weights[ 0 : optimize_reflection_band[ 0 ] ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
 # angled_transmission_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 0.5 * 1.0 / ( 2.0 * num_points_per_band )
 
-normal_reflection_weights = -angled_reflection_weights.copy()
+# normal_reflection_weights = -angled_reflection_weights.copy()
+
+normal_reflection_weights = np.zeros( num_design_frequency_points )
+normal_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = -1.0 / num_points_per_band
+
+normal_reflection_weights[ 0 : optimize_reflection_band[ 0 ] ] = -1.0 / ( 2.0 * num_points_per_band )
+normal_reflection_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = -1.0 / ( 2.0 * num_points_per_band )
+
+
+
+
 normal_transmission_weights = angled_transmission_weights.copy()
 
 
