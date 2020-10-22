@@ -191,6 +191,8 @@ angled_transmission_weights = np.zeros( num_design_frequency_points )
 normal_reflection_weights = -angled_reflection_weights.copy()
 normal_transmission_weights = angled_transmission_weights.copy()
 
+angled_reflection_weights = np.zeros( angled_reflection_weights.shape )
+
 device_rotation_angle_degrees = 12.0
 device_rotation_angle_radians = device_rotation_angle_degrees * np.pi / 180.
 
