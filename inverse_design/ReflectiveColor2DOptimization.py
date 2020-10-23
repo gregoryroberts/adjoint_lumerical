@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v2"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -239,7 +239,8 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
-	adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
+	# adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
+	adj_src_refl['waist radius w0'] = 1.0 * 1e-6
 	adj_src_refl['distance from waist'] = ( adjoint_transmission_position_y_um - adjoint_reflection_position_y_um ) * 1e-6
 	adj_src_refl['wavelength start'] = lambda_min_um * 1e-6
 	adj_src_refl['wavelength stop'] = lambda_max_um * 1e-6
@@ -261,7 +262,8 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_trans['y'] = adjoint_transmission_position_y_um * 1e-6
 	# adj_src_trans['y max'] = ( device_size_verical_um + device_to_mode_match_um + 0.5 * vertical_gap_size_um ) * 1e-6
 	# adj_src_trans['y min'] = adjoint_transmission_position_y_um * 1e-6
-	adj_src_trans['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
+	# adj_src_trans['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
+	adj_src_trans['waist radius w0'] = 1.0 * 1e-6
 	adj_src_trans['distance from waist'] = ( adjoint_transmission_position_y_um - adjoint_reflection_position_y_um ) * 1e-6
 	adj_src_trans['wavelength start'] = lambda_min_um * 1e-6
 	adj_src_trans['wavelength stop'] = lambda_max_um * 1e-6
@@ -1355,7 +1357,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_9_contrast_3p6_red_tio2_v1.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_2_contrast_si_10p8_red_v2.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
