@@ -185,7 +185,7 @@ optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 # We could also try to explicitly send it off to an angled mode instead of reducing the reflection mode overlap
 
 angled_reflection_weights = np.zeros( num_design_frequency_points )
-angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_points_per_band
+angled_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = -1.0 / num_points_per_band
 
 angled_reflection_weights[ 0 : optimize_reflection_band[ 0 ] ] = -1.0 / ( 2.0 * num_points_per_band )
 angled_reflection_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = -1.0 / ( 2.0 * num_points_per_band )
@@ -198,7 +198,7 @@ angled_transmission_weights = np.zeros( num_design_frequency_points )
 # normal_reflection_weights = -angled_reflection_weights.copy()
 
 normal_reflection_weights = np.zeros( num_design_frequency_points )
-normal_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = -1.0 / num_points_per_band
+normal_reflection_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_points_per_band
 
 normal_reflection_weights[ 0 : optimize_reflection_band[ 0 ] ] = -1.0 / ( 2.0 * num_points_per_band )
 normal_reflection_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = -1.0 / ( 2.0 * num_points_per_band )

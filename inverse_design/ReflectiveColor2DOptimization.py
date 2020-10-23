@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v3"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v4"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -796,10 +796,10 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl,
 	return fom_reflection, fom_transmission, adj_grad_reflection, adj_grad_transmission
 
 def fom_and_gradient_with_rotations( pol_idx ):
-	# fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
-	# 	pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
 	fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
-		pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
+		pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
+	# fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
+	# 	pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
 
 	fom_rotation_reflection, fom_rotation_transmission, grad_rotation_reflection, grad_rotation_transmission = fom_and_gradient(
 		pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
@@ -825,8 +825,8 @@ def fom_and_gradient_with_rotations( pol_idx ):
 	return fom_total, grad_total
 
 def fom_with_rotations( pol_idx ):
-	# fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
-	fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
+	fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
+	# fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
 	fom_rotation_reflection, fom_rotation_transmission = fom( pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
 
 	# fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
@@ -1357,7 +1357,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_2_contrast_si_10p8_red_v2.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_contrast_si_10p8_red_v3.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
