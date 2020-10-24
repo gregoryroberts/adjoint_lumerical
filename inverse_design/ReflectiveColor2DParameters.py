@@ -248,6 +248,8 @@ device_rotation_angle_radians = device_rotation_angle_degrees * np.pi / 180.
 adjoint_reflection_position_y_um = 0.5 * designable_size_vertical_um + device_to_mode_match_um
 adjoint_transmission_position_y_um = -0.5 * designable_size_vertical_um - device_to_mode_match_um
 
+adjoint_beam_radius_um = 2.5
+
 #
 # Optimization
 #

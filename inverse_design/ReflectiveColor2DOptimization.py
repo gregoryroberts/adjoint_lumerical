@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v6"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v7"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -256,7 +256,7 @@ for pol_idx in range( 0, num_polarizations ):
 	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
 	# adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
-	adj_src_refl['waist radius w0'] = 1.0 * 1e-6
+	adj_src_refl['waist radius w0'] = adjoint_beam_radius_um * 1e-6
 	adj_src_refl['distance from waist'] = ( adjoint_transmission_position_y_um - adjoint_reflection_position_y_um ) * 1e-6
 	adj_src_refl['wavelength start'] = lambda_min_um * 1e-6
 	adj_src_refl['wavelength stop'] = lambda_max_um * 1e-6
@@ -288,7 +288,7 @@ for pol_idx in range( 0, num_polarizations ):
 	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
 	# adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
-	adj_src_refl['waist radius w0'] = 1.0 * 1e-6
+	adj_src_refl['waist radius w0'] = adjoint_beam_radius_um * 1e-6
 	adj_src_refl['distance from waist'] = 0 * 1e-6
 	adj_src_refl['angle theta'] = 2.0 * device_rotation_angle_degrees
 	adj_src_refl['wavelength start'] = lambda_min_um * 1e-6
@@ -320,7 +320,7 @@ for pol_idx in range( 0, num_polarizations ):
 	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
 	# adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
-	adj_src_refl['waist radius w0'] = 1.0 * 1e-6
+	adj_src_refl['waist radius w0'] = adjoint_beam_radius_um * 1e-6
 	adj_src_refl['distance from waist'] = 0 * 1e-6
 	adj_src_refl['angle theta'] = -2.0 * device_rotation_angle_degrees
 	adj_src_refl['wavelength start'] = lambda_min_um * 1e-6
@@ -352,7 +352,7 @@ for pol_idx in range( 0, num_polarizations ):
 	# adj_src_trans['y max'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_trans['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
 	# adj_src_trans['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
-	adj_src_trans['waist radius w0'] = 1.0 * 1e-6
+	adj_src_trans['waist radius w0'] = adjoint_beam_radius_um * 1e-6
 	adj_src_trans['distance from waist'] = 0 * 1e-6
 	adj_src_trans['wavelength start'] = lambda_min_um * 1e-6
 	adj_src_trans['wavelength stop'] = lambda_max_um * 1e-6
