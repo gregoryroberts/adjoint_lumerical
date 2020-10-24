@@ -231,6 +231,14 @@ adjoint_sources_reflection = []
 source_polarization_angles = [ 90, 0 ]
 affected_coords_by_polarization = [ [ 2 ], [ 0, 1 ] ]
 
+multifrequency_attribute_name = 'frequency dependent profile'
+if run_on_cluster:
+	multifrequency_attribute_name = 'multifrequency beam calculation'
+
+number_frequency_points_attribute = 'number of field profile samples'
+if run_on_cluster:
+	number_frequency_points_attribute = 'number of frequency points'
+
 for pol_idx in range( 0, num_polarizations ):
 	# adj_src_refl = fdtd_hook.addtfsf()
 	# adj_src_refl = fdtd_hook.addplane()
@@ -240,8 +248,8 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['polarization angle'] = source_polarization_angles[ pol_idx ]
 	adj_src_refl['direction'] = 'Backward'
 
-	adj_src_refl['frequency dependent profile'] = 1
-	adj_src_refl['number of field profile samples'] = 10
+	adj_src_refl[multifrequency_attribute_name] = 1
+	adj_src_refl[number_frequency_points_attribute] = 10
 
 	adj_src_refl['x span'] = fdtd_region_size_lateral_um * 1e-6
 	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
@@ -272,8 +280,8 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['x min'] = -0.5 * fdtd_region_size_lateral_um * 1e-6
 	adj_src_refl['x max'] = ( -delta_x_um + space_left_um ) * 1e-6
 
-	adj_src_refl['frequency dependent profile'] = 1
-	adj_src_refl['number of field profile samples'] = 10
+	adj_src_refl[multifrequency_attribute_name] = 1
+	adj_src_refl[number_frequency_points_attribute] = 10
 
 	# adj_src_refl['x span'] = fdtd_region_size_lateral_um * 1e-6
 	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
@@ -304,8 +312,8 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['x min'] = ( delta_x_um - space_right_um ) * 1e-6
 	adj_src_refl['x max'] = 0.5 * fdtd_region_size_lateral_um * 1e-6
 
-	adj_src_refl['frequency dependent profile'] = 1
-	adj_src_refl['number of field profile samples'] = 10
+	adj_src_refl[multifrequency_attribute_name] = 1
+	adj_src_refl[number_frequency_points_attribute] = 10
 
 	# adj_src_refl['x span'] = fdtd_region_size_lateral_um * 1e-6
 	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
@@ -337,8 +345,8 @@ for pol_idx in range( 0, num_polarizations ):
 	# adj_src_trans['x min'] = ( delta_x_um - space_right_um ) * 1e-6
 	# adj_src_trans['x max'] = 0.5 * fdtd_region_size_lateral_um * 1e-6
 
-	adj_src_trans['frequency dependent profile'] = 1
-	adj_src_trans['number of field profile samples'] = 10
+	adj_src_trans[multifrequency_attribute_name] = 1
+	adj_src_trans[number_frequency_points_attribute] = 10
 	adj_src_trans['x span'] = fdtd_region_size_lateral_um * 1e-6
 	adj_src_trans['y'] = adjoint_transmission_position_y_um * 1e-6
 	# adj_src_trans['y max'] = adjoint_reflection_position_y_um * 1e-6
