@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v5"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v6"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -274,7 +274,7 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['polarization angle'] = source_polarization_angles[ pol_idx ]
 	adj_src_refl['direction'] = 'Backward'
 
-	delta_x_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+	delta_x_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - designable_device_vertical_maximum_um )
 	space_left_um = 0.5 * fdtd_region_size_lateral_um - delta_x_um
 
 	adj_src_refl['x min'] = -0.5 * fdtd_region_size_lateral_um * 1e-6
@@ -306,7 +306,7 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['polarization angle'] = source_polarization_angles[ pol_idx ]
 	adj_src_refl['direction'] = 'Backward'
 
-	delta_x_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+	delta_x_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - designable_device_vertical_maximum_um )
 	space_right_um = 0.5 * fdtd_region_size_lateral_um - delta_x_um
 
 	adj_src_refl['x min'] = ( delta_x_um - space_right_um ) * 1e-6
@@ -1460,6 +1460,14 @@ for pol_idx in range( 0, num_polarizations ):
 	adjoint_sources_transmission[ pol_idx ].enabled = 1
 	adjoint_sources_transmission[ pol_idx ]['angle theta'] = 2.0 * device_rotation_angle_degrees
 	adjoint_sources_transmission[ pol_idx ]['distance from waist'] = -normalization_distance * 1e-6
+
+	offset_transmission_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+	adjoint_sources_transmission[ pol_idx ]['x'] = adjoint_sources_reflection_angled_plus[ pol_idx ][ 'x' ] + offset_transmission_um * 1e-6
+	adjoint_sources_transmission[ pol_idx ]['x span'] = 2 * np.minimum(
+		0.5 * fdtd_region_size_lateral_um * 1e-6 - adjoint_sources_transmission[ pol_idx ]['x'],
+		adjoint_sources_transmission[ pol_idx ]['x'] + 0.5 * fdtd_region_size_lateral_um * 1e-6
+	)
+
 	fdtd_hook.run()
 
 	get_E_mode = get_complex_monitor_data( reflection_monitor['name'], 'E' )
@@ -1496,6 +1504,14 @@ for pol_idx in range( 0, num_polarizations ):
 	adjoint_sources_transmission[ pol_idx ].enabled = 1
 	adjoint_sources_transmission[ pol_idx ]['angle theta'] = -2.0 * device_rotation_angle_degrees
 	adjoint_sources_transmission[ pol_idx ]['distance from waist'] = -normalization_distance * 1e-6
+
+	offset_transmission_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+	adjoint_sources_transmission[ pol_idx ]['x'] = adjoint_sources_reflection_angled_minus[ pol_idx ][ 'x' ] - offset_transmission_um * 1e-6
+	adjoint_sources_transmission[ pol_idx ]['x span'] = 2 * np.minimum(
+		0.5 * fdtd_region_size_lateral_um * 1e-6 - adjoint_sources_transmission[ pol_idx ]['x'],
+		adjoint_sources_transmission[ pol_idx ]['x'] + 0.5 * fdtd_region_size_lateral_um * 1e-6
+	)
+
 	fdtd_hook.run()
 
 	get_E_mode = get_complex_monitor_data( reflection_monitor['name'], 'E' )
@@ -1575,7 +1591,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_3p6_red_v5.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_v5.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
