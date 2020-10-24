@@ -1575,7 +1575,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_contrast_si_10p8_red_v4.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_3p6_red_v5.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
