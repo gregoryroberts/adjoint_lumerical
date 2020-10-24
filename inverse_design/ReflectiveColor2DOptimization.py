@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_v4"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_v5"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -211,6 +211,10 @@ def disable_all_sources():
 
 	for adj_src_idx in range(0, len( adjoint_sources_reflection ) ):
 		(adjoint_sources_reflection[ adj_src_idx ]).enabled = 0
+	for adj_src_idx in range(0, len( adjoint_sources_reflection_angled_minus ) ):
+		(adjoint_sources_reflection_angled_minus[ adj_src_idx ]).enabled = 0
+	for adj_src_idx in range(0, len( adjoint_sources_reflection_angled_plus ) ):
+		(adjoint_sources_reflection_angled_plus[ adj_src_idx ]).enabled = 0
 	for adj_src_idx in range(0, len( adjoint_sources_transmission ) ):
 		(adjoint_sources_transmission[ adj_src_idx ]).enabled = 0
 
@@ -235,6 +239,10 @@ for pol_idx in range( 0, num_polarizations ):
 	adj_src_refl['name'] = 'adj_src_refl_' + str( pol_idx )
 	adj_src_refl['polarization angle'] = source_polarization_angles[ pol_idx ]
 	adj_src_refl['direction'] = 'Backward'
+
+	adj_src_refl['frequency dependent profile'] = 1
+	adj_src_refl['number of field profile samples'] = 10
+
 	adj_src_refl['x span'] = fdtd_region_size_lateral_um * 1e-6
 	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
 	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
@@ -248,28 +256,100 @@ for pol_idx in range( 0, num_polarizations ):
 	adjoint_sources_reflection.append( adj_src_refl )
 
 
-adjoint_sources_transmission = []
+adjoint_sources_reflection_angled_plus = []
+for pol_idx in range( 0, num_polarizations ):
+	# adj_src_refl = fdtd_hook.addtfsf()
+	# adj_src_refl = fdtd_hook.addplane()
+	# adj_src_refl['plane wave type'] = 'Diffracting'
+	adj_src_refl = fdtd_hook.addgaussian()
+	adj_src_refl['name'] = 'adj_src_refl_angled_plus_' + str( pol_idx )
+	adj_src_refl['polarization angle'] = source_polarization_angles[ pol_idx ]
+	adj_src_refl['direction'] = 'Backward'
 
+	delta_x_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+	space_left_um = 0.5 * fdtd_region_size_lateral_um - delta_x_um
+
+	adj_src_refl['x min'] = -0.5 * fdtd_region_size_lateral_um * 1e-6
+	adj_src_refl['x max'] = ( -delta_x_um + space_left_um ) * 1e-6
+
+	adj_src_refl['frequency dependent profile'] = 1
+	adj_src_refl['number of field profile samples'] = 10
+
+	# adj_src_refl['x span'] = fdtd_region_size_lateral_um * 1e-6
+	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
+	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
+	# adj_src_refl['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
+	# adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
+	adj_src_refl['waist radius w0'] = 1.0 * 1e-6
+	adj_src_refl['distance from waist'] = 0 * 1e-6
+	adj_src_refl['angle theta'] = 2.0 * device_rotation_angle_degrees
+	adj_src_refl['wavelength start'] = lambda_min_um * 1e-6
+	adj_src_refl['wavelength stop'] = lambda_max_um * 1e-6
+
+	adjoint_sources_reflection_angled_plus.append( adj_src_refl )
+
+adjoint_sources_reflection_angled_minus = []
+for pol_idx in range( 0, num_polarizations ):
+	# adj_src_refl = fdtd_hook.addtfsf()
+	# adj_src_refl = fdtd_hook.addplane()
+	# adj_src_refl['plane wave type'] = 'Diffracting'
+	adj_src_refl = fdtd_hook.addgaussian()
+	adj_src_refl['name'] = 'adj_src_refl_angled_minus_' + str( pol_idx )
+	adj_src_refl['polarization angle'] = source_polarization_angles[ pol_idx ]
+	adj_src_refl['direction'] = 'Backward'
+
+	delta_x_um = np.tan( 2.0 * device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+	space_right_um = 0.5 * fdtd_region_size_lateral_um - delta_x_um
+
+	adj_src_refl['x min'] = ( delta_x_um - space_right_um ) * 1e-6
+	adj_src_refl['x max'] = 0.5 * fdtd_region_size_lateral_um * 1e-6
+
+	adj_src_refl['frequency dependent profile'] = 1
+	adj_src_refl['number of field profile samples'] = 10
+
+	# adj_src_refl['x span'] = fdtd_region_size_lateral_um * 1e-6
+	adj_src_refl['y'] = adjoint_reflection_position_y_um * 1e-6
+	# adj_src_refl['y max'] = adjoint_reflection_position_y_um * 1e-6
+	# adj_src_refl['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
+	# adj_src_refl['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
+	adj_src_refl['waist radius w0'] = 1.0 * 1e-6
+	adj_src_refl['distance from waist'] = 0 * 1e-6
+	adj_src_refl['angle theta'] = -2.0 * device_rotation_angle_degrees
+	adj_src_refl['wavelength start'] = lambda_min_um * 1e-6
+	adj_src_refl['wavelength stop'] = lambda_max_um * 1e-6
+
+	adjoint_sources_reflection_angled_minus.append( adj_src_refl )
+
+
+adjoint_sources_transmission = []
 for pol_idx in range( 0, num_polarizations ):
 	# adj_src_trans = fdtd_hook.addtfsf()
 	# adj_src_trans = fdtd_hook.addplane()
 	# adj_src_trans['plane wave type'] = 'Diffracting'
 	adj_src_trans = fdtd_hook.addgaussian()
-	adj_src_trans['name'] = 'adj_src_trans_' + str( pol_idx )
+	adj_src_trans['name'] = 'adj_src_transmission_' + str( pol_idx )
 	adj_src_trans['polarization angle'] = source_polarization_angles[ pol_idx ]
 	adj_src_trans['direction'] = 'Forward'
+
+	# delta_x_um = np.tan( device_rotation_angle_radians ) * np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+	# space_right_um = 0.5 * fdtd_region_size_lateral_um - delta_x_um
+
+	# adj_src_trans['x min'] = ( delta_x_um - space_right_um ) * 1e-6
+	# adj_src_trans['x max'] = 0.5 * fdtd_region_size_lateral_um * 1e-6
+
+	adj_src_trans['frequency dependent profile'] = 1
+	adj_src_trans['number of field profile samples'] = 10
 	adj_src_trans['x span'] = fdtd_region_size_lateral_um * 1e-6
 	adj_src_trans['y'] = adjoint_transmission_position_y_um * 1e-6
-	# adj_src_trans['y max'] = ( device_size_verical_um + device_to_mode_match_um + 0.5 * vertical_gap_size_um ) * 1e-6
-	# adj_src_trans['y min'] = adjoint_transmission_position_y_um * 1e-6
+	# adj_src_trans['y max'] = adjoint_reflection_position_y_um * 1e-6
+	# adj_src_trans['y min'] = ( -device_to_mode_match_um - 0.5 * vertical_gap_size_um ) * 1e-6
 	# adj_src_trans['waist radius w0'] = 0.5 * device_size_lateral_um * 1e-6
 	adj_src_trans['waist radius w0'] = 1.0 * 1e-6
-	adj_src_trans['distance from waist'] = ( adjoint_transmission_position_y_um - adjoint_reflection_position_y_um ) * 1e-6
+	adj_src_trans['distance from waist'] = 0 * 1e-6
 	adj_src_trans['wavelength start'] = lambda_min_um * 1e-6
 	adj_src_trans['wavelength stop'] = lambda_max_um * 1e-6
 
 	adjoint_sources_transmission.append( adj_src_trans )
-
 
 fdtd_hook.save(projects_directory_location + "/optimization")
 
@@ -622,19 +702,23 @@ def mode_overlap_gradient_hz(
 	# return -gradient / num_wavelengths
 
 
-def reflection_transmission_figure_of_merit( reflection_by_wl, transmission_by_wl, reflection_weights_by_wl, transmission_weights_by_wl ):
+def reflection_transmission_figure_of_merit( redirect_overlap_by_wl, direct_overlap_by_wl, redirect_weights_by_wl, direct_weights_by_wl ):
 
-	# assert np.all( np.greater_equal( transmission_weights_by_wl, 0.0 ) ), "Expected no negative weights!"
-	# assert np.all( np.greater_equal( reflection_weights_by_wl, 0.0 ) ), "Expected no negative weights!"
-	assert len( reflection_by_wl ) == len( transmission_by_wl ), "Array sizes do not match up!"
-	assert len( reflection_by_wl ) == len( reflection_weights_by_wl ), "Array sizes do not match up!"
+	assert len( redirect_overlap_by_wl ) == len( direct_overlap_by_wl ), "Array sizes do not match up!"
+	assert len( redirect_overlap_by_wl ) == len( redirect_weights_by_wl ), "Array sizes do not match up!"
+	assert len( redirect_weights_by_wl ) == len( direct_weights_by_wl ), "Array sizes do not match up!"
 
-	return np.sum( reflection_by_wl * reflection_weights_by_wl ), np.sum( transmission_by_wl * transmission_weights_by_wl )
+	return np.sum( redirect_overlap_by_wl * redirect_weights_by_wl ), np.sum( direct_overlap_by_wl * direct_weights_by_wl )
 
 #
 # todo(gdroberts): fom design on random configs to see how well this figure of merit is doing!
 #
-def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl, transmission_weights_by_wl ):
+def fom(
+	pol_idx, rotation_angle_radians,
+	redirect_weights_by_wl, direct_weights_by_wl,
+	redirect_mode_E, redirect_mode_H, redirect_mode_overlap_norm,
+	direct_mode_E, direct_mode_H, direct_mode_overlap_norm ):
+
 	rotation_angle_degrees = rotation_angle_radians * 180. / np.pi
 
 	fdtd_hook.switchtolayout()
@@ -648,12 +732,6 @@ def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl, transmission
 	design_efield_monitor['x span'] += adjust_x_span_efield_monitor
 	design_efield_monitor['y span'] += adjust_y_span_efield_monitor
 
-	# capture_x_offset_voxels = int( np.round( 0.5 * designable_device_voxels_vertical * np.abs( np.sin( rotation_angle_radians ) ) ) )
-	# capture_y_offset_voxels = int( np.round( 0.5 * device_voxels_lateral * np.abs( np.sin( rotation_angle_radians ) ) ) )
-
-	capture_x_offset_voxels = int( 0.5 * adjust_x_span_efield_monitor * 1e6 / mesh_spacing_um )
-	capture_y_offset_voxels = int( 0.5 * adjust_y_span_efield_monitor * 1e6 / mesh_spacing_um )
-
 	disable_all_sources()
 	forward_sources[ pol_idx ].enabled = 1
 	fdtd_hook.run()
@@ -663,32 +741,33 @@ def fom( pol_idx, rotation_angle_radians, reflection_weights_by_wl, transmission
 	get_E_fwd_reflection = get_complex_monitor_data( reflection_monitor['name'], 'E' )
 	get_H_fwd_reflection = get_complex_monitor_data( reflection_monitor['name'], 'H' )
 
-	get_E_fwd_transmission = get_complex_monitor_data( transmission_monitor['name'], 'E' )
-	get_H_fwd_transmission = get_complex_monitor_data( transmission_monitor['name'], 'H' )
-
-	mode_overlap_reflection = overlap_fom_by_pol[ pol_idx ](
+	mode_overlap_redirect = overlap_fom_by_pol[ pol_idx ](
 		get_E_fwd_reflection, get_H_fwd_reflection,
-		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ],
-		1.0, mode_overlap_norm_reflection[ pol_idx ] )
+		redirect_mode_E, redirect_mode_H,
+		1.0, redirect_mode_overlap_norm )
 
-	# mode_overlap_transmission = overlap_fom_by_pol[ pol_idx ](
-	# 	get_E_fwd_transmission, get_H_fwd_transmission,
-	# 	mode_E_transmission[ pol_idx ], mode_H_transmission[ pol_idx ],
-	# 	-1.0, mode_overlap_norm_transmission[ pol_idx ] )
+	mode_overlap_direct = overlap_fom_by_pol[ pol_idx ](
+		get_E_fwd_reflection, get_H_fwd_reflection,
+		direct_mode_E, direct_mode_H,
+		1.0, direct_mode_overlap_norm )
 
-	mode_overlap_transmission = 0. * mode_overlap_reflection.copy()
+	fom_redirect, fom_direct = reflection_transmission_figure_of_merit(
+		mode_overlap_redirect, mode_overlap_direct, redirect_weights_by_wl, direct_weights_by_wl )
 
-	fom_reflection, fom_transmission = reflection_transmission_figure_of_merit(
-		mode_overlap_reflection, mode_overlap_transmission, reflection_weights_by_wl, transmission_weights_by_wl )
 
 	fdtd_hook.switchtolayout()
 	device_and_backgrond_group['first axis'] = 'none'
 	design_efield_monitor['x span'] -= adjust_x_span_efield_monitor
 	design_efield_monitor['y span'] -= adjust_y_span_efield_monitor
 
-	return fom_reflection, fom_transmission
+	return fom_redirect, fom_direct
 
-def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl, transmission_weights_by_wl ):
+def fom_and_gradient(
+	pol_idx, rotation_angle_radians,
+	redirect_weights_by_wl, direct_weights_by_wl,
+	redirect_adjoint_src, redirect_mode_E, redirect_mode_H, redirect_mode_overlap_norm,
+	direct_adjoint_src, direct_mode_E, direct_mode_H, direct_mode_overlap_norm ):
+
 	rotation_angle_degrees = rotation_angle_radians * 180. / np.pi
 
 	fdtd_hook.switchtolayout()
@@ -705,9 +784,24 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl,
 	# capture_x_offset_voxels = int( np.round( 0.5 * designable_device_voxels_vertical * np.abs( np.sin( rotation_angle_radians ) ) ) )
 	# capture_y_offset_voxels = int( np.round( 0.5 * device_voxels_lateral * np.abs( np.sin( rotation_angle_radians ) ) ) )
 
-	capture_x_offset_voxels = int( 0.5 * adjust_x_span_efield_monitor * 1e6 / mesh_spacing_um )
-	capture_y_offset_voxels = int( 0.5 * adjust_y_span_efield_monitor * 1e6 / mesh_spacing_um )
+	capture_x_offset_voxels_fractional = 0.5 * adjust_x_span_efield_monitor * 1e6 / mesh_spacing_um
+	capture_y_offset_voxels_fractional = 0.5 * adjust_y_span_efield_monitor * 1e6 / mesh_spacing_um
 
+	capture_x_offset_voxels_lower = int( np.floor( capture_x_offset_voxels_fractional ) )
+	capture_x_offset_voxels_upper = int( np.ceil( capture_x_offset_voxels_fractional ) )
+	capture_y_offset_voxels_lower = int( np.floor( capture_y_offset_voxels_fractional ) )
+	capture_y_offset_voxels_upper = int( np.ceil( capture_y_offset_voxels_fractional ) )
+
+	capture_x_weight_lower = capture_x_offset_voxels_upper - capture_x_offset_voxels_fractional
+	capture_x_weight_upper = 1. - capture_x_weight_lower
+
+	capture_y_weight_lower = capture_y_offset_voxels_upper - capture_y_offset_voxels_fractional
+	capture_y_weight_upper = 1. - capture_y_weight_lower
+
+	assert capture_x_weight_lower >= 0.0, "Unexpected lower weighting for x-direction"
+	assert capture_x_weight_upper >= 0.0, "Unexpected upper weighting for x-direction"
+	assert capture_y_weight_lower >= 0.0, "Unexpected lower weighting for y-direction"
+	assert capture_y_weight_upper >= 0.0, "Unexpected upper weighting for y-direction"
 
 	disable_all_sources()
 	forward_sources[ pol_idx ].enabled = 1
@@ -718,37 +812,38 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl,
 	get_E_fwd_reflection = get_complex_monitor_data( reflection_monitor['name'], 'E' )
 	get_H_fwd_reflection = get_complex_monitor_data( reflection_monitor['name'], 'H' )
 
-	get_E_fwd_transmission = get_complex_monitor_data( transmission_monitor['name'], 'E' )
-	get_H_fwd_transmission = get_complex_monitor_data( transmission_monitor['name'], 'H' )
-
-	mode_overlap_reflection = overlap_fom_by_pol[ pol_idx ](
+	mode_overlap_redirect = overlap_fom_by_pol[ pol_idx ](
 		get_E_fwd_reflection, get_H_fwd_reflection,
-		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ],
-		1.0, mode_overlap_norm_reflection[ pol_idx ] )
+		redirect_mode_E, redirect_mode_H,
+		1.0, redirect_mode_overlap_norm )
 
-	# mode_overlap_transmission = overlap_fom_by_pol[ pol_idx ](
-	# 	get_E_fwd_transmission, get_H_fwd_transmission,
-	# 	mode_E_transmission[ pol_idx ], mode_H_transmission[ pol_idx ],
-	# 	-1.0, mode_overlap_norm_transmission[ pol_idx ] )
+	mode_overlap_direct = overlap_fom_by_pol[ pol_idx ](
+		get_E_fwd_reflection, get_H_fwd_reflection,
+		direct_mode_E, direct_mode_H,
+		1.0, direct_mode_overlap_norm )
 
-	mode_overlap_transmission = 0. * mode_overlap_reflection.copy()
-
-	fom_reflection, fom_transmission = reflection_transmission_figure_of_merit(
-		mode_overlap_reflection, mode_overlap_transmission, reflection_weights_by_wl, transmission_weights_by_wl )
+	fom_redirect, fom_direct = reflection_transmission_figure_of_merit(
+		mode_overlap_redirect, mode_overlap_direct, redirect_weights_by_wl, direct_weights_by_wl )
 
 	disable_all_sources()
-	adjoint_sources_reflection[ pol_idx ].enabled = 1
+	redirect_adjoint_src.enabled = 1
 	fdtd_hook.run()
 
-	adjoint_e_fields_reflection = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+	adjoint_e_fields_redirect = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
-	# disable_all_sources()
-	# adjoint_sources_transmission[ pol_idx ].enabled = 1
-	# fdtd_hook.run()
+	disable_all_sources()
+	direct_adjoint_src.enabled = 1
+	fdtd_hook.run()
 
-	# adjoint_e_fields_transmission = get_complex_monitor_data(design_efield_monitor['name'], 'E')
+	adjoint_e_fields_direct = get_complex_monitor_data(design_efield_monitor['name'], 'E')
 
 	def reinterpolate_fields( input_field ):
+
+		assert ( capture_x_offset_voxels_lower + device_voxels_lateral ) <= input_field.shape[ 4 ], "Lower x doesn't fit!"
+		assert ( capture_x_offset_voxels_upper + device_voxels_lateral ) <= input_field.shape[ 4 ], "Upper x doesn't fit!"
+		assert ( capture_y_offset_voxels_lower + designable_device_voxels_vertical ) <= input_field.shape[ 3 ], "Lower xy doesn't fit!"
+		assert ( capture_y_offset_voxels_upper + designable_device_voxels_vertical ) <= input_field.shape[ 3 ], "Upper xy doesn't fit!"
+
 		output_field = np.zeros( input_field.shape, dtype=input_field.dtype )
 
 		for pol_idx in range( 0, 3 ):
@@ -758,80 +853,117 @@ def fom_and_gradient( pol_idx, rotation_angle_radians, reflection_weights_by_wl,
 					ndimage.rotate( np.real( extract_component ), rotation_angle_degrees, reshape=False ) +
 					1j * ndimage.rotate( np.imag( extract_component ), rotation_angle_degrees, reshape=False ) )
 
-		rotate_output = output_field[
+		rotate_output_lower_x_lower_y = output_field[
 			:, :, :,
-			capture_y_offset_voxels : ( capture_y_offset_voxels + designable_device_voxels_vertical ),
-			capture_x_offset_voxels : ( capture_x_offset_voxels + device_voxels_lateral )
+			capture_y_offset_voxels_lower : ( capture_y_offset_voxels_lower + designable_device_voxels_vertical ),
+			capture_x_offset_voxels_lower : ( capture_x_offset_voxels_lower + device_voxels_lateral )
 		]
+
+		rotate_output_lower_x_upper_y = output_field[
+			:, :, :,
+			capture_y_offset_voxels_upper : ( capture_y_offset_voxels_upper + designable_device_voxels_vertical ),
+			capture_x_offset_voxels_lower : ( capture_x_offset_voxels_lower + device_voxels_lateral )
+		]
+
+		rotate_output_upper_x_lower_y = output_field[
+			:, :, :,
+			capture_y_offset_voxels_lower : ( capture_y_offset_voxels_lower + designable_device_voxels_vertical ),
+			capture_x_offset_voxels_upper : ( capture_x_offset_voxels_upper + device_voxels_lateral )
+		]
+
+		rotate_output_upper_x_upper_y = output_field[
+			:, :, :,
+			capture_y_offset_voxels_upper : ( capture_y_offset_voxels_upper + designable_device_voxels_vertical ),
+			capture_x_offset_voxels_upper : ( capture_x_offset_voxels_upper + device_voxels_lateral )
+		]
+
+		rotate_output_lower_y = capture_x_weight_lower * rotate_output_lower_x_lower_y + capture_x_weight_upper * rotate_output_upper_x_lower_y
+		rotate_output_upper_y = capture_x_weight_lower * rotate_output_lower_x_upper_y + capture_x_weight_upper * rotate_output_upper_x_upper_y
+
+		rotate_output = capture_y_weight_lower * rotate_output_lower_y + capture_y_weight_upper * rotate_output_upper_y
+
+		# rotate_output = output_field[
+		# 	:, :, :,
+		# 	capture_y_offset_voxels : ( capture_y_offset_voxels + designable_device_voxels_vertical ),
+		# 	capture_x_offset_voxels : ( capture_x_offset_voxels + device_voxels_lateral )
+		# ]
 
 		return rotate_output
 
 	forward_e_fields = reinterpolate_fields( forward_e_fields )
-	adjoint_e_fields_reflection = reinterpolate_fields( adjoint_e_fields_reflection )
-	# adjoint_e_fields_transmission = reinterpolate_fields( adjoint_e_fields_transmission )
+	adjoint_e_fields_redirect = reinterpolate_fields( adjoint_e_fields_redirect )
+	adjoint_e_fields_direct = reinterpolate_fields( adjoint_e_fields_direct )
 
-	adj_grad_reflection = np.real( overlap_gradient_by_pol[ pol_idx ](
-		reflection_weights_by_wl,
+	adj_grad_redirect = np.real( overlap_gradient_by_pol[ pol_idx ](
+		redirect_weights_by_wl,
 		get_E_fwd_reflection, get_H_fwd_reflection,
-		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ],
-		forward_e_fields, adjoint_e_fields_reflection,
-		mode_overlap_norm_reflection[ pol_idx ] ) / 1j )
-	adj_grad_reflection = np.swapaxes( adj_grad_reflection, 0, 2 )
+		redirect_mode_E, redirect_mode_H,
+		forward_e_fields, adjoint_e_fields_redirect,
+		redirect_mode_overlap_norm ) / 1j )
+	adj_grad_redirect = np.swapaxes( adj_grad_redirect, 0, 2 )
 
-	adj_grad_transmission = 0. * adj_grad_reflection.copy()
-
-	# adj_grad_transmission = np.real( overlap_gradient_by_pol[ pol_idx ](
-	# 	transmission_weights_by_wl,
-	# 	get_E_fwd_transmission, get_H_fwd_transmission,
-	# 	mode_E_transmission[ pol_idx ], mode_H_transmission[ pol_idx ],
-	# 	forward_e_fields, adjoint_e_fields_transmission,
-	# 	mode_overlap_norm_transmission[ pol_idx ] ) / 1j )
-	# adj_grad_transmission = np.swapaxes( adj_grad_transmission, 0, 2 )
+	adj_grad_direct = np.real( overlap_gradient_by_pol[ pol_idx ](
+		direct_weights_by_wl,
+		get_E_fwd_reflection, get_H_fwd_reflection,
+		direct_mode_E, direct_mode_H,
+		forward_e_fields, adjoint_e_fields_direct,
+		direct_mode_overlap_norm ) / 1j )
+	adj_grad_direct = np.swapaxes( adj_grad_direct, 0, 2 )
 
 	fdtd_hook.switchtolayout()
 	device_and_backgrond_group['first axis'] = 'none'
 	design_efield_monitor['x span'] -= adjust_x_span_efield_monitor
 	design_efield_monitor['y span'] -= adjust_y_span_efield_monitor
 
-	return fom_reflection, fom_transmission, adj_grad_reflection, adj_grad_transmission
+	return fom_redirect, fom_direct, adj_grad_redirect, adj_grad_direct
 
 def fom_and_gradient_with_rotations( pol_idx ):
-	fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
-		pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
-	# fom_no_rotation_reflection, fom_no_rotation_transmission, grad_no_rotation_reflection, grad_no_rotation_transmission = fom_and_gradient(
-	# 	pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
 
-	fom_rotation_reflection, fom_rotation_transmission, grad_rotation_reflection, grad_rotation_transmission = fom_and_gradient(
-		pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
+	fom_plus_rotation_redirect, fom_plus_rotation_direct, grad_plus_rotation_redirect, grad_plus_rotation_direct = fom_and_gradient(
+		pol_idx, device_rotation_angle_radians,
+		plus_redirect_weights, plus_direct_weights,
+		adjoint_sources_reflection_angled_plus[ pol_idx ], mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
+		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+	)
 
+	fom_minus_rotation_redirect, fom_minus_rotation_direct, grad_minus_rotation_redirect, grad_minus_rotation_direct = fom_and_gradient(
+		pol_idx, -device_rotation_angle_radians,
+		minus_redirect_weights, minus_direct_weights,
+		adjoint_sources_reflection_angled_minus[ pol_idx ], mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
+		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+	)
 
-	# fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
-	fom_total = fom_no_rotation_reflection + fom_rotation_reflection
-	# fom_total = fom_no_rotation_reflection
+	fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
 
-	# grad_reflection = (
-	# 	softplus( fom_no_rotation_transmission + fom_rotation_transmission ) * softplus_prime( fom_no_rotation_reflection + fom_rotation_reflection ) *
-	# 	( grad_no_rotation_reflection + grad_rotation_reflection )
-	# )
-	# grad_transmission = (
-	# 	softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus_prime( fom_no_rotation_transmission + fom_rotation_transmission ) *
-	# 	( grad_no_rotation_transmission + grad_rotation_transmission )
-	# )
-	# grad_total = grad_reflection + grad_transmission
+	grad_plus = ( fom_minus_rotation_redirect + fom_minus_rotation_direct ) * ( grad_plus_rotation_redirect + grad_plus_rotation_direct )
+	grad_minus = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( grad_minus_rotation_redirect + grad_minus_rotation_direct )
 
-	grad_total = ( grad_no_rotation_reflection + grad_rotation_reflection )
-	# grad_total = ( grad_no_rotation_reflection )
+	grad_total = ( grad_plus + grad_minus )
+
+	# fom_total = fom_plus_rotation_redirect
+	# grad_total = grad_plus_rotation_redirect
 
 	return fom_total, grad_total
 
 def fom_with_rotations( pol_idx ):
-	fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, 0.0, normal_reflection_weights, normal_transmission_weights )
-	# fom_no_rotation_reflection, fom_no_rotation_transmission = fom( pol_idx, -device_rotation_angle_radians, normal_reflection_weights, normal_transmission_weights )
-	fom_rotation_reflection, fom_rotation_transmission = fom( pol_idx, device_rotation_angle_radians, angled_reflection_weights, angled_transmission_weights )
 
-	# fom_total = softplus( fom_no_rotation_reflection + fom_rotation_reflection ) * softplus( fom_no_rotation_transmission + fom_rotation_transmission )
-	fom_total = fom_no_rotation_reflection + fom_rotation_reflection
-	# fom_total = fom_no_rotation_reflection
+	fom_plus_rotation_redirect, fom_plus_rotation_direct = fom(
+		pol_idx, device_rotation_angle_radians,
+		plus_redirect_weights, plus_direct_weights,
+		mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
+		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+	)
+
+	fom_minus_rotation_redirect, fom_minus_rotation_direct = fom(
+		pol_idx, -device_rotation_angle_radians,
+		minus_redirect_weights, minus_direct_weights,
+		mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
+		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+	)
+
+	fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
+
+	# fom_total = fom_plus_rotation_redirect
 
 	return fom_total
 
@@ -876,14 +1008,14 @@ def check_gradient_full( pol_idx ):
 	fd_device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
 
 	get_index = my_optimization_state.assemble_index( 0 )
-	fd_permittivity = 1.0 + 0.5 * np.ones( ( device_voxels_lateral, designable_device_voxels_vertical ) )
+	# fd_permittivity = 1.0 + 0.5 * np.ones( ( device_voxels_lateral, designable_device_voxels_vertical ) )
 	# fd_permittivity = 1.2 + 0.5 * np.random.random( ( device_voxels_lateral, designable_device_voxels_vertical ) )
-	# fd_density = np.random.random( ( device_voxels_lateral, designable_device_voxels_vertical ) )
+	fd_density = np.random.random( ( device_voxels_lateral, designable_device_voxels_vertical ) )
 
-	# fd_density = gaussian_filter(fd_density, sigma=2)
-	# fd_density -= np.min( fd_density )
-	# fd_density /= np.max( fd_density )
-	# fd_permittivity = 1.2 + 0.5 * fd_density
+	fd_density = gaussian_filter(fd_density, sigma=2)
+	fd_density -= np.min( fd_density )
+	fd_density /= np.max( fd_density )
+	fd_permittivity = 1.2 + 0.5 * fd_density
 
 	fd_index = np.sqrt( fd_permittivity )
 
@@ -897,48 +1029,54 @@ def check_gradient_full( pol_idx ):
 
 	fom0, adj_grad = fom_and_gradient_with_rotations( pol_idx )
 
+	plt.imshow( np.squeeze( adj_grad ) )
+	plt.colorbar()
+	plt.show()
+
 	print( "Before grad bump:" )
 	print( fom0 )
 
-	num_fd = 0#10#20
+	num_fd = 10#20
 	fd_x = int( 0.35 * fd_index.shape[ 0 ] )
 	fd_y_start = int( 0.5 * fd_index.shape[ 1 ] )
 	fd_y_end = fd_y_start + num_fd
 
 	finite_diff_grad = []
 
-	# h = 1e-3
+	h = 1e-3
 
-	# for fd_idx in range( 0, num_fd ):
-	# 	perm_copy = fd_permittivity.copy()
-	# 	perm_copy[ fd_x, fd_y_start + fd_idx ] += h
+	for fd_idx in range( 0, num_fd ):
+		perm_copy = fd_permittivity.copy()
+		perm_copy[ fd_x, fd_y_start + fd_idx ] += h
 
-	# 	fd_index = np.sqrt( perm_copy )
+		fd_index = np.sqrt( perm_copy )
 
-	# 	inflate_index = np.zeros( ( fd_index.shape[ 0 ], fd_index.shape[ 1 ], 2 ), dtype=np.complex )
-	# 	inflate_index[ :, :, 0 ] = fd_index
-	# 	inflate_index[ :, :, 1 ] = fd_index
+		inflate_index = np.zeros( ( fd_index.shape[ 0 ], fd_index.shape[ 1 ], 2 ), dtype=np.complex )
+		inflate_index[ :, :, 0 ] = fd_index
+		inflate_index[ :, :, 1 ] = fd_index
 
-	# 	fdtd_hook.switchtolayout()
-	# 	fdtd_hook.select( device_and_backgrond_group['name'] + "::device_import" )
-	# 	fdtd_hook.importnk2( inflate_index, fd_device_region_x, fd_device_region_y, fd_device_region_z )
+		fdtd_hook.switchtolayout()
+		fdtd_hook.select( device_and_backgrond_group['name'] + "::device_import" )
+		fdtd_hook.importnk2( inflate_index, fd_device_region_x, fd_device_region_y, fd_device_region_z )
 
-	# 	fom_fd = fom_with_rotations( pol_idx )
-	# 	finite_diff_grad.append( ( fom_fd - fom0 ) / h )
+		fom_fd = fom_with_rotations( pol_idx )
+		finite_diff_grad.append( ( fom_fd - fom0 ) / h )
 
 
-	# pull_adj_grad = adj_grad[ fd_x, fd_y_start : fd_y_end ]
+	pull_adj_grad = adj_grad[ fd_x, fd_y_start : fd_y_end ]
 
-	# select_fd = []
+	select_fd = []
 
-	# for fd_idx in range( 0, len( finite_diff_grad ) ):
-	# 	select_fd.append( finite_diff_grad[ fd_idx ] )
+	for fd_idx in range( 0, len( finite_diff_grad ) ):
+		select_fd.append( finite_diff_grad[ fd_idx ] )
 
-	# select_fd = np.array( select_fd )
+	select_fd = np.array( select_fd )
 
-	# plt.plot( select_fd / np.max( np.abs( select_fd ) ), color='r', linewidth=2 )
-	# plt.plot( pull_adj_grad / np.max( np.abs( pull_adj_grad ) ), color='g', linewidth=2, linestyle='--' )
-	# plt.show()
+	plt.plot( select_fd / np.max( np.abs( select_fd ) ), color='r', linewidth=2 )
+	plt.plot( pull_adj_grad / np.max( np.abs( pull_adj_grad ) ), color='g', linewidth=2, linestyle='--' )
+	# plt.plot( pull_adj_grad_plus1 / np.max( np.abs( pull_adj_grad_plus1 ) ), color='b', linewidth=2, linestyle='--' )
+	# plt.plot( pull_adj_grad_minus1 / np.max( np.abs( pull_adj_grad_minus1 ) ), color='m', linewidth=2, linestyle='--' )
+	plt.show()
 
 	perm_copy = fd_permittivity.copy()
 	# perm_copy += 0.05 * np.squeeze( adj_grad ) / np.max( np.abs( adj_grad ) )
@@ -1270,14 +1408,22 @@ fdtd_hook.set('enabled', 0)
 mode_E_reflection = []
 mode_H_reflection = []
 
-mode_E_transmission = []
-mode_H_transmission = []
+mode_E_angled_reflection_plus = []
+mode_H_angled_reflection_plus = []
+
+mode_E_angled_reflection_minus = []
+mode_H_angled_reflection_minus = []
+
 
 import matplotlib.pyplot as plt
 
 for pol_idx in range( 0, num_polarizations ):
+	normalization_distance = np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um )
+
 	disable_all_sources()
 	adjoint_sources_transmission[ pol_idx ].enabled = 1
+	adjoint_sources_transmission[ pol_idx ]['angle theta'] = 0
+	adjoint_sources_transmission[ pol_idx ]['distance from waist'] = -normalization_distance * 1e-6
 	fdtd_hook.run()
 
 	get_E_mode = get_complex_monitor_data( reflection_monitor['name'], 'E' )
@@ -1287,10 +1433,12 @@ for pol_idx in range( 0, num_polarizations ):
 	half_x = int( get_E_mode.shape[ 4 ] / 2. )
 
 	for wl_idx in range( 0, num_wls ):
-		phase_correction = np.exp( 1j * np.angle( get_E_mode[ 2, wl_idx, 0, 0, half_x ] ) )
+		# phase_correction = np.exp( 1j * np.angle( get_E_mode[ 2, wl_idx, 0, 0, half_x ] ) )
 
-		if pol_idx == 1:
-			phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, half_x ] ) )
+		phase_correction = 1#np.exp( 1j * np.angle( get_E_mode[ 2, wl_idx, 0, 0, half_x ] ) )
+
+		# if pol_idx == 1:
+		# 	phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, half_x ] ) )
 
 		get_E_mode[ :, wl_idx, :, :, : ] /= phase_correction
 		get_H_mode[ :, wl_idx, :, :, : ] /= phase_correction
@@ -1299,39 +1447,97 @@ for pol_idx in range( 0, num_polarizations ):
 	mode_H_reflection.append( get_H_mode )
 
 	disable_all_sources()
-	adjoint_sources_reflection[ pol_idx ].enabled = 1
+	normalization_distance = np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um ) / np.cos( 2 * device_rotation_angle_degrees * np.pi / 180. )
+
+	adjoint_sources_transmission[ pol_idx ].enabled = 1
+	adjoint_sources_transmission[ pol_idx ]['angle theta'] = 2.0 * device_rotation_angle_degrees
+	adjoint_sources_transmission[ pol_idx ]['distance from waist'] = -normalization_distance * 1e-6
 	fdtd_hook.run()
 
-	get_E_mode = get_complex_monitor_data( transmission_monitor['name'], 'E' )
-	get_H_mode = get_complex_monitor_data( transmission_monitor['name'], 'H' )
+	get_E_mode = get_complex_monitor_data( reflection_monitor['name'], 'E' )
+	get_H_mode = get_complex_monitor_data( reflection_monitor['name'], 'H' )
 
-	num_wls = get_E_mode.shape[ 1 ]
-	half_x = int( get_E_mode.shape[ 4 ] / 2. )
+	middle_voxel = int(
+		(
+			0.5 * fdtd_region_size_lateral_um +
+			1e6 * 0.5 * ( adjoint_sources_reflection_angled_plus[ pol_idx ]['x min'] + adjoint_sources_reflection_angled_plus[ pol_idx ]['x max'] )
+		) / mesh_spacing_um )
 
 	for wl_idx in range( 0, num_wls ):
-		phase_correction = np.exp( 1j * np.angle( get_E_mode[ 2, wl_idx, 0, 0, half_x ] ) )
+		# phase_correction = np.exp( 1j * np.angle( get_E_mode[ 2, wl_idx, 0, 0, middle_voxel ] ) )
 
-		if pol_idx == 1:
-			phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, half_x ] ) )
+		phase_correction = 1#-np.exp( -1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] )
+
+		# if pol_idx == 1:
+		# 	phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, middle_voxel ] ) )
+
+		print( middle_voxel )
+		print( phase_correction )
+		print( np.exp( 1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] ) )
+		print()
 
 		get_E_mode[ :, wl_idx, :, :, : ] /= phase_correction
 		get_H_mode[ :, wl_idx, :, :, : ] /= phase_correction
 
-	mode_E_transmission.append( get_E_mode )
-	mode_H_transmission.append( get_H_mode )
+	mode_E_angled_reflection_plus.append( get_E_mode )
+	mode_H_angled_reflection_plus.append( get_H_mode )
+
+	disable_all_sources()
+	normalization_distance = np.abs( adjoint_reflection_position_y_um - adjoint_transmission_position_y_um ) / np.cos( 2 * device_rotation_angle_degrees * np.pi / 180. )
+
+	adjoint_sources_transmission[ pol_idx ].enabled = 1
+	adjoint_sources_transmission[ pol_idx ]['angle theta'] = -2.0 * device_rotation_angle_degrees
+	adjoint_sources_transmission[ pol_idx ]['distance from waist'] = -normalization_distance * 1e-6
+	fdtd_hook.run()
+
+	get_E_mode = get_complex_monitor_data( reflection_monitor['name'], 'E' )
+	get_H_mode = get_complex_monitor_data( reflection_monitor['name'], 'H' )
+
+	middle_voxel = int(
+		(
+			0.5 * fdtd_region_size_lateral_um +
+			1e6 * 0.5 * ( adjoint_sources_reflection_angled_minus[ pol_idx ]['x min'] + adjoint_sources_reflection_angled_minus[ pol_idx ]['x max'] )
+		) / mesh_spacing_um )
+
+	for wl_idx in range( 0, num_wls ):
+		# phase_correction = np.exp( 1j * np.angle( get_E_mode[ 2, wl_idx, 0, 0, middle_voxel ] ) )
+
+		phase_correction = 1#-np.exp( -1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] )
+
+		# if pol_idx == 1:
+		# 	phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, middle_voxel ] ) )
+
+		print( middle_voxel )
+		print( phase_correction )
+		print( np.exp( 1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] ) )
+		print()
+
+		get_E_mode[ :, wl_idx, :, :, : ] /= phase_correction
+		get_H_mode[ :, wl_idx, :, :, : ] /= phase_correction
+
+	mode_E_angled_reflection_minus.append( get_E_mode )
+	mode_H_angled_reflection_minus.append( get_H_mode )
 
 
-mode_overlap_norm_transmission = []
+# sys.exit(0)
+mode_overlap_norm_reflection_plus = []
+mode_overlap_norm_reflection_minus = []
 mode_overlap_norm_reflection = []
 
 overlap_fom_by_pol = [ mode_overlap_fom_ez, mode_overlap_fom_hz ]
 overlap_gradient_by_pol = [ mode_overlap_gradient_ez, mode_overlap_gradient_hz ]
 
 for pol_idx in range( 0, num_polarizations ):
-	mode_overlap_norm_transmission.append( overlap_fom_by_pol[ pol_idx ](
-		mode_E_transmission[ pol_idx ], mode_H_transmission[ pol_idx ],
-		mode_E_transmission[ pol_idx ], mode_H_transmission[ pol_idx ],
-		-1.0 )
+	mode_overlap_norm_reflection_plus.append( overlap_fom_by_pol[ pol_idx ](
+		mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ],
+		mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ],
+		1.0 )
+	)
+
+	mode_overlap_norm_reflection_minus.append( overlap_fom_by_pol[ pol_idx ](
+		mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ],
+		mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ],
+		1.0 )
 	)
 
 	mode_overlap_norm_reflection.append( overlap_fom_by_pol[ pol_idx ](
@@ -1340,15 +1546,19 @@ for pol_idx in range( 0, num_polarizations ):
 		1.0 )
 	)
 
-print( mode_overlap_norm_transmission )
+print( mode_overlap_norm_reflection_plus )
+print( mode_overlap_norm_reflection_minus )
 print( mode_overlap_norm_reflection )
 
 fdtd_hook.switchtolayout()
 
-for adj_src_trans in adjoint_sources_transmission:
-	adj_src_trans['distance from waist'] = 0 * 1e-6
-
 for adj_src_refl in adjoint_sources_reflection:
+	adj_src_refl['distance from waist'] = 0 * 1e-6
+
+for adj_src_refl in adjoint_sources_reflection_angled_plus:
+	adj_src_refl['distance from waist'] = 0 * 1e-6
+
+for adj_src_refl in adjoint_sources_reflection_angled_minus:
 	adj_src_refl['distance from waist'] = 0 * 1e-6
 
 
@@ -1357,7 +1567,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_contrast_si_10p8_red_v3.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_contrast_si_10p8_red_v4.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
