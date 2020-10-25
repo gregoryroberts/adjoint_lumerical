@@ -216,11 +216,12 @@ plus_direct_weights = np.zeros( num_design_frequency_points )
 
 minus_redirect_weights = np.zeros( num_design_frequency_points )
 # minus_redirect_weights[ 11 ] = 1
-minus_redirect_weights[ 0 : optimize_reflection_band[ 0 ] ] = 1.0 / num_design_frequency_points
-minus_redirect_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 1.0 / num_design_frequency_points
+# minus_redirect_weights[ 0 : optimize_reflection_band[ 0 ] ] = 1.0 / num_design_frequency_points
+# minus_redirect_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 1.0 / num_design_frequency_points
 
 minus_direct_weights = np.zeros( num_design_frequency_points )
-minus_direct_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_design_frequency_points
+# minus_direct_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = 1.0 / num_design_frequency_points
+minus_direct_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = num_bands * ( 1.0 / num_design_frequency_points )
 # minus_direct_weights[ 4 ] = 1
 
 
