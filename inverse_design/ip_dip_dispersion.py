@@ -20,16 +20,16 @@ def eps_gaussian_imag( omega_nought, A, gamma, omega ):
 
 	return ( term1 + term2 )
 
-def index_from_permittivity( epsilon ):
-	less_than_piece = 1.0 * np.less( np.imag( epsilon ), np.finfo(np.float64).eps )
+def index_from_permittivity( permittivity ):
+	eps_real = np.real( permittivity )
+	eps_imag = np.imag( permittivity )
 
-	eps_r = np.real( epsilon )
-	eps_i = np.imag( epsilon )
+	eps_mag = np.sqrt( eps_real**2 + eps_imag**2 )
 
-	k = np.sqrt( 0.5 * eps_r * ( -1 + np.sqrt( 1 + ( eps_i / eps_r )**2 ) ) )
-	n = eps_i / ( 2 * k + np.finfo(np.float64).eps )
+	n = np.sqrt( ( eps_mag + eps_real ) / 2. )
+	kappa = np.sqrt( ( eps_mag - eps_real ) / 2. )
 
-	return ( less_than_piece * np.sqrt( np.real( epsilon ) ) + ( 1.0 - less_than_piece ) * ( n + 1j * k ) )
+	return ( n + 1j * kappa )
 
 #
 # If you are doing this again, this can be a very easily generalized class of a dispersion model with these types of parameters.
