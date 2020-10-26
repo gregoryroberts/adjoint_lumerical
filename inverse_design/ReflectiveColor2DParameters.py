@@ -206,8 +206,10 @@ optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 
 
 
-plus_redirect_weights = ( 1.0 / num_design_frequency_points ) * np.ones( num_design_frequency_points )
-# plus_direct_weights = np.zeros( num_design_frequency_points )
+# plus_redirect_weights = ( 1.0 / num_design_frequency_points ) * np.ones( num_design_frequency_points )
+plus_redirect_weights = np.zeros( num_design_frequency_points )
+plus_redirect_weights[ 0 : optimize_reflection_band[ 0 ] ] = 1.0 / num_design_frequency_points
+plus_redirect_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 1.0 / num_design_frequency_points
 
 plus_direct_weights = np.zeros( num_design_frequency_points )
 plus_direct_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = num_bands * ( 1.0 / num_design_frequency_points )
