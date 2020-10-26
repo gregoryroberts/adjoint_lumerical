@@ -155,7 +155,7 @@ fdtd_simulation_time_fs = 3 * 2000
 #
 num_polarizations = 2
 
-lateral_aperture_um = device_size_lateral_um
+lateral_aperture_um = 1.5 * device_size_lateral_um
 adjoint_aperture_um = 2.0 * device_size_lateral_um
 # adjoint_aperture_um = 5.0 * device_size_lateral_um
 src_maximum_vertical_um = 0.5 * device_size_verical_um + 0.75 * device_to_mode_match_um
