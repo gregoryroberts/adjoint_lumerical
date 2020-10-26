@@ -974,7 +974,7 @@ def fom_and_gradient_with_rotations( pol_idx ):
 	fom_total = fom_direct * fom_redirect
 
 	grad_total = (
-		fom_redirect * ( grad_plus_rotation_direct - grad_minus_rotation_direct ) +
+		fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
 		fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
 	)
 
