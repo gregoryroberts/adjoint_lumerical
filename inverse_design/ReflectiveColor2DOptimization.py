@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v10"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v11"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -568,7 +568,9 @@ if should_reload:
 
 	my_optimization_state.init_profiles_with_density( old_density )
 else:
-	my_optimization_state.uniform_layer_profiles( 0.5 )
+	# my_optimization_state.uniform_layer_profiles( 0.5 )
+	my_optimization_state.randomize_layer_profiles( 0.5, 0.3 ):
+
 
 get_index = my_optimization_state.assemble_index()
 device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
@@ -832,6 +834,15 @@ def fom_and_gradient(
 		direct_mode_E, direct_mode_H,
 		1.0, direct_mode_overlap_norm )
 
+	print( "Mode overlaps" )
+	print( mode_overlap_redirect )
+	print( mode_overlap_direct )
+	print( redirect_mode_overlap_norm )
+	print( direct_mode_overlap_norm )
+	print( redirect_weights_by_wl )
+	print( direct_weights_by_wl )
+	print()
+
 	fom_redirect, fom_direct = reflection_transmission_figure_of_merit(
 		mode_overlap_redirect, mode_overlap_direct, redirect_weights_by_wl, direct_weights_by_wl )
 
@@ -949,6 +960,13 @@ def fom_and_gradient_with_rotations( pol_idx ):
 	grad_minus = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( grad_minus_rotation_redirect + grad_minus_rotation_direct )
 
 	grad_total = ( grad_plus + grad_minus )
+
+	print('FOMs:')
+	print( fom_plus_rotation_redirect )
+	print( fom_plus_rotation_direct )
+	print( fom_minus_rotation_redirect )
+	print( fom_minus_rotation_direct )
+	print('----')
 
 	# fom_total = fom_plus_rotation_redirect
 	# grad_total = grad_plus_rotation_redirect
@@ -1492,10 +1510,10 @@ for pol_idx in range( 0, num_polarizations ):
 		# if pol_idx == 1:
 		# 	phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, middle_voxel ] ) )
 
-		print( middle_voxel )
-		print( phase_correction )
-		print( np.exp( 1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] ) )
-		print()
+		# print( middle_voxel )
+		# print( phase_correction )
+		# print( np.exp( 1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] ) )
+		# print()
 
 		get_E_mode[ :, wl_idx, :, :, : ] /= phase_correction
 		get_H_mode[ :, wl_idx, :, :, : ] /= phase_correction
@@ -1536,10 +1554,10 @@ for pol_idx in range( 0, num_polarizations ):
 		# if pol_idx == 1:
 		# 	phase_correction = np.exp( 1j * np.angle( get_E_mode[ 0, wl_idx, 0, 0, middle_voxel ] ) )
 
-		print( middle_voxel )
-		print( phase_correction )
-		print( np.exp( 1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] ) )
-		print()
+		# print( middle_voxel )
+		# print( phase_correction )
+		# print( np.exp( 1j * 2 * np.pi * normalization_distance / lambda_values_um[ wl_idx ] ) )
+		# print()
 
 		get_E_mode[ :, wl_idx, :, :, : ] /= phase_correction
 		get_H_mode[ :, wl_idx, :, :, : ] /= phase_correction
@@ -1596,7 +1614,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_8_redirect_si_10p8_red_v19.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_v10.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
