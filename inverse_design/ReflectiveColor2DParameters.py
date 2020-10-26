@@ -26,10 +26,10 @@ project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_si_10p8xtsmc_
 # Check binarized device and look at feature sizes!
 background_index = 1.0
 design_index_background = 1.0#1.35
-device_background_index = 1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
+device_background_index = 2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
 device_lateral_background_density = 1.0
 # high_index_backfill = 2.5
-high_index_backfill = 1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46
+high_index_backfill = 2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46
 # high_index_backfill = 2.1
 # substrate_index = 1.0
 
@@ -207,14 +207,20 @@ optimize_reflection_band = [ 2 * num_points_per_band, 3 * num_points_per_band ]
 
 
 plus_redirect_weights = ( 1.0 / num_design_frequency_points ) * np.ones( num_design_frequency_points )
+# plus_direct_weights = np.zeros( num_design_frequency_points )
+
 plus_direct_weights = np.zeros( num_design_frequency_points )
+plus_direct_weights[ optimize_reflection_band[ 0 ] : optimize_reflection_band[ 1 ] ] = num_bands * ( 1.0 / num_design_frequency_points )
+
 
 # plus_redirect_weights = np.zeros( num_design_frequency_points )
 # plus_redirect_weights[ 9 ] = 1
 # plus_redirect_weights[ 4 ] = 1
 # plus_redirect_weights[ 23 ] = 1
 
-minus_redirect_weights = np.zeros( num_design_frequency_points )
+# minus_redirect_weights = np.zeros( num_design_frequency_points )
+minus_redirect_weights = ( 1.0 / num_design_frequency_points ) * np.ones( num_design_frequency_points )
+
 # minus_redirect_weights[ 11 ] = 1
 # minus_redirect_weights[ 0 : optimize_reflection_band[ 0 ] ] = 1.0 / num_design_frequency_points
 # minus_redirect_weights[ optimize_reflection_band[ 1 ] : num_design_frequency_points ] = 1.0 / num_design_frequency_points

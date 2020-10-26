@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_sio2_v11"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v12"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -568,8 +568,8 @@ if should_reload:
 
 	my_optimization_state.init_profiles_with_density( old_density )
 else:
-	# my_optimization_state.uniform_layer_profiles( 0.5 )
-	my_optimization_state.randomize_layer_profiles( 0.5, 0.3 )
+	my_optimization_state.uniform_layer_profiles( 0.5 )
+	# my_optimization_state.randomize_layer_profiles( 0.5, 0.3 )
 
 
 get_index = my_optimization_state.assemble_index()
@@ -948,28 +948,25 @@ def fom_and_gradient_with_rotations( pol_idx ):
 	)
 
 	fom_minus_rotation_redirect, fom_minus_rotation_direct, grad_minus_rotation_redirect, grad_minus_rotation_direct = fom_and_gradient(
-		pol_idx, -device_rotation_angle_radians,
+		pol_idx, 0, #-device_rotation_angle_radians,
 		minus_redirect_weights, minus_direct_weights,
 		adjoint_sources_reflection_angled_minus[ pol_idx ], mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
 		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
 	)
 
-	fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
+	# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
 
-	grad_plus = ( fom_minus_rotation_redirect + fom_minus_rotation_direct ) * ( grad_plus_rotation_redirect + grad_plus_rotation_direct )
-	grad_minus = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( grad_minus_rotation_redirect + grad_minus_rotation_direct )
+	# grad_plus = ( fom_minus_rotation_redirect + fom_minus_rotation_direct ) * ( grad_plus_rotation_redirect + grad_plus_rotation_direct )
+	# grad_minus = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( grad_minus_rotation_redirect + grad_minus_rotation_direct )
 
-	grad_total = ( grad_plus + grad_minus )
+	# grad_total = ( grad_plus + grad_minus )
 
-	print('FOMs:')
-	print( fom_plus_rotation_redirect )
-	print( fom_plus_rotation_direct )
-	print( fom_minus_rotation_redirect )
-	print( fom_minus_rotation_direct )
-	print('----')
+	fom_direct = np.maximum( fom_minus_rotation_direct - fom_plus_rotation_direct, 0 )
+	fom_redirect = 0.5 * ( fom_minus_rotation_redirect + fom_plus_rotation_redirect )
 
-	# fom_total = fom_plus_rotation_redirect
-	# grad_total = grad_plus_rotation_redirect
+	fom_total = fom_direct * fom_redirect
+
+	grad_total = fom_redirect * ( grad_minus_rotation_direct - grad_plus_rotation_direct ) + fom_direct * 0.5 * ( grad_minus_rotation_redirect + grad_plus_rotation_redirect )
 
 	return fom_total, grad_total
 
@@ -983,15 +980,19 @@ def fom_with_rotations( pol_idx ):
 	)
 
 	fom_minus_rotation_redirect, fom_minus_rotation_direct = fom(
-		pol_idx, -device_rotation_angle_radians,
+		pol_idx, 0, #-device_rotation_angle_radians,
 		minus_redirect_weights, minus_direct_weights,
 		mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
 		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
 	)
 
-	fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
+	# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
 
-	# fom_total = fom_plus_rotation_redirect
+
+	fom_direct = np.maximum( fom_minus_rotation_direct - fom_plus_rotation_direct, 0 )
+	fom_redirect = 0.5 * ( fom_minus_rotation_redirect + fom_plus_rotation_redirect )
+
+	fom_total = fom_direct * fom_redirect
 
 	return fom_total
 
@@ -1614,7 +1615,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_v10.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_9_redirect_si_10p8_red_tio2_v10.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
