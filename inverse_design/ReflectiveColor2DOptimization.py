@@ -569,7 +569,7 @@ if should_reload:
 	my_optimization_state.init_profiles_with_density( old_density )
 else:
 	# my_optimization_state.uniform_layer_profiles( 0.5 )
-	my_optimization_state.randomize_layer_profiles( 0.5, 0.3 ):
+	my_optimization_state.randomize_layer_profiles( 0.5, 0.3 )
 
 
 get_index = my_optimization_state.assemble_index()
