@@ -132,7 +132,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v14"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v15"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -181,19 +181,20 @@ source_polarization_angles = [ 90, 0 ]
 affected_coords_by_polarization = [ [ 2 ], [ 0, 1 ] ]
 
 for pol_idx in range( 0, num_polarizations ):
-	# forward_src = fdtd_hook.addtfsf()
+	forward_src = fdtd_hook.addtfsf()
 	# forward_src = fdtd_hook.addplane()
 	# forward_src['plane wave type'] = 'Diffracting'
-	forward_src = fdtd_hook.addgaussian()
+	# forward_src = fdtd_hook.addgaussian()
 	forward_src['name'] = 'forward_src_' + str( pol_idx )
 	forward_src['polarization angle'] = source_polarization_angles[ pol_idx ]
 	forward_src['direction'] = 'Backward'
-	forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
-	forward_src['y'] = src_maximum_vertical_um * 1e-6
-	forward_src['waist radius w0'] = 0.5 * lateral_aperture_um * 1e-6
-	forward_src['distance from waist'] = ( designable_device_vertical_maximum_um - src_maximum_vertical_um ) * 1e-6
-	# forward_src['y max'] = src_maximum_vertical_um * 1e-6
-	# forward_src['y min'] = src_minimum_vertical_um * 1e-6
+	# forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
+	forward_src['x span'] = 1.1 * device_size_lateral_um * 1e-6
+	# forward_src['y'] = src_maximum_vertical_um * 1e-6
+	# forward_src['waist radius w0'] = 0.5 * lateral_aperture_um * 1e-6
+	# forward_src['distance from waist'] = ( designable_device_vertical_maximum_um - src_maximum_vertical_um ) * 1e-6
+	forward_src['y max'] = src_maximum_vertical_um * 1e-6
+	forward_src['y min'] = adjoint_transmission_position_y_um * 1e-6
 	forward_src['wavelength start'] = lambda_min_um * 1e-6
 	forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
@@ -1632,7 +1633,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_2_redirect_si_10p8_red_tio2_v13.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_3_redirect_si_10p8_red_tio2_v14.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
