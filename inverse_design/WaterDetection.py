@@ -624,7 +624,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
 		
 				log_file = open(projects_directory_location + "/log.txt", 'a')
-				log_file.write( "Current fom = " + str( fom ) + "\n" )
+				log_file.write( "Current fom = " + str( figure_of_merit ) + "\n" )
 				log_file.close()
 
 				figure_of_merit_by_device[ device ] = figure_of_merit
