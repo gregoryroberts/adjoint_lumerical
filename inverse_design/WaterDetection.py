@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from WaterDetection2DParameters import *
 
-run_on_cluster = False#True
+run_on_cluster = True
 
 if run_on_cluster:
 	import imp
@@ -735,21 +735,21 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 	return parent_object, fom_track
 
-load_index = np.load('/Users/gregory/Downloads/device_6_water_v5.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_6_water_v5.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 
-fdtd_hook.switchtolayout()
-inflate_index = np.zeros( ( load_index.shape[ 0 ], load_index.shape[ 1 ], 2 ), dtype=np.complex )
-inflate_index[ :, :, 0 ] = load_index
-inflate_index[ :, :, 1 ] = load_index
+# fdtd_hook.switchtolayout()
+# inflate_index = np.zeros( ( load_index.shape[ 0 ], load_index.shape[ 1 ], 2 ), dtype=np.complex )
+# inflate_index[ :, :, 0 ] = load_index
+# inflate_index[ :, :, 1 ] = load_index
 
-fdtd_hook.select( device_import[ 'name' ] )
-fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
+# fdtd_hook.select( device_import[ 'name' ] )
+# fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
 
 # compute_gradient( load_index )
 
-fdtd_hook.run()
-sys.exit( 0 )
+# fdtd_hook.run()
+# sys.exit( 0 )
 
 figure_of_merit_evolution = []
 
