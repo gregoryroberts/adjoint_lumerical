@@ -560,12 +560,11 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				for band_idx in range( 0, num_bands ):
 					forward_e_fields_by_band[ band_idx ] = get_complex_monitor_data(design_efield_monitors[ band_idx ]['name'], 'E')
 
-				focal_data = [ [] for idx in range( 0, num_bands ) ]
+				focal_data = [ [] for idx in range( 0, num_adjoint_sources ) ]
 				for band_idx in range( 0, num_bands ):
 					for adj_src_idx in range(0, num_adjoint_sources):
-						get_band = spectral_focal_plane_map[ adj_src_idx ]
-						focal_data[ adj_src_idx ].append(
-							get_complex_monitor_data(focal_monitors_by_band[band_idx][get_band]['name'], 'E') )
+						focal_data[ band_idx ].append(
+							get_complex_monitor_data(focal_monitors_by_band[band_idx][adj_src_idx]['name'], 'E') )
 
 				#
 				# Step 2: Compute the figure of merit
@@ -586,7 +585,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 							current_coord = affected_coords[ coord_idx ]
 
 							normalize_intensity_k_k = np.sum(
-								np.abs( focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ]
+								np.abs( focal_data[ get_band ][ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ]
 
 							if wl_idx == get_hot_point:
 								correct_focal_by_wl[ get_band ][ wl_idx ] += band_weights[ get_band ] * normalize_intensity_k_k
@@ -595,7 +594,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 
 							conjugate_weighting_wavelength[ get_band, current_coord, wl_idx ] = np.conj(
-								focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ] )
+								focal_data[ get_band ][ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ] )
 
 
 				for focal_idx in range(0, num_focal_spots):
