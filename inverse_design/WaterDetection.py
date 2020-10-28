@@ -121,7 +121,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v6"
-projects_directory_location += "/" + project_name + "water_detection_v5"
+projects_directory_location += "/" + project_name + "water_detection_v6"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -448,7 +448,7 @@ def evaluate_device( index_profile ):
 		for band_idx in range( 0, num_bands ):
 			for adj_src_idx in range(0, num_adjoint_sources):
 				get_band = spectral_focal_plane_map[ adj_src_idx ]
-				focal_data[ band_idx ].append(
+				focal_data[ adj_src_idx ].append(
 					get_complex_monitor_data(focal_monitors_by_band[band_idx][get_band]['name'], 'E') )
 
 		#
@@ -469,7 +469,7 @@ def evaluate_device( index_profile ):
 				for coord_idx in range( 0, len( affected_coords ) ):
 					current_coord = affected_coords[ coord_idx ]
 
-					normalize_intensity_k_k = np.sum( np.abs( focal_data[ get_band ][ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ]
+					normalize_intensity_k_k = np.sum( np.abs( focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ]
 
 					if wl_idx == get_hot_point:
 						correct_focal_by_wl[ get_band ][ wl_idx ] += band_weights[ get_band ] * normalize_intensity_k_k
@@ -478,7 +478,7 @@ def evaluate_device( index_profile ):
 
 
 					conjugate_weighting_wavelength[ get_band, current_coord, wl_idx ] = np.conj(
-						focal_data[ get_band ][ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ] )
+						focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ] )
 
 
 		for focal_idx in range(0, num_focal_spots):
@@ -564,7 +564,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				for band_idx in range( 0, num_bands ):
 					for adj_src_idx in range(0, num_adjoint_sources):
 						get_band = spectral_focal_plane_map[ adj_src_idx ]
-						focal_data[ band_idx ].append(
+						focal_data[ adj_src_idx ].append(
 							get_complex_monitor_data(focal_monitors_by_band[band_idx][get_band]['name'], 'E') )
 
 				#
@@ -586,7 +586,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 							current_coord = affected_coords[ coord_idx ]
 
 							normalize_intensity_k_k = np.sum(
-								np.abs( focal_data[ get_band ][ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ]
+								np.abs( focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ]
 
 							if wl_idx == get_hot_point:
 								correct_focal_by_wl[ get_band ][ wl_idx ] += band_weights[ get_band ] * normalize_intensity_k_k
@@ -595,7 +595,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 
 							conjugate_weighting_wavelength[ get_band, current_coord, wl_idx ] = np.conj(
-								focal_data[ get_band ][ focal_idx ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ] )
+								focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ] )
 
 
 				for focal_idx in range(0, num_focal_spots):
@@ -623,6 +623,10 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.product( reselect_fom_by_band )
 				figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
 		
+				log_file = open(projects_directory_location + "/log.txt", 'a')
+				log_file.write( "Current fom = " + str( fom ) + "\n" )
+				log_file.close()
+
 				figure_of_merit_by_device[ device ] = figure_of_merit
 
 
