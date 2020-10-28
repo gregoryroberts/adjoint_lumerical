@@ -133,7 +133,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v17"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v18"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -986,11 +986,18 @@ def fom_and_gradient_with_rotations( pol_idx ):
 	fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
 	fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
 
-	fom_total = fom_direct * fom_redirect
+	# fom_total = fom_direct * fom_redirect
+
+	fom_total = fom_redirect
+
+	# grad_total = (
+	# 	fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
+	# 	fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
+	# )
+
 
 	grad_total = (
-		fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
-		fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
+		0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
 	)
 
 	return fom_total, grad_total
@@ -1020,11 +1027,11 @@ def fom_with_rotations( pol_idx ):
 
 	# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
 
-
 	fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
 	fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
 
-	fom_total = fom_direct * fom_redirect
+	# fom_total = fom_direct * fom_redirect
+	fom_total = fom_redirect
 
 	return fom_total
 
@@ -1647,7 +1654,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_tio2_v15.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_3_redirect_si_10p8_red_tio2_v17.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
