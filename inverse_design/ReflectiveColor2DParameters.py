@@ -109,7 +109,7 @@ designable_device_vertical_minimum_um = -0.5 * device_size_verical_um
 # Spectral
 #
 num_bands = 3
-num_points_per_band = 15#10#10#15
+num_points_per_band = 10#10#15
 
 # band_weights = [ 1, 1, 1 ]
 # band_weights = [ 1, 0, 1 ]
@@ -155,7 +155,8 @@ fdtd_simulation_time_fs = 3 * 2000
 #
 num_polarizations = 2
 
-lateral_aperture_um = 1.5 * device_size_lateral_um
+# lateral_aperture_um = 1.5 * device_size_lateral_um
+lateral_aperture_um = 1.0 * device_size_lateral_um
 adjoint_aperture_um = 2.0 * device_size_lateral_um
 # adjoint_aperture_um = 5.0 * device_size_lateral_um
 src_maximum_vertical_um = 0.5 * device_size_verical_um + 0.75 * device_to_mode_match_um
