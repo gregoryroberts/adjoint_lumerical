@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from ReflectiveColor2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = False#True
 
 if run_on_cluster:
 	import imp
@@ -24,6 +24,7 @@ import numpy as np
 import time
 
 import continuous_cmos
+import water_detector
 
 from scipy import ndimage, misc
 
@@ -132,7 +133,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v15"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v16"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -147,6 +148,7 @@ fdtd_hook.save(projects_directory_location + "/optimization")
 shutil.copy2(python_src_directory + "/ReflectiveColor2DParameters.py", projects_directory_location + "/ReflectiveColor2DParameters.py")
 shutil.copy2(python_src_directory + "/ReflectiveColor2DOptimization.py", projects_directory_location + "/ReflectiveColor2DOptimization.py")
 shutil.copy2(python_src_directory + "/continuous_cmos.py", projects_directory_location + "/continuous_cmos.py")
+shutil.copy2(python_src_directory + "/water_detector.py", projects_directory_location + "/water_detector.py")
 
 
 
@@ -548,18 +550,29 @@ num_iterations = 100
 np.random.seed( 923447 )
 np.random.seed( 344700 )
 
-my_optimization_state = continuous_cmos.ContinuousCMOS(
+# my_optimization_state = continuous_cmos.ContinuousCMOS(
+# 	[ min_real_permittivity, max_real_permittivity ],
+# 	lsf_mesh_spacing_um,
+# 	designable_device_vertical_minimum_um,
+# 	device_size_lateral_um,
+# 	feature_size_um_by_profiles,
+# 	device_layer_thicknesses_um,
+# 	device_spacer_thicknesses_um,
+# 	num_iterations,
+# 	1,
+# 	"level_set_optimize",
+# 	device_lateral_background_density )
+
+my_optimization_state = water_detector.WaterDetector(
 	[ min_real_permittivity, max_real_permittivity ],
-	lsf_mesh_spacing_um,
-	designable_device_vertical_minimum_um,
+	mesh_spacing_um,
+	designable_size_vertical_um,
 	device_size_lateral_um,
-	feature_size_um_by_profiles,
-	device_layer_thicknesses_um,
-	device_spacer_thicknesses_um,
 	num_iterations,
 	1,
-	"level_set_optimize",
+	"water",
 	device_lateral_background_density )
+
 
 if should_reload:
 	old_index = np.load( projects_directory_reload + "/final_device.npy" )
@@ -569,8 +582,9 @@ if should_reload:
 
 	my_optimization_state.init_profiles_with_density( old_density )
 else:
-	my_optimization_state.uniform_layer_profiles( 0.5 )
+	# my_optimization_state.uniform_layer_profiles( 0.5 )
 	# my_optimization_state.randomize_layer_profiles( 0.5, 0.3 )
+	my_optimization_state.init_uniform( 0.5 )
 
 
 get_index = my_optimization_state.assemble_index()
@@ -1633,7 +1647,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_3_redirect_si_10p8_red_tio2_v14.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_tio2_v15.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
