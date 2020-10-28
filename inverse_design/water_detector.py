@@ -82,10 +82,10 @@ class WaterDetector( OptimizationState.OptimizationState ):
 		self.opt_height_num_voxels = int( opt_height_um / self.opt_mesh_size_um )
 		self.opt_width_num_voxels = int( self.opt_width_um / self.opt_mesh_size_um )
 
-		self.design_height = int( self.opt_height_num_voxels / 5.0 )
-		self.design_width = int( self.opt_width_num_voxels / 5.0 )
-		# self.design_height = int( self.opt_height_num_voxels / 4.0 )
-		# self.design_width = int( self.opt_width_num_voxels / 4.0 )
+		# self.design_height = int( self.opt_height_num_voxels / 5.0 )
+		# self.design_width = int( self.opt_width_num_voxels / 5.0 )
+		self.design_height = int( self.opt_height_num_voxels / 4.0 )
+		self.design_width = int( self.opt_width_num_voxels / 4.0 )
 
 		self.cur_density = np.zeros( ( self.design_width, self.design_height ) )
 

@@ -109,7 +109,7 @@ designable_device_vertical_minimum_um = -0.5 * device_size_verical_um
 # Spectral
 #
 num_bands = 3
-num_points_per_band = 10#10#15
+num_points_per_band = 15#10#10#15
 
 # band_weights = [ 1, 1, 1 ]
 # band_weights = [ 1, 0, 1 ]
