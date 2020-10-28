@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from WaterDetection2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = False#True
 
 if run_on_cluster:
 	import imp
@@ -120,7 +120,7 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 should_reload = False
-projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v5"
+projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v6"
 projects_directory_location += "/" + project_name + "water_detection_v5"
 
 if not os.path.isdir(projects_directory_location):
@@ -610,7 +610,12 @@ def optimize_parent_locally( parent_object, num_iterations ):
 					# print()
 
 				reselect_fom_by_band = []
+				reselect_fom_by_band_raw = []
+				reselect_fom_by_band_softplus_raw = []
 				for idx in range( 0, len( figure_of_merit_by_band ) ):
+					reselect_fom_by_band_raw.append( figure_of_merit_by_band[ idx ] )
+					reselect_fom_by_band_softplus_raw.append( softplus( figure_of_merit_by_band[ idx ] ) )
+
 					if band_weights[ idx ] > 0:
 						reselect_fom_by_band.append( softplus( figure_of_merit_by_band[ idx ] ) )
 
@@ -664,7 +669,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 						prefactor = 0
 						if band_weights[ get_band ] > 0:
-							prefactor = band_weights[ get_band ] * softplus_prime( reselect_fom_by_band[ get_band ] ) * np.product( reselect_fom_by_band ) / reselect_fom_by_band[ get_band ]
+							prefactor = band_weights[ get_band ] * softplus_prime( reselect_fom_by_band_raw[ get_band ] ) * np.product( reselect_fom_by_band ) / reselect_fom_by_band_softplus_raw[ get_band ]
 
 						for spectral_idx in range(0, num_points_per_band):
 
@@ -730,6 +735,21 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 	return parent_object, fom_track
 
+load_index = np.load('/Users/gregory/Downloads/device_6_water_v5.npy')
+# bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
+
+fdtd_hook.switchtolayout()
+inflate_index = np.zeros( ( load_index.shape[ 0 ], load_index.shape[ 1 ], 2 ), dtype=np.complex )
+inflate_index[ :, :, 0 ] = load_index
+inflate_index[ :, :, 1 ] = load_index
+
+fdtd_hook.select( device_import[ 'name' ] )
+fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
+
+# compute_gradient( load_index )
+
+fdtd_hook.run()
+sys.exit( 0 )
 
 figure_of_merit_evolution = []
 
