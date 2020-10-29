@@ -94,10 +94,10 @@ class WaterDetector( OptimizationState.OptimizationState ):
 		self.opt_height_num_voxels = int( opt_height_um / self.opt_mesh_size_um )
 		self.opt_width_num_voxels = int( self.opt_width_um / self.opt_mesh_size_um )
 
-		# self.design_height = int( self.opt_height_num_voxels / 5.0 )
-		# self.design_width = int( self.opt_width_num_voxels / 5.0 )
-		self.design_height = int( self.opt_height_num_voxels / 4.0 )
-		self.design_width = int( self.opt_width_num_voxels / 4.0 )
+		self.design_height = int( self.opt_height_num_voxels / 3.0 )
+		self.design_width = int( self.opt_width_num_voxels / 3.0 )
+		# self.design_height = int( self.opt_height_num_voxels / 4.0 )
+		# self.design_width = int( self.opt_width_num_voxels / 4.0 )
 
 		self.cur_density = np.zeros( ( self.design_width, self.design_height ) )
 
@@ -130,7 +130,7 @@ class WaterDetector( OptimizationState.OptimizationState ):
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
 		scaled_gradient = gradient_real_interpolate / np.max( np.abs( gradient_real_interpolate ) )
-		scaled_step_size = 0.025
+		scaled_step_size = 0.015
 		# scaled_step_size = 0.01
 
 		self.cur_density -= scaled_step_size * scaled_gradient

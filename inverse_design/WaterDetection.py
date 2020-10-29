@@ -120,8 +120,8 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 should_reload = False
-projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v7"
-projects_directory_location += "/" + project_name + "water_detection_v6"
+# projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v7"
+projects_directory_location += "/" + project_name + "water_detection_v7"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -643,7 +643,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 	return parent_object, fom_track
 
-# load_index = np.load('/Users/gregory/Downloads/device_6_water_v5.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_water_v5.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 
 # fdtd_hook.switchtolayout()
