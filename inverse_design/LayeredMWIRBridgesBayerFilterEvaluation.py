@@ -355,8 +355,8 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-# cur_design_variable = np.load( projects_directory_location_base + "/cur_design_variable.npy" )
-# bayer_filter.w[0] = cur_design_variable
+cur_design_variable = np.load( projects_directory_location_base + "/cur_design_variable.npy" )
+bayer_filter.w[0] = cur_design_variable
 bayer_filter.update_filters(num_epochs - 1)
 bayer_filter.update_permittivity()
 
