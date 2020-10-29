@@ -90,9 +90,6 @@ class IPDipDispersion():
 		lower_omega = np.min( permittivity_range_cminv )
 		upper_omega = np.max( permittivity_range_cminv )
 
-		find_arg_closest_lower = 0
-		find_arg_closest_upper = self.num_omega - 1
-
 		find_lower = np.greater_equal( self.omega_range_cminv - lower_omega, 0.0 )
 		find_arg_closest_lower = 0
 		while ( not find_lower[ find_arg_closest_lower ] ) and ( find_arg_closest_lower < self.num_omega ):
@@ -102,6 +99,11 @@ class IPDipDispersion():
 			raise ValueError( 'Invalid range specified to average permittivity' )
 			return None
 
+		find_arg_closest_lower -= 1
+
+		if find_arg_closest_lower < 0:
+			raise ValueError( 'Invalid lower index value' )
+
 		find_upper = np.less_equal( upper_omega - self.omega_range_cminv, 0.0 )
 		find_arg_closest_upper = self.num_omega - 1
 		while ( find_upper[ find_arg_closest_upper] ) and ( find_arg_closest_upper >= 0 ):
@@ -110,6 +112,16 @@ class IPDipDispersion():
 		if find_upper[ find_arg_closest_upper ]:
 			raise ValueError( 'Invalid range specified to average permittivity' )
 			return None
+
+		find_arg_closest_upper += 1
+
+		if find_arg_closest_upper > self.num_omega:
+			raise ValueError( 'Invalid upper index value' )
+
+		if find_arg_closest_lower == find_arg_closest_upper:
+			raise ValueError( 'Unexpected averaging range' )
+
+		find_arg_closest_upper = np.minimum( find_arg_closest_upper + 1, self.num_omega )
 
 		average_real_permittivity = np.mean( self.eps_real[ find_arg_closest_lower : find_arg_closest_upper ] )
 		average_imag_permittivity = np.mean( self.eps_imag[ find_arg_closest_lower : find_arg_closest_upper ] )
