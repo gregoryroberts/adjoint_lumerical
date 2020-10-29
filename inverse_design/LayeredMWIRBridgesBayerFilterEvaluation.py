@@ -417,7 +417,7 @@ for outer_loop in range( 0, num_outer_loops ):
 				T = fdtd_hook.getresult( transmission_monitors[ focal_idx ][ 'name' ], 'T' )
 				transmission_data[ pol_idx, focal_idx, eval_point_idx ] = T[ 'T' ][ 0 ]
 
-	np.save( projects_directory_location + "dispersive_transmission_data.npy", transmission_data )
+	np.save( projects_directory_location + "/dispersive_transmission_data.npy", transmission_data )
 
-np.save( projects_directory_location + "dispersive_transmission_data.npy", transmission_data )
+np.save( projects_directory_location + "/dispersive_transmission_data.npy", transmission_data )
 
