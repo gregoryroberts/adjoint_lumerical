@@ -133,7 +133,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v21"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v22"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -550,28 +550,28 @@ num_iterations = 100
 np.random.seed( 923447 )
 np.random.seed( 344700 )
 
-# my_optimization_state = continuous_cmos.ContinuousCMOS(
-# 	[ min_real_permittivity, max_real_permittivity ],
-# 	lsf_mesh_spacing_um,
-# 	designable_device_vertical_minimum_um,
-# 	device_size_lateral_um,
-# 	feature_size_um_by_profiles,
-# 	device_layer_thicknesses_um,
-# 	device_spacer_thicknesses_um,
-# 	num_iterations,
-# 	1,
-# 	"level_set_optimize",
-# 	device_lateral_background_density )
-
-my_optimization_state = water_detector.WaterDetector(
+my_optimization_state = continuous_cmos.ContinuousCMOS(
 	[ min_real_permittivity, max_real_permittivity ],
-	mesh_spacing_um,
-	designable_size_vertical_um,
+	lsf_mesh_spacing_um,
+	designable_device_vertical_minimum_um,
 	device_size_lateral_um,
+	feature_size_um_by_profiles,
+	device_layer_thicknesses_um,
+	device_spacer_thicknesses_um,
 	num_iterations,
 	1,
-	"water",
+	"level_set_optimize",
 	device_lateral_background_density )
+
+# my_optimization_state = water_detector.WaterDetector(
+# 	[ min_real_permittivity, max_real_permittivity ],
+# 	mesh_spacing_um,
+# 	designable_size_vertical_um,
+# 	device_size_lateral_um,
+# 	num_iterations,
+# 	1,
+# 	"water",
+# 	device_lateral_background_density )
 
 
 if should_reload:
@@ -1654,7 +1654,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_7_redirect_si_10p8_red_tio2_v20.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_tio2_v21.npy')
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 
