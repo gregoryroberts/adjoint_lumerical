@@ -78,7 +78,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 
 projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 projects_directory_location_base += "/" + project_name
-projects_directory_location += "/" + project_name + '_eval'
+projects_directory_location = projects_directory_location_base + '_eval'
 
 
 if not os.path.isdir(projects_directory_location):
