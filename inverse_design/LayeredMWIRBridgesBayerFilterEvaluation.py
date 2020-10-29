@@ -386,9 +386,9 @@ for outer_loop in range( 0, num_outer_loops ):
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
 
 		for focal_idx in range( 0, num_adjoint_sources ):
-			transmission_monitor['use source limits'] = 0
-			transmission_monitor['frequency points'] = 1
-			transmission_monitor['wavelength center'] = eval_lambda_um[ eval_point_idx ] * 1e-6
+			transmission_monitors[ focal_idx ]['use source limits'] = 0
+			transmission_monitors[ focal_idx ]['frequency points'] = 1
+			transmission_monitors[ focal_idx ]['wavelength center'] = eval_lambda_um[ eval_point_idx ] * 1e-6
 
 
 		for pol_idx in range(0, 2):
