@@ -9,9 +9,17 @@ import LayeredMWIRBridgesBayerFilter
 import ip_dip_dispersion
 
 
-import imp
-imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a_r6/api/python/lumapi.py" )
+run_on_cluster = True
+
+if run_on_cluster:
+	import imp
+	imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
+else:
+	import imp
+	imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+
 import lumapi
+
 
 import functools
 import h5py
@@ -26,43 +34,46 @@ import platform
 
 import re
 
-
-def get_slurm_node_list( slurm_job_env_variable=None ):
-	if slurm_job_env_variable is None:
-		slurm_job_env_variable = os.getenv('SLURM_JOB_NODELIST')
-	if slurm_job_env_variable is None:
-		raise ValueError('Environment variable does not exist.')
-
-	solo_node_pattern = r'hpc-\d\d-[\w]+'
-	cluster_node_pattern = r'hpc-\d\d-\[.*?\]'
-	solo_nodes = re.findall(solo_node_pattern, slurm_job_env_variable)
-	cluster_nodes = re.findall(cluster_node_pattern, slurm_job_env_variable)
-	inner_bracket_pattern = r'\[(.*?)\]'
-
-	output_arr = solo_nodes
-	for cluster_node in cluster_nodes:
-		prefix = cluster_node.split('[')[0]
-		inside_brackets = re.findall(inner_bracket_pattern, cluster_node)[0]
-		# Split at commas and iterate through results
-		for group in inside_brackets.split(','):
-			# Split at hypen. Get first and last number. Create string in range
-			# from first to last.
-			node_clump_split = group.split('-')
-			starting_number = int(node_clump_split[0])
-			try:
-				ending_number = int(node_clump_split[1])
-			except IndexError:
-				ending_number = starting_number
-			for i in range(starting_number, ending_number+1):
-				# Can use print("{:02d}".format(1)) to turn a 1 into a '01'
-				# string. 111 -> 111 still, in case nodes hit triple-digits.
-				output_arr.append(prefix + "{:02d}".format(i))
-	return output_arr
-
 num_nodes_available = int( sys.argv[ 1 ] )
-num_cpus_per_node = 8
-cluster_hostnames = get_slurm_node_list()
 
+if run_on_cluster:
+	def get_slurm_node_list( slurm_job_env_variable=None ):
+		if slurm_job_env_variable is None:
+			slurm_job_env_variable = os.getenv('SLURM_JOB_NODELIST')
+		if slurm_job_env_variable is None:
+			raise ValueError('Environment variable does not exist.')
+
+		solo_node_pattern = r'hpc-\d\d-[\w]+'
+		cluster_node_pattern = r'hpc-\d\d-\[.*?\]'
+		solo_nodes = re.findall(solo_node_pattern, slurm_job_env_variable)
+		cluster_nodes = re.findall(cluster_node_pattern, slurm_job_env_variable)
+		inner_bracket_pattern = r'\[(.*?)\]'
+
+		output_arr = solo_nodes
+		for cluster_node in cluster_nodes:
+			prefix = cluster_node.split('[')[0]
+			inside_brackets = re.findall(inner_bracket_pattern, cluster_node)[0]
+			# Split at commas and iterate through results
+			for group in inside_brackets.split(','):
+				# Split at hypen. Get first and last number. Create string in range
+				# from first to last.
+				node_clump_split = group.split('-')
+				starting_number = int(node_clump_split[0])
+				try:
+					ending_number = int(node_clump_split[1])
+				except IndexError:
+					ending_number = starting_number
+				for i in range(starting_number, ending_number+1):
+					# Can use print("{:02d}".format(1)) to turn a 1 into a '01'
+					# string. 111 -> 111 still, in case nodes hit triple-digits.
+					output_arr.append(prefix + "{:02d}".format(i))
+		return output_arr
+
+	num_cpus_per_node = 8
+	cluster_hostnames = get_slurm_node_list()
+else:
+	num_cpus_per_node = 1
+	cluster_hostnames = []
 
 #
 # Create FDTD hook
@@ -73,12 +84,16 @@ fdtd_hook = lumapi.FDTD()
 # Create project folder and save out the parameter file for documentation for this optimization
 #
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-# projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-# projects_directory_location += "/" + project_name
 
-projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
-projects_directory_location_base += "/" + project_name
-projects_directory_location = projects_directory_location_base + '_eval'
+
+if run_on_cluster:
+	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
+	projects_directory_location_base += "/" + project_name
+	projects_directory_location = projects_directory_location_base + '_eval'
+else:
+	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
+	projects_directory_location_base += "/" + project_name
+	projects_directory_location = projects_directory_location_base + '_eval'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -340,8 +355,8 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-cur_design_variable = np.load( projects_directory_location_base + "/cur_design_variable.npy" )
-bayer_filter.w[0] = cur_design_variable
+# cur_design_variable = np.load( projects_directory_location_base + "/cur_design_variable.npy" )
+# bayer_filter.w[0] = cur_design_variable
 bayer_filter.update_filters(num_epochs - 1)
 bayer_filter.update_permittivity()
 
@@ -405,7 +420,6 @@ for outer_loop in range( 0, num_outer_loops ):
 
 
 	run_jobs( jobs_queue )
-
 
 	for eval_point_idx in range( eval_point_start, eval_point_start + num_nodes_available ):
 		for pol_idx in range( 0, 2 ):
