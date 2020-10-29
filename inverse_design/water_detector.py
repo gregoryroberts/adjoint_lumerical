@@ -56,11 +56,11 @@ def downsample_average( density, downsample_shape ):
 
 	for x in range( 0, downsample_shape[ 0 ] ):
 		start_x = int( x * downsample_ratio[ 0 ] )
-		end_x = int( start_profile_idx + downsample_ratio[ 0 ] )
+		end_x = int( start_x + downsample_ratio[ 0 ] )
 
 		for y in range( 0, downsample_shape[ 1 ] ):
 			start_y = int( y * downsample_ratio[ 1 ] )
-			end_y = int( start_profile_idx + downsample_ratio[ 1 ] )
+			end_y = int( start_y + downsample_ratio[ 1 ] )
 
 			downsampled[ x, y ] = np.mean(
 				density[ start_x : end_x, start_y : end_y ]
