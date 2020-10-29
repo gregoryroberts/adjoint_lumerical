@@ -94,7 +94,8 @@ band_ranges_um = [
 
 
 band_weights = [ 1, 1, 1 ]
-pol_weights = [ 0, 1 ]
+# pol_weights = [ 0, 1 ]
+pol_weights = [ 1, 0 ]
 
 lambda_min_um = 2
 lambda_max_um = 4

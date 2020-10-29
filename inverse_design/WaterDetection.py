@@ -121,7 +121,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v7"
-projects_directory_location += "/" + project_name + "water_detection_v7"
+projects_directory_location += "/" + project_name + "water_detection_v8"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
