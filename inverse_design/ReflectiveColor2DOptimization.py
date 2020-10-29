@@ -133,7 +133,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v22"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v23"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -582,6 +582,15 @@ if should_reload:
 
 	my_optimization_state.init_profiles_with_density( old_density )
 else:
+
+	# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_tio2_v21.npy')
+	# load_perm = load_index**2
+	# load_density = ( load_perm - min_real_permittivity ) / ( max_real_permittivity - min_real_permittivity )
+
+	# load_density = water_detector.upsample_nearest( load_density, 5 * np.array( load_density.shape ) )
+
+	# my_optimization_state.init_profiles_with_density( load_density )
+
 	my_optimization_state.uniform_layer_profiles( 0.5 )
 	# my_optimization_state.randomize_layer_profiles( 0.5, 0.3 )
 	# my_optimization_state.init_uniform( 0.5 )
@@ -1655,6 +1664,9 @@ fdtd_hook.set('enabled', 1)
 # check_gradient_full( 1 )
 
 # load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_tio2_v21.npy')
+# plt.imshow( load_index )
+# plt.colorbar()
+# plt.show()
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # compute_gradient( load_index )
 

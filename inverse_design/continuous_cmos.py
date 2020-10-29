@@ -55,6 +55,45 @@ def downsample_average( profile, downsampled_length ):
 
 	return downsampled_profile
 
+def downsample_average_2d( density, downsample_shape ):
+	assert ( density.shape[ 0 ] % downsample_shape[ 0 ] ) == 0, "Expected an even average downsampling"
+	assert ( density.shape[ 1 ] % downsample_shape[ 1 ] ) == 0, "Expected an even average downsampling"
+
+	downsample_ratio = 1.0 * np.array( density.shape ) / np.array( downsample_shape )
+
+	downsampled = np.zeros( downsample_shape )
+
+	for x in range( 0, downsample_shape[ 0 ] ):
+		start_x = int( x * downsample_ratio[ 0 ] )
+		end_x = int( start_x + downsample_ratio[ 0 ] )
+
+		for y in range( 0, downsample_shape[ 1 ] ):
+			start_y = int( y * downsample_ratio[ 1 ] )
+			end_y = int( start_y + downsample_ratio[ 1 ] )
+
+			downsampled[ x, y ] = np.mean(
+				density[ start_x : end_x, start_y : end_y ]
+			)
+
+	return downsampled
+
+def upsample_nearest_2d( density, upsample_shape ):
+	assert ( upsample_shape[ 0 ] % density.shape[ 0 ] ) == 0, "Expected an even nearest upsampling"
+	assert ( upsample_shape[ 1 ] % density.shape[ 1 ] ) == 0, "Expected an even nearest upsampling"
+
+	upsample_ratio = 1.0 * np.array( upsample_shape ) / np.array( density.shape )
+
+	upsampled = np.zeros( upsample_shape )
+
+	for x in range( 0, upsample_shape[ 0 ] ):
+		down_x = np.minimum( int( x / upsample_ratio[ 0 ] ), density.shape[ 0 ] - 1 )
+		for y in range( 0, upsample_shape[ 1 ] ):
+			down_y = np.minimum( int( y / upsample_ratio[ 1 ] ), density.shape[ 1 ] - 1 )
+
+			upsampled[ x, y ] = density[ down_x, down_y ]
+
+	return upsampled
+
 
 class ContinuousCMOS( OptimizationState.OptimizationState ):
 
@@ -335,7 +374,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 					( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * self.assemble_density() )
 
 	def assemble_density( self ):
-		device_density = np.zeros( ( self.opt_width_num_voxels, self.opt_vertical_num_voxels ) )
+		device_density = np.ones( ( self.opt_width_num_voxels, self.opt_vertical_num_voxels ) )
 
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
@@ -405,22 +444,52 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 
 	def update( self, gradient_real, graident_imag, gradient_real_lsf, gradient_imag_lsf, epoch, iteration ):
-		gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
+		# gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
+		# gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
+
+		gradient_real_interpolate = np.squeeze( gradient_real )
+
+		# import matplotlib.pyplot as plt
+		# plt.imshow( np.squeeze( gradient_real_interpolate ) )
+		# plt.show()
+
+		gradient_real_interpolate = 0.25 * ( 
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 1 : gradient_real_interpolate.shape[ 1 ] ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 1 : gradient_real_interpolate.shape[ 1 ] ]
+		)
+
+		gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
+
 		max_abs_movement = 0
-		avg_movement = 0
+		# avg_movement = 0
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
 			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
 
-			average_velocity = np.mean( -gradient_real_interpolate[ :, get_start : get_end ], axis=1 )
+			average_gradient = np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 )
+			downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
-			max_abs_movement = np.maximum( max_abs_movement, np.max( np.abs( average_velocity ) ) )
-			avg_movement += ( 1. / len( self.layer_profiles ) ) * np.mean( np.abs( average_velocity ) )
+			# plt.plot( average_gradient )
+			# plt.show()
+
+			max_abs_movement = np.maximum( max_abs_movement, np.max( np.abs( downsampled_average_grad ) ) )
+			# avg_movement += ( 1. / len( self.layer_profiles ) ) * np.mean( np.abs( average_velocity ) )
+
+			# max_abs_movement = np.maximum( max_abs_movement, np.max( np.abs( gradient_real_interpolate[ :, get_start : get_end ] ) ) )
 
 		scaled_gradient = gradient_real_interpolate / max_abs_movement
+		# scaled_gradient = gradient_real_interpolate / np.max( np.abs( gradient_real_interpolate ) )
 		scaled_step_size = 0.05
+		# scaled_step_size = 0.5
+		# scaled_step_size = 1.0
+
+		# import matplotlib.pyplot as plt
+		# plt.imshow( np.squeeze( scaled_gradient ) )
+		# plt.show()
 
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
@@ -430,6 +499,9 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_profile = self.layer_profiles[ profile_idx ]
 
 			downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
+
+			# plt.plot( scaled_step_size * downsampled_grad )
+			# plt.show()
 
 			get_profile -= scaled_step_size * downsampled_grad
 
