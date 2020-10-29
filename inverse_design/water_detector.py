@@ -42,6 +42,11 @@ def upsample_nearest( density, upsample_shape ):
 
 
 def downsample_average( density, downsample_shape ):
+	print( density.shape[ 0 ] )
+	print( downsample_shape[ 0 ] )
+	print( density.shape[ 1 ] )
+	print( downsample_shape[ 1 ] )
+
 	assert ( density.shape[ 0 ] % downsample_shape[ 0 ] ) == 0, "Expected an even average downsampling"
 	assert ( density.shape[ 1 ] % downsample_shape[ 1 ] ) == 0, "Expected an even average downsampling"
 
