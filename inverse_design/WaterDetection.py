@@ -120,7 +120,7 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 should_reload = False
-projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v6"
+projects_directory_reload = projects_directory_location + "/" + project_name + "water_detection_v7"
 projects_directory_location += "/" + project_name + "water_detection_v6"
 
 if not os.path.isdir(projects_directory_location):
@@ -415,98 +415,6 @@ device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * devic
 device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
 device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
 
-
-def evaluate_device( index_profile ):
-	fdtd_hook.switchtolayout()
-	get_index = index_profile
-	inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
-	inflate_index[ :, :, 0 ] = get_index
-	inflate_index[ :, :, 1 ] = get_index
-
-	fdtd_hook.select( device_import[ 'name' ] )
-	fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
-
-	figure_of_merit_by_pol = np.zeros( num_polarizations )
-
-	figure_of_merit = 0
-	for pol_idx in range( 0, num_polarizations ):
-
-		affected_coords = affected_coords_by_polarization[ pol_idx ]
-
-		#
-		# Step 1: Run the forward optimization for both x- and y-polarized plane waves.
-		#
-		disable_all_sources()
-		forward_sources[ pol_idx ].enabled = 1
-		fdtd_hook.run()
-
-		forward_e_fields_by_band = [ None for idx in range( 0, num_bands ) ]
-		for band_idx in range( 0, num_bands ):
-			forward_e_fields_by_band[ band_idx ] = get_complex_monitor_data(design_efield_monitors[band_idx]['name'], 'E')
-
-		focal_data = [ [] for idx in range( 0, num_bands ) ]
-		for band_idx in range( 0, num_bands ):
-			for adj_src_idx in range(0, num_adjoint_sources):
-				get_band = spectral_focal_plane_map[ adj_src_idx ]
-				focal_data[ adj_src_idx ].append(
-					get_complex_monitor_data(focal_monitors_by_band[band_idx][get_band]['name'], 'E') )
-
-		#
-		# Step 2: Compute the figure of merit
-		#
-		conjugate_weighting_wavelength = np.zeros( ( num_bands, 3, num_points_per_band ), dtype=np.complex )
-			
-		figure_of_merit_by_band = np.zeros( num_focal_spots )
-
-		correct_focal_by_wl = np.zeros( ( num_bands, num_points_per_band ) )
-		incorrect_focal_by_wl = np.zeros( ( num_bands, num_points_per_band ) )
-
-		for focal_idx in range(0, num_focal_spots):
-			get_band = spectral_focal_plane_map[ focal_idx ]
-			get_hot_point = int( 0.5 * num_points_per_band )
-
-			for wl_idx in range( 0, num_points_per_band ):
-				for coord_idx in range( 0, len( affected_coords ) ):
-					current_coord = affected_coords[ coord_idx ]
-
-					normalize_intensity_k_k = np.sum( np.abs( focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] )**2 ) / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ]
-
-					if wl_idx == get_hot_point:
-						correct_focal_by_wl[ get_band ][ wl_idx ] += band_weights[ get_band ] * normalize_intensity_k_k
-					else:
-						incorrect_focal_by_wl[ get_band ][ wl_idx ] += band_weights[ get_band ] * normalize_intensity_k_k
-
-
-					conjugate_weighting_wavelength[ get_band, current_coord, wl_idx ] = np.conj(
-						focal_data[ focal_idx ][ get_band ][ current_coord, wl_idx, 0, 0, 0 ] / max_intensity_by_band_by_wavelength[ get_band ][ wl_idx ] )
-
-
-		for focal_idx in range(0, num_focal_spots):
-			get_band = spectral_focal_plane_map[ focal_idx ]
-
-			for wl_idx in range( 0, num_points_per_band ):
-				if band_weights[ get_band ] > 0:
-					# figure_of_merit_by_band[ get_band ] += ( ( ( num_points_per_band - 1. ) * correct_focal_by_wl[ get_band ][ wl_idx ] ) - incorrect_focal_by_wl[ get_band ][ wl_idx ] )
-					figure_of_merit_by_band[ get_band ] += ( ( correct_focal_by_wl[ get_band ][ wl_idx ] ) - ( 1. / ( num_points_per_band - 1. ) ) * incorrect_focal_by_wl[ get_band ][ wl_idx ] )
-
-		reselect_fom_by_band = []
-		for idx in range( 0, len( figure_of_merit_by_band ) ):
-			if band_weights[ idx ] > 0:
-				reselect_fom_by_band.append( softplus( figure_of_merit_by_band[ idx ] ) )
-
-		reselect_fom_by_band = np.array( reselect_fom_by_band )
-		figure_of_merit_by_pol[ pol_idx ] = pol_weights[ pol_idx ] * np.product( reselect_fom_by_band )
-		figure_of_merit += ( 1. / np.sum( pol_weights ) ) * figure_of_merit_by_pol[ pol_idx ]
-		
-	return figure_of_merit
-
-
-#
-# Need to compare to just Hz, big features, level set on 5nm grid
-# Start from continuous.
-# Maybe that can also give you a good see to then run level set and particle swarm from.
-#
-
 def optimize_parent_locally( parent_object, num_iterations ):
 	fom_track = []
 	for iteration in range( 0, num_iterations ):
@@ -560,7 +468,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				for band_idx in range( 0, num_bands ):
 					forward_e_fields_by_band[ band_idx ] = get_complex_monitor_data(design_efield_monitors[ band_idx ]['name'], 'E')
 
-				focal_data = [ [] for idx in range( 0, num_adjoint_sources ) ]
+				focal_data = [ [] for idx in range( 0, num_bands ) ]
 				for band_idx in range( 0, num_bands ):
 					for adj_src_idx in range(0, num_adjoint_sources):
 						focal_data[ band_idx ].append(
@@ -571,7 +479,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				#
 				conjugate_weighting_wavelength = np.zeros( ( num_bands, 3, num_points_per_band ), dtype=np.complex )
 					
-				figure_of_merit_by_band = np.zeros( num_focal_spots )
+				figure_of_merit_by_band = np.zeros( num_bands )
 
 				correct_focal_by_wl = np.zeros( ( num_bands, num_points_per_band ) )
 				incorrect_focal_by_wl = np.zeros( ( num_bands, num_points_per_band ) )
@@ -638,9 +546,6 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				#
 				polarized_gradient = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
 				polarized_gradient_lsf = np.zeros(xy_polarized_gradients.shape, dtype=np.complex)
-
-				current_index = np.real( get_non_struct_data( design_index_monitor[ 'name' ], 'index_x' ) )
-				current_permittivity = np.sqrt( np.squeeze( current_index ) )
 
 				adjoint_e_fields_by_coord_and_focal = {}
 				for coord_idx in range( 0, len( affected_coords ) ):

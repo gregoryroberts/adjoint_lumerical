@@ -41,21 +41,28 @@ def upsample_nearest( density, upsample_shape ):
 # 	return downsampled_profile
 
 
-# def downsample_average( density, downsample_shape ):
-# 	assert ( density.shape[ 0 ] % downsample_shape[ 0 ] ) == 0, "Expected an even nearest upsampling"
-# 	assert ( density.shape[ 1 ] % downsample_shape[ 1 ] ) == 0, "Expected an even nearest upsampling"
+def downsample_average( density, downsample_shape ):
+	assert ( density.shape[ 0 ] % downsample_shape[ 0 ] ) == 0, "Expected an even average downsampling"
+	assert ( density.shape[ 1 ] % downsample_shape[ 1 ] ) == 0, "Expected an even average downsampling"
 
-# 	upsample_ratio = 1.0 * np.array( density.shape ) / np.array( density.shape[ 0 ] )
+	downsample_ratio = 1.0 * np.array( density.shape ) / np.array( downsample_shape )
 
-# 	downsampled_profile = np.zeros( downsampled_length )
+	downsampled = np.zeros( downsample_shape )
 
-# 	for idx in range( 0, downsampled_length ):
-# 		start_profile_idx = idx * downsample_ratio
-# 		end_profile_idx = start_profile_idx + downsample_ratio
+	for x in range( 0, downsample_shape[ 0 ] ):
+		start_x = int( x * downsample_ratio )
+		end_x = int( start_profile_idx + downsample_ratio )
 
-# 		downsampled_profile[ idx ] = np.mean( profile[ start_profile_idx : end_profile_idx ] )
+		for y in range( 0, downsample_shape[ 1 ] ):
+			start_y = int( y * downsample_ratio )
+			end_y = int( start_profile_idx + downsample_ratio )
 
-# 	return downsampled_profile
+			downsampled[ x, y ] = np.mean(
+				density[ start_x : end_x, start_y : end_y ]
+			)
+
+	return downsampled
+
 
 
 class WaterDetector( OptimizationState.OptimizationState ):
@@ -103,7 +110,10 @@ class WaterDetector( OptimizationState.OptimizationState ):
 
 
 	def update( self, gradient_real, graident_imag, gradient_real_lsf, gradient_imag_lsf, epoch, iteration ):
-		gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.design_width, self.design_height ] )
+		# gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.design_width, self.design_height ] )
+		# gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
+
+		gradient_real_interpolate = downsample_average( np.squeeze( gradient_real ), [ self.design_width, self.design_height ] )
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
 		scaled_gradient = gradient_real_interpolate / np.max( np.abs( gradient_real_interpolate ) )
