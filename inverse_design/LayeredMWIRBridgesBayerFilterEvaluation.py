@@ -162,7 +162,9 @@ transmission_monitors = []
 for adj_src in range(0, num_adjoint_sources):
 	transmission_monitor = fdtd_hook.addpower()
 	transmission_monitor['name'] = 'transmission_monitor_' + str(adj_src)
-	transmission_monitor['monitor type'] = 'point'
+	transmission_monitor['monitor type'] = '2D Z-normal'
+	transmission_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_monitor['y span'] = 0.5 * device_size_lateral_um * 1e-6
 	transmission_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
 	transmission_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
 	transmission_monitor['z'] = adjoint_vertical_um * 1e-6
