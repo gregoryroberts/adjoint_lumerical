@@ -118,7 +118,15 @@ class WaterDetector( OptimizationState.OptimizationState ):
 		# gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.design_width, self.design_height ] )
 		# gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
-		gradient_real_interpolate = downsample_average( np.squeeze( gradient_real ), [ self.design_width, self.design_height ] )
+		gradient_real_interpolate = np.squeeze( gradient_real )
+		gradient_real_interpolate = 0.25 * ( 
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 1 : gradient_real_interpolate.shape[ 1 ] ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 1 : gradient_real_interpolate.shape[ 1 ] ] +
+		)
+
+		gradient_real_interpolate = downsample_average( gradient_real_interpolate, [ self.design_width, self.design_height ] )
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
 		scaled_gradient = gradient_real_interpolate / np.max( np.abs( gradient_real_interpolate ) )
