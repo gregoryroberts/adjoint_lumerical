@@ -483,7 +483,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 		scaled_gradient = gradient_real_interpolate / max_abs_movement
 		# scaled_gradient = gradient_real_interpolate / np.max( np.abs( gradient_real_interpolate ) )
-		scaled_step_size = 0.05
+		scaled_step_size = 0.02
 		# scaled_step_size = 0.5
 		# scaled_step_size = 1.0
 
