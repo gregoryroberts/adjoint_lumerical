@@ -482,15 +482,15 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			downsampled_average_grad = np.zeros( len( get_profile ) )
 
-			for profile_idx in range( 0, len( get_profile ) ):
-				location = profile_idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
+			for idx in range( 0, len( get_profile ) ):
+				location = idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
 				lower = int( np.floor( location ) )
 				upper = np.maximum( int( np.ceil( location ) ), len( average_gradient ) - 1 )
 
 				lower_weight = upper - location
 				upper_weight = 1 - lower_weight
 
-				downsampled_average_grad[ profile_idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
+				downsampled_average_grad[ idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
 
 
 			# plt.plot( average_gradient )
@@ -518,21 +518,20 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			get_profile = self.layer_profiles[ profile_idx ]
 
-
 			profile_length = 1.0 * len( get_profile )
 			gradient_length = 1.0 * len( average_gradient )
 
 			downsampled_grad = np.zeros( len( get_profile ) )
 
-			for profile_idx in range( 0, len( get_profile ) ):
-				location = profile_idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
+			for idx in range( 0, len( get_profile ) ):
+				location = idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
 				lower = int( np.floor( location ) )
 				upper = np.maximum( int( np.ceil( location ) ), len( average_gradient ) - 1 )
 
 				lower_weight = upper - location
 				upper_weight = 1 - lower_weight
 
-				downsampled_grad[ profile_idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
+				downsampled_grad[ idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
 
 
 			# downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
