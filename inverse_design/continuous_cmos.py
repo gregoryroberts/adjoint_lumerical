@@ -453,14 +453,14 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		# plt.imshow( np.squeeze( gradient_real_interpolate ) )
 		# plt.show()
 
-		gradient_real_interpolate = 0.25 * ( 
-			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
-			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
-			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 1 : gradient_real_interpolate.shape[ 1 ] ] +
-			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 1 : gradient_real_interpolate.shape[ 1 ] ]
-		)
+		# gradient_real_interpolate = 0.25 * ( 
+		# 	gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+		# 	gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+		# 	gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 1 : gradient_real_interpolate.shape[ 1 ] ] +
+		# 	gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 1 : gradient_real_interpolate.shape[ 1 ] ]
+		# )
 
-		gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
+		# gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
 
