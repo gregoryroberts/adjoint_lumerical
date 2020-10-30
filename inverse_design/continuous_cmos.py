@@ -470,9 +470,26 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
 			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
 
-			average_gradient = np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 )
+			average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
 			# downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
-			downsampled_average_grad = average_gradient
+			# downsampled_average_grad = average_gradient
+
+
+			profile_length = 1.0 * len( get_profile )
+			gradient_length = 1.0 * len( average_gradient )
+
+			downsampled_average_grad = np.zeros( len( get_profile ) )
+
+			for profile_idx in range( 0, len( get_profile ) ):
+				location = profile_idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
+				lower = int( np.floor( location ) )
+				upper = np.maximum( int( np.ceil( location ) ), len( average_gradient ) - 1 )
+
+				lower_weight = upper - location
+				upper_weight = 1 - lower_weight
+
+				downsampled_average_grad[ profile_idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
+
 
 			# plt.plot( average_gradient )
 			# plt.show()
@@ -495,12 +512,29 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
 
-			average_gradient = np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 )
+			average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
 
 			get_profile = self.layer_profiles[ profile_idx ]
 
+
+			profile_length = 1.0 * len( get_profile )
+			gradient_length = 1.0 * len( average_gradient )
+
+			downsampled_grad = np.zeros( len( get_profile ) )
+
+			for profile_idx in range( 0, len( get_profile ) ):
+				location = profile_idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
+				lower = int( np.floor( location ) )
+				upper = np.maximum( int( np.ceil( location ) ), len( average_gradient ) - 1 )
+
+				lower_weight = upper - location
+				upper_weight = 1 - lower_weight
+
+				downsampled_grad[ profile_idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
+
+
 			# downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
-			downsampled_grad = average_gradient
+			# downsampled_grad = average_gradient
 
 			# plt.plot( scaled_step_size * downsampled_grad )
 			# plt.show()
