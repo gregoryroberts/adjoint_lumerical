@@ -470,6 +470,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
 			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
 
+			get_profile = self.layer_profiles[ profile_idx ]
+
 			average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
 			# downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 			# downsampled_average_grad = average_gradient
