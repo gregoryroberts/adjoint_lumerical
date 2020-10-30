@@ -498,7 +498,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			get_profile = self.layer_profiles[ profile_idx ]
 
-			downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
+			# downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
+			downsampled_grad = average_gradient
 
 			# plt.plot( scaled_step_size * downsampled_grad )
 			# plt.show()
