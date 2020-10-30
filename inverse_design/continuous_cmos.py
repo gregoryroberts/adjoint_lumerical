@@ -453,14 +453,14 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		# plt.imshow( np.squeeze( gradient_real_interpolate ) )
 		# plt.show()
 
-		# gradient_real_interpolate = 0.25 * ( 
-		# 	gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
-		# 	gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
-		# 	gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 1 : gradient_real_interpolate.shape[ 1 ] ] +
-		# 	gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 1 : gradient_real_interpolate.shape[ 1 ] ]
-		# )
+		gradient_real_interpolate = 0.25 * ( 
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 1 : gradient_real_interpolate.shape[ 1 ] ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 1 : gradient_real_interpolate.shape[ 1 ] ]
+		)
 
-		# gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
+		gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
 
@@ -473,24 +473,16 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_profile = self.layer_profiles[ profile_idx ]
 
 			average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
-			# downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
-			# downsampled_average_grad = average_gradient
+			downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
+			# fig, ax = plt.subplots(constrained_layout=True)
 
-			profile_length = 1.0 * len( get_profile )
-			gradient_length = 1.0 * len( average_gradient )
+			# ax.plot( downsampled_average_grad, color='g', linewidth=2 )
 
-			downsampled_average_grad = np.zeros( len( get_profile ) )
+			# secax = ax.twiny()
 
-			for idx in range( 0, len( get_profile ) ):
-				location = idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
-				lower = int( np.floor( location ) )
-				upper = np.maximum( int( np.ceil( location ) ), len( average_gradient ) - 1 )
-
-				lower_weight = upper - location
-				upper_weight = 1 - lower_weight
-
-				downsampled_average_grad[ idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
+			# secax.plot( average_gradient, color='r', linewidth=2, linestyle='--' )
+			# plt.show()
 
 
 			# plt.plot( average_gradient )
@@ -503,7 +495,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 		scaled_gradient = gradient_real_interpolate / max_abs_movement
 		# scaled_gradient = gradient_real_interpolate / np.max( np.abs( gradient_real_interpolate ) )
-		scaled_step_size = 0.02
+		scaled_step_size = 0.03
 		# scaled_step_size = 0.5
 		# scaled_step_size = 1.0
 
@@ -517,25 +509,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
 
 			get_profile = self.layer_profiles[ profile_idx ]
-
-			profile_length = 1.0 * len( get_profile )
-			gradient_length = 1.0 * len( average_gradient )
-
-			downsampled_grad = np.zeros( len( get_profile ) )
-
-			for idx in range( 0, len( get_profile ) ):
-				location = idx * ( gradient_length - 1.0 ) / ( profile_length - 1.0 )
-				lower = int( np.floor( location ) )
-				upper = np.maximum( int( np.ceil( location ) ), len( average_gradient ) - 1 )
-
-				lower_weight = upper - location
-				upper_weight = 1 - lower_weight
-
-				downsampled_grad[ idx ] = lower_weight * average_gradient[ lower ] + upper_weight * average_gradient[ upper ]
-
-
-			# downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
-			# downsampled_grad = average_gradient
+			downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
 			# plt.plot( scaled_step_size * downsampled_grad )
 			# plt.show()
