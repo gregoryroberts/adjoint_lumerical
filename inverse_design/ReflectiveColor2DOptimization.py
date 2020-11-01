@@ -137,7 +137,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_red_tio2_v23_reload"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v25_ez"#reload"
+projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez"#reload"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -549,7 +549,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # You likely should verify the gradient for when you do level set optimized devices!
 
 # num_iterations = 200
-num_iterations = 150
+num_iterations = 100
 
 np.random.seed( 923447 )
 np.random.seed( 344700 )
@@ -1700,7 +1700,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_0_redirect_si_10p8_red_tio2_v23_reload.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_9_redirect_si_10p8_red_tio2_v25_ez.npy')
 # plt.imshow( load_index )
 # plt.colorbar()
 # plt.show()
