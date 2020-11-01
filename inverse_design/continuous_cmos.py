@@ -443,6 +443,36 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		return ( total_size_violations > 0 )
 
 
+	def layer_gradients( self, gradient ):
+		gradient_real_interpolate = np.squeeze( gradient )
+
+		gradient_real_interpolate = 0.25 * ( 
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 0 : gradient_real_interpolate.shape[ 1 ] - 1 ] +
+			gradient_real_interpolate[ 0 : gradient_real_interpolate.shape[ 0 ] - 1, 1 : gradient_real_interpolate.shape[ 1 ] ] +
+			gradient_real_interpolate[ 1 : gradient_real_interpolate.shape[ 0 ], 1 : gradient_real_interpolate.shape[ 1 ] ]
+		)
+
+		gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
+		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
+
+		profile_gradients = []
+
+		for profile_idx in range( 0, len( self.layer_profiles ) ):
+			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
+			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
+
+			get_profile = self.layer_profiles[ profile_idx ]
+
+			average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
+			downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
+
+			profile_gradients.append( downsampled_average_grad.copy() )
+
+		return profile_gradients
+
+
+
 	def update( self, gradient_real, graident_imag, gradient_real_lsf, gradient_imag_lsf, epoch, iteration ):
 		# gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		# gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
@@ -495,7 +525,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 		scaled_gradient = gradient_real_interpolate / max_abs_movement
 		# scaled_gradient = gradient_real_interpolate / np.max( np.abs( gradient_real_interpolate ) )
-		scaled_step_size = 0.03
+		scaled_step_size = 0.05
 		# scaled_step_size = 0.5
 		# scaled_step_size = 1.0
 
@@ -505,6 +535,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
+			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
 
 			average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
 

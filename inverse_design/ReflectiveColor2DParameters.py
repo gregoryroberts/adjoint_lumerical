@@ -116,7 +116,8 @@ num_points_per_band = 10#10#15
 # band_weights = [ 0, 0, 1 ]
 # band_weights = [ 0, 1, 1 ]
 # pol_weights = [ 1, 1 ]
-pol_weights = [ 0, 1 ]
+# pol_weights = [ 0, 1 ]
+pol_weights = [ 1, 0 ]
 
 lambda_min_um = 0.5
 lambda_max_um = 0.75

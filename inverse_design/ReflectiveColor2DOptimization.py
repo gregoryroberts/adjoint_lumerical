@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from ReflectiveColor2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = False#True
 
 if run_on_cluster:
 	import imp
@@ -135,9 +135,9 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-should_reload = True#False
-projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_red_tio2_v23"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v23_reload"
+should_reload = False
+# projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_red_tio2_v23_reload"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_tio2_v25_ez"#reload"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -549,7 +549,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # You likely should verify the gradient for when you do level set optimized devices!
 
 # num_iterations = 200
-num_iterations = 100
+num_iterations = 150
 
 np.random.seed( 923447 )
 np.random.seed( 344700 )
@@ -596,6 +596,9 @@ else:
 	# my_optimization_state.init_profiles_with_density( load_density )
 
 	my_optimization_state.uniform_layer_profiles( 0.5 )
+
+	# fake_grad = np.random.random( ( device_voxels_lateral, designable_device_voxels_vertical ) )
+	# my_optimization_state.update( fake_grad, fake_grad, fake_grad, fake_grad, 0, 0 )
 	# my_optimization_state.randomize_layer_profiles( 0.5, 0.3 )
 	# my_optimization_state.init_uniform( 0.5 )
 
@@ -997,6 +1000,7 @@ def fom_and_gradient_with_rotations( pol_idx ):
 	# grad_total = ( grad_plus + grad_minus )
 
 	fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
+	# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
 	fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
 
 	fom_total = fom_direct * fom_redirect
@@ -1007,6 +1011,11 @@ def fom_and_gradient_with_rotations( pol_idx ):
 		fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
 		fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
 	)
+
+	# grad_total = (
+	# 	fom_redirect * softplus_prime( fom_plus_rotation_direct - fom_normal_minus_rotation_direct ) * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
+	# 	fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
+	# )
 
 
 	# grad_total = (
@@ -1024,23 +1033,24 @@ def fom_with_rotations( pol_idx ):
 		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
 	)
 
-	fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct, grad_normal_minus_rotation_redirect, grad_normal_minus_rotation_direct = fom_and_gradient(
+	fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct = fom(
 		pol_idx, 0, #-device_rotation_angle_radians,
 		minus_redirect_weights, minus_direct_weights,
-		adjoint_sources_reflection_angled_minus[ pol_idx ], mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
-		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
+		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
 	)
 
-	fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct, grad_normal_plus_rotation_redirect, grad_normal_plus_rotation_direct = fom_and_gradient(
+	fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct = fom(
 		pol_idx, 0, #-device_rotation_angle_radians,
 		minus_redirect_weights, minus_direct_weights,
-		adjoint_sources_reflection_angled_plus[ pol_idx ], mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
-		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
+		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
 	)
 
 	# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
 
 	fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
+	# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
 	fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
 
 	fom_total = fom_direct * fom_redirect
@@ -1080,6 +1090,29 @@ def compute_gradient( device_index, performance_weight_by_pol=False ):
 		grad_total += performance_weights[ pol_idx ] * pol_weights[ pol_idx ] * grad_by_pol[ pol_idx ]
 
 	return fom_total, grad_total
+
+def compute_fom( device_index ):
+	inflate_index = np.zeros( ( device_index.shape[ 0 ], device_index.shape[ 1 ], 2 ), dtype=np.complex )
+	inflate_index[ :, :, 0 ] = device_index
+	inflate_index[ :, :, 1 ] = device_index
+
+	fdtd_hook.switchtolayout()
+	fdtd_hook.select( device_and_backgrond_group['name'] + "::device_import" )
+	fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
+
+	fom_by_pol = []
+	for pol_idx in range( 0, num_polarizations ):
+		fom = fom_with_rotations( pol_idx )
+
+		fom_by_pol.append( fom )
+
+	fom_by_pol = np.array( fom_by_pol )
+	fom_total = 0.0
+
+	for pol_idx in range( 0, num_polarizations ):
+		fom_total += pol_weights[ pol_idx ] * fom_by_pol[ pol_idx ]
+
+	return fom_total
 
 def check_gradient_full( pol_idx ):
 	from scipy.ndimage import gaussian_filter
@@ -1667,12 +1700,50 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_tio2_v23.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_0_redirect_si_10p8_red_tio2_v23_reload.npy')
 # plt.imshow( load_index )
 # plt.colorbar()
 # plt.show()
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
+# bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.6 * ( 2.1 - 1.0) )
 # compute_gradient( load_index )
+# compute_gradient( bin_index )
+
+# profile_0 = my_optimization_state.layer_profiles[ 0 ].copy()
+# start = int( 0.25 * len( profile_0 ) )
+# end = start + 10#20
+
+# fom0, gradient = compute_gradient( my_optimization_state.assemble_index() )
+
+# print( 'init fom = ' + str( fom0 ) )
+
+# profile_grads = my_optimization_state.layer_gradients( gradient )
+
+# profile_0_grad = profile_grads[ 0 ]
+
+# fd_profile_0_grad = np.zeros( len( profile_0 ) )
+
+# h = 1e-3
+
+# for idx in range( start, end ):
+# 	print( 'working on fd number ' + str( idx - start ) )
+# 	copy_profile = profile_0.copy()
+
+# 	copy_profile[ idx ] += h
+
+# 	my_optimization_state.layer_profiles[ 0 ] = copy_profile
+
+# 	fom_up = compute_fom( my_optimization_state.assemble_index() )
+
+# 	fd_profile_0_grad[ idx ] = ( fom_up - fom0 ) / h
+
+# import matplotlib.pyplot as plt
+# plt.plot( fd_profile_0_grad[ start : end ] / np.max( np.abs( fd_profile_0_grad[ start : end ] )), color='r', linewidth=2 )
+# plt.plot( profile_0_grad[ start : end ] / np.max( np.abs( profile_0_grad[ start : end ])), color='g', linestyle='--', linewidth=2 )
+# plt.plot( -profile_0_grad[ start : end ] / np.max( np.abs( profile_0_grad[ start : end ])), color='b', linestyle='--', linewidth=2 )
+# plt.show()
+
+
 
 # fdtd_hook.run()
 
