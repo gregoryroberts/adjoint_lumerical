@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from ReflectiveColor2DParameters import *
 
-run_on_cluster = False#True
+run_on_cluster = True
 
 if run_on_cluster:
 	import imp
