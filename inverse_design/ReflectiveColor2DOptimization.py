@@ -35,6 +35,10 @@ def softplus( x_in ):
 def softplus_prime( x_in ):
 	return ( 1. / ( 1 + np.exp( -x_in ) ) )
 
+def compute_binarization( input_variable, set_point=0.5 ):
+	total_shape = np.product( input_variable.shape )
+	return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - set_point )**2 ) )
+
 
 # def softplus( x_in ):
 # 	k = 10
@@ -138,7 +142,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = True#False
 projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_tio2_v25_ez"
-projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_lsf"
+projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -557,31 +561,31 @@ np.random.seed( 923447 )
 np.random.seed( 344700 )
 
 
-my_optimization_state = level_set_cmos.LevelSetCMOS(
-	[ min_real_permittivity, max_real_permittivity ],
-	lsf_mesh_spacing_um,
-	designable_device_vertical_minimum_um,
-	device_size_lateral_um,
-	feature_size_voxels_by_profiles,
-	device_layer_thicknesses_um,
-	device_spacer_thicknesses_um,
-	num_iterations,
-	1,
-	"level_set_optimize",
-	device_lateral_background_density )
-
-# my_optimization_state = continuous_cmos.ContinuousCMOS(
+# my_optimization_state = level_set_cmos.LevelSetCMOS(
 # 	[ min_real_permittivity, max_real_permittivity ],
 # 	lsf_mesh_spacing_um,
 # 	designable_device_vertical_minimum_um,
 # 	device_size_lateral_um,
-# 	feature_size_um_by_profiles,
+# 	feature_size_voxels_by_profiles,
 # 	device_layer_thicknesses_um,
 # 	device_spacer_thicknesses_um,
 # 	num_iterations,
 # 	1,
 # 	"level_set_optimize",
 # 	device_lateral_background_density )
+
+my_optimization_state = continuous_cmos.ContinuousCMOS(
+	[ min_real_permittivity, max_real_permittivity ],
+	lsf_mesh_spacing_um,
+	designable_device_vertical_minimum_um,
+	device_size_lateral_um,
+	feature_size_um_by_profiles,
+	device_layer_thicknesses_um,
+	device_spacer_thicknesses_um,
+	num_iterations,
+	1,
+	"level_set_optimize",
+	device_lateral_background_density )
 
 # my_optimization_state = water_detector.WaterDetector(
 # 	[ min_real_permittivity, max_real_permittivity ],
@@ -1498,12 +1502,16 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	for iteration in range( 0, num_iterations ):
 		cur_index = parent_object.assemble_index( 0 )
 
+		cur_density = ( load_index - np.sqrt( min_real_permittivity ) ) / ( np.sqrt( max_real_permittivity ) - np.sqrt( min_real_permittivity ) )
+		cur_binarization = compute_binarization( cur_density )
+
 		fom, gradient = compute_gradient( cur_index )
 
 		print( "Current fom = " + str( fom ) )
 
 		log_file = open(projects_directory_location + "/log.txt", 'a')
 		log_file.write( "Current fom = " + str( fom ) + "\n" )
+		log_file.write( "Current binarizatino = " + str( cur_binarization ) + "\n" )
 		log_file.close()
 
 
@@ -1722,6 +1730,8 @@ fdtd_hook.set('enabled', 1)
 # plt.show()
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
 # bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.5 * ( 2.1 - 1.0) )
+
+
 # compute_gradient( load_index )
 # compute_gradient( bin_index )
 
