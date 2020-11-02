@@ -566,7 +566,7 @@ my_optimization_state = level_set_cmos.LevelSetCMOS(
 	device_layer_thicknesses_um,
 	device_spacer_thicknesses_um,
 	num_iterations,
-	0,
+	1,
 	"level_set_optimize",
 	device_lateral_background_density )
 
