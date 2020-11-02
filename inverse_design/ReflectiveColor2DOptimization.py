@@ -562,7 +562,7 @@ my_optimization_state = level_set_cmos.LevelSetCMOS(
 	lsf_mesh_spacing_um,
 	designable_device_vertical_minimum_um,
 	device_size_lateral_um,
-	feature_size_um_by_profiles,
+	feature_size_voxels_by_profiles,
 	device_layer_thicknesses_um,
 	device_spacer_thicknesses_um,
 	num_iterations,
