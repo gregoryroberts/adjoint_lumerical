@@ -316,7 +316,7 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 					( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * self.assemble_density() )
 
 	def assemble_density( self ):
-		device_density = np.zeros( ( self.opt_width_num_voxels, self.opt_vertical_num_voxels ) )
+		device_density = np.ones( ( self.opt_width_num_voxels, self.opt_vertical_num_voxels ) )
 
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
@@ -429,7 +429,7 @@ class LevelSetCMOS( OptimizationState.OptimizationState ):
 			# This step size is tricky!
 			# get_lsf_layer.update( expand_velocity, 5 )
 			get_lsf_layer.update( expand_velocity, 2 )
-			# get_lsf_layer.update( expand_velocity, 1 )
+			# get_lsf_layer.update( expand_velocity, 0.1 )
 			get_lsf_layer.signed_distance_reinitialization()
 
 		# return

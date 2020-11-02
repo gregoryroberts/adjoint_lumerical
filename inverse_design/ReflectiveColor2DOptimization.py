@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+import level_set_cmos
 import continuous_cmos
 import water_detector
 
@@ -135,9 +136,9 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-should_reload = False
-# projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_red_tio2_v23_reload"
-projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez"#reload"
+should_reload = True#False
+projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_tio2_v25_ez"
+projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_lsf"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -153,6 +154,7 @@ shutil.copy2(python_src_directory + "/ReflectiveColor2DParameters.py", projects_
 shutil.copy2(python_src_directory + "/ReflectiveColor2DOptimization.py", projects_directory_location + "/ReflectiveColor2DOptimization.py")
 shutil.copy2(python_src_directory + "/continuous_cmos.py", projects_directory_location + "/continuous_cmos.py")
 shutil.copy2(python_src_directory + "/water_detector.py", projects_directory_location + "/water_detector.py")
+shutil.copy2(python_src_directory + "/level_set_cmos.py", projects_directory_location + "/level_set_cmos.py")
 
 
 
@@ -554,7 +556,8 @@ num_iterations = 100
 np.random.seed( 923447 )
 np.random.seed( 344700 )
 
-my_optimization_state = continuous_cmos.ContinuousCMOS(
+
+my_optimization_state = level_set_cmos.LevelSetCMOS(
 	[ min_real_permittivity, max_real_permittivity ],
 	lsf_mesh_spacing_um,
 	designable_device_vertical_minimum_um,
@@ -563,9 +566,22 @@ my_optimization_state = continuous_cmos.ContinuousCMOS(
 	device_layer_thicknesses_um,
 	device_spacer_thicknesses_um,
 	num_iterations,
-	1,
+	0,
 	"level_set_optimize",
 	device_lateral_background_density )
+
+# my_optimization_state = continuous_cmos.ContinuousCMOS(
+# 	[ min_real_permittivity, max_real_permittivity ],
+# 	lsf_mesh_spacing_um,
+# 	designable_device_vertical_minimum_um,
+# 	device_size_lateral_um,
+# 	feature_size_um_by_profiles,
+# 	device_layer_thicknesses_um,
+# 	device_spacer_thicknesses_um,
+# 	num_iterations,
+# 	1,
+# 	"level_set_optimize",
+# 	device_lateral_background_density )
 
 # my_optimization_state = water_detector.WaterDetector(
 # 	[ min_real_permittivity, max_real_permittivity ],
@@ -1700,12 +1716,12 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_9_redirect_si_10p8_red_tio2_v25_ez.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_green_tio2_v25_ez.npy')
 # plt.imshow( load_index )
 # plt.colorbar()
 # plt.show()
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
-# bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.6 * ( 2.1 - 1.0) )
+# bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.5 * ( 2.1 - 1.0) )
 # compute_gradient( load_index )
 # compute_gradient( bin_index )
 
