@@ -1502,7 +1502,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	for iteration in range( 0, num_iterations ):
 		cur_index = parent_object.assemble_index( iteration )
 
-		cur_density = ( load_index - np.sqrt( min_real_permittivity ) ) / ( np.sqrt( max_real_permittivity ) - np.sqrt( min_real_permittivity ) )
+		cur_density = ( cur_index - np.sqrt( min_real_permittivity ) ) / ( np.sqrt( max_real_permittivity ) - np.sqrt( min_real_permittivity ) )
 		cur_binarization = compute_binarization( cur_density )
 
 		fom, gradient = compute_gradient( cur_index )
@@ -1536,6 +1536,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 		if ( iteration % 10 ) == 0:
 			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(iteration) )
+			np.save( projects_directory_location + '/density_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(-1) )
 
 	return parent_object, fom_track
 
@@ -1782,4 +1783,5 @@ for epoch_idx in range( 0, 1 ):
 	my_optimization_state, local_fom = optimize_parent_locally( my_optimization_state, num_iterations )
 
 	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index(num_iterations - 1) )
+	np.save( projects_directory_location + '/final_density.npy', my_optimization_state.assemble_index(-1) )
 	np.save( projects_directory_location + '/figure_of_merit.npy', local_fom )
