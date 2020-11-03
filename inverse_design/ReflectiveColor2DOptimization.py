@@ -141,8 +141,8 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 should_reload = True#False
-projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig"
-projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig2"
+projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig2"
+projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig2_lsf"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -562,31 +562,31 @@ np.random.seed( 923447 )
 np.random.seed( 344700 )
 
 
-# my_optimization_state = level_set_cmos.LevelSetCMOS(
-# 	[ min_real_permittivity, max_real_permittivity ],
-# 	lsf_mesh_spacing_um,
-# 	designable_device_vertical_minimum_um,
-# 	device_size_lateral_um,
-# 	feature_size_voxels_by_profiles,
-# 	device_layer_thicknesses_um,
-# 	device_spacer_thicknesses_um,
-# 	num_iterations,
-# 	1,
-# 	"level_set_optimize",
-# 	device_lateral_background_density )
-
-my_optimization_state = continuous_cmos.ContinuousCMOS(
+my_optimization_state = level_set_cmos.LevelSetCMOS(
 	[ min_real_permittivity, max_real_permittivity ],
 	lsf_mesh_spacing_um,
 	designable_device_vertical_minimum_um,
 	device_size_lateral_um,
-	feature_size_um_by_profiles,
+	feature_size_voxels_by_profiles,
 	device_layer_thicknesses_um,
 	device_spacer_thicknesses_um,
 	num_iterations,
 	1,
 	"level_set_optimize",
 	device_lateral_background_density )
+
+# my_optimization_state = continuous_cmos.ContinuousCMOS(
+# 	[ min_real_permittivity, max_real_permittivity ],
+# 	lsf_mesh_spacing_um,
+# 	designable_device_vertical_minimum_um,
+# 	device_size_lateral_um,
+# 	feature_size_um_by_profiles,
+# 	device_layer_thicknesses_um,
+# 	device_spacer_thicknesses_um,
+# 	num_iterations,
+# 	1,
+# 	"level_set_optimize",
+# 	device_lateral_background_density )
 
 # my_optimization_state = water_detector.WaterDetector(
 # 	[ min_real_permittivity, max_real_permittivity ],
@@ -600,7 +600,8 @@ my_optimization_state = continuous_cmos.ContinuousCMOS(
 
 
 if should_reload:
-	old_index = np.load( projects_directory_reload + "/final_density.npy" )
+	# old_index = np.load( projects_directory_reload + "/final_density.npy" )
+	old_index = np.load( projects_directory_reload + "/final_device.npy" )
 	old_perm = old_index**2
 
 	old_density = ( old_perm - min_real_permittivity ) / ( max_real_permittivity - min_real_permittivity )
@@ -1731,7 +1732,7 @@ fdtd_hook.set('enabled', 1)
 # plt.colorbar()
 # plt.show()
 # bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.25 )
-# bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.5 * ( 2.1 - 1.0) )
+# bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.7 * ( 2.1 - 1.0) )
 
 
 # compute_gradient( load_index )
