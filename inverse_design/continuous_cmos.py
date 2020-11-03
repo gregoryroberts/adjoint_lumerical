@@ -387,7 +387,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_profile = self.layer_profiles[ profile_idx ]
 			upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
 
-			upsampled_profile = sigmoid_obj.forward( upsampled_profile )
+			if iteration >= 0:
+				upsampled_profile = sigmoid_obj.forward( upsampled_profile )
 
 			for internal_idx in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
 				device_density[ :, get_start + internal_idx ] = upsampled_profile
