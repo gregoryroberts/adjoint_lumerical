@@ -601,7 +601,8 @@ my_optimization_state = level_set_cmos.LevelSetCMOS(
 
 if should_reload:
 	# old_index = np.load( projects_directory_reload + "/final_density.npy" )
-	old_index = np.load( projects_directory_reload + "/final_device.npy" )
+	# old_index = np.load( projects_directory_reload + "/final_device.npy" )
+	old_index = np.load( projects_directory_reload + "/device_14.npy" )
 	old_perm = old_index**2
 
 	old_density = ( old_perm - min_real_permittivity ) / ( max_real_permittivity - min_real_permittivity )
