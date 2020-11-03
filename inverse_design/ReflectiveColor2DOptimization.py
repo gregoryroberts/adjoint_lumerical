@@ -623,7 +623,7 @@ else:
 	# my_optimization_state.init_uniform( 0.5 )
 
 
-get_index = my_optimization_state.assemble_index()
+get_index = my_optimization_state.assemble_index(0)
 device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
 device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
 device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
@@ -1500,7 +1500,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	gradients_imag_lsf = np.zeros( field_shape_with_devices )
 
 	for iteration in range( 0, num_iterations ):
-		cur_index = parent_object.assemble_index( 0 )
+		cur_index = parent_object.assemble_index( iteration )
 
 		cur_density = ( load_index - np.sqrt( min_real_permittivity ) ) / ( np.sqrt( max_real_permittivity ) - np.sqrt( min_real_permittivity ) )
 		cur_binarization = compute_binarization( cur_density )
@@ -1535,7 +1535,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 		parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
 
 		if ( iteration % 10 ) == 0:
-			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index() )
+			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(iteration) )
 
 	return parent_object, fom_track
 
@@ -1781,5 +1781,5 @@ for epoch_idx in range( 0, 1 ):
 
 	my_optimization_state, local_fom = optimize_parent_locally( my_optimization_state, num_iterations )
 
-	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index() )
+	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index(num_iterations - 1) )
 	np.save( projects_directory_location + '/figure_of_merit.npy', local_fom )
