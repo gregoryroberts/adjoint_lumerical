@@ -4,6 +4,8 @@ from LevelSet import LevelSet
 import OptimizationState
 from scipy import ndimage
 
+import sigmoid
+
 
 def upsample_nearest( profile, upsampled_length ):
 	cur_length = len( profile )
@@ -368,12 +370,15 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			self.level_sets[ profile_idx ] = LevelSet.LevelSet( layer_density.shape, self.level_set_boundary_smoothing, 4 )
 			self.level_sets[ profile_idx ].init_with_density( layer_density )
 
-	def assemble_index( self, device_idx=1 ):
+	def assemble_index( self, iteration, device_idx=1 ):
 		return np.sqrt(
 					self.permittivity_bounds[ 0 ] +
-					( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * self.assemble_density() )
+					( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * self.assemble_density( iteration ) )
 
-	def assemble_density( self ):
+	def assemble_density( self, iteration ):
+		sigmoid_strength = 2**( iteration / 25.0 )
+		sigmoid_obj = sigmoid.Sigmoid( sigmoid_strength, 0.5 )
+
 		device_density = np.ones( ( self.opt_width_num_voxels, self.opt_vertical_num_voxels ) )
 
 		for profile_idx in range( 0, len( self.layer_profiles ) ):
@@ -381,6 +386,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			get_profile = self.layer_profiles[ profile_idx ]
 			upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
+
+			upsampled_profile = sigmoid_obj.forward( upsampled_profile )
 
 			for internal_idx in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
 				device_density[ :, get_start + internal_idx ] = upsampled_profile
@@ -493,6 +500,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
+		sigmoid_strength = 2**( iteration / 25.0 )
+		sigmoid_obj = sigmoid.Sigmoid( sigmoid_strength, 0.5 )
 
 		max_abs_movement = 0
 		# avg_movement = 0
@@ -502,7 +511,15 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			get_profile = self.layer_profiles[ profile_idx ]
 
-			average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
+			upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
+			upsampled_profile_sig = sigmoid_obj.forward( upsampled_profile )
+
+			sigmoid_grad = np.zeros( gradient_real_interpolate[ :, get_start : get_end ].shape )
+			for sublayer in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
+				sigmoid_grad[ :, sublayer ] = sigmoid_obj.backpropagate( gradient_real_interpolate[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
+
+			# average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
+			average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
 			downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
 			# fig, ax = plt.subplots(constrained_layout=True)
@@ -537,7 +554,17 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
 			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
 
-			average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
+			upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
+			upsampled_profile_sig = sigmoid_obj.forward( upsampled_profile )
+
+			sigmoid_grad = np.zeros( scaled_gradient[ :, get_start : get_end ].shape )
+			for sublayer in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
+				sigmoid_grad[ :, sublayer ] = sigmoid_obj.backpropagate( scaled_gradient[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
+
+
+			average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
+
+			# average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
 
 			get_profile = self.layer_profiles[ profile_idx ]
 			downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
