@@ -517,7 +517,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			sigmoid_grad = np.zeros( gradient_real_interpolate[ :, get_start : get_end ].shape )
 			for sublayer in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
-				sigmoid_grad[ :, sublayer ] = sigmoid_obj.backpropagate( gradient_real_interpolate[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
+				sigmoid_grad[ :, sublayer ] = sigmoid_obj.chain_rule( gradient_real_interpolate[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
 
 			# average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
 			average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
@@ -560,7 +560,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			sigmoid_grad = np.zeros( scaled_gradient[ :, get_start : get_end ].shape )
 			for sublayer in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
-				sigmoid_grad[ :, sublayer ] = sigmoid_obj.backpropagate( scaled_gradient[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
+				sigmoid_grad[ :, sublayer ] = sigmoid_obj.chain_rule( scaled_gradient[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
 
 
 			average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
