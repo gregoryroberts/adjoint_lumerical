@@ -141,8 +141,8 @@ if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
 should_reload = True#False
-projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_tio2_v25_ez"
-projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig"
+projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig"
+projects_directory_location += "/" + project_name + "_continuous_reflective_green_tio2_v25_ez_sig2"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -555,7 +555,8 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # You likely should verify the gradient for when you do level set optimized devices!
 
 # num_iterations = 200
-num_iterations = 100
+num_iterations = 150
+start_iter = 100
 
 np.random.seed( 923447 )
 np.random.seed( 344700 )
@@ -599,7 +600,7 @@ my_optimization_state = continuous_cmos.ContinuousCMOS(
 
 
 if should_reload:
-	old_index = np.load( projects_directory_reload + "/final_device.npy" )
+	old_index = np.load( projects_directory_reload + "/final_density.npy" )
 	old_perm = old_index**2
 
 	old_density = ( old_perm - min_real_permittivity ) / ( max_real_permittivity - min_real_permittivity )
@@ -1499,7 +1500,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	gradients_real_lsf = np.zeros( field_shape_with_devices )
 	gradients_imag_lsf = np.zeros( field_shape_with_devices )
 
-	for iteration in range( 0, num_iterations ):
+	for iteration in range( start_iter, num_iterations ):
 		cur_index = parent_object.assemble_index( iteration )
 
 		cur_density = ( cur_index - np.sqrt( min_real_permittivity ) ) / ( np.sqrt( max_real_permittivity ) - np.sqrt( min_real_permittivity ) )
@@ -1511,7 +1512,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 		log_file = open(projects_directory_location + "/log.txt", 'a')
 		log_file.write( "Current fom = " + str( fom ) + "\n" )
-		log_file.write( "Current binarizatino = " + str( cur_binarization ) + "\n" )
+		log_file.write( "Current binarization = " + str( cur_binarization ) + "\n\n" )
 		log_file.close()
 
 
@@ -1725,7 +1726,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_green_tio2_v25_ez.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_green_tio2_v25_ez_sig.npy')
 # plt.imshow( load_index )
 # plt.colorbar()
 # plt.show()
