@@ -6,7 +6,7 @@ from scipy import ndimage
 
 import sigmoid
 
-do_sigmoid = False
+do_sigmoid = True#False
 
 
 def upsample_nearest( profile, upsampled_length ):
@@ -378,7 +378,11 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 					( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * self.assemble_density( iteration ) )
 
 	def assemble_density( self, iteration ):
-		sigmoid_strength = 2**( iteration / 25.0 )
+		# sigmoid_strength = 2**( iteration / 25.0 )
+
+		sigmoid_strength_exp = -2 + int( iteration / 15.0 )
+		sigmoid_strength = 2**( sigmoid_strength_exp )
+
 		sigmoid_obj = sigmoid.Sigmoid( sigmoid_strength, 0.5 )
 
 		device_density = np.ones( ( self.opt_width_num_voxels, self.opt_vertical_num_voxels ) )
@@ -503,7 +507,10 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		gradient_real_interpolate = upsample_nearest_2d( gradient_real_interpolate, [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
-		sigmoid_strength = 2**( iteration / 25.0 )
+		# sigmoid_strength = 2**( iteration / 25.0 )
+		sigmoid_strength_exp = -2 + int( iteration / 15.0 )
+		sigmoid_strength = 2**( sigmoid_strength_exp )
+
 		sigmoid_obj = sigmoid.Sigmoid( sigmoid_strength, 0.5 )
 
 		max_abs_movement = 0
