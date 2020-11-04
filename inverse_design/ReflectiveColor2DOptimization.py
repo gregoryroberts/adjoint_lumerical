@@ -600,14 +600,17 @@ my_optimization_state = continuous_cmos.ContinuousCMOS(
 
 
 if should_reload:
-	old_index = np.load( projects_directory_reload + "/final_density.npy" )
-	# old_index = np.load( projects_directory_reload + "/final_device.npy" )
+	# old_index = np.load( '/Users/gregory/Downloads/density_final_redirect_si_10p8_green_sio2_v26_ez.npy' )
+	# old_index = np.load( projects_directory_reload + "/final_density.npy" )
+	old_index = np.load( projects_directory_reload + "/final_device.npy" )
 	# old_index = np.load( projects_directory_reload + "/device_14.npy" )
 	old_perm = old_index**2
 
 	old_density = ( old_perm - min_real_permittivity ) / ( max_real_permittivity - min_real_permittivity )
 
+
 	my_optimization_state.init_profiles_with_density( old_density )
+
 else:
 
 	# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_red_tio2_v21.npy')
@@ -993,7 +996,7 @@ def fom_and_gradient(
 	return fom_redirect, fom_direct, adj_grad_redirect, adj_grad_direct
 
 
-no_reflect_normal = False
+no_reflect_normal = True#False
 
 def fom_and_gradient_with_rotations( pol_idx ):
 
