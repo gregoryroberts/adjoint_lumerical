@@ -1049,7 +1049,7 @@ def fom_and_gradient_with_rotations( pol_idx ):
 
 		fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
 		# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
-		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_plus_rotation_redirect )
+		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
 
 		fom_total = fom_direct * fom_redirect
 
@@ -1057,18 +1057,19 @@ def fom_and_gradient_with_rotations( pol_idx ):
 
 		grad_total = (
 			fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
-			fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_plus_rotation_redirect )
+			fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
 		)
+
 	else:
 
 		fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
-		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
+		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_plus_rotation_redirect )
 
 		fom_total = fom_direct * fom_redirect
 
 		grad_total = (
 			fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
-			fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
+			fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_plus_rotation_redirect )
 		)
 
 	# grad_total = (
