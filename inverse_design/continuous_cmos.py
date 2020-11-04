@@ -6,7 +6,7 @@ from scipy import ndimage
 
 import sigmoid
 
-do_sigmoid = False
+do_sigmoid = True#False
 
 
 def upsample_nearest( profile, upsampled_length ):
