@@ -6,6 +6,8 @@ from scipy import ndimage
 
 import sigmoid
 
+do_sigmoid = False
+
 
 def upsample_nearest( profile, upsampled_length ):
 	cur_length = len( profile )
@@ -387,7 +389,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_profile = self.layer_profiles[ profile_idx ]
 			upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
 
-			if iteration >= 0:
+			if ( iteration >= 0 ) and do_sigmoid:
 				upsampled_profile = sigmoid_obj.forward( upsampled_profile )
 
 			for internal_idx in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
@@ -519,8 +521,11 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			for sublayer in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
 				sigmoid_grad[ :, sublayer ] = sigmoid_obj.chain_rule( gradient_real_interpolate[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
 
-			# average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
-			average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
+
+			average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
+			if do_sigmoid:
+				average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
+
 			downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
 			# fig, ax = plt.subplots(constrained_layout=True)
@@ -563,9 +568,9 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 				sigmoid_grad[ :, sublayer ] = sigmoid_obj.chain_rule( scaled_gradient[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
 
 
-			average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
-
-			# average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
+			average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
+			if do_sigmoid:
+				average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
 
 			get_profile = self.layer_profiles[ profile_idx ]
 			downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
