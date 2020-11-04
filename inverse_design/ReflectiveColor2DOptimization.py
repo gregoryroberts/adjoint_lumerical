@@ -142,7 +142,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False#True#False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_sio2_v27"
-projects_directory_location += "/" + project_name + "_continuous_reflective_green_sio2_v29"
+projects_directory_location += "/" + project_name + "_continuous_reflective_green_sio2_v28"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -514,13 +514,13 @@ elongations_right_um = [ 0, 1 ]
 # 	side_blocks.append( side_block )
 
 
-# bottom_silicon = fdtd_hook.addrect()
-# bottom_silicon['name'] = 'bottom_silicon'
-# bottom_silicon['y min'] = fdtd_region_minimum_vertical_um * 1e-6
-# bottom_silicon['y max'] = designable_device_vertical_minimum_um * 1e-6
-# bottom_silicon['x span'] = 1.5 * fdtd_region_size_lateral_um * 1e-6
-# bottom_silicon['material'] = 'Si (Silicon) - Palik'
-# fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
+bottom_silicon = fdtd_hook.addrect()
+bottom_silicon['name'] = 'bottom_silicon'
+bottom_silicon['y min'] = fdtd_region_minimum_vertical_um * 1e-6
+bottom_silicon['y max'] = designable_device_vertical_minimum_um * 1e-6
+bottom_silicon['x span'] = 1.5 * fdtd_region_size_lateral_um * 1e-6
+bottom_silicon['material'] = 'Si (Silicon) - Palik'
+fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
 
 
 gaussian_normalization = np.zeros( num_points_per_band )
