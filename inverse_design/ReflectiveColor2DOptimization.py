@@ -140,9 +140,9 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-should_reload = True#False
-projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_sio2_v27"
-projects_directory_location += "/" + project_name + "_continuous_reflective_green_sio2_v27_sig"
+should_reload = False#True#False
+# projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_sio2_v27"
+projects_directory_location += "/" + project_name + "_continuous_reflective_green_sio2_v28"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -514,13 +514,13 @@ elongations_right_um = [ 0, 1 ]
 # 	side_blocks.append( side_block )
 
 
-# bottom_silicon = fdtd_hook.addrect()
-# bottom_silicon['name'] = 'bottom_silicon'
-# bottom_silicon['y min'] = fdtd_region_minimum_vertical_um * 1e-6
-# bottom_silicon['y max'] = designable_device_vertical_minimum_um * 1e-6
-# bottom_silicon['x span'] = 1.5 * fdtd_region_size_lateral_um * 1e-6
-# bottom_silicon['material'] = 'Si (Silicon) - Palik'
-# fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
+bottom_silicon = fdtd_hook.addrect()
+bottom_silicon['name'] = 'bottom_silicon'
+bottom_silicon['y min'] = fdtd_region_minimum_vertical_um * 1e-6
+bottom_silicon['y max'] = designable_device_vertical_minimum_um * 1e-6
+bottom_silicon['x span'] = 1.5 * fdtd_region_size_lateral_um * 1e-6
+bottom_silicon['material'] = 'Si (Silicon) - Palik'
+fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
 
 
 gaussian_normalization = np.zeros( num_points_per_band )
@@ -992,6 +992,9 @@ def fom_and_gradient(
 
 	return fom_redirect, fom_direct, adj_grad_redirect, adj_grad_direct
 
+
+no_reflect_normal = False
+
 def fom_and_gradient_with_rotations( pol_idx ):
 
 	fom_plus_rotation_redirect, fom_plus_rotation_direct, grad_plus_rotation_redirect, grad_plus_rotation_direct = fom_and_gradient(
@@ -1001,19 +1004,39 @@ def fom_and_gradient_with_rotations( pol_idx ):
 		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
 	)
 
-	fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct, grad_normal_minus_rotation_redirect, grad_normal_minus_rotation_direct = fom_and_gradient(
-		pol_idx, 0, #-device_rotation_angle_radians,
-		minus_redirect_weights, minus_direct_weights,
-		adjoint_sources_reflection_angled_minus[ pol_idx ], mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
-		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
-	)
+	if no_reflect_normal:
 
-	fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct, grad_normal_plus_rotation_redirect, grad_normal_plus_rotation_direct = fom_and_gradient(
-		pol_idx, 0, #-device_rotation_angle_radians,
-		minus_redirect_weights, minus_direct_weights,
-		adjoint_sources_reflection_angled_plus[ pol_idx ], mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
-		adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
-	)
+		fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct, grad_normal_minus_rotation_redirect, grad_normal_minus_rotation_direct = fom_and_gradient(
+			pol_idx, 0, #-device_rotation_angle_radians,
+			minus_redirect_weights, minus_direct_weights,
+			adjoint_sources_reflection_angled_minus[ pol_idx ], mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
+			adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		)
+
+		fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct, grad_normal_plus_rotation_redirect, grad_normal_plus_rotation_direct = fom_and_gradient(
+			pol_idx, 0, #-device_rotation_angle_radians,
+			minus_redirect_weights, minus_direct_weights,
+			adjoint_sources_reflection_angled_plus[ pol_idx ], mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
+			adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		)
+
+	else:
+
+		fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct, grad_normal_minus_rotation_redirect, grad_normal_minus_rotation_direct = fom_and_gradient(
+			pol_idx, -device_rotation_angle_radians,
+			minus_redirect_weights, minus_direct_weights,
+			adjoint_sources_reflection_angled_minus[ pol_idx ], mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
+			adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		)
+
+		# fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct, grad_normal_plus_rotation_redirect, grad_normal_plus_rotation_direct = fom_and_gradient(
+		# 	pol_idx, -device_rotation_angle_radians,
+		# 	minus_redirect_weights, minus_direct_weights,
+		# 	adjoint_sources_reflection_angled_plus[ pol_idx ], mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
+		# 	adjoint_sources_reflection[ pol_idx ], mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		# )
+
+
 
 	# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
 
@@ -1022,18 +1045,31 @@ def fom_and_gradient_with_rotations( pol_idx ):
 
 	# grad_total = ( grad_plus + grad_minus )
 
-	fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
-	# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
-	fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
+	if no_reflect_normal:
 
-	fom_total = fom_direct * fom_redirect
+		fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
+		# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
+		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_plus_rotation_redirect )
 
-	# fom_total = fom_redirect
+		fom_total = fom_direct * fom_redirect
 
-	grad_total = (
-		fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
-		fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
-	)
+		# fom_total = fom_redirect
+
+		grad_total = (
+			fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
+			fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_plus_rotation_redirect )
+		)
+	else:
+
+		fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
+		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
+
+		fom_total = fom_direct * fom_redirect
+
+		grad_total = (
+			fom_redirect * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
+			fom_direct * 0.5 * ( grad_normal_minus_rotation_redirect + grad_normal_plus_rotation_redirect + grad_plus_rotation_redirect )
+		)
 
 	# grad_total = (
 	# 	fom_redirect * softplus_prime( fom_plus_rotation_direct - fom_normal_minus_rotation_direct ) * ( grad_plus_rotation_direct - grad_normal_minus_rotation_direct ) +
@@ -1056,28 +1092,59 @@ def fom_with_rotations( pol_idx ):
 		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
 	)
 
-	fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct = fom(
-		pol_idx, 0, #-device_rotation_angle_radians,
-		minus_redirect_weights, minus_direct_weights,
-		mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
-		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
-	)
+	if no_reflect_normal:
 
-	fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct = fom(
-		pol_idx, 0, #-device_rotation_angle_radians,
-		minus_redirect_weights, minus_direct_weights,
-		mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
-		mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
-	)
+		fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct = fom(
+			pol_idx, 0, #-device_rotation_angle_radians,
+			minus_redirect_weights, minus_direct_weights,
+			mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
+			mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		)
 
-	# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
+		fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct = fom(
+			pol_idx, 0, #-device_rotation_angle_radians,
+			minus_redirect_weights, minus_direct_weights,
+			mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
+			mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		)
 
-	fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
-	# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
-	fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
+	else:
 
-	fom_total = fom_direct * fom_redirect
-	# fom_total = fom_redirect
+		fom_normal_minus_rotation_redirect, fom_normal_minus_rotation_direct = fom(
+			pol_idx, -device_rotation_angle_radians,
+			minus_redirect_weights, minus_direct_weights,
+			mode_E_angled_reflection_minus[ pol_idx ], mode_H_angled_reflection_minus[ pol_idx ], mode_overlap_norm_reflection_minus[ pol_idx ],
+			mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		)
+
+		# fom_normal_plus_rotation_redirect, fom_normal_plus_rotation_direct = fom(
+		# 	pol_idx, 0, #-device_rotation_angle_radians,
+		# 	minus_redirect_weights, minus_direct_weights,
+		# 	mode_E_angled_reflection_plus[ pol_idx ], mode_H_angled_reflection_plus[ pol_idx ], mode_overlap_norm_reflection_plus[ pol_idx ],
+		# 	mode_E_reflection[ pol_idx ], mode_H_reflection[ pol_idx ], mode_overlap_norm_reflection[ pol_idx ]
+		# )
+
+
+	if no_reflect_normal:
+		# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
+
+		fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
+		# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
+		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_normal_plus_rotation_redirect + fom_plus_rotation_redirect )
+
+		fom_total = fom_direct * fom_redirect
+		# fom_total = fom_redirect
+
+	else:
+		# fom_total = ( fom_plus_rotation_redirect + fom_plus_rotation_direct ) * ( fom_minus_rotation_redirect + fom_minus_rotation_direct )
+
+		fom_direct = np.maximum( fom_plus_rotation_direct - fom_normal_minus_rotation_direct, 0 )
+		# fom_direct = softplus( fom_plus_rotation_direct - fom_normal_minus_rotation_direct )
+		fom_redirect = 0.5 * ( fom_normal_minus_rotation_redirect + fom_plus_rotation_redirect )
+
+		fom_total = fom_direct * fom_redirect
+		# fom_total = fom_redirect
+
 
 	return fom_total
 
