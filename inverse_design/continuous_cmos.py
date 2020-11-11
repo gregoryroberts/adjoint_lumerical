@@ -7,6 +7,7 @@ from scipy import ndimage
 import sigmoid
 
 do_sigmoid = True#False
+sigmoid_start_iter = 50
 
 
 def upsample_nearest( profile, upsampled_length ):
@@ -380,7 +381,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 	def assemble_density( self, iteration ):
 		# sigmoid_strength = 2**( iteration / 25.0 )
 
-		sigmoid_strength_exp = -2 + int( iteration / 15.0 )
+		sigmoid_strength_exp = -4.5 + int( iteration / 15.0 )
 		sigmoid_strength = 2**( sigmoid_strength_exp )
 
 		sigmoid_obj = sigmoid.Sigmoid( sigmoid_strength, 0.5 )
@@ -393,7 +394,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			get_profile = self.layer_profiles[ profile_idx ]
 			upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
 
-			if ( iteration >= 0 ) and do_sigmoid:
+			if ( iteration > sigmoid_start_iter ) and do_sigmoid:
 				upsampled_profile = sigmoid_obj.forward( upsampled_profile )
 
 			for internal_idx in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
@@ -508,7 +509,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
 
 		# sigmoid_strength = 2**( iteration / 25.0 )
-		sigmoid_strength_exp = -2 + int( iteration / 15.0 )
+		sigmoid_strength_exp = -4.5 + int( iteration / 15.0 )
 		sigmoid_strength = 2**( sigmoid_strength_exp )
 
 		sigmoid_obj = sigmoid.Sigmoid( sigmoid_strength, 0.5 )
@@ -530,7 +531,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 
 			average_gradient = np.squeeze( np.mean( gradient_real_interpolate[ :, get_start : get_end ], axis=1 ) )
-			if do_sigmoid:
+			if ( iteration > sigmoid_start_iter ) and do_sigmoid:
 				average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
 
 			downsampled_average_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )

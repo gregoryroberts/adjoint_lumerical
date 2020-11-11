@@ -27,7 +27,7 @@ project_name = 'cmos_dielectric_2d_refl_p22layers_rbg_lsf_contrast_si_10p8xtsmc_
 background_index = 1.0
 design_index_background = 1.0#1.35
 device_background_index = 1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
-device_lateral_background_density = 0.0#1.0
+device_lateral_background_density = 1.0#0.0#1.0
 # high_index_backfill = 2.5
 high_index_backfill = 1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46#2.1#1.46
 # high_index_backfill = 2.1
@@ -119,7 +119,7 @@ num_points_per_band = 10#10#15
 # pol_weights = [ 0, 1 ]
 pol_weights = [ 1, 0 ]
 
-lambda_min_um = 0.5
+lambda_min_um = 0.45
 lambda_max_um = 0.75
 
 num_design_frequency_points = num_bands * num_points_per_band
