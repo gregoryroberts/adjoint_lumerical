@@ -142,7 +142,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False#True#False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_sio2_v26"
-projects_directory_location += "/" + project_name + "_continuous_reflective_blue_sio2_v30"
+projects_directory_location += "/" + project_name + "_continuous_reflective_blue_sio2_v31"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -487,31 +487,31 @@ device_background_side_x = [ -1, 1 ]#, 0, 0 ]
 elongations_left_um = [ 1, 0 ]
 elongations_right_um = [ 0, 1 ]
 # device_background_side_y = [ 0, 0, -1, 1 ]
-side_blocks = []
+# side_blocks = []
 
-for device_background_side_idx in range( 0, 2 ):
-	side_x = device_background_side_x[ device_background_side_idx ]
+# for device_background_side_idx in range( 0, 2 ):
+# 	side_x = device_background_side_x[ device_background_side_idx ]
 
-	side_block = fdtd_hook.addrect()
+# 	side_block = fdtd_hook.addrect()
 
-	center_x_um = side_x * extra_lateral_space_offset_um
-	span_x_um = ( np.abs( side_x ) * extra_lateral_space_per_side_um +
-		( 1 - np.abs( side_x ) ) * fdtd_region_size_lateral_um )
-	left_x_um = center_x_um - 0.5 * span_x_um
-	right_x_um = center_x_um + 0.5 * span_x_um
+# 	center_x_um = side_x * extra_lateral_space_offset_um
+# 	span_x_um = ( np.abs( side_x ) * extra_lateral_space_per_side_um +
+# 		( 1 - np.abs( side_x ) ) * fdtd_region_size_lateral_um )
+# 	left_x_um = center_x_um - 0.5 * span_x_um
+# 	right_x_um = center_x_um + 0.5 * span_x_um
 
-	left_x_um -= elongations_left_um[ device_background_side_idx ]
-	right_x_um += elongations_right_um[ device_background_side_idx ]
+# 	left_x_um -= elongations_left_um[ device_background_side_idx ]
+# 	right_x_um += elongations_right_um[ device_background_side_idx ]
 
-	side_block['name'] = 'device_background_' + side_to_string( side_x )
-	side_block['y min'] = designable_device_vertical_minimum_um * 1e-6
-	side_block['y max'] = designable_device_vertical_maximum_um * 1e-6
-	side_block['x min'] = left_x_um * 1e-6
-	side_block['x max'] = right_x_um * 1e-6
-	side_block['index'] = device_background_index
-	fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
+# 	side_block['name'] = 'device_background_' + side_to_string( side_x )
+# 	side_block['y min'] = designable_device_vertical_minimum_um * 1e-6
+# 	side_block['y max'] = designable_device_vertical_maximum_um * 1e-6
+# 	side_block['x min'] = left_x_um * 1e-6
+# 	side_block['x max'] = right_x_um * 1e-6
+# 	side_block['index'] = device_background_index
+# 	fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
 
-	side_blocks.append( side_block )
+# 	side_blocks.append( side_block )
 
 
 # bottom_silicon = fdtd_hook.addrect()
@@ -1799,7 +1799,7 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_redirect_si_10p8_green_sio2_v28.npy')
+# load_index = np.load('/Users/gregory/Downloads/device_final_blue_sio2_v30.npy')
 # plt.imshow( load_index )
 # plt.colorbar()
 # plt.show()
