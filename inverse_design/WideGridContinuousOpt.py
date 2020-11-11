@@ -623,7 +623,10 @@ def optimize_parent_locally( parent_object, num_iterations ):
 				# figure_of_merit_by_band = np.maximum( figure_of_merit_by_band, 0 )
 
 				reselect_fom_by_band = []
+				reselect_fom_by_band_orig = []
 				for idx in range( 0, len( figure_of_merit_by_band ) ):
+					# reselect_fom_by_band_orig.append( softplus( figure_of_merit_by_band[ idx ] ) )
+					reselect_fom_by_band_orig.append( figure_of_merit_by_band[ idx ] )
 					if band_weights[ idx ] > 0:
 						# reselect_fom_by_band.append( softplus( figure_of_merit_by_band[ idx ] ) )
 						reselect_fom_by_band.append( figure_of_merit_by_band[ idx ] )
@@ -688,8 +691,8 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 						prefactor = 0
 						if band_weights[ adj_src_idx ] > 0:
-							# prefactor = band_weights[ adj_src_idx ] * softplus_prime( reselect_fom_by_band[ adj_src_idx ] ) * np.product( reselect_fom_by_band ) / reselect_fom_by_band[ adj_src_idx ]
-							prefactor = band_weights[ adj_src_idx ] * np.product( reselect_fom_by_band ) / reselect_fom_by_band[ adj_src_idx ]
+							# prefactor = band_weights[ adj_src_idx ] * softplus_prime( reselect_fom_by_band_orig[ adj_src_idx ] ) * np.product( reselect_fom_by_band ) / reselect_fom_by_band_orig[ adj_src_idx ]
+							prefactor = band_weights[ adj_src_idx ] * np.product( reselect_fom_by_band ) / reselect_fom_by_band_orig[ adj_src_idx ]
 
 						# for spectral_idx in range(0, num_points ):
 						# for spectral_idx in range(0, num_design_frequency_points ):
