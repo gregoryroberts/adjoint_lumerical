@@ -1610,7 +1610,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 		if ( iteration % 10 ) == 0:
 			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(iteration) )
-			np.save( projects_directory_location + '/density_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(-1) )
+			np.save( projects_directory_location + '/density_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(0) )
 
 	return parent_object, fom_track
 

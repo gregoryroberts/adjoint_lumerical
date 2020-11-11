@@ -11,9 +11,9 @@ run_on_cluster = True
 if run_on_cluster:
 	import imp
 	imp.load_source( "lumapi", "/central/home/gdrobert/Develompent/lumerical/2020a/api/python/lumapi.py" )
-# else:
-# 	import imp
-# 	imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+else:
+	import imp
+	imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
 
 import lumapi
 
@@ -119,9 +119,9 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
-should_reload = True
-projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
-projects_directory_location += "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2_reload"
+should_reload = False#True
+# projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
+projects_directory_location += "/" + project_name + "_continuous_Hz_sio2_no_contrast_v3"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -372,7 +372,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 
 # You likely should verify the gradient for when you do level set optimized devices!
 
-num_iterations = 100
+num_iterations = 150#100
 
 np.random.seed( 923447 )
 
@@ -389,6 +389,7 @@ my_optimization_state = continuous_cmos.ContinuousCMOS(
 	"level_set_optimize",
 	device_lateral_background_density )
 
+
 if should_reload:
 	old_index = np.load( projects_directory_reload + "/final_device.npy" )
 	old_perm = old_index**2
@@ -399,7 +400,7 @@ if should_reload:
 else:
 	my_optimization_state.uniform_layer_profiles( 0.5 )
 
-get_index = my_optimization_state.assemble_index()
+get_index = my_optimization_state.assemble_index(0)
 device_region_x = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, get_index.shape[ 0 ] )
 device_region_y = 1e-6 * np.linspace( designable_device_vertical_minimum_um, designable_device_vertical_maximum_um, get_index.shape[ 1 ] )
 device_region_z = 1e-6 * np.array( [ -0.51, 0.51 ] )
@@ -528,7 +529,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			#
 
 			fdtd_hook.switchtolayout()
-			get_index = parent_object.assemble_index( device )
+			get_index = parent_object.assemble_index( iteration )
 			inflate_index = np.zeros( ( get_index.shape[ 0 ], get_index.shape[ 1 ], 2 ), dtype=np.complex )
 			inflate_index[ :, :, 0 ] = get_index
 			inflate_index[ :, :, 1 ] = get_index
@@ -644,6 +645,10 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 				print( figure_of_merit_by_device[ device ] )
 				print()
+
+				log_file = open(projects_directory_location + "/log.txt", 'a')
+				log_file.write("Figure of merit by device for iteration " + str( iteration ) + ": " + str( figure_of_merit_by_device[ device ] ) + "\n")
+				log_file.close()
 
 				#
 				# Step 3: Run all the adjoint optimizations for both x- and y-polarized adjoint sources and use the results to compute the
@@ -788,7 +793,8 @@ def optimize_parent_locally( parent_object, num_iterations ):
 		parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
 
 		if ( iteration % 10 ) == 0:
-			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index() )
+			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(iteration) )
+			np.save( projects_directory_location + '/density_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(0) )
 
 	return parent_object, fom_track
 
@@ -801,5 +807,6 @@ for epoch_idx in range( 0, 1 ):
 
 	my_optimization_state, local_fom = optimize_parent_locally( my_optimization_state, num_iterations )
 
-	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index() )
+	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index( num_iterations - 1 ) )
+	np.save( projects_directory_location + '/final_density.npy', my_optimization_state.assemble_index( 0 ) )
 	np.save( projects_directory_location + '/figure_of_merit.npy', local_fom )
