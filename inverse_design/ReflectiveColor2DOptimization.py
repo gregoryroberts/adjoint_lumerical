@@ -142,7 +142,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False#True#False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_sio2_v26"
-projects_directory_location += "/" + project_name + "_continuous_reflective_red_sio2_v31"
+projects_directory_location += "/" + project_name + "_continuous_reflective_red_sio2_v32"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -996,7 +996,7 @@ def fom_and_gradient(
 	return fom_redirect, fom_direct, adj_grad_redirect, adj_grad_direct
 
 
-no_reflect_normal = False
+no_reflect_normal = True#False
 
 def fom_and_gradient_with_rotations( pol_idx ):
 
