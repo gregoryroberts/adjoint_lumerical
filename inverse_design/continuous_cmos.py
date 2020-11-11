@@ -577,7 +577,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 
 			average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
-			if do_sigmoid:
+			if ( iteration > sigmoid_start_iter ) and do_sigmoid:
 				average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
 
 			get_profile = self.layer_profiles[ profile_idx ]
