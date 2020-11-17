@@ -342,12 +342,14 @@ class LayeredMWIRBridgesBayerFilter(device.Device):
 		# Update the variable stack including getting the permittivity at the w[-1] position
 		self.update_permittivity()
 
+		# The substrate on the top changes this padding
 		cur_fabrication_target = self.fabricate_mask()
 		pad_cur_fabrication_target = np.pad(
 			cur_fabrication_target,
 			( ( 1, 1 ), ( 1, 1 ), ( 1, 1 ) ),
 			mode='constant'
 		)
+		pad_cur_fabrication_target[ :, :, pad_cur_fabrication_target.shape[ 2 ] - 1 ] = 1
 
 		[solid_labels, num_solid_labels] = skim.label( pad_cur_fabrication_target, neighbors=4, return_num=True )
 		[void_labels, num_void_labels] = skim.label( 1 - pad_cur_fabrication_target, neighbors=8, return_num=True )

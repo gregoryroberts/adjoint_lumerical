@@ -34,6 +34,8 @@ import platform
 
 import re
 
+import skimage.morphology as skim
+
 num_nodes_available = int( sys.argv[ 1 ] )
 
 if run_on_cluster:
@@ -89,11 +91,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_eval'
+	projects_directory_location = projects_directory_location_base + '_filled'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_eval'
+	projects_directory_location = projects_directory_location_base + '_filled'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -360,7 +362,32 @@ bayer_filter.w[0] = cur_design_variable
 bayer_filter.update_filters(num_epochs - 1)
 bayer_filter.update_permittivity()
 
-num_eval_points = 100
+cur_fabrication_target = ( bayer_filter.get_permittivity() > 0.5 )
+
+pad_cur_fabrication_target = np.pad(
+	cur_fabrication_target,
+	( ( 1, 1 ), ( 1, 1 ), ( 1, 1 ) ),
+	mode='constant'
+)
+pad_cur_fabrication_target[ :, :, pad_cur_fabrication_target.shape[ 2 ] - 1 ] = 1
+
+[solid_labels, num_solid_labels] = skim.label( pad_cur_fabrication_target, connectivity=1, return_num=True )
+[void_labels, num_void_labels] = skim.label( 1 - pad_cur_fabrication_target, connectivity=1, return_num=True )
+
+layer_step = int( cur_fabrication_target.shape[ 2 ] / num_vertical_layers )
+
+new_device = np.zeros( cur_fabrication_target.shape )
+
+for layer_idx in range( 0, num_vertical_layers ):
+	pull_data = void_labels[ 1 : void_labels.shape[ 0 ] - 1, 1 : void_labels.shape[ 1 ] - 1, layer_idx * layer_step + 1 ]
+
+	for internal_layer in range( 0, layer_step ):
+		new_device[ :, :, layer_idx * layer_step + internal_layer ] = 1.0 * np.greater( cur_fabrication_target[ :, :, layer_idx * layer_step + 1 ], 0.5 )
+		new_device[ :, :, layer_idx ] += 1.0 * np.greater( pull_data, 1 )
+new_device[ :, :, new_device.shape[ 2 ] - 1 ] = new_device[ :, :, newd.shape[ 2 ] - 2 ]
+
+
+num_eval_points = 50
 if ( num_eval_points % num_nodes_available ) > 0:
 	num_eval_points += ( num_nodes_available - ( num_eval_points % num_nodes_available ) )
 
@@ -372,7 +399,8 @@ num_outer_loops = int( num_eval_points / num_nodes_available )
 job_names = {}
 
 fdtd_hook.switchtolayout()
-cur_density = bayer_filter.get_permittivity()
+cur_density = new_device.copy()
+# cur_density = bayer_filter.get_permittivity()
 cur_density = 1.0 * np.greater_equal( cur_density, 0.5 )
 
 eval_lambda_min_um = lambda_min_um - 0.5
@@ -431,7 +459,7 @@ for outer_loop in range( 0, num_outer_loops ):
 				T = fdtd_hook.getresult( transmission_monitors[ focal_idx ][ 'name' ], 'T' )
 				transmission_data[ pol_idx, focal_idx, eval_point_idx ] = T[ 'T' ][ 0 ]
 
-	np.save( projects_directory_location + "/dispersive_transmission_data.npy", transmission_data )
+	np.save( projects_directory_location + "/filled_dispersive_transmission_data.npy", transmission_data )
 
-np.save( projects_directory_location + "/dispersive_transmission_data.npy", transmission_data )
+np.save( projects_directory_location + "/filled_dispersive_transmission_data.npy", transmission_data )
 

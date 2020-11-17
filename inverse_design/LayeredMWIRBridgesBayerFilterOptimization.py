@@ -212,11 +212,11 @@ permittivity_layer_substrate['name'] = 'permittivity_layer_substrate'
 permittivity_layer_substrate['x span'] = device_size_lateral_um * 1e-6
 permittivity_layer_substrate['y span'] = device_size_lateral_um * 1e-6
 permittivity_layer_substrate['z min'] = device_vertical_maximum_um * 1e-6
-permittivity_layer_substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+permittivity_layer_substrate['z max'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
 
 platform_x_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
 platform_y_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
-platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, fdtd_region_maximum_vertical_um, 2 )
+platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, fdtd_region_maximum_vertical_um - silicon_thickness_um, 2 )
 
 platform_index = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 
