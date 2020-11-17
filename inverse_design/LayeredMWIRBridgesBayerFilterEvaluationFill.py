@@ -144,7 +144,7 @@ for xy_idx in range(0, 2):
 	forward_src['direction'] = 'Backward'
 	forward_src['x span'] = lateral_aperture_um * 1e-6
 	forward_src['y span'] = lateral_aperture_um * 1e-6
-	forward_src['z max'] = (src_maximum_vertical_um - 1) * 1e-6
+	forward_src['z max'] = (src_maximum_vertical_um + 1) * 1e-6
 	forward_src['z min'] = src_minimum_vertical_um * 1e-6
 	forward_src['wavelength start'] = lambda_min_um * 1e-6
 	forward_src['wavelength stop'] = lambda_max_um * 1e-6
@@ -459,7 +459,7 @@ for outer_loop in range( 0, num_outer_loops ):
 				T = fdtd_hook.getresult( transmission_monitors[ focal_idx ][ 'name' ], 'T' )
 				transmission_data[ pol_idx, focal_idx, eval_point_idx ] = T[ 'T' ][ 0 ]
 
-	np.save( projects_directory_location + "/filled_dispersive_transmission_data_m1um.npy", transmission_data )
+	np.save( projects_directory_location + "/filled_dispersive_transmission_data_p1um.npy", transmission_data )
 
-np.save( projects_directory_location + "/filled_dispersive_transmission_data_m1um.npy", transmission_data )
+np.save( projects_directory_location + "/filled_dispersive_transmission_data_p1um.npy", transmission_data )
 
