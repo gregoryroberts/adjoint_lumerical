@@ -383,7 +383,7 @@ for layer_idx in range( 0, num_vertical_layers ):
 
 	for internal_layer in range( 0, layer_step ):
 		new_device[ :, :, layer_idx * layer_step + internal_layer ] = 1.0 * np.greater( cur_fabrication_target[ :, :, layer_idx * layer_step + 1 ], 0.5 )
-		new_device[ :, :, layer_idx ] += 1.0 * np.greater( pull_data, 1 )
+		new_device[ :, :, layer_idx * layer_step + internal_layer ] += 1.0 * np.greater( pull_data, 1 )
 new_device[ :, :, new_device.shape[ 2 ] - 1 ] = new_device[ :, :, new_device.shape[ 2 ] - 2 ]
 
 
