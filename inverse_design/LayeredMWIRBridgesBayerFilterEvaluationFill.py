@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from LayeredMWIRBridgesBayerFilterParameters import *
+from LayeredMWIRBridgesBayerFilterEvaluationParameters import *
 import LayeredMWIRBridgesBayerFilter
 import ip_dip_dispersion
 
@@ -104,7 +104,7 @@ if not os.path.isdir(projects_directory_location):
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterParameters.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterParameters.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterEvaluationParameters.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterEvaluationParameters.py")
 shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterEvaluation.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterEvaluation.py")
 
 #
@@ -192,6 +192,22 @@ for adj_src in range(0, num_adjoint_sources):
 
 	transmission_monitors.append(transmission_monitor)
 
+
+focal_transmission_monitor = fdtd_hook.addpower()
+focal_transmission_monitor['name'] = 'focal_transmission_monitor'
+focal_transmission_monitor['monitor type'] = '2D Z-normal'
+focal_transmission_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
+focal_transmission_monitor['y span'] = 0.5 * device_size_lateral_um * 1e-6
+focal_transmission_monitor['x'] = 0 * 1e-6
+focal_transmission_monitor['y'] = 0 * 1e-6
+focal_transmission_monitor['z'] = adjoint_vertical_um * 1e-6
+focal_transmission_monitor['override global monitor settings'] = 1
+focal_transmission_monitor['use wavelength spacing'] = 1
+focal_transmission_monitor['use source limits'] = 1
+focal_transmission_monitor['frequency points'] = num_design_frequency_points
+
+transmission_monitors.append( focal_transmission_monitor )
+
 #
 # Add a block of polymer at the top where the device will be adhered to a Silicon substrate
 #
@@ -201,11 +217,11 @@ permittivity_layer_substrate['name'] = 'permittivity_layer_substrate'
 permittivity_layer_substrate['x span'] = device_size_lateral_um * 1e-6
 permittivity_layer_substrate['y span'] = device_size_lateral_um * 1e-6
 permittivity_layer_substrate['z min'] = device_vertical_maximum_um * 1e-6
-permittivity_layer_substrate['z max'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + pedestal_thickness_um ) * 1e-6
 
 platform_x_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
 platform_y_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
-platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, fdtd_region_maximum_vertical_um - silicon_thickness_um, 2 )
+platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, device_vertical_maximum_um + pedestal_thickness_um, 2 )
 
 platform_index = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 
@@ -408,7 +424,7 @@ eval_lambda_max_um = lambda_max_um + 0.5
 
 eval_lambda_um = np.linspace( eval_lambda_min_um, eval_lambda_max_um, num_eval_points )
 
-transmission_data = np.zeros( ( 2, num_adjoint_sources, num_eval_points ) )
+transmission_data = np.zeros( ( 2, num_adjoint_sources + 1, num_eval_points ) )
 
 for outer_loop in range( 0, num_outer_loops ):
 	eval_point_start = int( outer_loop * num_nodes_available )
@@ -430,11 +446,10 @@ for outer_loop in range( 0, num_outer_loops ):
 		fdtd_hook.select( 'design_import' )
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
 
-		for focal_idx in range( 0, num_adjoint_sources ):
+		for focal_idx in range( 0, len( transmission_monitors ) ):
 			transmission_monitors[ focal_idx ]['use source limits'] = 0
 			transmission_monitors[ focal_idx ]['frequency points'] = 1
 			transmission_monitors[ focal_idx ]['wavelength center'] = eval_lambda_um[ eval_point_idx ] * 1e-6
-
 
 		for pol_idx in range(0, 2):
 			disable_all_sources()
@@ -459,7 +474,11 @@ for outer_loop in range( 0, num_outer_loops ):
 				T = fdtd_hook.getresult( transmission_monitors[ focal_idx ][ 'name' ], 'T' )
 				transmission_data[ pol_idx, focal_idx, eval_point_idx ] = T[ 'T' ][ 0 ]
 
-	np.save( projects_directory_location + "/filled_dispersive_transmission_data_p1um.npy", transmission_data )
+			T = fdtd_hook.getresult( transmission_monitors[ num_adjoint_sources ][ 'name' ], 'T' )
+			transmission_data[ pol_idx, focal_idx, num_adjoint_sources ] = T[ 'T' ][ 0 ]
 
-np.save( projects_directory_location + "/filled_dispersive_transmission_data_p1um.npy", transmission_data )
+
+	np.save( projects_directory_location + "/filled_dispersive_transmission_data_full.npy", transmission_data )
+
+np.save( projects_directory_location + "/filled_dispersive_transmission_data_full.npy", transmission_data )
 
