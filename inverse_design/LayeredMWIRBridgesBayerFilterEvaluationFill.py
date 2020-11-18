@@ -196,8 +196,8 @@ for adj_src in range(0, num_adjoint_sources):
 focal_transmission_monitor = fdtd_hook.addpower()
 focal_transmission_monitor['name'] = 'focal_transmission_monitor'
 focal_transmission_monitor['monitor type'] = '2D Z-normal'
-focal_transmission_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
-focal_transmission_monitor['y span'] = 0.5 * device_size_lateral_um * 1e-6
+focal_transmission_monitor['x span'] = device_size_lateral_um * 1e-6
+focal_transmission_monitor['y span'] = device_size_lateral_um * 1e-6
 focal_transmission_monitor['x'] = 0 * 1e-6
 focal_transmission_monitor['y'] = 0 * 1e-6
 focal_transmission_monitor['z'] = adjoint_vertical_um * 1e-6
