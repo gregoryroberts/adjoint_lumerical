@@ -91,11 +91,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_filled'
+	projects_directory_location = projects_directory_location_base + '_filled_real_index'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_filled'
+	projects_directory_location = projects_directory_location_base + '_filled_real_index'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -105,7 +105,7 @@ fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
 shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterEvaluationParameters.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterEvaluationParameters.py")
-shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterEvaluation.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterEvaluation.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterEvaluationFill.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterEvaluationFill.py")
 
 #
 # Set up the FDTD region and mesh
@@ -431,7 +431,7 @@ for outer_loop in range( 0, num_outer_loops ):
 
 	for eval_point_idx in range( eval_point_start, eval_point_start + num_nodes_available ):
 		dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( [ eval_lambda_um[ eval_point_idx ], eval_lambda_um[ eval_point_idx ] ] )
-		disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
+		disperesive_max_index = np.real( ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity ) )
 
 		fdtd_hook.switchtolayout()
 
@@ -441,7 +441,7 @@ for outer_loop in range( 0, num_outer_loops ):
 		fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
 
 		cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
-		cur_index = ip_dip_dispersion.index_from_permittivity( cur_permittivity )
+		cur_index = np.real( ip_dip_dispersion.index_from_permittivity( cur_permittivity ) )
 
 		fdtd_hook.select( 'design_import' )
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
