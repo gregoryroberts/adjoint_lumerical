@@ -182,6 +182,9 @@ um_per_layer = 0.4
 for layer in range( 0, num ):
 	data = np.squeeze( bin_index[ :, :, start + step * layer ] )
 
+	contours = measure.find_contours(data, 0.5)
+
+
 	post_idx = 0
 	for contour in contours:
 		M = measure.moments_coords(contour, order=1)
