@@ -159,7 +159,7 @@ bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_ve
 
 
 
-filepath = projects_directory_location
+filepath = projects_directory_location + "/"
 
 f = h5py.File( filepath + 'tio2_sio2_binary_index.mat', 'r' )
 get_index = f[ 'bin_index' ]
