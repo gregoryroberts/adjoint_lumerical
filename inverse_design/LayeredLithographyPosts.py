@@ -201,11 +201,11 @@ for layer in range( 0, num ):
 
 		post = fdtd_hook.addcircle()
 		post[ 'name' ] = 'layer_' + str( layer ) + '_post_' + str( post_idx )
-		post[ 'radius' ] = radius_um
-		post[ 'x' ] = -0.5 * device_size_lateral_um + center_x * device_size_lateral_um / device_voxels_lateral
-		post[ 'y' ] = -0.5 * device_size_lateral_um + center_y * device_size_lateral_um / device_voxels_lateral
-		post[ 'z min' ] = z_start_um
-		post[ 'z max' ] = z_end_um
+		post[ 'radius' ] = radius_um * 1e-6
+		post[ 'x' ] = ( -0.5 * device_size_lateral_um + center_x * device_size_lateral_um / device_voxels_lateral  ) * 1e-6
+		post[ 'y' ] = ( -0.5 * device_size_lateral_um + center_y * device_size_lateral_um / device_voxels_lateral  ) * 1e-6
+		post[ 'z min' ] = z_start_um * 1e-6
+		post[ 'z max' ] = z_end_um * 1e-6
 		post[ 'index' ] = max_device_index
 
 		post_idx += 1
