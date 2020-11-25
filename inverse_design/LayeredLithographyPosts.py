@@ -248,9 +248,9 @@ for layer in range( 0, num ):
 	for post_idx in range( 0, len( filtered_posts ) ):
 		get_filtered_post = filtered_posts[ post_idx ]
 
-		radius_um = get_filtered_post[ 0 ] * device_voxels_lateral / device_size_lateral_um
-		center_x_um = get_filtered_post[ 1 ] * device_voxels_lateral / device_size_lateral_um
-		center_y_um = get_filtered_post[ 2 ] * device_voxels_lateral / device_size_lateral_um
+		radius_um = get_filtered_post[ 0 ]
+		center_x_um = get_filtered_post[ 1 ]
+		center_y_um = get_filtered_post[ 2 ]
 		z_start_um = get_filtered_post[ 3 ]
 		z_end_um = get_filtered_post[ 4 ]
 
