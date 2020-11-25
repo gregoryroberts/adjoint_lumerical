@@ -8,8 +8,8 @@ from LayeredLithographyPostsParameters import *
 
 from skimage import measure
 
-import imp
-imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+# import imp
+# imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
 
 import lumapi
 
