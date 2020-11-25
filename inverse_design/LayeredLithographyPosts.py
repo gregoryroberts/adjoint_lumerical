@@ -254,6 +254,7 @@ for layer in range( 0, num ):
 		z_start_um = get_filtered_post[ 3 ]
 		z_end_um = get_filtered_post[ 4 ]
 
+		post = fdtd_hook.addcircle()
 		post[ 'name' ] = 'layer_' + str( layer ) + '_post_' + str( post_idx )
 		post[ 'radius' ] = radius_um * 1e-6
 		post[ 'x' ] = ( -0.5 * device_size_lateral_um + center_x_um  ) * 1e-6
