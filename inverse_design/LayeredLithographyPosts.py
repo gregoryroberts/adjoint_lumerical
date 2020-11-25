@@ -8,6 +8,9 @@ from LayeredLithographyPostsParameters import *
 
 from skimage import measure
 
+import imp
+imp.load_source( "lumapi", "/Applications/Lumerical 2020a.app/Contents/API/Python/lumapi.py" )
+
 import lumapi
 
 import functools
@@ -204,13 +207,15 @@ for layer in range( 0, num ):
 	contours = measure.find_contours(data, 0.5)
 
 
+	post_data = []
+
 	post_idx = 0
 	for contour in contours:
 		M = measure.moments_coords(contour, order=1)
 		area = M[ 0, 0 ]
 		radius = np.sqrt( area / np.pi )
-		center_x = M[ 1, 0 ] / M[ 0, 0 ]
-		center_y = M[ 0, 1 ] / M[ 0, 0 ]
+		center_x = ( M[ 1, 0 ] / M[ 0, 0 ] ) * device_size_lateral_um / device_voxels_lateral
+		center_y = ( M[ 0, 1 ] / M[ 0, 0 ] ) * device_size_lateral_um / device_voxels_lateral
 		draw_circle = plt.Circle((center_x, center_y), radius, fill=False, edgecolor='r', linewidth=2)
 
 		z_start_um = layer * um_per_layer
@@ -218,18 +223,44 @@ for layer in range( 0, num ):
 
 		radius_um = np.sqrt( area / np.pi ) * device_size_lateral_um / device_voxels_lateral
 
-		post = fdtd_hook.addcircle()
+		post_data.append( [ radius_um, center_x, center_y, z_start_um, z_end_um ] )
+
+
+	for post_idx in range( 0, len( post_data ) ):
+		get_post = post_data[ post_idx ]
+		sorted_posts = sorted( post_data, key=lambda other_post: np.sqrt( ( other_post[ 1 ] - get_post[ 1 ] )**2 + ( other_post[ 2 ] - get_post[ 2 ] )**2 ) - other_post[ 0 ] )
+
+		limiting_post = sorted_posts[ 1 ]
+		radius_reduction = -( lambda_max_um / 20. ) + np.sqrt( ( limiting_post[ 1 ] - get_post[ 1 ] )**2 + ( limiting_post[ 2 ] - get_post[ 2 ] )**2 ) - limiting_post[ 0 ] - get_post[ 0 ]
+
+		if radius_reduction >= 0:
+			continue
+		else:
+			print( radius_reduction )
+			post_data[ post_idx ][ 0 ] += radius_reduction
+
+	filtered_posts = []
+
+	for post_idx in range( 0, len( post_data ) ):
+		if post_data[ post_idx ][ 0 ] >= ( lambda_max_um / 20. ):
+			filtered_posts.append( post_data[ post_idx ] )
+
+	for post_idx in range( 0, len( filtered_posts ) ):
+		get_filtered_post = filtered_posts[ post_idx ]
+
+		radius_um = get_filtered_post[ 0 ] * device_voxels_lateral / device_size_lateral_um
+		center_x_um = get_filtered_post[ 1 ] * device_voxels_lateral / device_size_lateral_um
+		center_y_um = get_filtered_post[ 2 ] * device_voxels_lateral / device_size_lateral_um
+		z_start_um = get_filtered_post[ 3 ]
+		z_end_um = get_filtered_post[ 4 ]
+
 		post[ 'name' ] = 'layer_' + str( layer ) + '_post_' + str( post_idx )
 		post[ 'radius' ] = radius_um * 1e-6
-		post[ 'x' ] = ( -0.5 * device_size_lateral_um + center_x * device_size_lateral_um / device_voxels_lateral  ) * 1e-6
-		post[ 'y' ] = ( -0.5 * device_size_lateral_um + center_y * device_size_lateral_um / device_voxels_lateral  ) * 1e-6
-		post[ 'z min' ] = z_start_um * 1e-6
-		post[ 'z max' ] = z_end_um * 1e-6
+		post[ 'x' ] = ( -0.5 * device_size_lateral_um + center_x_um  ) * 1e-6
+		post[ 'y' ] = ( -0.5 * device_size_lateral_um + center_y_um  ) * 1e-6
+		post[ 'z min' ] = ( z_start_um + ( 0.5 * lambda_max_um / 20. ) ) * 1e-6
+		post[ 'z max' ] = ( z_end_um - ( 0.5 * lambda_max_um / 20. ) ) * 1e-6
 		post[ 'index' ] = max_device_index
-
-		post_idx += 1
-
-
 
 
 fdtd_hook.save( projects_directory_location + '/optimization.fsp' )
