@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
+import csv
+
 #
 # Create FDTD hook
 #
@@ -200,6 +202,12 @@ num = 5
 
 um_per_layer = 0.4
 
+# post_filename = projects_directory_location + "/color_splitter.csv"
+
+# with open(post_filename, 'w', newline='') as csvfile:
+# 	post_writer = csv.writer(csvfile, delimiter=',',
+# 							quotechar='|', quoting=csv.QUOTE_MINIMAL)
+# 	post_writer.writerow(['X center (um)', 'Y center (um)', 'Z minimum (um)', 'Z maximum (um)', 'Radius (um)'])
 
 for layer in range( 0, num ):
 	data = np.squeeze( bin_index[ :, :, start + step * layer ] )
@@ -221,7 +229,8 @@ for layer in range( 0, num ):
 		z_start_um = layer * um_per_layer
 		z_end_um = z_start_um + um_per_layer
 
-		radius_um = np.sqrt( area / np.pi ) * device_size_lateral_um / device_voxels_lateral
+		adjusted_area = area * um_per_layer / ( um_per_layer - ( lambda_max_um / 20. ) )
+		radius_um = np.sqrt( adjusted_area / np.pi ) * device_size_lateral_um / device_voxels_lateral
 
 		post_data.append( [ radius_um, center_x, center_y, z_start_um, z_end_um ] )
 
@@ -253,6 +262,11 @@ for layer in range( 0, num ):
 		center_y_um = get_filtered_post[ 2 ]
 		z_start_um = get_filtered_post[ 3 ]
 		z_end_um = get_filtered_post[ 4 ]
+
+		# post_writer.writerow(
+		# 	[ -0.5 * device_size_lateral_um + center_x_um, -0.5 * device_size_lateral_um + center_y_um,
+		# 	z_start_um + ( 0.5 * lambda_max_um / 20. ), z_end_um - ( 0.5 * lambda_max_um / 20. ),
+		# 	radius_um ] )
 
 		post = fdtd_hook.addcircle()
 		post[ 'name' ] = 'layer_' + str( layer ) + '_post_' + str( post_idx )
