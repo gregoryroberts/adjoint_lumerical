@@ -251,7 +251,7 @@ for layer in range( 0, num ):
 	filtered_posts = []
 
 	for post_idx in range( 0, len( post_data ) ):
-		if post_data[ post_idx ][ 0 ] >= ( lambda_max_um / 20. ):
+		if post_data[ post_idx ][ 0 ] >= ( 0.5 * lambda_max_um / 20. ):
 			filtered_posts.append( post_data[ post_idx ] )
 
 	for post_idx in range( 0, len( filtered_posts ) ):
