@@ -498,6 +498,8 @@ for outer_loop in range( 0, num_outer_loops ):
 		fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
 
 		cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
+		if dilation_erosion_test:
+			cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * reinterpolate_density
 		# cur_index = np.real( ip_dip_dispersion.index_from_permittivity( cur_permittivity ) )
 		cur_index = ip_dip_dispersion.index_from_permittivity( cur_permittivity )
 
