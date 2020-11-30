@@ -9,7 +9,7 @@ import LayeredMWIRBridgesBayerFilter
 import ip_dip_dispersion
 
 
-run_on_cluster = True
+run_on_cluster = False#True
 
 if run_on_cluster:
 	import imp
@@ -35,6 +35,8 @@ import platform
 import re
 
 import skimage.morphology as skim
+
+import scipy
 
 num_nodes_available = int( sys.argv[ 1 ] )
 
@@ -91,11 +93,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_filled_real_index'
+	projects_directory_location = projects_directory_location_base + '_filled_dilation'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_filled_real_index'
+	projects_directory_location = projects_directory_location_base + '_filled_dilation'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -257,9 +259,18 @@ bayer_filter = LayeredMWIRBridgesBayerFilter.LayeredMWIRBridgesBayerFilter(
 	num_vertical_layers,
 	topology_num_free_iterations_between_patches)
 
+dilation_erosion_test = True
+dilation_amount = 1
+
 bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, device_voxels_lateral)
 bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, device_voxels_vertical)
+
+if dilation_erosion_test:
+	bayer_filter_region_x = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 * device_voxels_lateral)
+	bayer_filter_region_y = 1e-6 * np.linspace(-0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 * device_voxels_lateral)
+	bayer_filter_region_z = 1e-6 * np.linspace(device_vertical_minimum_um, device_vertical_maximum_um, 2 * device_voxels_vertical)
+
 
 #
 # Disable all sources in the simulation, so that we can selectively turn single sources on at a time
@@ -419,6 +430,51 @@ cur_density = new_device.copy()
 # cur_density = bayer_filter.get_permittivity()
 cur_density = 1.0 * np.greater_equal( cur_density, 0.5 )
 
+reinterpolate_density = np.zeros( [ 2 * cur_density.shape[ idx ] for idx in range( 0, len( cur_density.shape ) ) ] )
+for z_idx in range( 0, reinterpolate_density.shape[ 2 ] ):
+	for x_idx in range( 0, reinterpolate_density.shape[ 0 ] ):
+		for y_idx in range( 0, reinterpolate_density.shape[ 1 ] ):
+			down_x = int( 0.5 * x_idx )
+			down_y = int( 0.5 * y_idx )
+			down_z = int( 0.5 * z_idx )
+
+			reinterpolate_density[ x_idx, y_idx, z_idx ] = cur_density[ down_x, down_y, down_z ]
+
+	if dilation_erosion_test:
+		if dilation_amount > 0:
+			reinterpolate_density[ :, :, z_idx ] = scipy.ndimage.binary_dilation( reinterpolate_density[ :, :, z_idx ], iterations=np.abs( dilation_amount ) )
+		else:
+			reinterpolate_density[ :, :, z_idx ] = scipy.ndimage.binary_erosion( reinterpolate_density[ :, :, z_idx ], iterations=np.abs( dilation_amount ) )
+
+# import matplotlib.pyplot as plt
+# for layer in range( 0, 5 ):
+# 	layer_cur = cur_density[ :, :, 10 + 20 * layer ]
+# 	layer_up = reinterpolate_density[ :, :, 20 + 40 * layer ]
+# 	plt.subplot( 1, 2, 1 )
+# 	plt.imshow( layer_cur )
+# 	plt.colorbar()
+# 	plt.subplot( 1, 2, 2 )
+# 	plt.imshow( layer_up )
+# 	plt.colorbar()
+# 	plt.show()
+
+# for layer in range( 0, 5 ):
+# 	layer_up = reinterpolate_density[ :, :, 20 + 40 * layer ]
+# 	layer_up_dilated = scipy.ndimage.binary_dilation( layer_up, iterations=1 )
+# 	layer_up_eroded = scipy.ndimage.binary_erosion( layer_up, iterations=1 )
+# 	plt.subplot( 1, 3, 1 )
+# 	plt.imshow( layer_up )
+# 	plt.colorbar()
+# 	plt.subplot( 1, 3, 2 )
+# 	plt.imshow( layer_up_dilated )
+# 	plt.colorbar()
+# 	plt.subplot( 1, 3, 3 )
+# 	plt.imshow( layer_up_eroded )
+# 	plt.colorbar()
+# 	plt.show()
+
+# sys.exit(0)	
+
 eval_lambda_min_um = lambda_min_um - 0.5
 eval_lambda_max_um = lambda_max_um + 0.5
 
@@ -431,7 +487,8 @@ for outer_loop in range( 0, num_outer_loops ):
 
 	for eval_point_idx in range( eval_point_start, eval_point_start + num_nodes_available ):
 		dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( [ eval_lambda_um[ eval_point_idx ], eval_lambda_um[ eval_point_idx ] ] )
-		disperesive_max_index = np.real( ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity ) )
+		# disperesive_max_index = np.real( ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity ) )
+		disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
 
 		fdtd_hook.switchtolayout()
 
@@ -441,7 +498,8 @@ for outer_loop in range( 0, num_outer_loops ):
 		fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
 
 		cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
-		cur_index = np.real( ip_dip_dispersion.index_from_permittivity( cur_permittivity ) )
+		# cur_index = np.real( ip_dip_dispersion.index_from_permittivity( cur_permittivity ) )
+		cur_index = ip_dip_dispersion.index_from_permittivity( cur_permittivity )
 
 		fdtd_hook.select( 'design_import' )
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
