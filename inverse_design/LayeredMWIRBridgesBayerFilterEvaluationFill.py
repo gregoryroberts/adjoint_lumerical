@@ -9,7 +9,7 @@ import LayeredMWIRBridgesBayerFilter
 import ip_dip_dispersion
 
 
-run_on_cluster = False#True
+run_on_cluster = True
 
 if run_on_cluster:
 	import imp
