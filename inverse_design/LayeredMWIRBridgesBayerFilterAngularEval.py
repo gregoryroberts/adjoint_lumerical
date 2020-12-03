@@ -107,7 +107,7 @@ fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
 shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterAngularEvalParameters.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterAngularEvalParameters.py")
-shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterEvaluationFill.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterEvaluationFill.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterAngularEval.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterAngularEval.py")
 
 def get_afield( monitor_name, field_indicator ):
 	field_polariations = [ field_indicator + 'x', field_indicator + 'y', field_indicator + 'z' ]
