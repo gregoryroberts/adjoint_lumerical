@@ -158,7 +158,7 @@ fdtd['define z mesh by'] = 'number of mesh cells'
 fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
 fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
 fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
-fdtd['profile'] = 'steep angle'
+fdtd['pml profile'] = 'steep angle'
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
