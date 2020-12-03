@@ -93,11 +93,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast'#dense'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast'#dense'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -175,14 +175,31 @@ xy_names = ['x', 'y']
 forward_sources = []
 
 for xy_idx in range(0, 2):
-	forward_src = fdtd_hook.addtfsf()
+	# forward_src = fdtd_hook.addtfsf()
+	# forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
+	# forward_src['angle phi'] = xy_phi_rotations[xy_idx]
+	# forward_src['direction'] = 'Backward'
+	# forward_src['x span'] = lateral_aperture_um * 1e-6
+	# forward_src['y span'] = lateral_aperture_um * 1e-6
+	# forward_src['z max'] = src_maximum_vertical_um * 1e-6
+	# forward_src['z min'] = src_minimum_vertical_um * 1e-6
+	# forward_src['wavelength start'] = lambda_min_um * 1e-6
+	# forward_src['wavelength stop'] = lambda_max_um * 1e-6
+
+	# forward_sources.append(forward_src)
+
+
+	forward_src = fdtd_hook.addplane()
 	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
+	forward_src['plane wave type'] = 'BFAST'
 	forward_src['angle phi'] = xy_phi_rotations[xy_idx]
 	forward_src['direction'] = 'Backward'
-	forward_src['x span'] = lateral_aperture_um * 1e-6
-	forward_src['y span'] = lateral_aperture_um * 1e-6
-	forward_src['z max'] = src_maximum_vertical_um * 1e-6
-	forward_src['z min'] = src_minimum_vertical_um * 1e-6
+	# forward_src['x span'] = lateral_aperture_um * 1e-6
+	forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
+	forward_src['y span'] = fdtd_region_size_lateral_um * 1e-6
+	forward_src['z'] = src_maximum_vertical_um * 1e-6
+	# forward_src['z max'] = src_maximum_vertical_um * 1e-6
+	# forward_src['z min'] = src_minimum_vertical_um * 1e-6
 	forward_src['wavelength start'] = lambda_min_um * 1e-6
 	forward_src['wavelength stop'] = lambda_max_um * 1e-6
 
@@ -483,38 +500,60 @@ eval_lambda_max_um = lambda_max_um + 0.5
 
 eval_lambda_um = np.linspace( eval_lambda_min_um, eval_lambda_max_um, num_eval_points )
 
-transmission_data = np.zeros( ( num_adjoint_sources + 1, num_phi, num_theta ) )
-focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, device_voxels_lateral, device_voxels_lateral ), dtype=np.complex )
+transmission_data = np.zeros( ( num_adjoint_sources + 1, num_phi, num_theta, num_design_frequency_points ) )
+focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, device_voxels_lateral, device_voxels_lateral, num_design_frequency_points ), dtype=np.complex )
+
+
+
+dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( [ lambda_min_um, lambda_max_um ] )
+disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
+
+cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
+if dilation_erosion_test:
+	cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * reinterpolate_density
+cur_index = ip_dip_dispersion.index_from_permittivity( cur_permittivity )
+
+platform_index[ : ] = disperesive_max_index
+
+
+fdtd_hook.switchtolayout()
+
+
+fdtd_hook.select( 'permittivity_layer_substrate' )
+fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
+
+forward_sources[ eval_pol_idx ][ 'angle theta' ] = 0
+forward_sources[ eval_pol_idx ][ 'angle phi' ] = 0
+
+
+fdtd_hook.select( 'design_import' )
+fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
+
+
+disable_all_sources()
+
+fdtd_hook.select( forward_sources[eval_pol_idx]['name'] )
+fdtd_hook.set( 'enabled', 1 )
+
+fdtd_hook.run()
+
+focal_E_normal = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name' ] )
+
+np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
+
 
 for phi_idx in range( 0, num_phi ):
 	for theta_idx in range( 0, num_theta ):
-		dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( [ lambda_eval_um, lambda_eval_um ] )
-		disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
-
 		fdtd_hook.switchtolayout()
-
-		platform_index[ : ] = disperesive_max_index
 
 		fdtd_hook.select( 'permittivity_layer_substrate' )
 		fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
 
 		forward_sources[ eval_pol_idx ][ 'angle theta' ] = eval_theta_degrees[ theta_idx ]
 		forward_sources[ eval_pol_idx ][ 'angle phi' ] = eval_phi_degrees[ phi_idx ]
-		forward_sources[ eval_pol_idx ][ 'center wavelength' ] = lambda_eval_um * 1e-6
-		forward_sources[ eval_pol_idx ][ 'wavelength span' ] = ( lambda_max_um - lambda_min_um ) * 1e-6
-
-		cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
-		if dilation_erosion_test:
-			cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * reinterpolate_density
-		cur_index = ip_dip_dispersion.index_from_permittivity( cur_permittivity )
 
 		fdtd_hook.select( 'design_import' )
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
-
-		for focal_idx in range( 0, len( transmission_monitors ) ):
-			transmission_monitors[ focal_idx ]['use source limits'] = 0
-			transmission_monitors[ focal_idx ]['frequency points'] = 1
-			transmission_monitors[ focal_idx ]['wavelength center'] = lambda_eval_um * 1e-6
 
 		disable_all_sources()
 
@@ -535,13 +574,13 @@ for phi_idx in range( 0, num_phi ):
 		for focal_idx in range( 0, num_adjoint_sources ):
 
 			T = fdtd_hook.getresult( transmission_monitors[ focal_idx ][ 'name' ], 'T' )
-			transmission_data[ focal_idx, phi_idx, theta_idx ] = T[ 'T' ][ 0 ]
+			transmission_data[ focal_idx, phi_idx, theta_idx, : ] = T[ 'T' ]
 
 		T = fdtd_hook.getresult( transmission_monitors[ num_adjoint_sources ][ 'name' ], 'T' )
-		transmission_data[ num_adjoint_sources, phi_idx, theta_idx ] = T[ 'T' ][ 0 ]
+		transmission_data[ num_adjoint_sources, phi_idx, theta_idx, : ] = T[ 'T' ]
 
 		focal_E = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name' ] )
-		focal_plane_efields[ phi_idx, theta_idx, :, :, : ] = np.squeeze( focal_E )
+		focal_plane_efields[ phi_idx, theta_idx, :, :, :, : ] = np.squeeze( focal_E )
 
 	np.save( projects_directory_location + "/angular_transmission.npy", transmission_data )
 	np.save( projects_directory_location + "/angular_focal_fields.npy", focal_plane_efields )

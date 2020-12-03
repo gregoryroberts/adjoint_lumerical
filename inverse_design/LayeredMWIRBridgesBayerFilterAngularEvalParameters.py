@@ -77,7 +77,7 @@ num_vertical_layers = 10
 # FDTD
 #
 vertical_gap_size_um = 25
-lateral_gap_size_um = 4
+lateral_gap_size_um = 4 * 2.5
 
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + device_size_verical_um + focal_length_um
@@ -149,11 +149,11 @@ adjoint_src_to_dispersive_range_map = [
 #
 lambda_eval_um = 5.25
 
-num_phi = 16#8
+num_phi = 8#16#8
 phi_min_degrees = 0 * 180. / np.pi
 phi_max_degrees = ( 2 * np.pi - ( 2 * np.pi / num_phi ) ) * 180. / np.pi
 
-num_theta = 12#8
+num_theta = 8#12#8
 theta_min_degrees = 12
 theta_max_degrees = 23.6
 
