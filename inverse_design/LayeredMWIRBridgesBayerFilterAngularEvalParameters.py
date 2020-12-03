@@ -92,7 +92,7 @@ fdtd_simulation_time_fs = 3000 * 5
 
 
 
-pedestal_thickness_um = 11.5
+pedestal_thickness_um = 11.5 + 3.5
 silicon_thickness_um = vertical_gap_size_um - pedestal_thickness_um
 
 
@@ -101,7 +101,7 @@ silicon_thickness_um = vertical_gap_size_um - pedestal_thickness_um
 # Forward Source
 #
 lateral_aperture_um = 1.1 * device_size_lateral_um
-src_maximum_vertical_um = device_size_verical_um + pedestal_thickness_um + 0.5 * silicon_thickness_um
+src_maximum_vertical_um = device_size_verical_um + pedestal_thickness_um - 3.5# + 0.5 * silicon_thickness_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
 # assert ( src_maximum_vertical_um + 1 ) < ( fdtd_region_maximum_vertical_um - silicon_thickness_um ), "The source is in the silicon"

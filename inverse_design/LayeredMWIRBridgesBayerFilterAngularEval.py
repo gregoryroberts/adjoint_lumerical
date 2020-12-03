@@ -155,9 +155,10 @@ fdtd['mesh type'] = 'uniform'
 fdtd['define x mesh by'] = 'number of mesh cells'
 fdtd['define y mesh by'] = 'number of mesh cells'
 fdtd['define z mesh by'] = 'number of mesh cells'
-fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels * 2
-fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels * 2
-fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels * 2
+fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
+fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
+fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
+fdtd['profile'] = 'steep angle'
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
@@ -180,7 +181,7 @@ for xy_idx in range(0, 2):
 	forward_src['direction'] = 'Backward'
 	forward_src['x span'] = lateral_aperture_um * 1e-6
 	forward_src['y span'] = lateral_aperture_um * 1e-6
-	forward_src['z max'] = (src_maximum_vertical_um + 1) * 1e-6
+	forward_src['z max'] = src_maximum_vertical_um * 1e-6
 	forward_src['z min'] = src_minimum_vertical_um * 1e-6
 	forward_src['wavelength start'] = lambda_min_um * 1e-6
 	forward_src['wavelength stop'] = lambda_max_um * 1e-6
