@@ -191,7 +191,7 @@ for xy_idx in range(0, 2):
 
 	forward_src = fdtd_hook.addplane()
 	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
-	forward_src['plane wave type'] = 'BFAST'
+	forward_src['plane wave type'] = 'Diffracting'
 	forward_src['angle phi'] = xy_phi_rotations[xy_idx]
 	forward_src['direction'] = 'Backward'
 	# forward_src['x span'] = lateral_aperture_um * 1e-6
@@ -202,6 +202,8 @@ for xy_idx in range(0, 2):
 	# forward_src['z min'] = src_minimum_vertical_um * 1e-6
 	forward_src['wavelength start'] = lambda_min_um * 1e-6
 	forward_src['wavelength stop'] = lambda_max_um * 1e-6
+	forward_src['frequency dependent profile'] = 1
+	forward_src['number of field profile samples'] = 10
 
 	forward_sources.append(forward_src)
 
