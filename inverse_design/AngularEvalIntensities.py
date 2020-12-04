@@ -12,14 +12,9 @@ import os
 python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 
-if run_on_cluster:
-	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
-	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_dense'
-else:
-	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
-	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_dense'
+projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
+projects_directory_location_base += "/" + project_name
+projects_directory_location = projects_directory_location_base + '_angular_bfast_dense'
 
 
 angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
