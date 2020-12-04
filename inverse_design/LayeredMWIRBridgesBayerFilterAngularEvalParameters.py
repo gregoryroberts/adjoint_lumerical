@@ -149,7 +149,7 @@ adjoint_src_to_dispersive_range_map = [
 #
 lambda_eval_um = 5.25
 
-num_phi = 8#16#8
+num_phi = 60#8#16#8
 phi_min_degrees = 0 * 180. / np.pi
 phi_max_degrees = ( 2 * np.pi - ( 2 * np.pi / num_phi ) ) * 180. / np.pi
 
