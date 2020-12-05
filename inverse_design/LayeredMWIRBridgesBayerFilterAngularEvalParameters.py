@@ -92,7 +92,7 @@ fdtd_simulation_time_fs = 3000 * 5
 
 
 
-pedestal_thickness_um = 11.5 + 3.5
+pedestal_thickness_um = 11.5# + 3.5
 silicon_thickness_um = vertical_gap_size_um - pedestal_thickness_um
 
 
@@ -101,7 +101,7 @@ silicon_thickness_um = vertical_gap_size_um - pedestal_thickness_um
 # Forward Source
 #
 lateral_aperture_um = 1.1 * device_size_lateral_um
-src_maximum_vertical_um = device_size_verical_um + pedestal_thickness_um - 3.5# + 0.5 * silicon_thickness_um
+src_maximum_vertical_um = device_size_verical_um + pedestal_thickness_um + 0.5 * silicon_thickness_um# - 3.5# + 0.5 * silicon_thickness_um
 src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
 # assert ( src_maximum_vertical_um + 1 ) < ( fdtd_region_maximum_vertical_um - silicon_thickness_um ), "The source is in the silicon"
@@ -149,7 +149,7 @@ adjoint_src_to_dispersive_range_map = [
 #
 lambda_eval_um = 5.25
 
-num_phi = 60#8#16#8
+num_phi = 64#60#8#16#60#8#16#8
 phi_min_degrees = 0 * 180. / np.pi
 phi_max_degrees = ( 2 * np.pi - ( 2 * np.pi / num_phi ) ) * 180. / np.pi
 
@@ -158,7 +158,17 @@ theta_min_degrees = 12
 theta_max_degrees = 23.6
 
 eval_phi_degrees = np.linspace( phi_min_degrees, phi_max_degrees, num_phi )
-eval_theta_degrees = np.linspace( theta_min_degrees, theta_max_degrees, num_theta )
+
+pre_substrate_theta_degrees = np.linspace( theta_min_degrees, theta_max_degrees, num_theta )
+
+index_pre_substrate = 1.0
+index_substrate = 3.42
+
+pre_substrate_theta_radians = np.pi * pre_substrate_theta_degrees / 180.
+
+eval_theta_radians = np.arcsin( ( index_pre_substrate / index_substrate ) * np.sin( pre_substrate_theta_radians ) )
+eval_theta_degrees = 180. * eval_theta_radians / np.pi
+
 
 eval_pol_idx = 0
 
