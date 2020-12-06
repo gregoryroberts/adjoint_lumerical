@@ -19,7 +19,7 @@ projects_directory_location = projects_directory_location_base + '_angular_bfast
 
 angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
 
-num_incoherent_sums = 500#1000
+num_incoherent_sums = 1000#500#1000
 
 coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
 incoherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
