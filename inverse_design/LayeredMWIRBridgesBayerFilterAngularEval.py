@@ -544,7 +544,13 @@ focal_E_normal = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name
 np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
 
 
-for phi_idx in range( 0, num_phi ):
+
+transmission_data = np.load( projects_directory_location + "/angular_transmission.npy" )
+focal_plane_efields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
+
+
+for phi_idx in range( num_phi - 1, num_phi ):
+# for phi_idx in range( 0, num_phi ):
 	for theta_idx in range( 0, num_theta ):
 		fdtd_hook.switchtolayout()
 
