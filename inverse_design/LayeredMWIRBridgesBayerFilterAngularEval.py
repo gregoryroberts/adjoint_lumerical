@@ -93,11 +93,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_dense_snell'#dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal'#dense'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_dense_snell'#dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal'#dense'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -252,8 +252,10 @@ for adj_src in range(0, num_adjoint_sources):
 focal_transmission_monitor = fdtd_hook.addpower()
 focal_transmission_monitor['name'] = 'focal_transmission_monitor'
 focal_transmission_monitor['monitor type'] = '2D Z-normal'
-focal_transmission_monitor['x span'] = device_size_lateral_um * 1e-6
-focal_transmission_monitor['y span'] = device_size_lateral_um * 1e-6
+# focal_transmission_monitor['x span'] = device_size_lateral_um * 1e-6
+# focal_transmission_monitor['y span'] = device_size_lateral_um * 1e-6
+focal_transmission_monitor['x span'] = fdtd_region_size_lateral_um * 1e-6
+focal_transmission_monitor['y span'] = fdtd_region_size_lateral_um * 1e-6
 focal_transmission_monitor['x'] = 0 * 1e-6
 focal_transmission_monitor['y'] = 0 * 1e-6
 focal_transmission_monitor['z'] = adjoint_vertical_um * 1e-6
@@ -503,7 +505,8 @@ eval_lambda_max_um = lambda_max_um + 0.5
 eval_lambda_um = np.linspace( eval_lambda_min_um, eval_lambda_max_um, num_eval_points )
 
 transmission_data = np.zeros( ( num_adjoint_sources + 1, num_phi, num_theta, num_design_frequency_points ) )
-focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, device_voxels_lateral, device_voxels_lateral, num_design_frequency_points ), dtype=np.complex )
+# focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, device_voxels_lateral, device_voxels_lateral, num_design_frequency_points ), dtype=np.complex )
+focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, fdtd_region_minimum_lateral_voxels, fdtd_region_minimum_lateral_voxels, num_design_frequency_points ), dtype=np.complex )
 
 
 
@@ -545,12 +548,12 @@ np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
 
 
 
-transmission_data = np.load( projects_directory_location + "/angular_transmission.npy" )
-focal_plane_efields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
+# transmission_data = np.load( projects_directory_location + "/angular_transmission.npy" )
+# focal_plane_efields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
 
 
-for phi_idx in range( num_phi - 1, num_phi ):
-# for phi_idx in range( 0, num_phi ):
+# for phi_idx in range( num_phi - 1, num_phi ):
+for phi_idx in range( 0, num_phi ):
 	for theta_idx in range( 0, num_theta ):
 		fdtd_hook.switchtolayout()
 
