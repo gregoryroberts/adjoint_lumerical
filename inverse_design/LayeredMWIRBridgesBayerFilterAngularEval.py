@@ -506,7 +506,7 @@ eval_lambda_um = np.linspace( eval_lambda_min_um, eval_lambda_max_um, num_eval_p
 
 transmission_data = np.zeros( ( num_adjoint_sources + 1, num_phi, num_theta, num_design_frequency_points ) )
 # focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, device_voxels_lateral, device_voxels_lateral, num_design_frequency_points ), dtype=np.complex )
-focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, fdtd_region_minimum_lateral_voxels, fdtd_region_minimum_lateral_voxels, num_design_frequency_points ), dtype=np.complex )
+focal_plane_efields = np.zeros( ( num_phi, num_theta, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels, num_design_frequency_points ), dtype=np.complex )
 
 
 
