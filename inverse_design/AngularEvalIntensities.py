@@ -21,8 +21,12 @@ angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fi
 
 num_incoherent_sums = 500#1000#500#1000
 
-coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
-incoherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
+# coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
+# incoherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
+
+coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
+incoherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
+
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
