@@ -30,8 +30,8 @@ coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, 1 + fdtd_reg
 phase_by_prop_prefactor_lambda = -2 * np.pi * 0.5 * silicon_thickness_um * 3.42 / lambda_values_um
 # phase_by_prop_prefactor_theta = 1.0 / np.cos( eval_theta_radians )
 phase_by_prop_prefactor_theta = np.cos( eval_theta_radians )
-weighting = np.zeros( ( num_phi, num_theta ) )
-weighting[ 0, 0 ] = 1.0
+weighting = np.ones( ( num_phi, num_theta ) )
+# weighting[ 0, 0 ] = 1.0
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
