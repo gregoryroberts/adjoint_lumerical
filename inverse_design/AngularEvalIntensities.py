@@ -42,6 +42,8 @@ for wl_idx in range( 0, num_design_frequency_points ):
 
 	coherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
 	for phi_idx in range( 0, num_phi ):
+		if ( phi_idx % 2 ) == 1:
+			continue
 		for theta_idx in range( 0, num_theta ):
 			get_phase = np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
 			# get_phase = np.exp( 1j * random_phases[ 0, theta_idx ] )
