@@ -27,7 +27,7 @@ angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fi
 coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
 # incoherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
 
-phase_by_prop_prefactor_lambda = -2 * np.pi * 0.5 * silicon_thickness_um * 3.42 / lambda_values_um
+phase_by_prop_prefactor_lambda = (-1) * -2 * np.pi * 0.5 * silicon_thickness_um * 3.42 / lambda_values_um
 # phase_by_prop_prefactor_theta = 1.0 / np.cos( eval_theta_radians )
 phase_by_prop_prefactor_theta = np.cos( eval_theta_radians )
 
@@ -41,7 +41,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 	coherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
 	for phi_idx in range( 0, num_phi ):
 		for theta_idx in range( 0, num_theta ):
-			get_phase = 1.0#np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
+			get_phase = np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
 			# get_phase = np.exp( 1j * random_phases[ 0, theta_idx ] )
 			coherent_fields += np.squeeze( get_phase * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
 	
