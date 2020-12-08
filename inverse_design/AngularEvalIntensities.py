@@ -41,7 +41,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 	for phi_idx in range( 0, num_phi ):
 		for theta_idx in range( 0, num_theta ):
 			# get_phase = np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
-			get_phase = np.exp( 1j * random_phases[ theta_idx ] )
+			get_phase = np.exp( 1j * random_phases[ 0, theta_idx ] )
 			coherent_fields += np.squeeze( get_phase * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
 	
 	coherent_intensity = np.squeeze( np.sum( np.abs( coherent_fields )**2, axis=0 ) )
