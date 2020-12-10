@@ -192,7 +192,8 @@ for xy_idx in range(0, 2):
 	forward_src = fdtd_hook.addplane()
 	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
 	forward_src['plane wave type'] = 'Diffracting'
-	forward_src['angle phi'] = xy_phi_rotations[xy_idx]
+	# forward_src['angle phi'] = xy_phi_rotations[xy_idx]
+	forward_src['polarization angle'] = xy_phi_rotations[xy_idx]
 	forward_src['direction'] = 'Backward'
 	# forward_src['x span'] = lateral_aperture_um * 1e-6
 	forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
