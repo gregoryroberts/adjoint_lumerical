@@ -14,7 +14,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 
 projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 projects_directory_location_base += "/" + project_name
-projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_dilated_250nm'
+projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal'#_dilated_250nm'
 
 
 angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
@@ -42,28 +42,34 @@ for wl_idx in range( 0, num_design_frequency_points ):
 
 	coherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
 	for phi_idx in range( 0, num_phi ):
+
+		quadurant_weighting = 1.0
+		if phi_idx >= ( num_phi // 2 ):
+			quadurant_weighting = -1.0
+
 		for theta_idx in range( 0, num_theta ):
 			get_phase = np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
+
 			# get_phase = np.exp( 1j * random_phases[ 0, theta_idx ] )
-			coherent_fields += weighting[ phi_idx, theta_idx ] * np.squeeze( get_phase * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
+			coherent_fields += quadurant_weighting * weighting[ phi_idx, theta_idx ] * np.squeeze( get_phase * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
 	
 	coherent_intensity = np.squeeze( np.sum( np.abs( coherent_fields )**2, axis=0 ) )
 	coherent_intensity_by_wl[ wl_idx ] = coherent_intensity
 
 
-	averaged_incoherent_intensity = np.zeros( coherent_intensity.shape )
-	for avg_idx in range( 0, num_incoherent_sums ):
-		random_phases = 2 * np.pi * np.random.random( ( num_phi, num_theta ) )
+	# averaged_incoherent_intensity = np.zeros( coherent_intensity.shape )
+	# for avg_idx in range( 0, num_incoherent_sums ):
+	# 	random_phases = 2 * np.pi * np.random.random( ( num_phi, num_theta ) )
 
-		averaged_incoherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
-		for phi_idx in range( 0, num_phi ):
-			for theta_idx in range( 0, num_theta ):
-				averaged_incoherent_fields += np.squeeze( np.exp( 1j * random_phases[ phi_idx, theta_idx ] ) * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
+	# 	averaged_incoherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
+	# 	for phi_idx in range( 0, num_phi ):
+	# 		for theta_idx in range( 0, num_theta ):
+	# 			averaged_incoherent_fields += np.squeeze( np.exp( 1j * random_phases[ phi_idx, theta_idx ] ) * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
 		
-		averaged_incoherent_intensity += ( 1. / num_incoherent_sums ) * np.squeeze( np.sum( np.abs( averaged_incoherent_fields )**2, axis=0 ) )
+	# 	averaged_incoherent_intensity += ( 1. / num_incoherent_sums ) * np.squeeze( np.sum( np.abs( averaged_incoherent_fields )**2, axis=0 ) )
 
-	incoherent_intensity_by_wl[ wl_idx ] = averaged_incoherent_intensity
+	# incoherent_intensity_by_wl[ wl_idx ] = averaged_incoherent_intensity
 
 
 np.save( projects_directory_location + "/coherent_intensity_by_wl.npy", coherent_intensity_by_wl )
-np.save( projects_directory_location + "/incoherent_intensity_by_wl.npy", incoherent_intensity_by_wl )
+# np.save( projects_directory_location + "/incoherent_intensity_by_wl.npy", incoherent_intensity_by_wl )
