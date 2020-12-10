@@ -377,6 +377,8 @@ eval_lambda_um = np.linspace( eval_lambda_min_um, eval_lambda_max_um, num_eval_p
 
 device_input_efields = np.zeros( ( num_theta, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels, num_design_frequency_points ), dtype=np.complex )
 
+job_names = {}
+
 for theta_idx in range( 0, num_theta ):
 	fdtd_hook.switchtolayout()
 
