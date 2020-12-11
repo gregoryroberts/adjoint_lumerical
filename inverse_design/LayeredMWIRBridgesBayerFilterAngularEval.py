@@ -545,7 +545,7 @@ fdtd_hook.set( 'enabled', 1 )
 
 # focal_E_normal = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name' ] )
 
-np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
+# np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
 
 
 
