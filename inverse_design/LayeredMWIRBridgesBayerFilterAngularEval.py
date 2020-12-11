@@ -541,9 +541,9 @@ disable_all_sources()
 fdtd_hook.select( forward_sources[eval_pol_idx]['name'] )
 fdtd_hook.set( 'enabled', 1 )
 
-fdtd_hook.run()
+# fdtd_hook.run()
 
-focal_E_normal = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name' ] )
+# focal_E_normal = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name' ] )
 
 np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
 
