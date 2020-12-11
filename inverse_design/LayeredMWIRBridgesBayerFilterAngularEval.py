@@ -563,7 +563,7 @@ for phi_idx in range( num_phi - 1, num_phi ):
 
 		forward_sources[ eval_pol_idx ][ 'angle theta' ] = eval_theta_degrees[ theta_idx ]
 		forward_sources[ eval_pol_idx ][ 'angle phi' ] = eval_phi_degrees[ phi_idx ]
-		forward_sources[ eval_pol_idx ][ 'polarization angle' ] = xy_phi_rotations[ eval_pol_idx ] + eval_phi_degrees
+		forward_sources[ eval_pol_idx ][ 'polarization angle' ] = xy_phi_rotations[ eval_pol_idx ] + eval_phi_degrees[ eval_pol_idx ]
 
 		fdtd_hook.select( 'design_import' )
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
