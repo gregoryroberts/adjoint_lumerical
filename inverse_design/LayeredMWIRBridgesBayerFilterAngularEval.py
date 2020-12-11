@@ -578,7 +578,8 @@ for phi_idx in range( 0, num_phi ):
 		job_names[ ( 'forward', eval_pol_idx, theta_idx ) ] = add_job( job_name, jobs_queue )
 
 
-	run_jobs( jobs_queue )
+	# run_jobs( jobs_queue )
+	sys.exit(0)
 
 	for theta_idx in range( 0, num_theta ):
 
