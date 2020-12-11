@@ -531,7 +531,6 @@ fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platfor
 forward_sources[ eval_pol_idx ][ 'angle theta' ] = 0
 forward_sources[ eval_pol_idx ][ 'angle phi' ] = 0
 
-
 fdtd_hook.select( 'design_import' )
 fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
 
@@ -541,11 +540,11 @@ disable_all_sources()
 fdtd_hook.select( forward_sources[eval_pol_idx]['name'] )
 fdtd_hook.set( 'enabled', 1 )
 
-# fdtd_hook.run()
+fdtd_hook.run()
 
-# focal_E_normal = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name' ] )
+focal_E_normal = get_efield( transmission_monitors[ num_adjoint_sources ][ 'name' ] )
 
-# np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
+np.save( projects_directory_location + "/focal_e_normal.npy", focal_E_normal )
 
 
 
@@ -554,7 +553,7 @@ fdtd_hook.set( 'enabled', 1 )
 
 
 # for phi_idx in range( num_phi - 1, num_phi ):
-for phi_idx in range( num_phi - 1, num_phi ):
+for phi_idx in range( 0, num_phi ):
 	for theta_idx in range( 0, num_theta ):
 		fdtd_hook.switchtolayout()
 
@@ -577,9 +576,7 @@ for phi_idx in range( num_phi - 1, num_phi ):
 		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
 		job_names[ ( 'forward', eval_pol_idx, theta_idx ) ] = add_job( job_name, jobs_queue )
 
-
-	# run_jobs( jobs_queue )
-	sys.exit(0)
+	run_jobs( jobs_queue )
 
 	for theta_idx in range( 0, num_theta ):
 
