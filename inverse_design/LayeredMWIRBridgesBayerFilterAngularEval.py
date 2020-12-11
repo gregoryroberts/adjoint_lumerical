@@ -93,11 +93,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_v2'#dilated_250nm'#dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_v3'#dilated_250nm'#dense'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_v2'#dilated_250nm'#dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_v3'#dilated_250nm'#dense'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -562,7 +562,7 @@ for phi_idx in range( 0, num_phi ):
 
 		forward_sources[ eval_pol_idx ][ 'angle theta' ] = eval_theta_degrees[ theta_idx ]
 		forward_sources[ eval_pol_idx ][ 'angle phi' ] = eval_phi_degrees[ phi_idx ]
-		forward_sources[ eval_pol_idx ][ 'polarization angle' ] = xy_phi_rotations[ eval_pol_idx ] + eval_phi_degrees[ phi_idx ]
+		forward_sources[ eval_pol_idx ][ 'polarization angle' ] = xy_phi_rotations[ eval_pol_idx ] - eval_phi_degrees[ phi_idx ]
 
 		fdtd_hook.select( 'design_import' )
 		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
