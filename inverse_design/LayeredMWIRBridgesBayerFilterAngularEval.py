@@ -554,7 +554,7 @@ fdtd_hook.set( 'enabled', 1 )
 
 
 # for phi_idx in range( num_phi - 1, num_phi ):
-for phi_idx in range( 0, num_phi ):
+for phi_idx in range( num_phi - 1, num_phi ):
 	for theta_idx in range( 0, num_theta ):
 		fdtd_hook.switchtolayout()
 
