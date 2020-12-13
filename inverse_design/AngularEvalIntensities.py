@@ -68,6 +68,13 @@ for wl_idx in range( 0, num_design_frequency_points ):
 	coherent_intensity_by_wl[ wl_idx ] = coherent_intensity
 
 
+np.save( projects_directory_location + "/coherent_intensity_by_wl.npy", coherent_intensity_by_wl )
+
+for wl_idx in range( 0, num_design_frequency_points ):
+
+	fields_by_wl = np.squeeze( angular_focal_fields[ :, :, :, :, :, wl_idx ] )
+	coherent_fields = np.squeeze( np.sum( np.squeeze( np.sum( fields_by_wl, axis=0 ) ), axis=0 ) )
+
 	averaged_incoherent_intensity = np.zeros( coherent_intensity.shape )
 	averaged_incoherent_intensity_half = np.zeros( coherent_intensity.shape )
 
@@ -87,6 +94,5 @@ for wl_idx in range( 0, num_design_frequency_points ):
 	incoherent_intensity_by_wl_half[ wl_idx ] = averaged_incoherent_intensity_half
 
 
-np.save( projects_directory_location + "/coherent_intensity_by_wl.npy", coherent_intensity_by_wl )
 np.save( projects_directory_location + "/incoherent_intensity_by_wl.npy", incoherent_intensity_by_wl )
 np.save( projects_directory_location + "/incoherent_intensity_by_wl_half.npy", incoherent_intensity_by_wl_half )
