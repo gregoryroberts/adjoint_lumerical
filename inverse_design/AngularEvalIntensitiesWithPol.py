@@ -83,18 +83,17 @@ for wl_idx in range( 0, num_design_frequency_points ):
 
 	averaged_incoherent_intensity = np.zeros( ( 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
 
-	for field_idx in range( 0, len( angular_focal_fields_arrays ) ):
-		fields_by_wl = np.squeeze( angular_focal_fields_arrays[ field_idx ][ :, :, :, :, :, wl_idx ] )
+	for avg_idx in range( 0, num_incoherent_sums ):
+		averaged_incoherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
+		for field_idx in range( 0, len( angular_focal_fields_arrays ) ):
+			fields_by_wl = np.squeeze( angular_focal_fields_arrays[ field_idx ][ :, :, :, :, :, wl_idx ] )
 		
-		random_phases = 2 * np.pi * np.random.random( ( num_phi, num_theta ) )
-
-		for avg_idx in range( 0, num_incoherent_sums ):
-			averaged_incoherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
+			random_phases = 2 * np.pi * np.random.random( ( num_phi, num_theta ) )
 			for phi_idx in range( 0, num_phi ):
 				for theta_idx in range( 0, num_theta ):
 					averaged_incoherent_fields += np.squeeze( np.exp( 1j * random_phases[ phi_idx, theta_idx ] ) * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
 			
-			averaged_incoherent_intensity += 0.5 * ( 1. / num_incoherent_sums ) * np.squeeze( np.sum( np.abs( averaged_incoherent_fields )**2, axis=0 ) )
+		averaged_incoherent_intensity += 0.5 * ( 1. / num_incoherent_sums ) * np.squeeze( np.sum( np.abs( averaged_incoherent_fields )**2, axis=0 ) )
 
 	incoherent_intensity_by_wl[ wl_idx ] = averaged_incoherent_intensity
 
