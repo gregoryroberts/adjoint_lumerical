@@ -75,7 +75,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 	coherent_intensity_by_wl[ wl_idx ] = coherent_intensity
 
 
-np.save( projects_directory_location + "/coherent_intensity_by_wl.npy", coherent_intensity_by_wl )
+np.save( projects_directory_location + "/coherent_intensity_by_wl_with_pol.npy", coherent_intensity_by_wl )
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
@@ -99,4 +99,4 @@ for wl_idx in range( 0, num_design_frequency_points ):
 	incoherent_intensity_by_wl[ wl_idx ] = averaged_incoherent_intensity
 
 
-np.save( projects_directory_location + "/incoherent_intensity_by_wl.npy", incoherent_intensity_by_wl )
+np.save( projects_directory_location + "/incoherent_intensity_by_wl_with_pol.npy", incoherent_intensity_by_wl )
