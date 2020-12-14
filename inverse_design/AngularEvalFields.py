@@ -25,7 +25,7 @@ angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fi
 # coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
 # incoherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, device_voxels_lateral, device_voxels_lateral ) )
 
-coherent_fields_by_wl = np.zeros( ( num_design_frequency_points, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
+coherent_fields_by_wl = np.zeros( ( num_design_frequency_points, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ), dtype=np.complex )
 
 phase_by_prop_prefactor_lambda = -2 * np.pi * 0.5 * silicon_thickness_um * 3.42 / lambda_values_um
 # phase_by_prop_prefactor_theta = 1.0 / np.cos( eval_theta_radians )
