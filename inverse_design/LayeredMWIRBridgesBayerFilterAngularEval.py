@@ -93,11 +93,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_ypol_v3'#dilated_250nm'#dense'
+	projects_directory_location = projects_directory_location_base + '_narrow_angular_bfast_32_snell_large_focal_ypol_v3'#dilated_250nm'#dense'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_ypol_v3'#dilated_250nm'#dense'
+	projects_directory_location = projects_directory_location_base + '_narrow_angular_bfast_32_snell_large_focal_ypol_v3'#dilated_250nm'#dense'
 
 
 if not os.path.isdir(projects_directory_location):
