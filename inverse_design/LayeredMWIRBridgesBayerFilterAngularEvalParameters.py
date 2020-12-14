@@ -174,7 +174,7 @@ eval_theta_radians = np.arcsin( ( index_pre_substrate / index_substrate ) * np.s
 eval_theta_degrees = 180. * eval_theta_radians / np.pi
 
 
-eval_pol_idx = 1#0
+eval_pol_idx = 0#1#0
 
 num_eval_points = num_phi * num_theta
 
