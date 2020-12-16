@@ -14,7 +14,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 
 projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 projects_directory_location_base += "/" + project_name
-projects_directory_location = projects_directory_location_base + '_narrow_angular_bfast_32_snell_large_focal_ypol_v3'#_dilated_250nm'
+projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_v3'#_dilated_250nm'
 
 
 angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
@@ -41,8 +41,9 @@ for phi_idx in range( 0, num_phi ):
 	phase_weighting_by_phi[ phi_idx ] = 1.0#np.exp( 1j * get_phi_value_radians )
 
 
-weighting = np.ones( ( num_phi, num_theta ) )
+weighting = np.zeros( ( num_phi, num_theta ) )
 # weighting[ 0, 0 ] = 1.0
+weighting[ :, 0 ] = 1.0
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
