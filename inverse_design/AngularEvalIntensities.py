@@ -42,8 +42,8 @@ for phi_idx in range( 0, num_phi ):
 
 
 weighting = np.zeros( ( num_phi, num_theta ) )
-# weighting[ 0, 0 ] = 1.0
-weighting[ :, 0 ] = 1.0
+weighting[ 0, 0 ] = 1.0
+# weighting[ :, 0 ] = 1.0
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
