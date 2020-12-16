@@ -68,7 +68,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 		# 	quadurant_weighting = -1.0
 
 		for theta_idx in range( 0, num_theta ):
-			get_phase = np.exp( 1j * random_phases ) * phase_weighting_by_phi[ phi_idx ] * np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
+			get_phase = np.exp( 1j * random_phases[ phi_idx, theta_idx ] ) * phase_weighting_by_phi[ phi_idx ] * np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
 
 			# get_phase = np.exp( 1j * random_phases[ 0, theta_idx ] )
 			coherent_fields += quadurant_weighting * weighting[ phi_idx, theta_idx ] * np.squeeze( get_phase * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
