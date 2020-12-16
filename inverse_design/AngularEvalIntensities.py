@@ -58,7 +58,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 	fields_by_wl = np.squeeze( angular_focal_fields[ :, :, :, :, :, wl_idx ] )
 	coherent_fields = np.squeeze( np.sum( np.squeeze( np.sum( fields_by_wl, axis=0 ) ), axis=0 ) )
 
-	# random_phases = 2 * np.pi * np.random.random( ( num_phi, num_theta ) )
+	random_phases = 2 * np.pi * np.random.random( ( num_phi, num_theta ) )
 
 	coherent_fields = np.zeros( coherent_fields.shape, dtype=np.complex )
 	for phi_idx in range( 0, num_phi ):
@@ -68,7 +68,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 		# 	quadurant_weighting = -1.0
 
 		for theta_idx in range( 0, num_theta ):
-			get_phase = phase_weighting_by_phi[ phi_idx ] * np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
+			get_phase = np.exp( 1j * random_phases ) * phase_weighting_by_phi[ phi_idx ] * np.exp( 1j * phase_by_prop_prefactor_lambda[ wl_idx ] * phase_by_prop_prefactor_theta[ theta_idx ] )
 
 			# get_phase = np.exp( 1j * random_phases[ 0, theta_idx ] )
 			coherent_fields += quadurant_weighting * weighting[ phi_idx, theta_idx ] * np.squeeze( get_phase * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
