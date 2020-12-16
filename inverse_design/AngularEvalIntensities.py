@@ -28,6 +28,7 @@ num_incoherent_sums = 1000
 coherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
 incoherent_intensity_by_wl = np.zeros( ( num_design_frequency_points, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
 incoherent_intensity_by_wl_half = np.zeros( ( num_design_frequency_points, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ) )
+coherent_fields_by_wl = np.zeros( ( num_design_frequency_points, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels ), dtype=np.complex )
 
 phase_by_prop_prefactor_lambda = -2 * np.pi * 0.5 * silicon_thickness_um * 3.42 / lambda_values_um
 # phase_by_prop_prefactor_theta = 1.0 / np.cos( eval_theta_radians )
@@ -73,6 +74,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 			coherent_fields += quadurant_weighting * weighting[ phi_idx, theta_idx ] * np.squeeze( get_phase * fields_by_wl[ phi_idx, theta_idx, :, :, : ] )
 	
 	coherent_intensity = np.squeeze( np.sum( np.abs( coherent_fields )**2, axis=0 ) )
+	coherent_fields_by_wl[ wl_idx ] = coherent_fields
 	coherent_intensity_by_wl[ wl_idx ] = coherent_intensity
 
 
