@@ -79,6 +79,7 @@ for wl_idx in range( 0, num_design_frequency_points ):
 
 
 np.save( projects_directory_location + "/coherent_intensity_by_wl.npy", coherent_intensity_by_wl )
+np.save( projects_directory_location + "/coherent_fields_by_wl.npy", coherent_fields_by_wl )
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
