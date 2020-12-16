@@ -8,7 +8,7 @@ import numpy as np
 # Files
 #
 # project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_25x25x25um_f30um'
-project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_40x40x25um_f48um'
+project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_nrl_fixed_step_addcage_40x40x25um_f48um'
 
 # todo(gdrobert): consider the contrast here like you are doing in the cmos designs.. minimize energy into wrong quadrant
 
