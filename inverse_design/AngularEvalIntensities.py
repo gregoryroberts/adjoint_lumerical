@@ -50,7 +50,7 @@ for theta_idx in range( 0, num_theta ):
 	scale_f_by_f0 = f_by_f0 / 0.48
 	Ta = np.exp( -( ( scale_f_by_f0**( 1.5 ) ) ) )
 
-	weighting[ :, theta_idx ] = Ta
+	weighting[ :, theta_idx ] = 1.0#Ta
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
