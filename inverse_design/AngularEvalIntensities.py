@@ -38,7 +38,7 @@ half_phi_idx = num_phi // 2
 for phi_idx in range( 0, num_phi ):
 	get_phi_value_radians = np.pi * eval_phi_degrees[ phi_idx % half_phi_idx ] / 180.
 
-	phase_weighting_by_phi[ phi_idx ] = np.exp( 1j * get_phi_value_radians )
+	phase_weighting_by_phi[ phi_idx ] = 1.0#np.exp( 1j * get_phi_value_radians )
 
 
 weighting = np.zeros( ( num_phi, num_theta ) )
@@ -50,7 +50,7 @@ for theta_idx in range( 0, num_theta ):
 	scale_f_by_f0 = f_by_f0 / 0.48
 	Ta = np.exp( -( ( scale_f_by_f0**( 1.5 ) ) ) )
 
-	weighting[ :, theta_idx ] = 1.0#Ta
+	weighting[ :, theta_idx ] = Ta#1.0#Ta
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
