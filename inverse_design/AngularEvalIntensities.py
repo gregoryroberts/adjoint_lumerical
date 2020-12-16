@@ -14,7 +14,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 
 projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 projects_directory_location_base += "/" + project_name
-projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_ypol_v3'#_dilated_250nm'
+projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_norm_v2'#_dilated_250nm'
 
 
 angular_focal_fields = np.load( projects_directory_location + "/angular_focal_fields.npy" )
