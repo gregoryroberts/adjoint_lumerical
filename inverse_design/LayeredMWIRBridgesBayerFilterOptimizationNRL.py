@@ -246,7 +246,7 @@ design_import['z max'] = device_vertical_maximum_um * 1e-6
 design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredMWIRBridgesBayerFilter.LayeredMWIRBridgesBayerFilter(
+bayer_filter = LayeredMWIRBridgesBayerFilterNRL.LayeredMWIRBridgesBayerFilterNRL(
 	bayer_filter_size_voxels,
 	[ 0.0, 1.0 ],
 	# [min_device_permittivity, max_device_permittivity],
