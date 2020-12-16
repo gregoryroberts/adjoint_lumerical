@@ -38,7 +38,7 @@ half_phi_idx = num_phi // 2
 for phi_idx in range( 0, num_phi ):
 	get_phi_value_radians = np.pi * eval_phi_degrees[ phi_idx % half_phi_idx ] / 180.
 
-	phase_weighting_by_phi[ phi_idx ] = 1.0#np.exp( 1j * get_phi_value_radians )
+	phase_weighting_by_phi[ phi_idx ] = np.exp( 1j * get_phi_value_radians )
 
 
 weighting = np.zeros( ( num_phi, num_theta ) )
