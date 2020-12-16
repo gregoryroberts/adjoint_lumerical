@@ -43,7 +43,14 @@ for phi_idx in range( 0, num_phi ):
 
 weighting = np.zeros( ( num_phi, num_theta ) )
 # weighting[ 0, 0 ] = 1.0
-weighting[ :, 0 ] = 1.0
+# weighting[ :, 0 ] = 1.0
+
+for theta_idx in range( 0, num_theta ):
+	f_by_f0 = np.sin( pre_substrate_theta_radians[ theta_idx ] ) / np.sin( np.max( pre_substrate_theta_radians ) )
+	scale_f_by_f0 = f_by_f0 / 0.48
+	Ta = np.exp( -( ( scale_f_by_f0**( 1.5 ) ) ) )
+
+	weighting[ :, theta_idx ] = Ta
 
 for wl_idx in range( 0, num_design_frequency_points ):
 
