@@ -154,11 +154,11 @@ phi_min_degrees = 0 * 180. / np.pi
 phi_max_degrees = ( 2 * np.pi - ( 2 * np.pi / num_phi ) ) * 180. / np.pi
 
 num_theta = 8#12#8
-# theta_min_degrees = 12
-# theta_max_degrees = 23.6
+theta_min_degrees = 12
+theta_max_degrees = 23.6
 
-theta_min_degrees = 0#12
-theta_max_degrees = 7.5#23.6
+# theta_min_degrees = 0#12
+# theta_max_degrees = 7.5#23.6
 
 
 eval_phi_degrees = np.linspace( phi_min_degrees, phi_max_degrees, num_phi )

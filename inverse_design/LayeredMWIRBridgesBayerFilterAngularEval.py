@@ -93,11 +93,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_narrow_angular_bfast_32_snell_large_focal_xpol_v3'#dilated_250nm'#dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_norm_v2'#dilated_250nm'#dense'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_narrow_angular_bfast_32_snell_large_focal_xpol_v3'#dilated_250nm'#dense'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_xpol_norm_v2'#dilated_250nm'#dense'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -259,7 +259,7 @@ focal_transmission_monitor['x span'] = fdtd_region_size_lateral_um * 1e-6
 focal_transmission_monitor['y span'] = fdtd_region_size_lateral_um * 1e-6
 focal_transmission_monitor['x'] = 0 * 1e-6
 focal_transmission_monitor['y'] = 0 * 1e-6
-focal_transmission_monitor['z'] = adjoint_vertical_um * 1e-6
+focal_transmission_monitor['z'] = ( device_vertical_maximum_um + pedestal_thickness_um ) * 1e-6# adjoint_vertical_um * 1e-6
 focal_transmission_monitor['override global monitor settings'] = 1
 focal_transmission_monitor['use wavelength spacing'] = 1
 focal_transmission_monitor['use source limits'] = 1
@@ -271,12 +271,12 @@ transmission_monitors.append( focal_transmission_monitor )
 # Add a block of polymer at the top where the device will be adhered to a Silicon substrate
 #
 
-permittivity_layer_substrate = fdtd_hook.addimport()
-permittivity_layer_substrate['name'] = 'permittivity_layer_substrate'
-permittivity_layer_substrate['x span'] = device_size_lateral_um * 1e-6
-permittivity_layer_substrate['y span'] = device_size_lateral_um * 1e-6
-permittivity_layer_substrate['z min'] = device_vertical_maximum_um * 1e-6
-permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + pedestal_thickness_um ) * 1e-6
+# permittivity_layer_substrate = fdtd_hook.addimport()
+# permittivity_layer_substrate['name'] = 'permittivity_layer_substrate'
+# permittivity_layer_substrate['x span'] = device_size_lateral_um * 1e-6
+# permittivity_layer_substrate['y span'] = device_size_lateral_um * 1e-6
+# permittivity_layer_substrate['z min'] = device_vertical_maximum_um * 1e-6
+# permittivity_layer_substrate['z max'] = ( device_vertical_maximum_um + pedestal_thickness_um ) * 1e-6
 
 platform_x_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
 platform_y_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
@@ -291,7 +291,7 @@ silicon_substrate['x'] = 0
 silicon_substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
 silicon_substrate['y'] = 0
 silicon_substrate['y span'] = fdtd_region_size_lateral_um * 1e-6
-silicon_substrate['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+silicon_substrate['z min'] = fdtd_region_minimum_vertical_um * 1e-6# ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
 # Send this outside the region FDTD and let the source sit inside of it
 silicon_substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 silicon_substrate['material'] = 'Si (Silicon) - Palik'
@@ -300,12 +300,12 @@ silicon_substrate['material'] = 'Si (Silicon) - Palik'
 #
 # Add device region and create device permittivity
 #
-design_import = fdtd_hook.addimport()
-design_import['name'] = 'design_import'
-design_import['x span'] = device_size_lateral_um * 1e-6
-design_import['y span'] = device_size_lateral_um * 1e-6
-design_import['z max'] = device_vertical_maximum_um * 1e-6
-design_import['z min'] = device_vertical_minimum_um * 1e-6
+# design_import = fdtd_hook.addimport()
+# design_import['name'] = 'design_import'
+# design_import['x span'] = device_size_lateral_um * 1e-6
+# design_import['y span'] = device_size_lateral_um * 1e-6
+# design_import['z max'] = device_vertical_maximum_um * 1e-6
+# design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
 bayer_filter = LayeredMWIRBridgesBayerFilter.LayeredMWIRBridgesBayerFilter(
@@ -525,14 +525,14 @@ platform_index[ : ] = disperesive_max_index
 fdtd_hook.switchtolayout()
 
 
-fdtd_hook.select( 'permittivity_layer_substrate' )
-fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
+# fdtd_hook.select( 'permittivity_layer_substrate' )
+# fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
 
 forward_sources[ eval_pol_idx ][ 'angle theta' ] = 0
 forward_sources[ eval_pol_idx ][ 'angle phi' ] = 0
 
-fdtd_hook.select( 'design_import' )
-fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
+# fdtd_hook.select( 'design_import' )
+# fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
 
 
 disable_all_sources()
@@ -557,15 +557,15 @@ for phi_idx in range( 0, num_phi ):
 	for theta_idx in range( 0, num_theta ):
 		fdtd_hook.switchtolayout()
 
-		fdtd_hook.select( 'permittivity_layer_substrate' )
-		fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
+		# fdtd_hook.select( 'permittivity_layer_substrate' )
+		# fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
 
 		forward_sources[ eval_pol_idx ][ 'angle theta' ] = eval_theta_degrees[ theta_idx ]
 		forward_sources[ eval_pol_idx ][ 'angle phi' ] = eval_phi_degrees[ phi_idx ]
 		forward_sources[ eval_pol_idx ][ 'polarization angle' ] = xy_phi_rotations[ eval_pol_idx ] - eval_phi_degrees[ phi_idx ]
 
-		fdtd_hook.select( 'design_import' )
-		fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
+		# fdtd_hook.select( 'design_import' )
+		# fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
 
 		disable_all_sources()
 
