@@ -244,7 +244,7 @@ class LayeredMWIRBridgesBayerFilterNRL(device.Device):
 		self.filters = [self.sigmoid_0, self.layering_z_1, self.max_blur_xy_2, self.sigmoid_3, self.scale_4]
 
 	def init_variables(self):
-		super(LayeredMWIRBridgesBayerFilter, self).init_variables()
+		super(LayeredMWIRBridgesBayerFilterNRL, self).init_variables()
 
 		self.w[0] = np.multiply(self.init_permittivity, np.ones(self.size, dtype=np.complex))
 
