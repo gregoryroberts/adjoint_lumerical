@@ -7,7 +7,7 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_25x25x25um_f30um'
+project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_30x30x25um_f30um'
 
 # todo(gdrobert): consider the contrast here like you are doing in the cmos designs.. minimize energy into wrong quadrant
 
@@ -30,9 +30,9 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 # Device
 #
-mesh_spacing_um = 0.25
+mesh_spacing_um = 0.25 / 2.
 
-device_size_lateral_um = 25
+device_size_lateral_um = 30
 device_size_verical_um = 25
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
@@ -44,8 +44,8 @@ device_vertical_minimum_um = 0
 #
 # Spectral
 #
-lambda_min_um = 3.5
-lambda_max_um = 5.5
+lambda_min_um = 3.0
+lambda_max_um = 5.0
 bandwidth_um = lambda_max_um - lambda_min_um
 
 num_bands = 3
@@ -79,11 +79,12 @@ num_vertical_layers = 10
 vertical_gap_size_um = 25
 lateral_gap_size_um = 4 * 2.5
 
+pedestal_thickness_um = 11.5# + 3.5
 
-fdtd_region_size_vertical_um = 1 * vertical_gap_size_um + device_size_verical_um + focal_length_um
+fdtd_region_size_vertical_um = 1 * vertical_gap_size_um# device_size_verical_um #+ focal_length_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
 fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um
-fdtd_region_minimum_vertical_um = 0#-focal_length_um - vertical_gap_size_um
+fdtd_region_minimum_vertical_um = 0 + device_size_verical_um #-focal_length_um - vertical_gap_size_um
 
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
@@ -92,7 +93,6 @@ fdtd_simulation_time_fs = 3000 * 5
 
 
 
-pedestal_thickness_um = 11.5# + 3.5
 silicon_thickness_um = vertical_gap_size_um - pedestal_thickness_um
 
 
@@ -156,6 +156,7 @@ phi_max_degrees = ( 2 * np.pi - ( 2 * np.pi / num_phi ) ) * 180. / np.pi
 num_theta = 8#12#8
 theta_min_degrees = 12
 theta_max_degrees = 23.6
+
 
 eval_phi_degrees = np.linspace( phi_min_degrees, phi_max_degrees, num_phi )
 

@@ -93,11 +93,11 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 if run_on_cluster:
 	projects_directory_location_base = "/central/groups/Faraon_Computing/projects" 
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_norm_xpol'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_norm_xpol_v3'
 else:
 	projects_directory_location_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 	projects_directory_location_base += "/" + project_name
-	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_norm_xpol'
+	projects_directory_location = projects_directory_location_base + '_angular_bfast_32_snell_large_focal_norm_xpol_v3'
 
 
 if not os.path.isdir(projects_directory_location):
@@ -209,26 +209,6 @@ for xy_idx in range(0, 2):
 	forward_sources.append(forward_src)
 
 
-#
-# Set up adjoint point monitors to get electric field strength at focus spots.  This will allow us to
-# compute the figure of merit as well as weight the adjoint simulations properly in calculation of the
-# gradient.
-#
-focal_monitors = []
-
-for adj_src in range(0, num_adjoint_sources):
-	focal_monitor = fdtd_hook.addpower()
-	focal_monitor['name'] = 'focal_monitor_' + str(adj_src)
-	focal_monitor['monitor type'] = 'point'
-	focal_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
-	focal_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
-	focal_monitor['z'] = adjoint_vertical_um * 1e-6
-	focal_monitor['override global monitor settings'] = 1
-	focal_monitor['use wavelength spacing'] = 1
-	focal_monitor['use source limits'] = 1
-	focal_monitor['frequency points'] = num_design_frequency_points
-
-	focal_monitors.append(focal_monitor)
 
 
 device_input_monitor = fdtd_hook.addpower()
@@ -375,32 +355,42 @@ eval_lambda_max_um = lambda_max_um + 0.5
 
 eval_lambda_um = np.linspace( eval_lambda_min_um, eval_lambda_max_um, num_eval_points )
 
-device_input_efields = np.zeros( ( num_theta, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels, num_design_frequency_points ), dtype=np.complex )
+device_input_efields = np.zeros( ( num_phi, num_theta, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels, num_design_frequency_points ), dtype=np.complex )
+device_input_hfields = np.zeros( ( num_phi, num_theta, 3, 1 + fdtd_region_minimum_lateral_voxels, 1 + fdtd_region_minimum_lateral_voxels, num_design_frequency_points ), dtype=np.complex )
 
 job_names = {}
 
-for theta_idx in range( 0, num_theta ):
-	fdtd_hook.switchtolayout()
 
-	forward_sources[ eval_pol_idx ][ 'angle theta' ] = eval_theta_degrees[ theta_idx ]
+for phi_idx in range( 0, num_phi ):
+	for theta_idx in range( 0, num_theta ):
+		fdtd_hook.switchtolayout()
 
-	disable_all_sources()
+		forward_sources[ eval_pol_idx ][ 'angle theta' ] = eval_theta_degrees[ theta_idx ]
+		forward_sources[ eval_pol_idx ][ 'angle phi' ] = eval_phi_degrees[ phi_idx ]
+		forward_sources[ eval_pol_idx ][ 'polarization angle' ] = xy_phi_rotations[ eval_pol_idx ] - eval_phi_degrees[ phi_idx ]
 
-	fdtd_hook.select( forward_sources[eval_pol_idx]['name'] )
-	fdtd_hook.set( 'enabled', 1 )
+		disable_all_sources()
 
-	job_name = 'forward_job_' + str( eval_pol_idx ) + "_" + str( theta_idx ) + '.fsp'
-	fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
-	job_names[ ( 'forward', eval_pol_idx, theta_idx ) ] = add_job( job_name, jobs_queue )
+		fdtd_hook.select( forward_sources[eval_pol_idx]['name'] )
+		fdtd_hook.set( 'enabled', 1 )
 
-run_jobs( jobs_queue )
+		job_name = 'forward_job_' + str( eval_pol_idx ) + "_" + str( theta_idx ) + '.fsp'
+		fdtd_hook.save( projects_directory_location + "/optimization.fsp" )
+		job_names[ ( 'forward', eval_pol_idx, theta_idx ) ] = add_job( job_name, jobs_queue )
 
-for theta_idx in range( 0, num_theta ):
+	run_jobs( jobs_queue )
 
-	fdtd_hook.load( job_names[ ( 'forward', eval_pol_idx, theta_idx ) ] )
+	for theta_idx in range( 0, num_theta ):
 
-	focal_E = get_efield( device_input_monitor[ 'name' ] )
-	device_input_efields[ theta_idx, :, :, :, : ] = np.squeeze( focal_E )
+		fdtd_hook.load( job_names[ ( 'forward', eval_pol_idx, theta_idx ) ] )
+
+		focal_E = get_efield( device_input_monitor[ 'name' ] )
+		device_input_efields[ phi_idx, theta_idx, :, :, :, : ] = np.squeeze( focal_E )
+
+		focal_H = get_hfield( device_input_monitor[ 'name' ] )
+		device_input_hfields[ phi_idx, theta_idx, :, :, :, : ] = np.squeeze( focal_H )
+
 
 np.save( projects_directory_location + "/device_input_efields.npy", device_input_efields )
+np.save( projects_directory_location + "/device_input_hfields.npy", device_input_hfields )
 
