@@ -404,6 +404,9 @@ for epoch in range(start_epoch, num_epochs):
 		# the cube index changes.
 		#
 		for dispersive_range_idx in range( 0, num_dispersive_ranges ):
+			if len( dispersive_range_to_adjoint_src_map ) == 0:
+				continue
+
 			dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( dispersive_ranges_um[ dispersive_range_idx ] )
 			disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
 
@@ -455,6 +458,9 @@ for epoch in range(start_epoch, num_epochs):
 			focal_data[xy_names[xy_idx]] = [ None for idx in range( 0, num_focal_spots ) ]
 
 		for dispersive_range_idx in range( 0, num_dispersive_ranges ):
+			if len( dispersive_range_to_adjoint_src_map ) == 0:
+				continue
+
 			for xy_idx in range(0, 2):
 				fdtd_hook.load( job_names[ ( 'forward', xy_idx, dispersive_range_idx ) ] )
 

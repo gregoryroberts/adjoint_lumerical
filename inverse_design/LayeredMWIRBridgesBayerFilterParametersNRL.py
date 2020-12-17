@@ -127,6 +127,7 @@ num_adjoint_sources = num_focal_spots
 adjoint_x_positions_um = [device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4., device_size_lateral_um / 4.]
 adjoint_y_positions_um = [device_size_lateral_um / 4., device_size_lateral_um / 4., -device_size_lateral_um / 4., -device_size_lateral_um / 4.]
 
+
 dispersive_range_to_adjoint_src_map = [
 	[ 0, 2 ],
 	[],
