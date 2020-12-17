@@ -49,8 +49,8 @@ for wl_idx in range( 0, num_design_frequency_points ):
 
 	efields_by_wl = np.squeeze( angular_efields[ :, :, :, :, :, wl_idx ] )
 	hfields_by_wl = np.squeeze( angular_hfields[ :, :, :, :, :, wl_idx ] )
-	coherent_efields = np.squeeze( np.sum( np.squeeze( np.sum( fields_by_wl, axis=0 ) ), axis=0 ) )
-	coherent_hfields = np.squeeze( np.sum( np.squeeze( np.sum( fields_by_wl, axis=0 ) ), axis=0 ) )
+	coherent_efields = np.squeeze( np.sum( np.squeeze( np.sum( efields_by_wl, axis=0 ) ), axis=0 ) )
+	coherent_hfields = np.squeeze( np.sum( np.squeeze( np.sum( hfields_by_wl, axis=0 ) ), axis=0 ) )
 
 	coherent_efields = np.zeros( coherent_efields.shape, dtype=np.complex )
 	coherent_hfields = np.zeros( coherent_hfields.shape, dtype=np.complex )
