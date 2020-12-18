@@ -45,7 +45,7 @@ device_vertical_minimum_um = 0
 # Spectral
 #
 lambda_min_um = 3.0
-lambda_max_um = 5.0
+lambda_max_um = 6.0
 bandwidth_um = lambda_max_um - lambda_min_um
 
 num_bands = 3
@@ -171,7 +171,7 @@ eval_theta_radians = np.arcsin( ( index_pre_substrate / index_substrate ) * np.s
 eval_theta_degrees = 180. * eval_theta_radians / np.pi
 
 
-eval_pol_idx = 1
+eval_pol_idx = 0
 
 num_eval_points = num_phi * num_theta
 
