@@ -7,7 +7,9 @@ import numpy as np
 #
 # Files
 #
-project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_25x25x25um_f30um'
+# project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_25x25x25um_f30um'
+# project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_25x25x25um_f30um'
+project_name = 'layered_mwir_2d_lithography_bridges_rgb_10layers_3p5to5p5um_si_fixed_step_addcage_30x30x25um_f30um'
 
 # todo(gdrobert): consider the contrast here like you are doing in the cmos designs.. minimize energy into wrong quadrant
 
@@ -32,7 +34,7 @@ focal_plane_center_vertical_um = -focal_length_um
 #
 mesh_spacing_um = 0.25
 
-device_size_lateral_um = 25
+device_size_lateral_um = 30#25
 device_size_verical_um = 25
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)

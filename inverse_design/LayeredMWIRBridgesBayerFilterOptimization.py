@@ -86,7 +86,11 @@ if not os.path.isdir(projects_directory_location):
 fdtd_hook.newproject()
 fdtd_hook.save(projects_directory_location + "/optimization")
 
-shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterParameters.py", projects_directory_location + "/ArchiveLayeredMWIRBridgesBayerFilterParameters.py")
+# shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterParameters.py", projects_directory_location + "/ArchiveLayeredMWIRBridgesBayerFilterParameters.py")
+
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterParameters.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterParameters.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilter.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilter.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterOptimization.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterOptimization.py")
 
 #
 # Set up the FDTD region and mesh
@@ -380,14 +384,14 @@ bayer_filter.update_permittivity()
 #
 # Run the optimization
 #
-start_epoch = 6
+start_epoch = 0#6
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 	bayer_filter.update_permittivity()
 
 	start_iter = 0
-	if epoch == start_epoch:
-		start_iter = 20
+	# if epoch == start_epoch:
+	# 	start_iter = 20
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
