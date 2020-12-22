@@ -163,8 +163,8 @@ for xy_idx in range(0, 2):
 	lumapi.evalScript( fdtd_hook.handle, 'matlabload( \'' + str( custom_source_paths[ xy_idx ] ) + '\' );' )
 	lumapi.evalScript( fdtd_hook.handle, 'src_dataset = rectilineardataset( x, y, ' + str( src_maximum_vertical_um ) + ' );' )
 	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addparameter( \'lambda\', lambda, \'f\', f );' )
-	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'E\', E / 50.0 );' )
-	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'H\', H / 50.0 );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'E\', E );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'H\', H );' )
 	fdtd_hook.select( forward_src['name'] )
 	lumapi.evalScript( fdtd_hook.handle, 'importdataset( src_dataset );' )
 
