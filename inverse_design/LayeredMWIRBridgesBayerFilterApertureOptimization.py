@@ -167,6 +167,7 @@ for xy_idx in range(0, 2):
 	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'H\', H );' )
 	fdtd_hook.select( forward_src['name'] )
 	lumapi.evalScript( fdtd_hook.handle, 'importdataset( src_dataset );' )
+	lumapi.evalScript( fdtd_hook.handle, 'clear;' )
 
 	forward_sources.append(forward_src)
 
