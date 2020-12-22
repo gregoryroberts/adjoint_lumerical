@@ -117,7 +117,7 @@ finer_mesh['x span'] = fdtd_region_size_lateral_um * 1e-6
 finer_mesh['y'] = 0
 finer_mesh['y span'] = fdtd_region_size_lateral_um * 1e-6
 finer_mesh['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-finer_mesh['z min'] = ( fdtd_region_minimum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um - aperture_thickness_um - 1 ) * 1e-6
+finer_mesh['z min'] = ( fdtd_region_maximum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um - aperture_thickness_um - 1 ) * 1e-6
 finer_mesh['dx'] = silicon_mesh_spacing_um * 1e-6
 finer_mesh['dy'] = silicon_mesh_spacing_um * 1e-6
 finer_mesh['dz'] = silicon_mesh_spacing_um * 1e-6
@@ -322,6 +322,7 @@ pec_aperture['y span'] = fdtd_region_size_lateral_um * 1e-6
 pec_aperture['z min'] = ( fdtd_region_maximum_vertical_um - min_silicon_thickness_um - vertical_gap_size_um - aperture_thickness_um ) * 1e-6
 # Send this outside the region FDTD and let the source sit inside of it
 pec_aperture['z max'] = ( fdtd_region_maximum_vertical_um - min_silicon_thickness_um - vertical_gap_size_um ) * 1e-6
+pec_aperture['material'] = 'PEC (Perfect Electrical Conductor)'
 pec_aperture['override mesh order from material database'] = 1
 pec_aperture['mesh order'] = 2
 
@@ -338,7 +339,6 @@ pinhole_opening['z min'] = ( fdtd_region_maximum_vertical_um - vertical_gap_size
 pinhole_opening['z max'] = ( fdtd_region_maximum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um ) * 1e-6
 pinhole_opening['radius'] = r_airy_min_um * 1e-6
 pinhole_opening['index'] = 1.5
-pinhole_opening['material'] = 'PEC (Perfect Electrical Conductor)'
 pinhole_opening['override mesh order from material database'] = 1
 pinhole_opening['mesh order'] = 1
 
