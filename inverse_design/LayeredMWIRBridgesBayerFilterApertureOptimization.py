@@ -152,8 +152,10 @@ for xy_idx in range(0, 2):
 	forward_src = fdtd_hook.addimportedsource()
 	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
 	forward_src['direction'] = 'Backward'
-	forward_src['x span'] = lateral_aperture_um * 1e-6
-	forward_src['y span'] = lateral_aperture_um * 1e-6
+	# forward_src['x span'] = fdtd_region_size_lateral_um * 1e-6
+	# forward_src['y span'] = fdtd_region_size_lateral_um * 1e-6
+	forward_src['x'] = 0 * 1e-6
+	forward_src['y'] = 0 * 1e-6
 	forward_src['z'] = src_maximum_vertical_um * 1e-6
 	forward_src['wavelength start'] = src_lambda_min_um * 1e-6
 	forward_src['wavelength stop'] = src_lambda_max_um * 1e-6
