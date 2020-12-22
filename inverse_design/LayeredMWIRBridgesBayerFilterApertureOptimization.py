@@ -127,7 +127,7 @@ finer_mesh['dz'] = silicon_mesh_spacing_um * 1e-6
 #
 xy_phi_rotations = [0, 90]
 xy_names = ['x', 'y']
-custom_source_names = ['custom_src_xpol', 'custom_src_ypol']
+custom_source_names = ['custom_src_tapered_xpol', 'custom_src_tapered_ypol']
 custom_source_loc = "/central/groups/Faraon_Computing/custom_sources/mwir/"
 custom_source_paths = [ custom_source_loc + custom_source_names[ src_idx ] + ".mat" for src_idx in range( 0, len( custom_source_names ) ) ]
 
@@ -163,8 +163,8 @@ for xy_idx in range(0, 2):
 	lumapi.evalScript( fdtd_hook.handle, 'matlabload( \'' + str( custom_source_paths[ xy_idx ] ) + '\' );' )
 	lumapi.evalScript( fdtd_hook.handle, 'src_dataset = rectilineardataset( x, y, ' + str( src_maximum_vertical_um ) + ' );' )
 	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addparameter( \'lambda\', lambda, \'f\', f );' )
-	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'E\', E );' )
-	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'H\', H );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'E\', E / 50.0 );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'H\', H / 50.0 );' )
 	fdtd_hook.select( forward_src['name'] )
 	lumapi.evalScript( fdtd_hook.handle, 'importdataset( src_dataset );' )
 
