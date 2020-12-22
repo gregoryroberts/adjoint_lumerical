@@ -195,6 +195,40 @@ for adj_src in range(0, num_adjoint_sources):
 
 	focal_monitors.append(focal_monitor)
 
+
+transmission_monitors = []
+
+for adj_src in range(0, num_adjoint_sources):
+	transmission_monitor = fdtd_hook.addpower()
+	transmission_monitor['name'] = 'transmission_monitor_' + str(adj_src)
+	transmission_monitor['monitor type'] = '2D Z-normal'
+	transmission_monitor['x'] = adjoint_x_positions_um[adj_src] * 1e-6
+	transmission_monitor['x span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_monitor['y'] = adjoint_y_positions_um[adj_src] * 1e-6
+	transmission_monitor['y span'] = 0.5 * device_size_lateral_um * 1e-6
+	transmission_monitor['z'] = adjoint_vertical_um * 1e-6
+	transmission_monitor['override global monitor settings'] = 1
+	transmission_monitor['use wavelength spacing'] = 1
+	transmission_monitor['use source limits'] = 1
+	transmission_monitor['frequency points'] = num_design_frequency_points
+
+	transmission_monitors.append(transmission_monitor)
+
+
+transmission_monitor_focal = fdtd_hook.addpower()
+transmission_monitor_focal['name'] = 'transmission_focal_monitor_'
+transmission_monitor_focal['monitor type'] = '2D Z-normal'
+transmission_monitor_focal['x'] = 0 * 1e-6
+transmission_monitor_focal['x span'] = device_size_lateral_um * 1e-6
+transmission_monitor_focal['y'] = 0 * 1e-6
+transmission_monitor_focal['y span'] = device_size_lateral_um * 1e-6
+transmission_monitor_focal['z'] = adjoint_vertical_um * 1e-6
+transmission_monitor_focal['override global monitor settings'] = 1
+transmission_monitor_focal['use wavelength spacing'] = 1
+transmission_monitor_focal['use source limits'] = 1
+
+transmission_monitor_focal['frequency points'] = num_design_frequency_points
+
 #
 # Add a block of polymer at the top where the device will be adhered to a Silicon substrate
 #
@@ -375,21 +409,21 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-# cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
-# bayer_filter.w[0] = cur_design_variable
-# bayer_filter.update_permittivity()
+cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
+bayer_filter.w[0] = cur_design_variable
+bayer_filter.update_permittivity()
 
 #
 # Run the optimization
 #
-start_epoch = 0#6
+start_epoch = 4#6
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 	bayer_filter.update_permittivity()
 
 	start_iter = 0
-	# if epoch == start_epoch:
-	# 	start_iter = 20
+	if epoch == start_epoch:
+		start_iter = 20
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
