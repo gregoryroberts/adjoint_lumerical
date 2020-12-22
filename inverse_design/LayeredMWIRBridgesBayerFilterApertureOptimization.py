@@ -118,13 +118,9 @@ finer_mesh['y'] = 0
 finer_mesh['y span'] = fdtd_region_size_lateral_um * 1e-6
 finer_mesh['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 finer_mesh['z min'] = ( fdtd_region_minimum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um - aperture_thickness_um - 1 ) * 1e-6
-finer_mesh['define x mesh by'] = 'number of mesh cells'
-finer_mesh['define y mesh by'] = 'number of mesh cells'
-finer_mesh['define z mesh by'] = 'number of mesh cells'
-finer_mesh['mesh cells x'] = mesh_silicon_minimum_lateral_voxels
-finer_mesh['mesh cells y'] = mesh_silicon_minimum_lateral_voxels
-finer_mesh['mesh cells z'] = mesh_silicon_minimum_vertical_voxels
-
+finer_mesh['dx'] = silicon_mesh_spacing_um * 1e-6
+finer_mesh['dy'] = silicon_mesh_spacing_um * 1e-6
+finer_mesh['dz'] = silicon_mesh_spacing_um * 1e-6
 
 #
 # General polarized source information
