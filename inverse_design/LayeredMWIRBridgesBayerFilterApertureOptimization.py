@@ -4,8 +4,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from LayeredMWIRBridgesBayerFilterParameters import *
-import LayeredMWIRBridgesBayerFilter
+from LayeredMWIRBridgesBayerFilterApertureParameters import *
+import LayeredMWIRBridgesBayerFilterAperture
 import ip_dip_dispersion
 
 
@@ -76,7 +76,7 @@ python_src_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '
 # projects_directory_location = os.path.abspath(os.path.join(os.path.dirname(__file__), '../projects/'))
 # projects_directory_location += "/" + project_name
 
-projects_directory_location = "/central/groups/Faraon_Computing/projects" 
+projects_directory_location = "/central/groups/Faraon_Computing/projects"
 projects_directory_location += "/" + project_name# + '_parallel'
 
 
@@ -88,9 +88,9 @@ fdtd_hook.save(projects_directory_location + "/optimization")
 
 # shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterParameters.py", projects_directory_location + "/ArchiveLayeredMWIRBridgesBayerFilterParameters.py")
 
-shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterParameters.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterParameters.py")
-shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilter.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilter.py")
-shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterOptimization.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterOptimization.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterApertureParameters.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterApertureParameters.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterAperture.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterAperture.py")
+shutil.copy2(python_src_directory + "/LayeredMWIRBridgesBayerFilterApertureOptimization.py", projects_directory_location + "/LayeredMWIRBridgesBayerFilterApertureOptimization.py")
 
 #
 # Set up the FDTD region and mesh
@@ -110,11 +110,30 @@ fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
 
+
+finer_mesh = fdtd_hook.addmesh()
+finer_mesh['x'] = 0
+finer_mesh['x span'] = fdtd_region_size_lateral_um * 1e-6
+finer_mesh['y'] = 0
+finer_mesh['y span'] = fdtd_region_size_lateral_um * 1e-6
+finer_mesh['z max'] = fdtd_region_maximum_vertical_um * 1e-6
+finer_mesh['z min'] = ( fdtd_region_minimum_vertical_um - silicon_thickness_um - aperture_thickness_um - 1 ) * 1e-6
+finer_mesh['define x mesh by'] = 'number of mesh cells'
+finer_mesh['define y mesh by'] = 'number of mesh cells'
+finer_mesh['define z mesh by'] = 'number of mesh cells'
+finer_mesh['mesh cells x'] = mesh_silicon_minimum_lateral_voxels
+finer_mesh['mesh cells y'] = mesh_silicon_minimum_lateral_voxels
+finer_mesh['mesh cells z'] = mesh_silicon_minimum_vertical_voxels
+
+
 #
 # General polarized source information
 #
 xy_phi_rotations = [0, 90]
 xy_names = ['x', 'y']
+custom_source_names = ['custom_src_xpol', 'custom_src_ypol']
+custom_source_loc = "/central/groups/Faraon_Computing/custom_sources/mwir/"
+custom_source_paths = [ custom_source_loc + custom_source_names[ src_idx ] + ".mat" for src_idx in range( 0, len( custom_source_names ) ) ]
 
 
 #
@@ -123,16 +142,33 @@ xy_names = ['x', 'y']
 forward_sources = []
 
 for xy_idx in range(0, 2):
-	forward_src = fdtd_hook.addtfsf()
+	# forward_src = fdtd_hook.addtfsf()
+	# forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
+	# forward_src['angle phi'] = xy_phi_rotations[xy_idx]
+	# forward_src['direction'] = 'Backward'
+	# forward_src['x span'] = lateral_aperture_um * 1e-6
+	# forward_src['y span'] = lateral_aperture_um * 1e-6
+	# forward_src['z max'] = src_maximum_vertical_um * 1e-6
+	# forward_src['z min'] = src_minimum_vertical_um * 1e-6
+	# forward_src['wavelength start'] = lambda_min_um * 1e-6
+	# forward_src['wavelength stop'] = lambda_max_um * 1e-6
+
+	forward_src = fdtd_hook.addimportedsource()
 	forward_src['name'] = 'forward_src_' + xy_names[xy_idx]
-	forward_src['angle phi'] = xy_phi_rotations[xy_idx]
 	forward_src['direction'] = 'Backward'
 	forward_src['x span'] = lateral_aperture_um * 1e-6
 	forward_src['y span'] = lateral_aperture_um * 1e-6
-	forward_src['z max'] = src_maximum_vertical_um * 1e-6
-	forward_src['z min'] = src_minimum_vertical_um * 1e-6
-	forward_src['wavelength start'] = lambda_min_um * 1e-6
-	forward_src['wavelength stop'] = lambda_max_um * 1e-6
+	forward_src['z'] = src_maximum_vertical_um * 1e-6
+	forward_src['wavelength start'] = src_lambda_min_um * 1e-6
+	forward_src['wavelength stop'] = src_lambda_max_um * 1e-6
+
+	lumapi.evalScript( fdtd_hook.handle, 'matlabload( \'' + str( custom_source_paths[ xy_idx ] ) + '\' );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset = rectilineardataset( x, y, ' + str( src_maximum_vertical_um ) + ' );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addparameter( \'lambda\', lambda, \'f\', f );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'E\', E );' )
+	lumapi.evalScript( fdtd_hook.handle, 'src_dataset.addattribute( \'H\', H );' )
+	fdtd_hook.select( forward_src['name'] )
+	lumapi.evalScript( fdtd_hook.handle, 'importdataset( src_dataset );' )
 
 	forward_sources.append(forward_src)
 
@@ -152,8 +188,8 @@ for adj_src_idx in range(0, num_adjoint_sources):
 		adj_src['z'] = adjoint_vertical_um * 1e-6
 		adj_src['theta'] = 90
 		adj_src['phi'] = xy_phi_rotations[xy_idx]
-		adj_src['wavelength start'] = lambda_min_um * 1e-6
-		adj_src['wavelength stop'] = lambda_max_um * 1e-6
+		adj_src['wavelength start'] = src_lambda_min_um * 1e-6
+		adj_src['wavelength stop'] = src_lambda_max_um * 1e-6
 
 		adjoint_sources[adj_src_idx].append(adj_src)
 
@@ -170,8 +206,10 @@ design_efield_monitor['z max'] = device_vertical_maximum_um * 1e-6
 design_efield_monitor['z min'] = device_vertical_minimum_um * 1e-6
 design_efield_monitor['override global monitor settings'] = 1
 design_efield_monitor['use wavelength spacing'] = 1
-design_efield_monitor['use source limits'] = 1
+design_efield_monitor['use source limits'] = 0
 design_efield_monitor['frequency points'] = num_design_frequency_points
+design_efield_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+design_efield_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 design_efield_monitor['output Hx'] = 0
 design_efield_monitor['output Hy'] = 0
 design_efield_monitor['output Hz'] = 0
@@ -192,10 +230,13 @@ for adj_src in range(0, num_adjoint_sources):
 	focal_monitor['z'] = adjoint_vertical_um * 1e-6
 	focal_monitor['override global monitor settings'] = 1
 	focal_monitor['use wavelength spacing'] = 1
-	focal_monitor['use source limits'] = 1
+	focal_monitor['use source limits'] = 0
+	focal_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+	focal_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 	focal_monitor['frequency points'] = num_design_frequency_points
 
 	focal_monitors.append(focal_monitor)
+
 
 transmission_monitors = []
 
@@ -210,7 +251,9 @@ for adj_src in range(0, num_adjoint_sources):
 	transmission_monitor['z'] = adjoint_vertical_um * 1e-6
 	transmission_monitor['override global monitor settings'] = 1
 	transmission_monitor['use wavelength spacing'] = 1
-	transmission_monitor['use source limits'] = 1
+	transmission_monitor['use source limits'] = 0
+	transmission_monitor['minimum wavelength'] = lambda_min_um * 1e-6
+	transmission_monitor['maximum wavelength'] = lambda_max_um * 1e-6
 	transmission_monitor['frequency points'] = num_design_frequency_points
 
 	transmission_monitors.append(transmission_monitor)
@@ -226,8 +269,9 @@ transmission_monitor_focal['y span'] = device_size_lateral_um * 1e-6
 transmission_monitor_focal['z'] = adjoint_vertical_um * 1e-6
 transmission_monitor_focal['override global monitor settings'] = 1
 transmission_monitor_focal['use wavelength spacing'] = 1
-transmission_monitor_focal['use source limits'] = 1
-
+transmission_monitor_focal['use source limits'] = 0
+transmission_monitor_focal['minimum wavelength'] = lambda_min_um * 1e-6
+transmission_monitor_focal['maximum wavelength'] = lambda_max_um * 1e-6
 transmission_monitor_focal['frequency points'] = num_design_frequency_points
 
 #
@@ -268,6 +312,37 @@ silicon_substrate['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickne
 # Send this outside the region FDTD and let the source sit inside of it
 silicon_substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 silicon_substrate['material'] = 'Si (Silicon) - Palik'
+silicon_substrate['override mesh order from material database'] = 1
+silicon_substrate['mesh order'] = 3
+
+pec_aperture = fdtd_hook.addrect()
+pec_aperture['name'] = 'pec_aperture'
+pec_aperture['x'] = 0
+pec_aperture['x span'] = fdtd_region_size_lateral_um * 1e-6
+pec_aperture['y'] = 0
+pec_aperture['y span'] = fdtd_region_size_lateral_um * 1e-6
+pec_aperture['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um - aperture_thickness_um ) * 1e-6
+# Send this outside the region FDTD and let the source sit inside of it
+pec_aperture['z max'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+pec_aperture['override mesh order from material database'] = 1
+pec_aperture['mesh order'] = 2
+
+
+NA_objective = 0.4
+r_airy_min_um = 1.22 * lambda_min_um / ( 2.0 * NA_objective )
+
+pinhole_opening = fdtd_hook.addcircle()
+pinhole_opening['name'] = 'pinhole_opening'
+pinhole_opening['x'] = 0
+pinhole_opening['y'] = 0
+pinhole_opening['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um - aperture_thickness_um ) * 1e-6
+# Send this outside the region FDTD and let the source sit inside of it
+pinhole_opening['z max'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+pinhole_opening['radius'] = r_airy_min_um * 1e-6
+pinhole_opening['index'] = 1.5
+pinhole_opening['material'] = 'PEC (Perfect Electrical Conductor)'
+pinhole_opening['override mesh order from material database'] = 1
+pinhole_opening['mesh order'] = 1
 
 
 #
@@ -281,7 +356,7 @@ design_import['z max'] = device_vertical_maximum_um * 1e-6
 design_import['z min'] = device_vertical_minimum_um * 1e-6
 
 bayer_filter_size_voxels = np.array([device_voxels_lateral, device_voxels_lateral, device_voxels_vertical])
-bayer_filter = LayeredMWIRBridgesBayerFilter.LayeredMWIRBridgesBayerFilter(
+bayer_filter = LayeredMWIRBridgesBayerFilterAperture.LayeredMWIRBridgesBayerFilterAperture(
 	bayer_filter_size_voxels,
 	[ 0.0, 1.0 ],
 	# [min_device_permittivity, max_device_permittivity],
