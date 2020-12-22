@@ -42,7 +42,7 @@ device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
 
-silicon_thickness_um = 6.0
+min_silicon_thickness_um = 3.0
 aperture_thickness_um = 1.0
 aperture_device_spacing_um = 10.0
 
@@ -86,9 +86,9 @@ num_vertical_layers = 10
 vertical_gap_size_um = lambda_max_um
 lateral_gap_size_um = 4 * 2.5
 
-fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + silicon_thickness_um + aperture_thickness_um + aperture_device_spacing_um + device_size_verical_um + focal_length_um
+fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + min_silicon_thickness_um + aperture_thickness_um + aperture_device_spacing_um + device_size_verical_um + focal_length_um
 fdtd_region_size_lateral_um = 2 * lateral_gap_size_um + device_size_lateral_um
-fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um
+fdtd_region_maximum_vertical_um = device_size_verical_um + vertical_gap_size_um + aperture_thickness_um + aperture_device_spacing_um + min_silicon_thickness_um
 fdtd_region_minimum_vertical_um = -focal_length_um - vertical_gap_size_um
 
 fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um / mesh_spacing_um) )
@@ -104,10 +104,10 @@ fdtd_simulation_time_fs = 3000
 # Forward Source
 #
 lateral_aperture_um = 1.1 * device_size_lateral_um
-src_maximum_vertical_um = device_size_verical_um + aperture_thickness_um + silicon_thickness_um / 6.0
+src_maximum_vertical_um = device_size_verical_um + aperture_thickness_um + 1.0
 # src_minimum_vertical_um = -focal_length_um - 0.5 * vertical_gap_size_um
 
-assert ( src_maximum_vertical_um + 1 ) < ( fdtd_region_maximum_vertical_um - silicon_thickness_um ), "The source is in the silicon"
+assert ( src_maximum_vertical_um + 1 ) < ( fdtd_region_maximum_vertical_um - min_silicon_thickness_um ), "The source is in the silicon"
 
 
 #

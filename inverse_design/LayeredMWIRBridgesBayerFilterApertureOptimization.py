@@ -117,7 +117,7 @@ finer_mesh['x span'] = fdtd_region_size_lateral_um * 1e-6
 finer_mesh['y'] = 0
 finer_mesh['y span'] = fdtd_region_size_lateral_um * 1e-6
 finer_mesh['z max'] = fdtd_region_maximum_vertical_um * 1e-6
-finer_mesh['z min'] = ( fdtd_region_minimum_vertical_um - silicon_thickness_um - aperture_thickness_um - 1 ) * 1e-6
+finer_mesh['z min'] = ( fdtd_region_minimum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um - aperture_thickness_um - 1 ) * 1e-6
 finer_mesh['define x mesh by'] = 'number of mesh cells'
 finer_mesh['define y mesh by'] = 'number of mesh cells'
 finer_mesh['define z mesh by'] = 'number of mesh cells'
@@ -290,14 +290,14 @@ transmission_monitor_focal['frequency points'] = num_design_frequency_points
 
 permittivity_layer_substrate = fdtd_hook.addimport()
 permittivity_layer_substrate['name'] = 'permittivity_layer_substrate'
-permittivity_layer_substrate['x span'] = device_size_lateral_um * 1e-6
-permittivity_layer_substrate['y span'] = device_size_lateral_um * 1e-6
+permittivity_layer_substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
+permittivity_layer_substrate['y span'] = fdtd_region_size_lateral_um * 1e-6
 permittivity_layer_substrate['z min'] = device_vertical_maximum_um * 1e-6
-permittivity_layer_substrate['z max'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+permittivity_layer_substrate['z max'] = ( fdtd_region_maximum_vertical_um - min_silicon_thickness_um - aperture_thickness_um - vertical_gap_size_um ) * 1e-6
 
-platform_x_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
-platform_y_range = 1e-6 * np.linspace( -0.5 * device_size_lateral_um, 0.5 * device_size_lateral_um, 2 )
-platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, fdtd_region_maximum_vertical_um - silicon_thickness_um, 2 )
+platform_x_range = 1e-6 * np.linspace( -0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, 2 )
+platform_y_range = 1e-6 * np.linspace( -0.5 * fdtd_region_size_lateral_um, 0.5 * fdtd_region_size_lateral_um, 2 )
+platform_z_range = 1e-6 * np.linspace( device_vertical_maximum_um, fdtd_region_maximum_vertical_um - min_silicon_thickness_um - aperture_thickness_um - vertical_gap_size_um , 2 )
 
 platform_index = np.ones( ( 2, 2, 2 ), dtype=np.complex )
 
@@ -308,7 +308,7 @@ silicon_substrate['x'] = 0
 silicon_substrate['x span'] = fdtd_region_size_lateral_um * 1e-6
 silicon_substrate['y'] = 0
 silicon_substrate['y span'] = fdtd_region_size_lateral_um * 1e-6
-silicon_substrate['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+silicon_substrate['z min'] = ( fdtd_region_maximum_vertical_um - min_silicon_thickness_um - vertical_gap_size_um ) * 1e-6
 # Send this outside the region FDTD and let the source sit inside of it
 silicon_substrate['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 silicon_substrate['material'] = 'Si (Silicon) - Palik'
@@ -321,9 +321,9 @@ pec_aperture['x'] = 0
 pec_aperture['x span'] = fdtd_region_size_lateral_um * 1e-6
 pec_aperture['y'] = 0
 pec_aperture['y span'] = fdtd_region_size_lateral_um * 1e-6
-pec_aperture['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um - aperture_thickness_um ) * 1e-6
+pec_aperture['z min'] = ( fdtd_region_maximum_vertical_um - min_silicon_thickness_um - vertical_gap_size_um - aperture_thickness_um ) * 1e-6
 # Send this outside the region FDTD and let the source sit inside of it
-pec_aperture['z max'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+pec_aperture['z max'] = ( fdtd_region_maximum_vertical_um - min_silicon_thickness_um - vertical_gap_size_um ) * 1e-6
 pec_aperture['override mesh order from material database'] = 1
 pec_aperture['mesh order'] = 2
 
@@ -335,9 +335,9 @@ pinhole_opening = fdtd_hook.addcircle()
 pinhole_opening['name'] = 'pinhole_opening'
 pinhole_opening['x'] = 0
 pinhole_opening['y'] = 0
-pinhole_opening['z min'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um - aperture_thickness_um ) * 1e-6
+pinhole_opening['z min'] = ( fdtd_region_maximum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um - aperture_thickness_um ) * 1e-6
 # Send this outside the region FDTD and let the source sit inside of it
-pinhole_opening['z max'] = ( fdtd_region_maximum_vertical_um - silicon_thickness_um ) * 1e-6
+pinhole_opening['z max'] = ( fdtd_region_maximum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um ) * 1e-6
 pinhole_opening['radius'] = r_airy_min_um * 1e-6
 pinhole_opening['index'] = 1.5
 pinhole_opening['material'] = 'PEC (Perfect Electrical Conductor)'
