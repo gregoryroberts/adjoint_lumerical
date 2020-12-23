@@ -416,14 +416,14 @@ bayer_filter.update_permittivity()
 #
 # Run the optimization
 #
-start_epoch = 4#6
+start_epoch = 5#6
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 	bayer_filter.update_permittivity()
 
 	start_iter = 0
 	if epoch == start_epoch:
-		start_iter = 20
+		start_iter = 3
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
