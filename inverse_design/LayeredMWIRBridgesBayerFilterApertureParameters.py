@@ -42,7 +42,7 @@ device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
 
-min_silicon_thickness_um = 3.0
+min_silicon_thickness_um = 0.5 * lambda_max_um
 aperture_thickness_um = 1.0
 aperture_device_spacing_um = 10.0
 
@@ -83,7 +83,7 @@ num_vertical_layers = 10
 #
 # FDTD
 #
-vertical_gap_size_um = lambda_max_um
+vertical_gap_size_um = 0.5 * lambda_max_um
 lateral_gap_size_um = 4 * 2.5
 
 fdtd_region_size_vertical_um = 2 * vertical_gap_size_um + min_silicon_thickness_um + aperture_thickness_um + aperture_device_spacing_um + device_size_verical_um + focal_length_um
@@ -95,7 +95,7 @@ fdtd_region_minimum_vertical_voxels = int( np.ceil(fdtd_region_size_vertical_um 
 fdtd_region_minimum_lateral_voxels = int( np.ceil(fdtd_region_size_lateral_um / mesh_spacing_um) )
 
 
-fdtd_simulation_time_fs = 3000
+fdtd_simulation_time_fs = 15000
 
 #
 # Forward Source
