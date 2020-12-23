@@ -42,7 +42,7 @@ device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
 
-min_silicon_thickness_um = 0.5 * lambda_max_um
+min_silicon_thickness_um = 0.5 * 5.5#lambda_max_um
 aperture_thickness_um = 1.0
 aperture_device_spacing_um = 10.0
 
