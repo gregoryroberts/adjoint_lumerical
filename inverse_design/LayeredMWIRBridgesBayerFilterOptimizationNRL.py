@@ -98,15 +98,28 @@ fdtd['x span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['y span'] = fdtd_region_size_lateral_um * 1e-6
 fdtd['z max'] = fdtd_region_maximum_vertical_um * 1e-6
 fdtd['z min'] = fdtd_region_minimum_vertical_um * 1e-6
-fdtd['mesh type'] = 'uniform'
-fdtd['define x mesh by'] = 'number of mesh cells'
-fdtd['define y mesh by'] = 'number of mesh cells'
-fdtd['define z mesh by'] = 'number of mesh cells'
-fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
-fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
+# fdtd['mesh type'] = 'uniform'
+# fdtd['define x mesh by'] = 'number of mesh cells'
+# fdtd['define y mesh by'] = 'number of mesh cells'
+# fdtd['define z mesh by'] = 'number of mesh cells'
+# fdtd['mesh cells x'] = fdtd_region_minimum_lateral_voxels
+# fdtd['mesh cells y'] = fdtd_region_minimum_lateral_voxels
+# fdtd['mesh cells z'] = fdtd_region_minimum_vertical_voxels
 fdtd['simulation time'] = fdtd_simulation_time_fs * 1e-15
 fdtd['background index'] = background_index
+
+device_mesh = fdtd_hook.addmesh()
+device_mesh['name'] = 'device_mesh'
+device_mesh['x'] = 0
+device_mesh['x span'] = fdtd_region_size_lateral_um * 1e-6
+device_mesh['y'] = 0
+device_mesh['y span'] = fdtd_region_size_lateral_um * 1e-6
+device_mesh['z max'] = ( device_vertical_maximum_um + 1 ) * 1e-6
+device_mesh['z min'] = ( device_vertical_minimum_um - 1 ) * 1e-6
+device_mesh['dx'] = mesh_spacing_um * 1e-6
+device_mesh['dy'] = mesh_spacing_um * 1e-6
+device_mesh['dz'] = mesh_spacing_um * 1e-6
+
 
 #
 # General polarized source information
@@ -416,7 +429,7 @@ bayer_filter.update_permittivity()
 #
 # Run the optimization
 #
-start_epoch = 5#6
+start_epoch = 6
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 	bayer_filter.update_permittivity()
