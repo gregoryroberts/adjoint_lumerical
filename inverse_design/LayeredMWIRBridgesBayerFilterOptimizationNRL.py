@@ -436,7 +436,7 @@ for epoch in range(start_epoch, num_epochs):
 
 	start_iter = 0
 	if epoch == start_epoch:
-		start_iter = 3
+		start_iter = 8
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
