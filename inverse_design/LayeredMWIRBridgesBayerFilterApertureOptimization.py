@@ -485,8 +485,8 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-# cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
-# bayer_filter.w[0] = cur_design_variable
+cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
+bayer_filter.w[0] = cur_design_variable
 bayer_filter.update_permittivity()
 
 #
@@ -498,8 +498,8 @@ for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_permittivity()
 
 	start_iter = 0
-	# if epoch == start_epoch:
-	# 	start_iter = 20
+	if epoch == start_epoch:
+		start_iter = 3
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
