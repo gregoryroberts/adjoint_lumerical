@@ -37,7 +37,9 @@ device_size_lateral_um = 30#25
 device_size_verical_um = 25
 
 device_voxels_lateral = 1 + int(device_size_lateral_um / mesh_spacing_um)
-device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
+# device_voxels_vertical = 1 + int(device_size_verical_um / mesh_spacing_um)
+# fix
+device_voxels_vertical = 2 + int(device_size_verical_um / mesh_spacing_um)
 
 device_vertical_maximum_um = device_size_verical_um
 device_vertical_minimum_um = 0
