@@ -678,6 +678,11 @@ for epoch in range(start_epoch, num_epochs):
 
 						get_grad_density = delta_real_permittivity * real_part_gradient + delta_imag_permittivity * imag_part_gradient
 
+						print( 'grad density = ' + str( get_grad_density.shape ) )
+						print( 'xy polarized grad = ' + str( xy_polarized_gradients[pol_name_to_idx].shape ) )
+						print( 'voxels vertical = ' + str( device_voxels_vertical ) )
+						print()
+
 						xy_polarized_gradients[pol_name_to_idx] += get_grad_density
 
 		#
