@@ -485,9 +485,9 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
-bayer_filter.w[0] = cur_design_variable
-bayer_filter.update_permittivity()
+# cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
+# bayer_filter.w[0] = cur_design_variable
+# bayer_filter.update_permittivity()
 
 #
 # Run the optimization
@@ -499,7 +499,7 @@ for epoch in range(start_epoch, num_epochs):
 
 	start_iter = 0
 	if epoch == start_epoch:
-		start_iter = 3
+		start_iter = 0
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
@@ -677,11 +677,6 @@ for epoch in range(start_epoch, num_epochs):
 						imag_part_gradient = -np.imag( gradient_component )
 
 						get_grad_density = delta_real_permittivity * real_part_gradient + delta_imag_permittivity * imag_part_gradient
-
-						print( 'grad density = ' + str( get_grad_density.shape ) )
-						print( 'xy polarized grad = ' + str( xy_polarized_gradients[pol_name_to_idx].shape ) )
-						print( 'voxels vertical = ' + str( device_voxels_vertical ) )
-						print()
 
 						xy_polarized_gradients[pol_name_to_idx] += get_grad_density
 
