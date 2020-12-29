@@ -542,6 +542,23 @@ for epoch in range(start_epoch, num_epochs):
 				job_names[ ( 'forward', xy_idx, dispersive_range_idx ) ] = add_job( job_name, jobs_queue )
 
 
+		for dispersive_range_idx in range( 0, num_dispersive_ranges ):
+			dispersive_max_permittivity = ip_dip_dispersion_model.average_permittivity( dispersive_ranges_um[ dispersive_range_idx ] )
+			disperesive_max_index = ip_dip_dispersion.index_from_permittivity( dispersive_max_permittivity )
+
+			fdtd_hook.switchtolayout()
+
+			platform_index[ : ] = disperesive_max_index
+
+			fdtd_hook.select( 'permittivity_layer_substrate' )
+			fdtd_hook.importnk2( platform_index, platform_x_range, platform_y_range, platform_z_range )
+
+			cur_permittivity = min_device_permittivity + ( dispersive_max_permittivity - min_device_permittivity ) * cur_density
+			cur_index = ip_dip_dispersion.index_from_permittivity( cur_permittivity )
+
+			fdtd_hook.select( 'design_import' )
+			fdtd_hook.importnk2( cur_index, bayer_filter_region_x, bayer_filter_region_y, bayer_filter_region_z )
+
 			for adj_src_idx in range(0, num_adjoint_sources):
 				adjoint_e_fields = []
 				for xy_idx in range(0, 2):
