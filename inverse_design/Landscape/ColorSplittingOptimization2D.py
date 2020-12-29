@@ -2530,7 +2530,7 @@ class ColorSplittingOptimization2D():
 				self.raw_fom_evolution[ iter_idx ] = net_fom
 
 				index_reg_numerator = np.abs( np.sum( net_gradient * self.design_density ) )
-				index_reg_denominator = np.sum( np.abs( net_gradient * self.design_density ) )
+				index_reg_denominator = np.sum( np.abs( net_gradient * self.design_density ) ) + np.finfo( np.float64 ).eps
 				index_reg = 1 - ( index_reg_numerator / index_reg_denominator )
 				
 				net_fom_index_reg = net_fom * index_reg
