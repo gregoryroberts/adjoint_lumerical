@@ -2524,12 +2524,12 @@ class ColorSplittingOptimization2D():
 			gradient_norm = vector_norm( net_gradient )
 
 			net_gradient_index_contrast *= opt_mask
-			gradient_norm_index_contrast = vector_norm( net_gradient_index_contrast )
 
 			if index_contrast_regularization:
 				self.raw_fom_evolution[ iter_idx ] = net_fom
-				index_reg_numerator = np.abs( np.sum( net_gradient ) )
-				index_reg_denominator = np.sum( np.abs( net_gradient ) )
+
+				index_reg_numerator = np.abs( np.sum( net_gradient * import_density ) )
+				index_reg_denominator = np.sum( np.abs( net_gradient * import_density ) )
 				index_reg = 1 - ( index_reg_numerator / index_reg_denominator )
 				
 				net_fom_index_reg = net_fom * index_reg
@@ -2540,10 +2540,9 @@ class ColorSplittingOptimization2D():
 				# sqrt( ( sum() )**2 )--> 2 * sum() * d/d(internal)
 
 				grad_index_reg = -( 
-					( ( 0.5 / np.sqrt( np.sum( net_gradient )**2 ) ) * 2.0 * np.sum( net_gradient ) * ( net_gradient_index_contrast - net_gradient ) / index_contrast_df_h ) /
-					index_reg_denominator )
+					( net_gradient_index_contrast - net_gradient ) / index_contrast_df_h ) / index_reg_denominator
 
-				net_gradient_index_reg = 0.25 * net_fom * grad_index_reg + index_reg * net_gradient
+				net_gradient_index_reg = net_fom * grad_index_reg + index_reg * net_gradient
 				# net_gradient_index_reg = index_reg * net_gradient
 
 				norm_reg = vector_norm( net_fom * grad_index_reg )
