@@ -2243,6 +2243,7 @@ class ColorSplittingOptimization2D():
 		self.fom_evolution = np.zeros( num_iterations )
 		self.raw_fom_evolution = np.zeros( num_iterations )
 		self.index_reg_evolution = np.zeros( num_iterations )
+		self.index_reg_numerator_evolution = np.zeros( num_iterations )
 		self.fom_evolution_no_loss = np.zeros( num_iterations )
 		self.binarization_evolution = np.zeros( num_iterations )
 		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
@@ -2560,7 +2561,8 @@ class ColorSplittingOptimization2D():
 				gradient_norm = vector_norm( net_gradient )
 
 				self.index_reg_evolution[ iter_idx ] = index_reg
-			
+				self.index_reg_numerator_evolution[ iter_idx ] = index_reg_numerator
+
 			self.fom_evolution[ iter_idx ] = net_fom
 			self.fom_evolution_no_loss[ iter_idx ] = net_fom_no_loss
 			self.fom_by_wl_evolution[ iter_idx ] = np.array( fom_by_wl )
@@ -2623,6 +2625,7 @@ class ColorSplittingOptimization2D():
 			if self.do_density_pairings:
 				self.design_density = self.pair_array( self.design_density )
 
+			np.save( folder_for_saving + "_index_reg_numerator_evolution.npy", self.index_reg_numerator_evolution )
 			np.save( folder_for_saving + "_index_reg_evolution.npy", self.index_reg_evolution )
 			np.save( folder_for_saving + "_raw_fom_evolution.npy", self.raw_fom_evolution )
 			np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
