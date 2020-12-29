@@ -2546,6 +2546,15 @@ class ColorSplittingOptimization2D():
 				net_gradient_index_reg = net_fom * grad_index_reg + index_reg * net_gradient
 				# net_gradient_index_reg = index_reg * net_gradient
 
+				norm_reg = vector_norm( net_fom * grad_index_reg )
+				norm_grad = vector_norm( index_reg * net_gradient )
+
+				log_file = open( self.save_folder + "/log.txt", 'a' )
+				log_file.write( str( norm_reg ) + "\n" )
+				log_file.write( str( norm_grad ) + "\n\n" )
+				log_file.close()
+
+
 				net_fom = net_fom_index_reg
 				net_gradient = net_gradient_index_reg.copy()
 
