@@ -2543,7 +2543,7 @@ class ColorSplittingOptimization2D():
 					( ( 0.5 / np.sqrt( np.sum( net_gradient )**2 ) ) * 2.0 * np.sum( net_gradient ) * ( net_gradient_index_contrast - net_gradient ) / index_contrast_df_h ) /
 					index_reg_denominator )
 
-				net_gradient_index_reg = net_fom * grad_index_reg + index_reg * net_gradient
+				net_gradient_index_reg = 0.25 * net_fom * grad_index_reg + index_reg * net_gradient
 				# net_gradient_index_reg = index_reg * net_gradient
 
 				norm_reg = vector_norm( net_fom * grad_index_reg )
