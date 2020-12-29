@@ -2537,7 +2537,7 @@ class ColorSplittingOptimization2D():
 				# np.sqrt( np.sum( net_gradient )**2 )
 				# ( 0.5 / np.sqrt(...) ) * 2 * np.sum( net_gradient ) * chain_rule
 
-				grad_index_reg = ( 
+				grad_index_reg = -( 
 					( ( 0.5 / np.sqrt( np.sum( net_gradient )**2 ) ) * 2.0 * np.sum( net_gradient ) * ( net_gradient_index_contrast - net_gradient ) / index_contrast_df_h ) /
 					index_reg_denominator )
 
