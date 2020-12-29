@@ -34,7 +34,7 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 4#8#6#8
+mesh_size_nm = 8#4#8#6#8
 density_coarsen_factor = 4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
@@ -111,7 +111,8 @@ blur_fields = False#True
 
 # num_iterations = 450#150#300
 # num_iterations_nominal = 150
-num_iterations_nominal = 300
+# num_iterations_nominal = 300
+num_iterations_nominal = 200
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
 
@@ -364,6 +365,8 @@ else:
 	else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
+		index_regularization = True
+
 		make_optimizer.optimize(
 			int( num_iterations ),
 			save_folder + "/opt",
@@ -372,7 +375,8 @@ else:
 			use_log_fom,
 			wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 			binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map )
+			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+			index_regularization )
 
 
 		make_optimizer.save_optimization_data( save_folder + "/opt" )

@@ -680,7 +680,7 @@ class ColorSplittingOptimization2D():
 		# 	self.device_width_start : self.device_width_end,
 		# 	self.device_height_start : self.device_height_end ] = (
 		# 		np.random.random( ( self.device_width_voxels, self.device_height_voxels ) ) + 1j * 
-		# 		np.random.random( ( self.device_width_voxels, self.device_height_voxels ) ) )
+		# 		np.random.random(v( self.device_width_voxels, self.device_height_voxels ) ) )
 
 		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
@@ -1137,6 +1137,21 @@ class ColorSplittingOptimization2D():
 		return fom, gradient
 
 
+	def compute_fom_and_gradient_real_imag( self, omega, device_permittivity, focal_point_x_loc ):
+		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
+		fom = np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
+		
+		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
+		adj_source[ focal_point_x_loc, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+
+		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
+
+		gradient_real = 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
+		gradient_imag = -2 * np.imag( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
+
+		return fom, gradient_real, gradient_imag
+
 	def compute_net_fom_from_density( self, input_density ):
 		fom_by_wl = []
 
@@ -1157,7 +1172,6 @@ class ColorSplittingOptimization2D():
 	# CODE DUPLICATION! FIX
 	def compute_net_fom( self ):
 		return self.compute_net_fom_from_density( self.design_density )
-
 
 	def verify_adjoint_against_finite_difference_lambda_design_line( self, save_loc ):
 		# get_density = upsample( self.design_density, self.coarsen_factor )
@@ -1193,6 +1207,7 @@ class ColorSplittingOptimization2D():
 
 		h_values = np.linspace( h_min, h_max, num_h )
 
+		fom_line = np.zeros( num_h )
 		fom_line = np.zeros( num_h )
 
 		for h_idx in range( 0, num_h ):
@@ -1960,14 +1975,15 @@ class ColorSplittingOptimization2D():
 		plt.show()
 
 
-
-
 	def verify_adjoint_against_finite_difference( self ):
 		fd_x = int( 0.5 * self.device_width_voxels )
+		fd_x = int( self.coarsen_factor * 3 )
 		fd_y = np.arange( 0, self.device_height_voxels )
-		compute_fd = np.zeros( len( fd_y ) )
+		compute_fd_density = np.zeros( len( fd_y ) )
+		compute_fd_real = np.zeros( len( fd_y ) )
+		compute_fd_imag = np.zeros( len( fd_y ) )
 		omega_idx = int( 0.5 * len( self.omega_values ) )
-		fd_omega = self.omega_values[ fomega_idx ]
+		fd_omega = self.omega_values[ omega_idx ]
 
 		# fd_init_device = 1.5 * np.ones( ( self.device_width_voxels, self.device_height_voxels ) )
 		import_density = upsample( self.design_density, self.coarsen_factor )
@@ -1976,31 +1992,66 @@ class ColorSplittingOptimization2D():
 
 		focal_point_x = self.focal_spots_x_voxels[ 0 ]
 
-		get_fom, get_grad = self.compute_fom_and_gradient(
+		get_fom, get_grad_real, get_grad_imag = self.compute_fom_and_gradient_real_imag(
 			fd_omega, fd_init_device, focal_point_x )
-		get_grad = get_grad[
+
+		get_grad_real = get_grad_real[
+			self.device_width_start : self.device_width_end,
+			self.device_height_start : self.device_height_end ]
+		get_grad_imag = get_grad_imag[
 			self.device_width_start : self.device_width_end,
 			self.device_height_start : self.device_height_end ]
 
-		fd_step_eps = 1e-4
+		interpolate_grad_real = reinterpolate_average( get_grad_real, self.coarsen_factor )
+		interpolate_grad_imag = reinterpolate_average( get_grad_imag, self.coarsen_factor )
+
+		get_grad_density = (
+			np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * interpolate_grad_real +
+			np.imag( self.max_relative_permittivity - self.min_relative_permittivity ) * interpolate_grad_imag );
+
+		fd_x_density = int( fd_x / self.coarsen_factor )
+
+		fd_step_eps = 1e-6
+		fd_step_rho = 1e-6
 
 		num = 10
 
-		for fd_y_idx in range( 0, num ):#20 ):#len( fd_y ) ):
+		for fd_y_idx in range( 0, num ):
 			print( "working on " + str( fd_y_idx ) )
+			fd_design = self.design_density.copy()
+			fd_design[ fd_x_density, fd_y[ fd_y_idx ] ] += fd_step_rho
+
+			import_fd_density = upsample( fd_design, self.coarsen_factor )
+			device_fd_permittivity = self.density_to_permittivity( import_fd_density )
+
+			get_fom_step_density = self.compute_fom( fd_omega, device_fd_permittivity, focal_point_x )
+
+
+			compute_fd_density[ fd_y_idx ] = ( get_fom_step_density - get_fom ) / fd_step_eps
+
 			fd_device_permittivity = fd_init_device.copy()
 			fd_device_permittivity[ fd_x, fd_y[ fd_y_idx ] ] += fd_step_eps
+			get_fom_step_real = self.compute_fom( fd_omega, fd_device_permittivity, focal_point_x )
 
-			get_fom_step = self.compute_fom( fd_omega, fd_device_permittivity, focal_point_x )
+			fd_device_permittivity = fd_init_device.copy()
+			fd_device_permittivity[ fd_x, fd_y[ fd_y_idx ] ] += 1j * fd_step_eps
 
-			compute_fd[ fd_y_idx ] = ( get_fom_step - get_fom ) / fd_step_eps
+			get_fom_step_imag = self.compute_fom( fd_omega, fd_device_permittivity, focal_point_x )
+
+			compute_fd_real[ fd_y_idx ] = ( get_fom_step_real - get_fom ) / fd_step_eps
+			compute_fd_imag[ fd_y_idx ] = ( get_fom_step_imag - get_fom ) / fd_step_eps
 
 		import matplotlib.pyplot as plt
-		plt.plot( get_grad[ fd_x, 0 : num ], color='g', linewidth=2 )
-		plt.plot( compute_fd[ 0 : num ], color='r', linewidth=2, linestyle='--' )
+		plt.subplot( 1, 3, 1 )
+		plt.plot( get_grad_real[ fd_x, 0 : num ], color='g', linewidth=2 )
+		plt.plot( compute_fd_real[ 0 : num ], color='r', linewidth=2, linestyle='--' )
+		plt.subplot( 1, 3, 2 )
+		plt.plot( get_grad_imag[ fd_x, 0 : num ], color='g', linewidth=2 )
+		plt.plot( compute_fd_imag[ 0 : num ], color='r', linewidth=2, linestyle='--' )		
+		plt.subplot( 1, 3, 3 )
+		plt.plot( ( self.coarsen_factor**2 ) * get_grad_density[ fd_x_density, 0 : num ], color='g', linewidth=2 )
+		plt.plot( compute_fd_density[ 0 : num ], color='r', linewidth=2, linestyle='--' )		
 		plt.show()
-
-		self.average_adjoint_finite_difference_error = np.sqrt( np.mean( np.abs( get_grad[ fd_x, self.device_height_start : self.device_height_end ] - compute_fd )**2 ) )
 
 	def density_to_permittivity( self, density ):
 		return ( self.min_relative_permittivity + ( self.max_relative_permittivity - self.min_relative_permittivity ) * density )
@@ -2143,7 +2194,8 @@ class ColorSplittingOptimization2D():
 		wavelength_adversary=False, adversary_update_iters=-1, bottom_wls_um=None, top_wls_um=None,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
 		dropout_start=0, dropout_end=0, dropout_p=0.5,
-		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None ):
+		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
+		index_contrast_regularization=False ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
@@ -2189,6 +2241,7 @@ class ColorSplittingOptimization2D():
 
 		self.gradient_norm_evolution = np.zeros( num_iterations )
 		self.fom_evolution = np.zeros( num_iterations )
+		self.index_reg_evolution = np.zeros( num_iterations )
 		self.fom_evolution_no_loss = np.zeros( num_iterations )
 		self.binarization_evolution = np.zeros( num_iterations )
 		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
@@ -2209,6 +2262,11 @@ class ColorSplittingOptimization2D():
 			# mask_density = opt_mask * self.design_density
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
+
+			index_contrast_df_h = 1e-3
+			device_permittivity_index_contrast = (
+				self.min_relative_permittivity + ( self.max_relative_permittivity - self.min_relative_permittivity + index_contrast_df_h ) *
+				import_density )
 
 
 			if random_globals and ( ( iter_idx % random_global_iteration_frequency ) == 0 ):
@@ -2286,6 +2344,8 @@ class ColorSplittingOptimization2D():
 
 			gradient_by_wl = []
 			fom_by_wl = []
+			gradient_by_wl_index_contrast = []
+			fom_by_wl_index_contrast = []
 			fom_no_loss_by_wl = []
 			dense_plot = []
 
@@ -2381,6 +2441,15 @@ class ColorSplittingOptimization2D():
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
 						self.wavelength_intensity_scaling[ wl_idx ] )
 
+					get_fom_index_contrast = get_fom
+					get_grad_index_contrast = get_grad
+
+					if index_contrast_regularization:
+
+						get_fom_index_contrast, get_grad_index_contrast = function_for_fom_and_gradient(
+							self.omega_values[ wl_idx ], device_permittivity_index_contrast, self.focal_spots_x_voxels[ get_focal_point_idx ],
+							self.wavelength_intensity_scaling[ wl_idx ] )
+
 					if np.max( np.abs( np.imag( device_permittivity ) ) ) > 0:
 						get_fom_no_loss = self.compute_fom(
 							self.omega_values[ wl_idx ], np.real( device_permittivity ), self.focal_spots_x_voxels[ get_focal_point_idx ],
@@ -2389,22 +2458,31 @@ class ColorSplittingOptimization2D():
 						get_fom_no_loss = get_fom
 
 				scale_fom_for_wl = get_fom
+				scale_fom_for_wl_index_contrast = get_fom_index_contrast
 
 				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 				scale_gradient_for_wl = upsampled_device_grad
 
+				upsampled_device_grad_index_contrast = get_grad_index_contrast[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+				scale_gradient_for_wl_index_contrast = upsampled_device_grad_index_contrast
+
 				gradient_by_wl.append( scale_gradient_for_wl )
+				gradient_by_wl_index_contrast.append( scale_gradient_for_wl_index_contrast )
 				fom_by_wl.append( scale_fom_for_wl )
+				fom_by_wl_index_contrast.append( scale_fom_for_wl_index_contrast )
 				fom_no_loss_by_wl.append( get_fom_no_loss )
 
 			net_fom = np.product( fom_by_wl )
 			net_fom_no_loss = np.product( fom_no_loss_by_wl )
+
+			net_fom_index_contrast = np.product( fom_by_wl_index_contrast )
 
 			if use_log_fom:
 				net_fom = np.log( net_fom )
 
 
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
+			net_gradient_index_contrast = np.zeros( gradient_by_wl[ 0 ].shape )
 
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
@@ -2416,15 +2494,27 @@ class ColorSplittingOptimization2D():
 
 				net_gradient += ( weighting * wl_gradient )
 
+			for wl_idx in range( 0, self.num_wavelengths ):
+				wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity + index_contrast_df_h ) * gradient_by_wl_index_contrast[ wl_idx ]
+				weighting = net_fom_index_contrast / fom_by_wl_index_contrast[ wl_idx ]
+
+				if use_log_fom:
+					weighting = 1. / fom_by_wl_index_contrast[ wl_idx ]
+
+				net_gradient_index_contrast += ( weighting * wl_gradient )
+
+
 			#
 			# Otherwise we are already in design space! Sloppy here, but want to try it out
 			#
 			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
+			net_gradient_index_contrast = reinterpolate_average( net_gradient_index_contrast, self.coarsen_factor )
 
 			#
 			# Now, we should zero out non-designable regions and average over designable layers
 			#
 			net_gradient = self.layer_spacer_averaging( net_gradient )
+			net_gradient_index_contrast = self.layer_spacer_averaging( net_gradient_index_contrast )
 
 			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
 				net_gradient *= 1.0 * np.greater( np.random.random( net_gradient.shape ), dropout_p )
@@ -2432,6 +2522,29 @@ class ColorSplittingOptimization2D():
 			net_gradient *= opt_mask
 			gradient_norm = vector_norm( net_gradient )
 
+			net_gradient_index_contrast *= opt_mask
+			gradient_norm_index_contrast = vector_norm( net_gradient_index_contrast )
+
+			if index_contrast_regularization:
+				index_reg_numerator = ( np.sum( net_gradient ) )**2
+				index_reg_denominator = np.sum( net_gradient**2 )
+				index_reg = 1 - ( index_reg_numerator / index_reg_denominator )
+				
+				net_fom_index_reg = net_fom * index_reg
+
+				grad_index_reg = -( 
+					( 2 * np.sum( net_gradient ) * ( net_gradient_index_contrast - net_gradient ) / index_contrast_df_h ) /
+					index_reg_denominator )
+
+				net_gradient_index_reg = net_fom * grad_index_reg + index_reg * net_gradient
+
+				net_fom = net_fom_index_reg
+				net_gradient = net_gradient_index_reg.copy()
+
+				gradient_norm = vector_norm( net_gradient )
+
+				self.index_reg_evolution[ iter_idx ] = index_reg
+			
 			self.fom_evolution[ iter_idx ] = net_fom
 			self.fom_evolution_no_loss[ iter_idx ] = net_fom_no_loss
 			self.fom_by_wl_evolution[ iter_idx ] = np.array( fom_by_wl )
@@ -2494,6 +2607,7 @@ class ColorSplittingOptimization2D():
 			if self.do_density_pairings:
 				self.design_density = self.pair_array( self.design_density )
 
+			np.save( folder_for_saving + "_index_reg_evolution.npy", self.index_reg_evolution )
 			np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
 			np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
 			np.save( folder_for_saving + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
