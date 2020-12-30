@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8#4#8#6#8
-density_coarsen_factor = 2#4
+density_coarsen_factor = 3#4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -79,7 +79,7 @@ else:
 
 	device_width_voxels = 120#160#120
 	# device_width_voxels = 200
-	device_height_voxels = 100#104#100#132#100
+	device_height_voxels = 102#100#104#100#132#100
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
 	# device_height_voxels = 48#32
