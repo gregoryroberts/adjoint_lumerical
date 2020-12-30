@@ -116,7 +116,7 @@ def reinterpolate_abs_max( input_block, factor ):
 
 			for sweep_x in range( start_x, end_x ):
 				for sweep_y in range( start_y, end_y ):
-					get_abs = ( 1. / factor**2 ) * input_block[ sweep_x, sweep_y ]
+					get_abs = np.abs( ( 1. / factor**2 ) * input_block[ sweep_x, sweep_y ] )
 					abs_max = np.maximum( abs_max, get_abs )
 
 					# average += ( 1. / factor**2 ) * input_block[ sweep_x, sweep_y ]
