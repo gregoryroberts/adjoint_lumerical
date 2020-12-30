@@ -2537,10 +2537,10 @@ class ColorSplittingOptimization2D():
 			#
 			# Otherwise we are already in design space! Sloppy here, but want to try it out
 			#
-			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
-			net_gradient_index_contrast = reinterpolate_average( net_gradient_index_contrast, self.coarsen_factor )
-
-			if downsample_max:
+			if not downsample_max:
+				net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
+				net_gradient_index_contrast = reinterpolate_average( net_gradient_index_contrast, self.coarsen_factor )
+			else downsample_max:
 				net_gradient = reinterpolate_abs_max( net_gradient, self.coarsen_factor )
 				net_gradient_index_contrast = reinterpolate_abs_max( net_gradient, self.coarsen_factor )
 
