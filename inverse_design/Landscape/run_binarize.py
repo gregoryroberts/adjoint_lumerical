@@ -35,7 +35,7 @@ if ( max_index > 3.5 ):
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 8#4#8#6#8
-density_coarsen_factor = 4
+density_coarsen_factor = 2#4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -110,9 +110,9 @@ blur_fields_size_voxels = 0#4
 blur_fields = False#True
 
 # num_iterations = 450#150#300
-# num_iterations_nominal = 150
+num_iterations_nominal = 150
 # num_iterations_nominal = 300
-num_iterations_nominal = 200
+# num_iterations_nominal = 200
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
 
@@ -365,7 +365,7 @@ else:
 	else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
-		index_regularization = True
+		index_regularization = False#True
 
 		make_optimizer.optimize(
 			int( num_iterations ),
