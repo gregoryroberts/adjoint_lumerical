@@ -98,6 +98,33 @@ def reinterpolate_average( input_block, factor ):
 
 	return output_block
 
+
+def reinterpolate_abs_max( input_block, factor ):
+	input_block_size = input_block.shape
+	output_block_size = [ int( k / factor ) for k in input_block_size ]
+
+	output_block = np.zeros( output_block_size, input_block.dtype )
+
+	for x_idx in range( 0, output_block_size[ 0 ] ):
+		start_x = int( factor * x_idx )
+		end_x = start_x + factor
+		for y_idx in range( 0, output_block_size[ 1 ] ):
+			start_y = int( factor * y_idx )
+			end_y = start_y + factor
+
+			abs_max = 0.0
+
+			for sweep_x in range( start_x, end_x ):
+				for sweep_y in range( start_y, end_y ):
+					get_abs = ( 1. / factor**2 ) * input_block[ sweep_x, sweep_y ]
+					abs_max = np.maximum( abs_max, get_abs )
+
+					# average += ( 1. / factor**2 ) * input_block[ sweep_x, sweep_y ]
+			
+			output_block[ x_idx, y_idx ] = abs_max
+
+	return output_block
+
 class ColorSplittingOptimization2D():
 
 	def __init__( self,
@@ -2195,7 +2222,8 @@ class ColorSplittingOptimization2D():
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
 		dropout_start=0, dropout_end=0, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
-		index_contrast_regularization=False ):
+		index_contrast_regularization=False,
+		downsample_max=False ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
@@ -2511,6 +2539,10 @@ class ColorSplittingOptimization2D():
 			#
 			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
 			net_gradient_index_contrast = reinterpolate_average( net_gradient_index_contrast, self.coarsen_factor )
+
+			if downsample_max:
+				net_gradient = reinterpolate_abs_max( net_gradient, self.coarsen_factor )
+				net_gradient_index_contrast = reinterpolate_abs_max( net_gradient, self.coarsen_factor )
 
 			#
 			# Now, we should zero out non-designable regions and average over designable layers

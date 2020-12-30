@@ -34,8 +34,8 @@ if ( max_index > 3.5 ):
 
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
-mesh_size_nm = 6#4#8#6#8
-density_coarsen_factor = 3#4
+mesh_size_nm = 8#6#4#8#6#8
+density_coarsen_factor = 4#3#4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
 lambda_max_um = 0.55
@@ -77,16 +77,16 @@ if feature_test:
 
 else:
 
-	# device_width_voxels = 120#160#120
-	device_width_voxels = 162
+	device_width_voxels = 120#160#120
+	# device_width_voxels = 162
 	# device_width_voxels = 200
-	device_height_voxels = 135#102#100#104#100#132#100
+	device_height_voxels = 100#135#102#100#104#100#132#100
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
 	# device_height_voxels = 48#32
 	# device_height_voxels = 32#24
 	device_voxels_total = device_width_voxels * device_height_voxels
-	focal_length_voxels = 135#100#132#100
+	focal_length_voxels = 100#135#100#132#100
 	focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -367,6 +367,7 @@ else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
 		index_regularization = False#True
+		downsample_abs_max = True
 
 		make_optimizer.optimize(
 			int( num_iterations ),
@@ -377,7 +378,8 @@ else:
 			wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 			binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
 			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
-			index_regularization )
+			index_regularization,
+			downsample_abs_max )
 
 
 		make_optimizer.save_optimization_data( save_folder + "/opt" )
