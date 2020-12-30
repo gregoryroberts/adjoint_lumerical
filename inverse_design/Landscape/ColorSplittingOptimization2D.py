@@ -2542,7 +2542,7 @@ class ColorSplittingOptimization2D():
 				net_gradient_index_contrast = reinterpolate_average( net_gradient_index_contrast, self.coarsen_factor )
 			else:
 				net_gradient = reinterpolate_abs_max( net_gradient, self.coarsen_factor )
-				net_gradient_index_contrast = reinterpolate_abs_max( net_gradient, self.coarsen_factor )
+				net_gradient_index_contrast = reinterpolate_abs_max( net_gradient_index_contrast, self.coarsen_factor )
 
 			#
 			# Now, we should zero out non-designable regions and average over designable layers
