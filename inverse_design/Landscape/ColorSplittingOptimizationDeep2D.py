@@ -1030,7 +1030,7 @@ class ColorSplittingOptimizationDeep2D():
 
 
 
-		optimizer = torch.optim.SGD( make_net.parameters(), lr=1.0 )
+		optimizer = torch.optim.SGD( make_net.parameters(), lr=100.0 )
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
