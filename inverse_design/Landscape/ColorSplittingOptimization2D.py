@@ -475,7 +475,7 @@ class ColorSplittingOptimization2D():
 		plt.subplot( 1, 2, 1 )
 		ceviche.viz.abs(Ez, outline=self.rel_eps_simulation, ax=plt.gca(), cbar=False)
 		plt.subplot( 1, 2, 2 )
-		plt.imshow( self.rel_eps_simulation, cmap='Greens' )
+		plt.imshow( np.flip( np.swapaxes( np.real( self.rel_eps_simulation ), 0, 1 ), axis=0 ), cmap='Greens' )
 		plt.show()
 
 	def compute_forward_fields( self, omega, device_permittivity ):
@@ -2879,6 +2879,7 @@ class ColorSplittingOptimization2D():
 				fom_by_wl.append( scale_fom_for_wl )
 
 			net_fom = np.product( fom_by_wl )
+			print( 'net fom = ' + str( net_fom ) )
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
 
 			# print( net_fom )
@@ -2908,6 +2909,7 @@ class ColorSplittingOptimization2D():
 			self.lsf_gradient_directions[ iter_idx ] = norm_scaled_gradient
 
 			step_size = 1.0 + ( 0.1 - 1.0 ) * iter_idx / ( num_iterations - 1 )
+			# step_size *= 5
 
 			level_set.update( norm_scaled_gradient, step_size )
 

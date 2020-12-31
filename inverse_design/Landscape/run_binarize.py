@@ -76,10 +76,12 @@ if feature_test:
 	focal_points_x_relative = [ 0.25, 0.75 ]
 
 else:
-
-	device_width_voxels = 120#160#120
+	#
+	# todo: focal spot sizes might be a touch big here...
+	#
+	# device_width_voxels = 120#160#120
 	# device_width_voxels = 162
-	# device_width_voxels = 200
+	device_width_voxels = 200
 	device_height_voxels = 100#135#102#100#104#100#132#100
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
@@ -369,6 +371,10 @@ else:
 		index_regularization = False#True
 		downsample_abs_max = True
 
+		# folder_to_plot = './bin_rate_step_v2_3p5'
+		# folder_to_plot = './bin_rate_down_abs_max_v1'
+		# final_density = np.load(  folder_to_plot + '/opt_3p5/opt_optimized_density.npy' )
+
 		make_optimizer.optimize(
 			int( num_iterations ),
 			save_folder + "/opt",
@@ -381,5 +387,9 @@ else:
 			index_regularization,
 			downsample_abs_max )
 
+		# make_optimizer.init_density_directly( final_density )
+		# make_optimizer.plot_fields( 1 )
+		# make_optimizer.optimize_with_level_set( 10 )
 
-		make_optimizer.save_optimization_data( save_folder + "/opt" )
+
+		# make_optimizer.save_optimization_data( save_folder + "/opt" )
