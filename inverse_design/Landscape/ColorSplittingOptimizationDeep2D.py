@@ -43,6 +43,10 @@ if run_on_cluster:
 else:
 	import LevelSet
 
+sys.path.append( os.path.abspath( python_src_directory + "/../" ) )
+import sigmoid
+
+
 
 eps_nought = 8.854 * 1e-12
 mu_nought = 1.257 * 1e-6 
@@ -943,6 +947,8 @@ class ColorSplittingOptimizationDeep2D():
 		self.fom_evolution = np.zeros( num_iterations )
 		self.density_prediction_evolution = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
 
+		make_sigmoid = sigmoid.Sigmoid( 0.5, 2.0 )
+
 		def density_to_fields_fom_and_grad( test_density ):
 			import_density = upsample( test_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
@@ -1005,15 +1011,26 @@ class ColorSplittingOptimizationDeep2D():
 		np.random.seed( 2143123 )
 		network_input_np = np.random.random( ( 1, 2 * self.num_wavelengths + 1, self.design_width_voxels, self.design_height_voxels ) ) - 0.5
 		network_input_np[ 0, 0 ] += 0.5
-		network_input_np[ 0, 0 ] = 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
+		preinput_sigmoid = network_input_np[ 0, 0 ]
+		network_input_np[ 0, 0 ] = sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
 
 		kernel_size = 3
 		make_net = PermittivityPredictor( self.num_wavelengths, kernel_size )
 
 		get_density_predictions = make_net.forward( torch.tensor( network_input_np, requires_grad=True ).float() )[ 0, 0 ]
-		eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( np.squeeze( get_density_predictions.detach().numpy() ) )
 
-		optimizer = torch.optim.SGD( make_net.parameters(), lr=100.0 )
+		preinput_sigmoid = get_density_predictions.detach().numpy()
+		network_input_np[ 0, 0 ] = make_sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
+
+		for wl_idx in range( 0, self.num_wavelengths ):
+			network_input_np[ 0, 1 + 2 * wl_idx ] = eval_real_fields[ wl_idx ]
+			network_input_np[ 0, 1 + 2 * wl_idx + 1 ] = eval_imag_fields[ wl_idx ]
+
+		eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( network_input_np[ 0, 0 ] )
+
+
+
+		optimizer = torch.optim.SGD( make_net.parameters(), lr=1.0 )
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
@@ -1021,23 +1038,31 @@ class ColorSplittingOptimizationDeep2D():
 				log_file.write( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) + "\n")
 				log_file.close()
 
+			sigmoid_backprop = make_sigmoid.chain_rule( -eval_grad, network_input_np[ 0, 0 ], preinput_sigmoid )
 
 			optimizer.zero_grad()
-			loss = ( torch.tensor( -eval_grad ).float() * get_density_predictions ).sum()
+			loss = ( torch.tensor( sigmoid_backprop ).float() * get_density_predictions ).sum()
 			loss.backward()
 			optimizer.step()
 
 			print( eval_fom )
 
-			network_input_np[ 0, 0 ] = np.greater_equal( get_density_predictions.detach().numpy(), 0.5 )
+			# network_input_np[ 0, 0 ] = np.greater_equal( get_density_predictions.detach().numpy(), 0.5 )
+			# preinput_sigmoid = get_density_predictions.detach().numpy()
+			# network_input_np[ 0, 0 ] = make_sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
+
+
+			get_density_predictions = make_net.forward( torch.tensor( network_input_np, requires_grad=True ).float() )[ 0, 0 ]
+
+			preinput_sigmoid = get_density_predictions.detach().numpy()
+			network_input_np[ 0, 0 ] = make_sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
 
 			for wl_idx in range( 0, self.num_wavelengths ):
 				network_input_np[ 0, 1 + 2 * wl_idx ] = eval_real_fields[ wl_idx ]
 				network_input_np[ 0, 1 + 2 * wl_idx + 1 ] = eval_imag_fields[ wl_idx ]
 
-			get_density_predictions = make_net.forward( torch.tensor( network_input_np, requires_grad=True ).float() )[ 0, 0 ]
-			binarize_predictions = np.greater_equal( np.squeeze( get_density_predictions.detach().numpy() ), 0.5 )
-			eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( binarize_predictions )
+			# binarize_predictions = np.greater_equal( np.squeeze( get_density_predictions.detach().numpy() ), 0.5 )
+			eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( network_input_np[ 0, 0 ] )
 
 
 			self.fom_evolution[ iter_idx ] = eval_fom
