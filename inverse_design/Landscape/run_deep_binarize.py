@@ -370,7 +370,7 @@ else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
 		index_regularization = False#True
-		downsample_abs_max = True
+		downsample_abs_max = False#True
 
 		# folder_to_plot = './bin_rate_down_avg_wider_v3'
 		# final_density = np.load(  folder_to_plot + '/opt_2p25/opt_optimized_density.npy' )

@@ -1013,7 +1013,7 @@ class ColorSplittingOptimizationDeep2D():
 		get_density_predictions = make_net.forward( torch.tensor( network_input_np, requires_grad=True ).float() )[ 0, 0 ]
 		eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( np.squeeze( get_density_predictions.detach().numpy() ) )
 
-		optimizer = torch.optim.SGD( make_net.parameters(), lr=1.0 )
+		optimizer = torch.optim.SGD( make_net.parameters(), lr=100.0 )
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
