@@ -1012,7 +1012,7 @@ class ColorSplittingOptimizationDeep2D():
 		network_input_np = np.random.random( ( 1, 2 * self.num_wavelengths + 1, self.design_width_voxels, self.design_height_voxels ) ) - 0.5
 		network_input_np[ 0, 0 ] += 0.5
 		preinput_sigmoid = network_input_np[ 0, 0 ]
-		network_input_np[ 0, 0 ] = sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
+		network_input_np[ 0, 0 ] = make_sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
 
 		kernel_size = 3
 		make_net = PermittivityPredictor( self.num_wavelengths, kernel_size )
@@ -1022,11 +1022,11 @@ class ColorSplittingOptimizationDeep2D():
 		preinput_sigmoid = get_density_predictions.detach().numpy()
 		network_input_np[ 0, 0 ] = make_sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
 
+		eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( network_input_np[ 0, 0 ] )
+
 		for wl_idx in range( 0, self.num_wavelengths ):
 			network_input_np[ 0, 1 + 2 * wl_idx ] = eval_real_fields[ wl_idx ]
 			network_input_np[ 0, 1 + 2 * wl_idx + 1 ] = eval_imag_fields[ wl_idx ]
-
-		eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( network_input_np[ 0, 0 ] )
 
 
 
@@ -1057,12 +1057,13 @@ class ColorSplittingOptimizationDeep2D():
 			preinput_sigmoid = get_density_predictions.detach().numpy()
 			network_input_np[ 0, 0 ] = make_sigmoid.forward( preinput_sigmoid )# 1.0 * np.greater_equal( network_input_np[ 0, 0 ], 0.5 )
 
+			# binarize_predictions = np.greater_equal( np.squeeze( get_density_predictions.detach().numpy() ), 0.5 )
+			eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( network_input_np[ 0, 0 ] )
+
+
 			for wl_idx in range( 0, self.num_wavelengths ):
 				network_input_np[ 0, 1 + 2 * wl_idx ] = eval_real_fields[ wl_idx ]
 				network_input_np[ 0, 1 + 2 * wl_idx + 1 ] = eval_imag_fields[ wl_idx ]
-
-			# binarize_predictions = np.greater_equal( np.squeeze( get_density_predictions.detach().numpy() ), 0.5 )
-			eval_fom, eval_grad, eval_real_fields, eval_imag_fields = density_to_fields_fom_and_grad( network_input_np[ 0, 0 ] )
 
 
 			self.fom_evolution[ iter_idx ] = eval_fom
