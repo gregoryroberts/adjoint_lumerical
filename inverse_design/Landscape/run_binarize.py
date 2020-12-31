@@ -369,7 +369,7 @@ else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
 		index_regularization = False#True
-		downsample_abs_max = False#True
+		downsample_abs_max = True
 
 		# folder_to_plot = './bin_rate_step_v2_3p5'
 		# folder_to_plot = './bin_rate_down_abs_max_v1'
