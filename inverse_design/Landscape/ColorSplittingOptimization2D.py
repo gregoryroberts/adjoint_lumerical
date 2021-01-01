@@ -472,8 +472,11 @@ class ColorSplittingOptimization2D():
 		plt.imshow( np.real( Ez ), cmap='Greens' )
 		plt.show()
 
+		plt.plot( np.abs( Ez[ :, self.focal_point_y ] ), color='b', linewidth=2 )
+		plt.show()
+
 		plt.subplot( 1, 2, 1 )
-		ceviche.viz.real(Ez, outline=self.rel_eps_simulation, ax=plt.gca(), cbar=False)
+		ceviche.viz.abs(Ez, outline=self.rel_eps_simulation, ax=plt.gca(), cbar=False)
 		plt.subplot( 1, 2, 2 )
 		plt.imshow( np.flip( np.swapaxes( np.real( self.rel_eps_simulation ), 0, 1 ), axis=0 ), cmap='Greens' )
 		plt.show()
@@ -2510,8 +2513,8 @@ class ColorSplittingOptimization2D():
 				fom_by_wl_index_contrast.append( scale_fom_for_wl_index_contrast )
 				fom_no_loss_by_wl.append( get_fom_no_loss )
 
-			# net_fom = np.product( fom_by_wl )
-			net_fom = np.sum( fom_by_wl )
+			net_fom = np.product( fom_by_wl )
+			# net_fom = np.sum( fom_by_wl )
 			net_fom_no_loss = np.product( fom_no_loss_by_wl )
 
 			net_fom_index_contrast = np.product( fom_by_wl_index_contrast )
