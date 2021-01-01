@@ -2510,7 +2510,8 @@ class ColorSplittingOptimization2D():
 				fom_by_wl_index_contrast.append( scale_fom_for_wl_index_contrast )
 				fom_no_loss_by_wl.append( get_fom_no_loss )
 
-			net_fom = np.product( fom_by_wl )
+			# net_fom = np.product( fom_by_wl )
+			net_fom = np.sum( fom_by_wl )
 			net_fom_no_loss = np.product( fom_no_loss_by_wl )
 
 			net_fom_index_contrast = np.product( fom_by_wl_index_contrast )
@@ -2522,10 +2523,15 @@ class ColorSplittingOptimization2D():
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
 			net_gradient_index_contrast = np.zeros( gradient_by_wl[ 0 ].shape )
 
+			fom_by_wl_np = np.array( fom_by_wl )
+			performance_weights = ( 2. / len( fom_by_wl ) ) - fom_by_wl_np**2 / np.sum( fom_by_wl_np**2 )
+			performance_weights = np.maximum( performance_weights, 0.0 )
+			performance_weights /= np.sum( performance_weights )
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
 				wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
-				weighting = net_fom / fom_by_wl[ wl_idx ]
+				# weighting = net_fom / fom_by_wl[ wl_idx ]
+				weighting = performance_weights[ wl_idx ]
 
 				if use_log_fom:
 					weighting = 1. / fom_by_wl[ wl_idx ]
