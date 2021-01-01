@@ -413,7 +413,9 @@ else:
 					total_fom.append( val )
 				for val in make_optimizer.binarization_evolution:
 					total_bin.append( val )
-
+					
+				np.save( save_folder + "/opt_net_fom.npy", np.array( total_fom ) )
+				np.save( save_folder + "/opt_net_bin.npy", np.array( total_bin ) )
 
 			np.save( save_folder + "/opt_net_fom.npy", np.array( total_fom ) )
 			np.save( save_folder + "/opt_net_bin.npy", np.array( total_bin ) )
