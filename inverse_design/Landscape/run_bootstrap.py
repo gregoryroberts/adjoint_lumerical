@@ -372,11 +372,6 @@ else:
 		index_regularization = False#True
 		downsample_abs_max = False#True
 
-		# folder_to_plot = './bin_rate_down_avg_wider_v3'
-		# folder_to_plot = './bin_rate_down_avg_wider_boot_v1'
-		folder_to_plot = './bin_rate_down_avg_wider_boot_v2'
-		final_density = np.load(  folder_to_plot + '/opt_2/opt_optimized_density.npy' )
-
 		viz_opt = False
 
 		if not viz_opt:
@@ -424,6 +419,10 @@ else:
 			np.save( save_folder + "/opt_net_bin.npy", np.array( total_bin ) )
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
+			# folder_to_plot = './bin_rate_down_avg_wider_v3'
+			# folder_to_plot = './bin_rate_down_avg_wider_boot_v1'
+			folder_to_plot = './bin_rate_down_avg_wider_boot_v2'
+			final_density = np.load(  folder_to_plot + '/opt_2/opt_optimized_density.npy' )
 
 			make_optimizer.init_density_directly( final_density )
 			make_optimizer.plot_fields( 6 )
