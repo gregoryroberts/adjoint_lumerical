@@ -376,11 +376,12 @@ else:
 
 		total_fom = []
 		total_bin = []
-		modified_iter = int( num_iterations / make_optimizer.design_density.shape[ 1 ] )
+		modified_iter = int( num_iterations / make_optimizer.design_density.shape[ 0 ] )
 
-		for h_idx in range( 0, make_optimizer.design_density.shape[ 1 ] ):
+		for w_idx in range( 0, make_optimizer.design_density.shape[ 0 ] ):
 			opt_mask = np.zeros( make_optimizer.design_density.shape )
-			opt_mask[ :, h_idx ] = 1
+			# opt_mask[ :, h_idx ] = 1
+			opt_mask[ w_idx, : ] = 1
 
 			# modified_binarize_movement_per_step = binarize_movement_per_step * 
 
