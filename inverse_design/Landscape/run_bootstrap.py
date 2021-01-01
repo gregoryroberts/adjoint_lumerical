@@ -374,11 +374,23 @@ else:
 
 		viz_opt = False
 
+		#
+		# e_k = F * e_r
+		# f( e_k ) = ( e_k - e_0 )^2
+		# df/de_k = 2 * ( e_k - e_0 )^dag
+		# de_k/de_r = F
+		# df/de_r = (df/de_k)(de_k)(de_r) = 2 * ( e_k - e_0 )^dag * F = 2 * ( F^dag * ( e_k - e_0 ) )^dag (IFT of the error signal)
+		#
+		# Convex? What if each of e_r is constrained to be a binary value? abs(e_r_i - e_r_mid) > alpha (and < beta?) 
+		#
+
+		# todo: are things reconfiguring?
+		# todo: optimize permittivity k-space effective medium (grayscale to binary)
 		if not viz_opt:
 			# 200 -(/4)> 50 -(/10)> 5
 			# 100 -(/4)> 25 -(/5)> 5
 
-			num_iterations_per_chunk = 200
+			num_iterations_per_chunk = 500#200
 			binarize_movement_per_step = 1.5 / num_iterations_per_chunk
 			binarize_max_movement_per_voxel = 1.5 / num_iterations_per_chunk
 
