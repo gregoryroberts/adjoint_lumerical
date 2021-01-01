@@ -369,27 +369,44 @@ else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
 		index_regularization = False#True
-		downsample_abs_max = True
+		downsample_abs_max = False#True
 
-		# folder_to_plot = './bin_rate_step_v2_3p5'
-		# folder_to_plot = './bin_rate_down_abs_max_v1'
-		# final_density = np.load(  folder_to_plot + '/opt_3p5/opt_optimized_density.npy' )
+		# folder_to_plot = './bin_rate_down_avg_wider_v3'
+		# final_density = np.load(  folder_to_plot + '/opt_2p25/opt_optimized_density.npy' )
 
-		make_optimizer.optimize(
-			int( num_iterations ),
-			save_folder + "/opt",
-			False, 20, 20, 0.95,
-			None,
-			use_log_fom,
-			wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-			binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-			dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
-			index_regularization,
-			downsample_abs_max )
+		total_fom = []
+		total_bin = []
+		modified_iter = int( num_iterations / make_optimizer.design_density.shape[ 1 ] )
+
+		for h_idx in range( 0, make_optimizer.design_density.shape[ 1 ] ):
+			opt_mask = np.zeros( make_optimizer.design_density.shape )
+			opt_mask[ :, h_idx ] = 1
+
+			# modified_binarize_movement_per_step = binarize_movement_per_step * 
+
+			make_optimizer.optimize(
+				# int( num_iterations ),
+				modified_iter,
+				save_folder + "/opt",
+				False, 20, 20, 0.95,
+				# None,
+				opt_mask,
+				use_log_fom,
+				wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+				binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+				dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+				index_regularization,
+				downsample_abs_max )
+
+			for val in make_optimizer.fom_evolution:
+				total_fom.append( val )
+			for val in make_optimizer.binarization_evolution:
+				total_bin.append( val )
 
 		# make_optimizer.init_density_directly( final_density )
-		# make_optimizer.plot_fields( 1 )
+		# make_optimizer.plot_fields( 2 )
 		# make_optimizer.optimize_with_level_set( 10 )
 
-
+		np.save( save_folder + "/opt_net_fom.npy", np.array( total_fom ) )
+		np.save( save_folder + "/opt_net_bin.npy", np.array( total_bin ) )
 		make_optimizer.save_optimization_data( save_folder + "/opt" )

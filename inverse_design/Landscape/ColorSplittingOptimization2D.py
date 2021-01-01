@@ -473,7 +473,7 @@ class ColorSplittingOptimization2D():
 		plt.show()
 
 		plt.subplot( 1, 2, 1 )
-		ceviche.viz.abs(Ez, outline=self.rel_eps_simulation, ax=plt.gca(), cbar=False)
+		ceviche.viz.real(Ez, outline=self.rel_eps_simulation, ax=plt.gca(), cbar=False)
 		plt.subplot( 1, 2, 2 )
 		plt.imshow( np.flip( np.swapaxes( np.real( self.rel_eps_simulation ), 0, 1 ), axis=0 ), cmap='Greens' )
 		plt.show()
