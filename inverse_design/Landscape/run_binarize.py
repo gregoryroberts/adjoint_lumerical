@@ -386,8 +386,6 @@ else:
 			# opt_mask[ :, h_idx ] = 1
 			opt_mask[ w_idx, : ] = 1
 
-			modified_binarize_movement_per_step = binarize_movement_per_step * 
-
 			make_optimizer.optimize(
 				# int( num_iterations ),
 				modified_iter,
