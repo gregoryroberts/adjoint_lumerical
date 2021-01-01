@@ -1008,6 +1008,9 @@ class ColorSplittingOptimizationDeep2D():
 
 			eval_fom, eval_grad = density_to_fom_and_grad( self.design_density )
 
+			self.fom_evolution[ iter_idx ] = eval_fom
+			self.density_evolution[ iter_idx ] = self.design_density
+
 			probability_norm = 0.0
 			for x_idx in range( 0, self.design_width_voxels ):
 				for y_idx in range( 0, self.design_height_voxels ):
