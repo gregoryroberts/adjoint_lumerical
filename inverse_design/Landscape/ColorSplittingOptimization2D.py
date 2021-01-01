@@ -2117,7 +2117,7 @@ class ColorSplittingOptimization2D():
 		flatten_gradient = gradient.flatten()
 
 		# flatten_design_cuts = density_for_binarizing.copy()
-		extract_binarization_gradient_full = compute_binarization_gradient( density_for_binarizing, self.binarization_set_point )
+		# extract_binarization_gradient_full = compute_binarization_gradient( density_for_binarizing, self.binarization_set_point )
 		# flatten_fom_gradients = flatten_gradient.copy()
 		flatten_opt_mask = opt_mask.flatten()
 
@@ -2130,11 +2130,12 @@ class ColorSplittingOptimization2D():
 			if flatten_opt_mask[ idx ] > 0:
 				flatten_design_cuts.append( density_for_binarizing[ idx ] )
 				flatten_fom_gradients.append( flatten_gradient[ idx ] )
-				extract_binarization_gradient.append( extract_binarization_gradient_full[ idx ] )
+				# extract_binarization_gradient.append( extract_binarization_gradient_full[ idx ] )
 
 		flatten_design_cuts = np.array( flatten_design_cuts )
 		flatten_fom_gradients = np.array( flatten_fom_gradients )
-		extract_binarization_gradient = np.array( extract_binarization_gradient )
+		# extract_binarization_gradient = np.array( extract_binarization_gradient )
+		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
 
 		beta = binarize_max_movement
 		projected_binarization_increase = 0
