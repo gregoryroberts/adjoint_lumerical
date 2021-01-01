@@ -1008,6 +1008,8 @@ class ColorSplittingOptimizationDeep2D():
 
 			eval_fom, eval_grad = density_to_fom_and_grad( self.design_density )
 
+			print( eval_fom )
+
 			self.fom_evolution[ iter_idx ] = eval_fom
 			self.density_evolution[ iter_idx ] = self.design_density
 
@@ -1022,7 +1024,7 @@ class ColorSplittingOptimizationDeep2D():
 						probability_norm += np.abs( get_grad )
 
 			if probability_norm > 0:
-				eval_grad /= probability_norm
+				eval_grad /= ( probability_norm / 10. )
 			else:
 				break
 
