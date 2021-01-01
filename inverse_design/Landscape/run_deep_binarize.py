@@ -375,9 +375,12 @@ else:
 		# folder_to_plot = './bin_rate_down_avg_wider_v3'
 		# final_density = np.load(  folder_to_plot + '/opt_2p25/opt_optimized_density.npy' )
 
-		make_optimizer.optimize(
+		# make_optimizer.optimize(
+		# 	1000,
+		# 	# int( num_iterations ),
+		# 	save_folder + "/opt" )
+		make_optimizer.optimize_vote(
 			1000,
-			# int( num_iterations ),
 			save_folder + "/opt" )
 
 		# make_optimizer.init_density_directly( final_density )

@@ -939,6 +939,105 @@ class ColorSplittingOptimizationDeep2D():
 
 		return output_array
 
+	def optimize_vote(
+		self, num_iterations,
+		folder_for_saving ):
+
+		self.fom_evolution = np.zeros( num_iterations )
+		self.density_evolution = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
+
+		make_sigmoid = sigmoid.Sigmoid( 0.5, 2.0 )
+
+		def density_to_fom_and_grad( test_density ):
+			import_density = upsample( test_density, self.coarsen_factor )
+			device_permittivity = self.density_to_permittivity( import_density )
+
+			gradient_by_wl = []
+			fom_by_wl = []
+
+			for wl_idx in range( 0, self.num_wavelengths ):
+				get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+
+				get_fom, get_grad = self.compute_fom_and_gradient(
+					self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
+					self.wavelength_intensity_scaling[ wl_idx ] )
+
+				scale_fom_for_wl = get_fom
+
+				upsampled_device_grad = get_grad[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+				scale_gradient_for_wl = upsampled_device_grad
+
+				gradient_by_wl.append( scale_gradient_for_wl )
+				fom_by_wl.append( scale_fom_for_wl )
+
+
+			net_fom = np.product( fom_by_wl )
+			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
+
+			# We are currently not doing a performance based weighting here, but we can add it in
+			for wl_idx in range( 0, self.num_wavelengths ):
+				wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
+				weighting = net_fom / fom_by_wl[ wl_idx ]
+
+				net_gradient += ( weighting * wl_gradient )
+
+			net_gradient = reinterpolate_average( net_gradient, self.coarsen_factor )
+
+
+			#
+			# Now, we should zero out non-designable regions and average over designable layers
+			#
+			net_gradient = self.layer_spacer_averaging( net_gradient )
+			gradient_norm = vector_norm( net_gradient )
+
+			# Using a scaled gradient might mess up the comparison between different iterations in terms of gradient
+			# magnitude
+			norm_scaled_gradient = net_gradient / gradient_norm
+
+			return net_fom, norm_scaled_gradient
+
+		self.design_density = 1.0 * np.greater(
+			np.random.random( ( self.design_width_voxels, self.design_height_voxels ) ),
+			0.5 )
+
+		for iter_idx in range( 0, num_iterations ):
+			if ( iter_idx % 10 ) == 0:
+				log_file = open( self.save_folder + "/log.txt", 'a' )
+				log_file.write( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) + "\n")
+				log_file.close()
+
+			eval_fom, eval_grad = density_to_fom_and_grad( self.design_density )
+
+			probability_norm = 0.0
+			for x_idx in range( 0, self.design_width_voxels ):
+				for y_idx in range( 0, self.design_height_voxels ):
+					get_value = self.design_density[ x_idx, y_idx ]
+					get_grad = eval_grad[ x_idx, y_idx ]
+					if ( get_value > 0.5 ) and ( get_grad < 0 ):
+						probability_norm += np.abs( get_grad )
+					elif ( get_value < 0.5 ) and ( get_grad > 0 ):
+						probability_norm += np.abs( get_grad )
+
+			if probability_norm > 0:
+				eval_grad /= probability_norm
+			else:
+				break
+
+			for x_idx in range( 0, self.design_width_voxels ):
+				for y_idx in range( 0, self.design_height_voxels ):
+					get_value = self.design_density[ x_idx, y_idx ]
+					get_grad = eval_grad[ x_idx, y_idx ]
+					if ( get_value > 0.5 ) and ( get_grad < 0 ):
+						if np.random.random() < np.abs( get_grad ):
+							self.design_density[ x_idx, y_idx ] = 0.0
+					elif ( get_value < 0.5 ) and ( get_grad > 0 ):
+						if np.random.random() < np.abs( get_grad ):
+							self.design_density[ x_idx, y_idx ] = 1.0
+
+
+			np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
+			np.save( folder_for_saving + "_density_evolution.npy", self.density_evolution )
+
 
 	def optimize(
 		self, num_iterations,
@@ -1075,7 +1174,8 @@ class ColorSplittingOptimizationDeep2D():
 
 	def save_optimization_data( self, file_base ):
 		np.save( file_base + "_fom_evolution.npy", self.fom_evolution )
-		np.save( file_base + "_density_prediction_evolution.npy", self.density_prediction_evolution )
+		# np.save( file_base + "_density_prediction_evolution.npy", self.density_prediction_evolution )
+		np.save( folder_for_saving + "_density_evolution.npy", self.density_evolution )
 
 
 
