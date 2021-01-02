@@ -394,19 +394,22 @@ else:
 			binarize_movement_per_step = 1.5 / num_iterations_per_chunk
 			binarize_max_movement_per_voxel = 1.5 / num_iterations_per_chunk
 
-			num_chunks = 10#5
+			num_chunks = 5#10#5
 			voxels_per_chunk = 5
 
 			total_fom = []
 			total_bin = []
 
 			for chunk_idx in range( 0, num_chunks ):
-				# h_idx = int( chunk_idx * voxels_per_chunk )
-				w_idx = int( chunk_idx * voxels_per_chunk )
+				h_idx = int( chunk_idx * voxels_per_chunk )
+				# w_idx = int( chunk_idx * voxels_per_chunk )
 
 				opt_mask = np.zeros( make_optimizer.design_density.shape )
-				# opt_mask[ :, h_idx : ( h_idx + voxels_per_chunk ) ] = 1
-				opt_mask[ w_idx : ( w_idx + voxels_per_chunk ), : ] = 1
+				opt_mask[ :, h_idx : ( h_idx + voxels_per_chunk ) ] = 1
+				# opt_mask[ w_idx : ( w_idx + voxels_per_chunk ), : ] = 1
+
+				opt_mask = np.flip( opt_mask, axis=1 )
+				# opt_mask = np.flip( opt_mask, axis=0 )
 
 				make_optimizer.optimize(
 					# int( num_iterations ),
