@@ -377,10 +377,10 @@ else:
 
 		if not viz_opt:
 
-			make_optimizer.design_density[ :, 20:80 ] = 1
+			make_optimizer.design_density[ :, 5:20 ] = 1
 			opt_mask = np.zeros( make_optimizer.design_density.shape )
 
-			opt_mask[ :, 80 : 100 ] = 1
+			opt_mask[ :, 20:25 ] = 1
 
 			make_optimizer.optimize(
 				int( 0.5 * num_iterations ),
@@ -396,8 +396,7 @@ else:
 				downsample_abs_max )
 
 			opt_mask = np.zeros( make_optimizer.design_density.shape )
-
-			opt_mask[ :, 0 : 20 ] = 1
+			opt_mask[ :, 0:5 ] = 1
 
 			make_optimizer.optimize(
 				int( 0.5 * num_iterations ),
@@ -417,10 +416,10 @@ else:
 			# folder_to_plot = './bin_rate_down_avg_wider_v3'
 			# folder_to_plot = './bin_rate_down_avg_wider_boot_v1'
 
-			# folder_to_plot = './bootstrap_avg_wider_v1'
+			# folder_to_plot = './bootstrap_avg_wider_v2'
 			folder_to_plot = './bin_rate_down_avg_wider_v3'
-			final_density = np.load(  folder_to_plot + '/opt_3p5/opt_optimized_density.npy' )
+			final_density = np.load(  folder_to_plot + '/opt_2/opt_optimized_density.npy' )
 
 			make_optimizer.init_density_directly( final_density )
-			make_optimizer.plot_fields( 2 )
+			make_optimizer.plot_fields( 4 )
 			# make_optimizer.optimize_with_level_set( 10 )

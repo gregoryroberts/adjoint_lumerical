@@ -468,12 +468,12 @@ class ColorSplittingOptimization2D():
 		device_permittivity = self.density_to_permittivity( import_density )
 		self.rel_eps_simulation[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] = device_permittivity
 
-		pad_device_permittivity = np.pad( device_permittivity, pad_width=( ( 20, 20 ) ), mode='constant', constant_values=( ( 1, 1 ), ( 1, 1 ) ) )
+		pad_device_permittivity = np.pad( device_permittivity, pad_width=( ( 3, 3 ) ), mode='constant', constant_values=( ( 1, 1 ), ( 1, 1 ) ) )
 
 		k_val = 2 * np.pi / ( 1e-6 * self.wavelengths_um[ omega_idx ] )
 		total = 0.0
 		for y_idx in range( 0, pad_device_permittivity.shape[ 1 ] ):
-			factor = np.exp( 1j * k_val * y_idx * self.mesh_size_um * 1e-6 )
+			factor = np.exp( -1j * k_val * 2 * y_idx * self.mesh_size_um * 1e-6 )
 			total += np.sum( factor * pad_device_permittivity[ :, y_idx ] )
 		print( np.abs( total ) )
 
@@ -493,7 +493,7 @@ class ColorSplittingOptimization2D():
 		plt.plot( norm_by_fp, color='b', linewidth=2 )
 		plt.show()
 
-		print( np.sum( np.abs( Ez[ :, self.focal_point_y ] ) ) )
+		print( np.sum( np.abs( Ez[ self.device_width_start : self.device_width_end, self.focal_point_y ] ) ) )
 
 		plt.subplot( 1, 2, 1 )
 		ceviche.viz.abs(Ez, outline=self.rel_eps_simulation, ax=plt.gca(), cbar=False)
