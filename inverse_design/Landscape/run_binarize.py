@@ -377,12 +377,34 @@ else:
 
 		if not viz_opt:
 
+			make_optimizer.design_density[ :, 20:80 ] = 1
+			opt_mask = np.zeros( make_optimizer.design_density.shape )
+
+			opt_mask[ :, 80 : 100 ] = 1
+
 			make_optimizer.optimize(
-				int( num_iterations ),
+				int( 0.5 * num_iterations ),
 				save_folder + "/opt",
 				False, 20, 20, 0.95,
-				None,
-				# opt_mask,
+				# None,
+				opt_mask,
+				use_log_fom,
+				wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+				binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+				dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+				index_regularization,
+				downsample_abs_max )
+
+			opt_mask = np.zeros( make_optimizer.design_density.shape )
+
+			opt_mask[ :, 0 : 20 ] = 1
+
+			make_optimizer.optimize(
+				int( 0.5 * num_iterations ),
+				save_folder + "/opt",
+				False, 20, 20, 0.95,
+				# None,
+				opt_mask,
 				use_log_fom,
 				wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 				binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
@@ -395,9 +417,10 @@ else:
 			# folder_to_plot = './bin_rate_down_avg_wider_v3'
 			# folder_to_plot = './bin_rate_down_avg_wider_boot_v1'
 
-			folder_to_plot = './bin_rate_down_avg_wider_boot_v2'
-			final_density = np.load(  folder_to_plot + '/opt_2/opt_optimized_density.npy' )
+			# folder_to_plot = './bootstrap_avg_wider_v1'
+			folder_to_plot = './bin_rate_down_avg_wider_v3'
+			final_density = np.load(  folder_to_plot + '/opt_3p5/opt_optimized_density.npy' )
 
 			make_optimizer.init_density_directly( final_density )
-			make_optimizer.plot_fields( 6 )
+			make_optimizer.plot_fields( 2 )
 			# make_optimizer.optimize_with_level_set( 10 )
