@@ -373,43 +373,23 @@ else:
 		downsample_abs_max = False#True
 
 
-		viz_opt = True
+		viz_opt = False#True
 
 		if not viz_opt:
-			total_fom = []
-			total_bin = []
-			modified_iter = int( num_iterations / make_optimizer.design_density.shape[ 1 ] )
-			modified_binarize_movement_per_step = binarize_movement_per_step * make_optimizer.design_density.shape[ 1 ]
-			modified_max_movement_per_voxel = binarize_max_movement_per_voxel * make_optimizer.design_density.shape[ 1 ]
 
-			for h_idx in range( 0, make_optimizer.design_density.shape[ 1 ] ):
-				opt_mask = np.zeros( make_optimizer.design_density.shape )
-				opt_mask[ :, h_idx ] = 1
-				# opt_mask[ w_idx, : ] = 1
+			make_optimizer.optimize(
+				int( num_iterations ),
+				save_folder + "/opt",
+				False, 20, 20, 0.95,
+				None,
+				# opt_mask,
+				use_log_fom,
+				wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+				binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+				dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+				index_regularization,
+				downsample_abs_max )
 
-				make_optimizer.optimize(
-					# int( num_iterations ),
-					modified_iter,
-					save_folder + "/opt",
-					False, 20, 20, 0.95,
-					# None,
-					opt_mask,
-					use_log_fom,
-					wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-					# binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-					binarize, modified_binarize_movement_per_step, modified_max_movement_per_voxel,
-					dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
-					index_regularization,
-					downsample_abs_max )
-
-				for val in make_optimizer.fom_evolution:
-					total_fom.append( val )
-				for val in make_optimizer.binarization_evolution:
-					total_bin.append( val )
-
-
-			np.save( save_folder + "/opt_net_fom.npy", np.array( total_fom ) )
-			np.save( save_folder + "/opt_net_bin.npy", np.array( total_bin ) )
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
 			# folder_to_plot = './bin_rate_down_avg_wider_v3'

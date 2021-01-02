@@ -35,6 +35,9 @@ if run_on_cluster:
 else:
 	import LevelSet
 
+sys.path.append( os.path.abspath( python_src_directory + "/../" ) )
+import sigmoid
+
 
 eps_nought = 8.854 * 1e-12
 mu_nought = 1.257 * 1e-6 
@@ -2294,6 +2297,11 @@ class ColorSplittingOptimization2D():
 
 		function_for_fom_and_gradient = self.compute_fom_and_gradient
 
+		num_sigmoid_epochs = 8
+		sigmoid_beta_start = 0.125
+		sigmoid_eta = 0.5
+		iter_per_epoch = int( np.ceil( num_iterations / num_sigmoid_epochs ) )
+
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
 				log_file = open( self.save_folder + "/log.txt", 'a' )
@@ -2302,7 +2310,14 @@ class ColorSplittingOptimization2D():
 
 
 			# mask_density = opt_mask * self.design_density
-			import_density = upsample( self.design_density, self.coarsen_factor )
+			sigmoid_epoch = int( iter_idx / iter_per_epoch )
+			sigmoid_beta = sigmoid_beta_start * ( 2**sigmoid_epoch )
+
+			make_sigmoid = sigmoid.Sigmoid( sigmoid_beta, sigmoid_eta )
+			sigmoid_density = make_sigmoid.forward( self.design_density )
+
+			# import_density = upsample( self.design_density, self.coarsen_factor )
+			import_density = upsample( sigmoid_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
 
 			index_contrast_df_h = 1e-3
@@ -2567,6 +2582,8 @@ class ColorSplittingOptimization2D():
 			#
 			net_gradient = self.layer_spacer_averaging( net_gradient )
 			net_gradient_index_contrast = self.layer_spacer_averaging( net_gradient_index_contrast )
+
+			net_gradient = make_sigmoid.chain_rule( net_gradient, sigmoid_density, self.design_density )
 
 			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
 				net_gradient *= 1.0 * np.greater( np.random.random( net_gradient.shape ), dropout_p )
