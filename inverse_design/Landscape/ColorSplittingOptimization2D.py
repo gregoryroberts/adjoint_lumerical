@@ -2197,7 +2197,9 @@ class ColorSplittingOptimization2D():
 			return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
 
 		tolerance = 1e-12
-		optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance )
+		# optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance )
+		optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance, bounds=[ [ 0.0, np.inf ] ] )
+
 
 		nu_star = optimization_solution_nu.x
 		lambda_1_star = ramp( nu_star * b - c )
@@ -2671,9 +2673,9 @@ class ColorSplittingOptimization2D():
 			# print('pre binarize')
 
 			if binarize:
-				min_binarize_step = 0.1 * binarize_max_movement_per_voxel
-				max_binarize_step = 1.2 * binarize_max_movement_per_voxel
-				num_steps = 30
+				min_binarize_step = 0.75 * binarize_max_movement_per_voxel
+				max_binarize_step = 5.0 * binarize_max_movement_per_voxel
+				num_steps = 50
 
 				binarization_steps = np.linspace( min_binarize_step, max_binarize_step, num_steps )
 
