@@ -366,44 +366,57 @@ else:
 		make_optimizer.save_optimization_data( save_folder + "/opt" )
 
 	# todo: did you make sure each frequency has same amount of energy going into simulation?
+	# todo: are devices rearranging or not?
 	else:
 		make_optimizer.init_density_with_uniform( mean_density )
 
 		index_regularization = False#True
 		downsample_abs_max = False#True
 
-
 		viz_opt = False#True
 
 		if not viz_opt:
 
-			make_optimizer.design_density[ :, 5:20 ] = 1
-			opt_mask = np.zeros( make_optimizer.design_density.shape )
+			# make_optimizer.design_density[ :, 5:20 ] = 1
+			# opt_mask = np.zeros( make_optimizer.design_density.shape )
 
-			opt_mask[ :, 20:25 ] = 1
+			# opt_mask[ :, 20:25 ] = 1
+
+			# make_optimizer.optimize(
+			# 	int( 0.5 * num_iterations ),
+			# 	save_folder + "/opt",
+			# 	False, 20, 20, 0.95,
+			# 	# None,
+			# 	opt_mask,
+			# 	use_log_fom,
+			# 	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+			# 	binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+			# 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+			# 	index_regularization,
+			# 	downsample_abs_max )
+
+			# opt_mask = np.zeros( make_optimizer.design_density.shape )
+			# opt_mask[ :, 0:5 ] = 1
+
+			# make_optimizer.optimize(
+			# 	int( 0.5 * num_iterations ),
+			# 	save_folder + "/opt",
+			# 	False, 20, 20, 0.95,
+			# 	# None,
+			# 	opt_mask,
+			# 	use_log_fom,
+			# 	wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+			# 	binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+			# 	dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+			# 	index_regularization,
+			# 	downsample_abs_max )
 
 			make_optimizer.optimize(
-				int( 0.5 * num_iterations ),
+				num_iterations,
 				save_folder + "/opt",
 				False, 20, 20, 0.95,
-				# None,
-				opt_mask,
-				use_log_fom,
-				wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-				binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-				dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
-				index_regularization,
-				downsample_abs_max )
-
-			opt_mask = np.zeros( make_optimizer.design_density.shape )
-			opt_mask[ :, 0:5 ] = 1
-
-			make_optimizer.optimize(
-				int( 0.5 * num_iterations ),
-				save_folder + "/opt",
-				False, 20, 20, 0.95,
-				# None,
-				opt_mask,
+				None,
+				# opt_mask,
 				use_log_fom,
 				wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 				binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,

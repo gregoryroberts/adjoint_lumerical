@@ -2308,6 +2308,7 @@ class ColorSplittingOptimization2D():
 		self.binarization_evolution = np.zeros( num_iterations )
 		self.fom_by_wl_evolution = np.zeros( ( num_iterations, self.num_wavelengths ) )
 		self.gradient_directions = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
+		self.density_evolution = np.zeros( ( num_iterations, self.design_width_voxels, self.design_height_voxels ) )
 
 		self.dense_plot_idxs = []
 		self.dense_plots = []
@@ -2658,6 +2659,7 @@ class ColorSplittingOptimization2D():
 				norm_scaled_gradient = self.pair_array( norm_scaled_gradient )
 
 			self.gradient_directions[ iter_idx ] = norm_scaled_gradient
+			self.density_evolution[ iter_idx ] = self.design_density
 
 			max_density_change = (
 				self.max_density_change_per_iteration_start +
@@ -2980,6 +2982,7 @@ class ColorSplittingOptimization2D():
 		np.save( file_base + "_binarization_evolution.npy", self.binarization_evolution )
 		np.save( file_base + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 		np.save( file_base + "_gradient_directions.npy", self.gradient_directions )
+		np.save( file_base + "_density_evolution.npy", self.density_evolution )
 		np.save( file_base + "_optimized_density.npy", self.design_density )
 		np.save( file_base + "_random_seed.npy", self.random_seed )
 		np.save( file_base + "_dense_plots.npy", np.array( self.dense_plots ) )
