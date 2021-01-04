@@ -54,7 +54,8 @@ class IPDipDispersion():
 	def compute_permittivity( self ):
 
 		min_omega = 0.1
-		max_omega = np.maximum( np.max( self.omega_nought_gaussian + 10 * self.gamma_gaussian ), np.max( self.omega_nought_lorentzian + 10 * self.gamma_lorentzian ) )
+		# max_omega = np.maximum( np.max( self.omega_nought_gaussian + 10 * self.gamma_gaussian ), np.max( self.omega_nought_lorentzian + 10 * self.gamma_lorentzian ) )
+		max_omega = 10000 / 2.0
 		omega_resolution_cminv = 1
 
 		self.num_omega = int( np.ceil( ( max_omega - min_omega ) / omega_resolution_cminv ) )
@@ -91,8 +92,9 @@ class IPDipDispersion():
 		upper_omega = np.max( permittivity_range_cminv )
 
 		find_lower = np.greater_equal( self.omega_range_cminv - lower_omega, 0.0 )
+
 		find_arg_closest_lower = 0
-		while ( not find_lower[ find_arg_closest_lower ] ) and ( find_arg_closest_lower < self.num_omega ):
+		while ( find_arg_closest_lower < self.num_omega ) and ( not find_lower[ find_arg_closest_lower ] ):
 			find_arg_closest_lower += 1
 
 		if not find_lower[ find_arg_closest_lower ]:
@@ -106,7 +108,7 @@ class IPDipDispersion():
 
 		find_upper = np.less_equal( upper_omega - self.omega_range_cminv, 0.0 )
 		find_arg_closest_upper = self.num_omega - 1
-		while ( find_upper[ find_arg_closest_upper] ) and ( find_arg_closest_upper >= 0 ):
+		while ( find_arg_closest_upper >= 0 ) and ( find_upper[ find_arg_closest_upper] ):
 			find_arg_closest_upper -= 1
 
 		if find_upper[ find_arg_closest_upper ]:
