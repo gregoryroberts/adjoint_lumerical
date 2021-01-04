@@ -26,6 +26,10 @@ import platform
 
 import re
 
+import skimage.morphology as skim
+
+import scipy
+
 
 def get_slurm_node_list( slurm_job_env_variable=None ):
 	if slurm_job_env_variable is None:
