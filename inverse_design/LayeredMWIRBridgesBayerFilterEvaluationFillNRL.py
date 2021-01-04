@@ -482,7 +482,7 @@ for z_idx in range( 0, reinterpolate_density.shape[ 2 ] ):
 
 
 
-num_eval_points = 50
+num_eval_points = 48
 if ( num_eval_points % num_nodes_available ) > 0:
 	num_eval_points += ( num_nodes_available - ( num_eval_points % num_nodes_available ) )
 
