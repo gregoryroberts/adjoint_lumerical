@@ -386,7 +386,7 @@ else:
 		downsample_abs_max = False#True
 
 		old_density = np.load(
-			'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v4_opt_' +
+			'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v4_' +
 			index_to_name[ max_index ] +
 			'/opt_optimized_density.npy' )
 
