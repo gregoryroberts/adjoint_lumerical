@@ -29,6 +29,17 @@ if len( sys.argv ) < 3:
 save_folder = sys.argv[ 1 ]
 max_index = float( sys.argv[ 2 ] )
 
+index_to_name = {}
+index_to_name[ 1.5 ] = '1p5'
+index_to_name[ 1.75 ] = '1p75'
+index_to_name[ 2.0 ] = '2'
+index_to_name[ 2.25 ] = '2p25'
+index_to_name[ 2.5 ] = '2p5'
+index_to_name[ 2.75 ] = '2p75'
+index_to_name[ 3.0 ] = '3'
+index_to_name[ 3.25 ] = '3p25'
+index_to_name[ 3.5 ] = '3p5'
+
 if ( max_index > 3.5 ):
 	print( "This index is a bit too high for the simulation mesh" )
 
@@ -115,7 +126,7 @@ blur_fields = False#True
 # num_iterations = 450#150#300
 # num_iterations_nominal = 150
 # num_iterations_nominal = 300
-num_iterations_nominal = 360
+num_iterations_nominal = 300#360
 # num_iterations_nominal = 200
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
@@ -374,6 +385,13 @@ else:
 		index_regularization = False#True
 		downsample_abs_max = False#True
 
+		old_density = np.load(
+			'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v4_opt_' +
+			index_to_name[ max_index ] +
+			'/opt_optimized_density.npy' )
+
+		make_optimizer.init_density_directly( old_density )
+
 		viz_opt = False#True
 
 		if not viz_opt:
@@ -431,9 +449,9 @@ else:
 			# folder_to_plot = './bin_rate_down_avg_wider_boot_v1'
 
 			# folder_to_plot = './bootstrap_avg_wider_v2'
-			folder_to_plot = './bin_rate_down_avg_wider_v3'
-			final_density = np.load(  folder_to_plot + '/opt_2/opt_optimized_density.npy' )
+			folder_to_plot = './bin_rate_down_avg_wider_save_v5'
+			final_density = np.load(  folder_to_plot + '/opt_2p5/opt_optimized_density.npy' )
 
 			make_optimizer.init_density_directly( final_density )
-			make_optimizer.plot_fields( 4 )
+			make_optimizer.plot_fields( 6 )
 			# make_optimizer.optimize_with_level_set( 10 )
