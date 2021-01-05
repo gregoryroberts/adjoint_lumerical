@@ -2185,7 +2185,7 @@ class ColorSplittingOptimization2D():
 
 		density_in = IndexWrapper( self.design_density )
 
-		perm_device = IndexWrapper( density_in.n * ( max_relative_permittivity - min_relative_permittivity ) + min_relative_permittivity )
+		perm_device = IndexWrapper( density_in.n * ( self.max_relative_permittivity - self.min_relative_permittivity ) + self.min_relative_permittivity )
 		gradient_device = IndexWrapper( gradient )
 
 
