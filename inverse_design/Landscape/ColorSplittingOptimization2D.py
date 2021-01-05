@@ -51,6 +51,10 @@ small = 1e-10
 # 	total_shape = np.product( input_variable.shape )
 # 	return ( 4 / np.sqrt( total_shape ) ) * ( input_variable - 0.5 ) / compute_binarization( input_variable )
 
+class IndexWrapper():
+	def __init__( self, index ):
+		self.n = index
+
 def compute_binarization( input_variable, set_point=0.5 ):
 	total_shape = np.product( input_variable.shape )
 	return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - set_point )**2 ) )
@@ -2131,7 +2135,173 @@ class ColorSplittingOptimization2D():
 
 		return gradient_output
 
+	# def step_binarize_v2( self, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
 
+	def step_binarize_conner( self, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
+		density_for_binarizing = self.design_density.flatten()
+		flatten_design_cuts = []
+
+		for idx in range( 0, len( flatten_opt_mask ) ):
+			if flatten_opt_mask[ idx ] > 0:
+				flatten_design_cuts.append( density_for_binarizing[ idx ] )
+
+		flatten_design_cuts = np.array( flatten_design_cuts )
+		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
+
+		b = np.real( extract_binarization_gradient )
+
+		lower_bounds = np.zeros( len( c ) )
+		upper_bounds = np.zeros( len( c ) )
+
+		for idx in range( 0, len( c ) ):
+			upper_bounds[ idx ] = np.maximum( np.minimum( binarize_max_movement, 1 - flatten_design_cuts[ idx ] ), 0 )
+			lower_bounds[ idx ] = np.minimum( np.maximum( -binarize_max_movement, -flatten_design_cuts[ idx ] ), 0 )
+
+		max_possible_binarization_change = 0
+		for idx in range( 0, len( c ) ):
+			if b[ idx ] > 0:
+				max_possible_binarization_change += b[ idx ] * upper_bounds[ idx ]
+			else:
+				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
+		
+		beta = binarize_amount_factor * max_possible_binarization_change
+
+
+
+		'''
+		Import two Device_Layered3D objects. gradient_device has the gradient information encoded in self.n, perm_device has the permittivity encoded in self.n.
+		The permittivity device could also be any variable, such as a density-based variable that is passed through filters to output epsilon.
+		This function then uses the gradient information to find a permittivity step d_eps that is the solution to the following optimization:
+		argmin[deps] (df_deps * deps) 
+		subject to: (db/deps * deps) > beta
+
+		The function b(eps) is the binarization function. This is quadratic for now.
+
+		bin_eps_shift can shift the center of the binarization center. The midpoint is at (eps_high + eps_low) / 2 + bin_eps_shift
+
+		'''
+
+	# def bin_opt_v8(gradient_device, perm_device, beta, nu_0 = None, eps_max = 11.66, eps_min = 1, eps_step_max = 0.01, bin_inequality=False, bin_eps_shift = 0):
+
+		nu_0 = None
+		eps_max = self.max_relative_permittivity# 3.5**2
+		eps_min = self.min_relative_permittivity# 1.0**2
+		eps_step_max = 0.01
+		bin_inequality = True
+		bin_eps_shift = 0
+
+		density_in = IndexWrapper( self.design_density )
+
+		perm_device = IndexWrapper( density_in.n * ( max_relative_permittivity - min_relative_permittivity ) + min_relative_permittivity )
+		gradient_device = IndexWrapper( gradient )
+
+
+		d1 = copy.deepcopy(perm_device)
+		d2 = copy.deepcopy(gradient_device)
+
+		# Clean up the input data.
+		d1.n[perm_device.n > eps_max] = eps_max
+		d1.n[perm_device.n < eps_min] = eps_min
+
+		# Helper variables
+		a1 = eps_min
+		a2 = eps_max
+		eps_mid = (eps_min + eps_max) / 2
+
+		original_shape = d1.n.shape
+		N = np.size(d1.n)
+		
+
+		# Convert to rho and flatten
+		rho = (2*(d1.n.flatten() - a1) / (a2 - a1)) - 1
+		df_drho = d2.n.flatten() * (a2 - a1) / 2
+
+		bin_rho_shift = 2*bin_eps_shift / (a2 - a1)
+
+		c = -df_drho
+		# b = compute_binarization_gradient( rho )
+		b = (( 4 / (a2-a1) ) * ( d1.n.flatten() - ((a1+a2) / 2) )) / N
+		b = (2*np.heaviside(rho - bin_rho_shift, 1) - 1) / N
+
+		# B = (4 * (d1.n.flatten() - ((a1 + a2) / 2)  ) ** 2 ) / (a2-a1)**2 
+
+		# Defined in terms of a max step in rho
+		###########################################################
+		# Find u and l vectors
+		###########################################################
+		rho_step_max = 2*eps_step_max/(a2-a1)
+
+		# u
+		rho_up_step = rho + rho_step_max
+		rho_up_step[rho_up_step > 1] = 1
+		u = rho_up_step - rho
+
+		# l
+		rho_down_step = rho - rho_step_max
+		rho_down_step[rho_down_step < -1] = -1
+		l = rho_down_step - rho
+
+		###########################################################
+		# Finding optimal nu (scipy.minimize)
+		###########################################################
+		if nu_0 is None:
+			nu_0 = 0
+
+		# This function is for drho between -0.5 and 0.5. Realistic.
+		# fun = lambda nu : -np.sum(((c + nu*b)*np.heaviside(-(c+nu*b),0)) * 2 * u) + nu*(np.sum(b*u) + beta)
+		# fun = lambda nu : np.dot(nu*b, l) - np.dot(l-u, (nu*b-c) * np.heaviside(nu*b-c, 0)) - nu*beta
+
+		def fun(nu):
+			# print( nu )
+			return_val = np.dot(nu*b, l) - np.dot(l-u, (nu*b-c) * np.heaviside(nu*b-c, 0)) - nu*beta
+			# print( return_val )
+			# print()
+			return return_val
+
+		# print( l[100] )
+		# Optimize nu
+		if bin_inequality:
+			bin_constraint = scipy.optimize.LinearConstraint(A = 1, lb = 0, ub = np.inf)
+			res = scipy.optimize.minimize(fun, 0, method='trust-constr', constraints=[bin_constraint] , options={'xtol': 1E-15, 'gtol': 1E-15, 'barrier_tol': 1E-15})
+		else:
+			res = scipy.optimize.minimize(fun, 0, method='Nelder-Mead', options={'xatol': 1E-15, 'fatol': 1E-15})
+
+		nu_star = res.x[0]
+		lamb1_star = nu_star*b - c
+		lamb1_star[(nu_star*b - c) <= 0] = 0
+
+		lamb2_star = c + lamb1_star - nu_star*b
+
+		# Threshold lamb1 and lamb2 stars. That is, if any value is sufficiently low then it becomes exactly 0.
+		threshold = 1E-20
+		lamb1_star[lamb1_star < threshold] = 0
+		lamb2_star[lamb2_star < threshold] = 0
+
+
+		drho_star = np.empty(lamb1_star.shape)
+		drho_star[:] = np.nan
+
+		drho_star[ (lamb1_star != 0) ] = u[(lamb1_star != 0)]
+		drho_star[ (lamb1_star == 0) & (lamb2_star != 0) ] = l[(lamb1_star == 0) & (lamb2_star != 0)]
+
+		# Treat the nan values, which occur when lamb1_star and lamb2_star are both zero
+		if np.sum(np.isnan(drho_star)) > 0:
+			drho_temp = drho_star[ ~np.isnan(drho_star) ]
+			drho_star[ (lamb1_star == 0) & (lamb2_star == 0) ] = (beta - np.sum(drho_temp*b[~np.isnan(drho_star)])) / np.sum(b[np.isnan(drho_star)])
+
+		# Convert to deps_star
+		deps_star = drho_star*(a2 - a1) / 2
+
+		# Make the changes to the original epsilon matrix.
+		d1.n = d1.n + np.reshape(deps_star, original_shape)
+
+		# Ensure that all values are within boundaries
+		d1.n[d1.n < eps_min] = eps_min
+		d1.n[d1.n > eps_max] = eps_max
+
+		return d1.n
+		# d1.update_layers()
+		# return d1,drho_star,lamb1_star,lamb2_star,res
 
 	#
 	# Now binarize_amount is a factor times the maximum movement possible
@@ -2835,7 +3005,8 @@ class ColorSplittingOptimization2D():
 					if pre_binarization == 1.0:
 						break
 
-					proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_amount_factor, binarize_movement_per_step, opt_mask )
+					proposed_step = self.step_binarize_v2( -norm_scaled_gradient, binarize_amount_factor, binarize_movement_per_step, opt_mask )
+					# proposed_step = self.step_binarize_conner( -norm_scaled_gradient, binarize_amount_factor, binarize_movement_per_step, opt_mask )
 					self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
 					self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
 
