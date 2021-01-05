@@ -2366,7 +2366,7 @@ class ColorSplittingOptimization2D():
 		dropout_start=0, dropout_end=0, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
 		index_contrast_regularization=False,
-		downsample_max=False, binarization_version=0, binarize_amount_factor ):
+		downsample_max=False, binarization_version=0, binarize_amount_factor=0.1 ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
