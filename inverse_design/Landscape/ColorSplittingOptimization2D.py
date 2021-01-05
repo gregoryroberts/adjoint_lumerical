@@ -2673,8 +2673,8 @@ class ColorSplittingOptimization2D():
 			# print('pre binarize')
 
 			if binarize:
-				min_binarize_step = 0.75 * binarize_max_movement_per_voxel
-				max_binarize_step = 5.0 * binarize_max_movement_per_voxel
+				min_binarize_step = 0.1 * binarize_max_movement_per_voxel
+				max_binarize_step = 20.0 * binarize_max_movement_per_voxel
 				num_steps = 50
 
 				binarization_steps = np.linspace( min_binarize_step, max_binarize_step, num_steps )
@@ -2699,8 +2699,13 @@ class ColorSplittingOptimization2D():
 							best_choice = proposed_step.copy()
 
 				if best_choice is None:
-					proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
-					proposed_step = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+					masked_bin_grad = opt_mask * compute_binarization_gradient( self.design_density )
+
+					delta_binarize = binarize_movement_per_step / np.sum( masked_bin_grad**2 )
+					stepped_binarize = self.design_density + delta_binarize * masked_bin_grad
+					stepped_binarize = np.maximum( 0.0, np.minimum( stepped_binarize, 1.0 ) )
+
+					proposed_step = opt_mask * stepped_binarize + ( 1 - opt_mask ) * self.design_density
 					best_choice = proposed_step.copy()
 
 				# proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )

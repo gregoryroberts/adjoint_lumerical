@@ -127,7 +127,7 @@ blur_fields = False#True
 # num_iterations_nominal = 150
 # num_iterations_nominal = 300
 # num_iterations_nominal = 300#360
-num_iterations_nominal = 150
+num_iterations_nominal = 320
 # num_iterations_nominal = 200
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
@@ -386,12 +386,12 @@ else:
 		index_regularization = False#True
 		downsample_abs_max = False#True
 
-		old_density = np.load(
-			'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v6_' +
-			index_to_name[ max_index ] +
-			'/opt_optimized_density.npy' )
+		# old_density = np.load(
+		# 	'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v6_' +
+		# 	index_to_name[ max_index ] +
+		# 	'/opt_optimized_density.npy' )
 
-		make_optimizer.init_density_directly( old_density )
+		# make_optimizer.init_density_directly( old_density )
 
 		viz_opt = False#True
 
