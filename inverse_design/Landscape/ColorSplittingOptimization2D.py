@@ -3,6 +3,7 @@
 #
 import sys
 import os
+import copy
 
 #
 # Math
