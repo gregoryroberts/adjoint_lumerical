@@ -2999,8 +2999,8 @@ class ColorSplittingOptimization2D():
 					if pre_binarization == 1.0:
 						break
 
-					# proposed_step = self.step_binarize_v2( -norm_scaled_gradient, binarize_amount_factor, binarize_movement_per_step, opt_mask )
-					proposed_step = self.step_binarize_conner( -norm_scaled_gradient, binarize_amount_factor, binarize_movement_per_step, opt_mask )
+					# proposed_step = self.step_binarize_v2( -norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
+					proposed_step = self.step_binarize_conner( norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
 					self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
 					self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
 
