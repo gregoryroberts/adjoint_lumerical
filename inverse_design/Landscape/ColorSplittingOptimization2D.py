@@ -2138,14 +2138,7 @@ class ColorSplittingOptimization2D():
 	# def step_binarize_v2( self, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
 
 	def step_binarize_conner( self, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
-		density_for_binarizing = self.design_density.flatten()
-		flatten_design_cuts = []
-
-		for idx in range( 0, len( flatten_opt_mask ) ):
-			if flatten_opt_mask[ idx ] > 0:
-				flatten_design_cuts.append( density_for_binarizing[ idx ] )
-
-		flatten_design_cuts = np.array( flatten_design_cuts )
+		flatten_design_cuts = self.design_density.flatten()
 		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
 
 		b = np.real( extract_binarization_gradient )
