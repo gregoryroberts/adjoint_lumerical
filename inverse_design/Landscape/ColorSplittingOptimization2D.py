@@ -2293,7 +2293,8 @@ class ColorSplittingOptimization2D():
 		d1.n[d1.n < eps_min] = eps_min
 		d1.n[d1.n > eps_max] = eps_max
 
-		return d1.n
+		density_movement = ( d1.n - self.min_relative_permittivity ) / ( self.max_relative_permittivity - self.min_relative_permittivity )
+		return density_movement
 		# d1.update_layers()
 		# return d1,drho_star,lamb1_star,lamb2_star,res
 
