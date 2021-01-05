@@ -431,18 +431,37 @@ else:
 			# 	index_regularization,
 			# 	downsample_abs_max )
 
-			make_optimizer.optimize(
-				num_iterations,
-				save_folder + "/opt",
-				False, 20, 20, 0.95,
-				None,
-				# opt_mask,
-				use_log_fom,
-				wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-				binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-				dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
-				index_regularization,
-				downsample_abs_max )
+			binarize_v2 = True
+			if binarize_v2:
+				eps_movement_per_step = 0.02
+				binarize_movement_per_step = eps_movement_per_step / ( max_relative_permittivity - min_relative_permittivity )
+
+				make_optimizer.optimize(
+					num_iterations,
+					save_folder + "/opt",
+					False, 20, 20, 0.95,
+					None,
+					# opt_mask,
+					use_log_fom,
+					wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+					binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+					dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+					index_regularization,
+					downsample_abs_max, binarize_v2, 0.1 )
+			else:
+				make_optimizer.optimize(
+					num_iterations,
+					save_folder + "/opt",
+					False, 20, 20, 0.95,
+					None,
+					# opt_mask,
+					use_log_fom,
+					wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+					binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+					dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+					index_regularization,
+					downsample_abs_max, binarize_v2, 0.1 )
+
 
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:

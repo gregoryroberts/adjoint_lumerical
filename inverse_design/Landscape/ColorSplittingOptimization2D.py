@@ -2131,6 +2131,115 @@ class ColorSplittingOptimization2D():
 
 		return gradient_output
 
+
+
+	#
+	# Now binarize_amount is a factor times the maximum movement possible
+	#
+	def step_binarize_v2( self, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
+
+		density_for_binarizing = self.design_density.flatten()
+		flatten_gradient = gradient.flatten()
+
+		# flatten_design_cuts = density_for_binarizing.copy()
+		# extract_binarization_gradient_full = compute_binarization_gradient( density_for_binarizing, self.binarization_set_point )
+		# flatten_fom_gradients = flatten_gradient.copy()
+		flatten_opt_mask = opt_mask.flatten()
+
+
+		flatten_design_cuts = []
+		flatten_fom_gradients = []
+		extract_binarization_gradient = []
+
+		for idx in range( 0, len( flatten_opt_mask ) ):
+			if flatten_opt_mask[ idx ] > 0:
+				flatten_design_cuts.append( density_for_binarizing[ idx ] )
+				flatten_fom_gradients.append( flatten_gradient[ idx ] )
+				# extract_binarization_gradient.append( extract_binarization_gradient_full[ idx ] )
+
+		flatten_design_cuts = np.array( flatten_design_cuts )
+		flatten_fom_gradients = np.array( flatten_fom_gradients )
+		# extract_binarization_gradient = np.array( extract_binarization_gradient )
+		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, self.binarization_set_point )
+
+		beta = binarize_max_movement
+		projected_binarization_increase = 0
+
+		c = flatten_fom_gradients
+
+		initial_binarization = compute_binarization( flatten_design_cuts, self.binarization_set_point )
+
+		b = np.real( extract_binarization_gradient )
+
+		lower_bounds = np.zeros( len( c ) )
+		upper_bounds = np.zeros( len( c ) )
+
+		for idx in range( 0, len( c ) ):
+			upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+			lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+
+		max_possible_binarization_change = 0
+		for idx in range( 0, len( c ) ):
+			if b[ idx ] > 0:
+				max_possible_binarization_change += b[ idx ] * upper_bounds[ idx ]
+			else:
+				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
+		
+		# Try this! Not sure how well it will work
+		# if initial_binarization < 0.1:
+		# 	alpha = binarize_amount
+		# else:
+			# alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
+		# alpha = np.minimum( max_possible_binarization_change, binarize_amount )
+		alpha = binarize_amount_factor * max_possible_binarization_change
+
+		def ramp( x ):
+			return np.maximum( x, 0 )
+
+		def opt_function( nu ):
+			lambda_1 = ramp( nu * b - c )
+			lambda_2 = c + lambda_1 - nu * b
+
+			return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
+
+		tolerance = 1e-12
+		# optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance )
+		# optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance, bounds=[ [ 0.0, np.inf ] ] )
+
+		bin_constraint = scipy.optimize.LinearConstraint(A = 1, lb = 0, ub = np.inf)
+		optimization_solution_nu = scipy.optimize.minimize(
+			opt_function, 0,
+			method='trust-constr',
+			constraints=[bin_constraint] ,
+			options={'xtol': 1E-16, 'gtol': 1E-16, 'barrier_tol': 1E-16})
+
+
+		nu_star = optimization_solution_nu.x
+		lambda_1_star = ramp( nu_star * b - c )
+		lambda_2_star = c + lambda_1_star - nu_star * b
+		x_star = np.zeros( len( c ) )
+
+		for idx in range( 0, len( c ) ):
+			if lambda_1_star[ idx ] > 0:
+				x_star[ idx ] = upper_bounds[ idx ]
+			else:
+				x_star[ idx ] = lower_bounds[ idx ]
+
+
+		proposed_design_variable = flatten_design_cuts + x_star
+		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
+
+		refill_idx = 0
+		refill_design_variable = density_for_binarizing.copy()
+		for idx in range( 0, len( flatten_opt_mask ) ):
+			if flatten_opt_mask[ idx ] > 0:
+				refill_design_variable[ idx ] = proposed_design_variable[ refill_idx ]
+				refill_idx += 1
+
+		return np.reshape( refill_design_variable, self.design_density.shape )
+
+
+
 	def step_binarize( self, gradient, binarize_amount, binarize_max_movement, opt_mask ):
 
 		density_for_binarizing = self.design_density.flatten()
@@ -2257,7 +2366,7 @@ class ColorSplittingOptimization2D():
 		dropout_start=0, dropout_end=0, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
 		index_contrast_regularization=False,
-		downsample_max=False ):
+		downsample_max=False, binarization_version=0, binarize_amount_factor ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
@@ -2324,8 +2433,10 @@ class ColorSplittingOptimization2D():
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
+				cur_binarization = compute_binarization( self.design_density.flatten() )
 				log_file = open( self.save_folder + "/log.txt", 'a' )
 				log_file.write( "Iteration " + str( iter_idx ) + " out of " + str( num_iterations - 1 ) + "\n")
+				log_file.write( "Current binarization = " + str( cur_binarization ) + "\n\n" )
 				log_file.close()
 
 
@@ -2673,44 +2784,61 @@ class ColorSplittingOptimization2D():
 			# print('pre binarize')
 
 			if binarize:
-				min_binarize_step = 0.1 * binarize_max_movement_per_voxel
-				max_binarize_step = 20.0 * binarize_max_movement_per_voxel
-				num_steps = 50
 
-				binarization_steps = np.linspace( min_binarize_step, max_binarize_step, num_steps )
+				if binarization_version == 0:
 
-				pre_binarization = compute_binarization( self.design_density.flatten() )
+					min_binarize_step = 0.1 * binarize_max_movement_per_voxel
+					max_binarize_step = 20.0 * binarize_max_movement_per_voxel
+					num_steps = 50
 
-				best_choice = None
-				best_fom_increase = -np.inf
+					binarization_steps = np.linspace( min_binarize_step, max_binarize_step, num_steps )
 
-				for step_idx in range( 0, num_steps ):
-					scan_movement_per_voxel = binarization_steps[ step_idx ]
-					proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, scan_movement_per_voxel, opt_mask )
-					proposed_step = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+					pre_binarization = compute_binarization( self.design_density.flatten() )
 
-					achieved_binarization = compute_binarization( proposed_step.flatten() ) - pre_binarization
+					best_choice = None
+					best_fom_increase = -np.inf
 
-					if achieved_binarization >= 0.9 * binarize_movement_per_step:
-						fom_increase = np.sum( ( proposed_step - self.design_density ) * norm_scaled_gradient )
+					for step_idx in range( 0, num_steps ):
+						scan_movement_per_voxel = binarization_steps[ step_idx ]
+						proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, scan_movement_per_voxel, opt_mask )
+						proposed_step = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
 
-						if fom_increase > best_fom_increase:
-							best_fom_increase = fom_increase
-							best_choice = proposed_step.copy()
+						achieved_binarization = compute_binarization( proposed_step.flatten() ) - pre_binarization
 
-				if best_choice is None:
-					masked_bin_grad = opt_mask * compute_binarization_gradient( self.design_density )
+						if achieved_binarization >= 0.9 * binarize_movement_per_step:
+							fom_increase = np.sum( ( proposed_step - self.design_density ) * norm_scaled_gradient )
 
-					delta_binarize = binarize_movement_per_step / np.sum( masked_bin_grad**2 )
-					stepped_binarize = self.design_density + delta_binarize * masked_bin_grad
-					stepped_binarize = np.maximum( 0.0, np.minimum( stepped_binarize, 1.0 ) )
+							if fom_increase > best_fom_increase:
+								best_fom_increase = fom_increase
+								best_choice = proposed_step.copy()
 
-					proposed_step = opt_mask * stepped_binarize + ( 1 - opt_mask ) * self.design_density
-					best_choice = proposed_step.copy()
+					if best_choice is None:
+						masked_bin_grad = opt_mask * compute_binarization_gradient( self.design_density )
 
-				# proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
-				# self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
-				self.design_density = best_choice
+						delta_binarize = binarize_movement_per_step / np.sum( masked_bin_grad**2 )
+						stepped_binarize = self.design_density + delta_binarize * masked_bin_grad
+						stepped_binarize = np.maximum( 0.0, np.minimum( stepped_binarize, 1.0 ) )
+
+						proposed_step = opt_mask * stepped_binarize + ( 1 - opt_mask ) * self.design_density
+						best_choice = proposed_step.copy()
+
+					# proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_movement_per_step, binarize_max_movement_per_voxel, opt_mask )
+					# self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+					self.design_density = best_choice
+
+				else:
+
+					pre_binarization = compute_binarization( self.design_density.flatten() )
+					if pre_binarization > 0.995:
+						self.design_density = 1.0 * np.greater_equal( self.design_density, 0.5 )
+						continue
+					if pre_binarization == 1.0:
+						break
+
+					proposed_step = self.step_binarize( -norm_scaled_gradient, binarize_amount_factor, binarize_movement_per_step, opt_mask )
+					self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
+					self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
+
 			else:
 				self.design_density += max_density_change * norm_scaled_gradient / np.max( np.abs( norm_scaled_gradient ) )
 				self.design_density = np.maximum( 0, np.minimum( self.design_density, 1 ) )
