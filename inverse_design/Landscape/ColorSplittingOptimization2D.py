@@ -2143,15 +2143,15 @@ class ColorSplittingOptimization2D():
 
 		b = np.real( extract_binarization_gradient )
 
-		lower_bounds = np.zeros( len( c ) )
-		upper_bounds = np.zeros( len( c ) )
+		lower_bounds = np.zeros( len( b ) )
+		upper_bounds = np.zeros( len( b ) )
 
-		for idx in range( 0, len( c ) ):
+		for idx in range( 0, len( b ) ):
 			upper_bounds[ idx ] = np.maximum( np.minimum( binarize_max_movement, 1 - flatten_design_cuts[ idx ] ), 0 )
 			lower_bounds[ idx ] = np.minimum( np.maximum( -binarize_max_movement, -flatten_design_cuts[ idx ] ), 0 )
 
 		max_possible_binarization_change = 0
-		for idx in range( 0, len( c ) ):
+		for idx in range( 0, len( b ) ):
 			if b[ idx ] > 0:
 				max_possible_binarization_change += b[ idx ] * upper_bounds[ idx ]
 			else:
