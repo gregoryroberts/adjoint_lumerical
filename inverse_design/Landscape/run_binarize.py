@@ -127,8 +127,8 @@ blur_fields = False#True
 # num_iterations_nominal = 150
 # num_iterations_nominal = 300
 # num_iterations_nominal = 300#360
-# num_iterations_nominal = 320
-num_iterations_nominal = 80
+num_iterations_nominal = 320
+# num_iterations_nominal = 80
 # num_iterations_nominal = 200
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
