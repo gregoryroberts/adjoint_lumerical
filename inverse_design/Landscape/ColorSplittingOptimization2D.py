@@ -2158,7 +2158,7 @@ class ColorSplittingOptimization2D():
 			else:
 				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
 		
-		beta = binarize_amount_factor * max_possible_binarization_change
+		beta = 2 * binarize_amount_factor * max_possible_binarization_change
 
 
 
