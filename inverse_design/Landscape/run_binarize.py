@@ -128,7 +128,7 @@ blur_fields = False#True
 # num_iterations_nominal = 300
 # num_iterations_nominal = 300#360
 # num_iterations_nominal = 320
-num_iterations_nominal = 160
+num_iterations_nominal = 80
 # num_iterations_nominal = 200
 num_iterations = int( np.ceil(
 	num_iterations_nominal * ( max_relative_permittivity - min_relative_permittivity ) / ( 1.5**2 - min_relative_permittivity ) ) )
@@ -438,7 +438,7 @@ else:
 				binarize_max_movement_per_voxel = eps_movement_per_voxel / ( max_relative_permittivity - min_relative_permittivity )
 
 				old_density = np.load(
-					'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v12_' +
+					'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v14_' +
 					index_to_name[ max_index ] +
 					'/opt_optimized_density.npy' )
 
