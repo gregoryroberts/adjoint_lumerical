@@ -2180,7 +2180,7 @@ class ColorSplittingOptimization2D():
 		nu_0 = None
 		eps_max = self.max_relative_permittivity# 3.5**2
 		eps_min = self.min_relative_permittivity# 1.0**2
-		eps_step_max = 0.01
+		eps_step_max = binarize_max_movement * ( self.max_relative_permittivity - self.min_relative_permittivity )
 		bin_inequality = True
 		bin_eps_shift = 0
 
