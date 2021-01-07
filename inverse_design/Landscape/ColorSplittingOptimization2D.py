@@ -2596,6 +2596,8 @@ class ColorSplittingOptimization2D():
 		# sigmoid_eta = 0.5
 		# iter_per_epoch = int( np.ceil( num_iterations / num_sigmoid_epochs ) )
 
+		binarization_condition_met = False
+
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
 				cur_binarization = compute_binarization( self.design_density.flatten() )
@@ -2992,16 +2994,17 @@ class ColorSplittingOptimization2D():
 					self.design_density = best_choice
 
 				else:
+					if binarization_condition_met:
+						break
 
 					pre_binarization = compute_binarization( self.design_density.flatten() )
 					if pre_binarization > 0.995:
 						self.design_density = 1.0 * np.greater_equal( self.design_density, 0.5 )
+						binarization_condition_met = True
 						continue
-					if pre_binarization == 1.0:
-						break
 
-					# proposed_step = self.step_binarize_v2( -norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
-					proposed_step = self.step_binarize_conner( norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
+					proposed_step = self.step_binarize_v2( -norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
+					# proposed_step = self.step_binarize_conner( norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
 					self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
 					self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
 
