@@ -128,7 +128,8 @@ device_mesh['dz'] = mesh_spacing_um * 1e-6
 #
 xy_phi_rotations = [0, 90]
 xy_names = ['x', 'y']
-custom_source_names = ['custom_src_tapered_xpol', 'custom_src_tapered_ypol']
+# custom_source_names = ['custom_src_tapered_xpol', 'custom_src_tapered_ypol']
+custom_source_names = ['custom_src_xpol', 'custom_src_ypol']
 custom_source_loc = "/central/groups/Faraon_Computing/custom_sources/mwir/"
 custom_source_paths = [ custom_source_loc + custom_source_names[ src_idx ] + ".mat" for src_idx in range( 0, len( custom_source_names ) ) ]
 
@@ -331,6 +332,8 @@ pec_aperture['mesh order'] = 2
 
 NA_objective = 0.4
 r_airy_min_um = 1.22 * lambda_min_um / ( 2.0 * NA_objective )
+# aperture_radius_um = r_airy_min_um
+aperture_radius_um = 5.0
 
 pinhole_opening = fdtd_hook.addcircle()
 pinhole_opening['name'] = 'pinhole_opening'
@@ -339,7 +342,7 @@ pinhole_opening['y'] = 0
 pinhole_opening['z min'] = ( fdtd_region_maximum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um - aperture_thickness_um ) * 1e-6
 # Send this outside the region FDTD and let the source sit inside of it
 pinhole_opening['z max'] = ( fdtd_region_maximum_vertical_um - vertical_gap_size_um - min_silicon_thickness_um ) * 1e-6
-pinhole_opening['radius'] = r_airy_min_um * 1e-6
+pinhole_opening['radius'] = aperture_radius_um * 1e-6
 pinhole_opening['index'] = 1.5
 pinhole_opening['override mesh order from material database'] = 1
 pinhole_opening['mesh order'] = 1
@@ -485,21 +488,22 @@ def run_jobs_inner( queue_in ):
 
 ip_dip_dispersion_model = ip_dip_dispersion.IPDipDispersion()
 
-cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
+# cur_design_variable = np.load( projects_directory_location + "/cur_design_variable.npy" )
+cur_design_variable = np.load( projects_directory_location + "/cur_design_variable_midopt.npy")
 bayer_filter.w[0] = cur_design_variable
 bayer_filter.update_permittivity()
 
 #
 # Run the optimization
 #
-start_epoch = 3#0#6
+start_epoch = 6#3#0#6
 for epoch in range(start_epoch, num_epochs):
 	bayer_filter.update_filters(epoch)
 	bayer_filter.update_permittivity()
 
 	start_iter = 0
 	if epoch == start_epoch:
-		start_iter = 23
+		start_iter = 20#23
 	for iteration in range(start_iter, num_iterations_per_epoch):
 		print("Working on epoch " + str(epoch) + " and iteration " + str(iteration))
 
