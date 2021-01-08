@@ -394,7 +394,7 @@ else:
 
 		# make_optimizer.init_density_directly( old_density )
 
-		viz_opt = False#True
+		viz_opt = True#False#True
 
 		if not viz_opt:
 
@@ -434,11 +434,11 @@ else:
 
 			binarize_v2 = 1
 			eps_movement_per_voxel = 0.02
-			if binarize_v2:
+			if binarize_v2 == 1:
 				binarize_max_movement_per_voxel = eps_movement_per_voxel / ( max_relative_permittivity - min_relative_permittivity )
 
 				old_density = np.load(
-					'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v14_' +
+					'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v15_' +
 					index_to_name[ max_index ] +
 					'/opt_optimized_density.npy' )
 
@@ -478,8 +478,8 @@ else:
 			# folder_to_plot = './bin_rate_down_avg_wider_boot_v1'
 
 			# folder_to_plot = './bootstrap_avg_wider_v2'
-			folder_to_plot = './bin_rate_down_avg_wider_save_v5'
-			final_density = np.load(  folder_to_plot + '/opt_2p5/opt_optimized_density.npy' )
+			folder_to_plot = './bin_rate_down_avg_wider_save_v13'
+			final_density = np.load(  folder_to_plot + '/opt_3p5/opt_optimized_density.npy' )
 
 			make_optimizer.init_density_directly( final_density )
 			make_optimizer.plot_fields( 6 )
