@@ -1578,7 +1578,7 @@ def optimize_parent_locally( parent_object, num_iterations, binarization_termina
 		cur_index = parent_object.assemble_index( iteration )
 
 		cur_density = ( cur_index - np.sqrt( min_real_permittivity ) ) / ( np.sqrt( max_real_permittivity ) - np.sqrt( min_real_permittivity ) )
-		cur_binarization = compute_binarization( cur_density )
+		cur_binarization = parent_object.get_binarization()
 
 		fom, gradient = compute_gradient( cur_index )
 
@@ -1591,7 +1591,6 @@ def optimize_parent_locally( parent_object, num_iterations, binarization_termina
 
 
 		fom_track.append( fom )
-		cur_binarization = parent_object.get_binarization()
 		binarization_track.append( cur_binarization )
 
 		#
