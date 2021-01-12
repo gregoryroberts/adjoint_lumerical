@@ -155,7 +155,6 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		self.opt_width_num_voxels = int( self.opt_width_um / self.opt_mesh_size_um )
 
 		self.layer_profiles = []
-
 		for profile_idx in range( 0, len( self.layer_thicknesses_um ) ):
 			# profile_width_voxels = self.minimum_feature_gap_spacing_voxels[ profile_idx ]
 			profile_width_voxels = int( self.opt_width_um / self.minimum_feature_gap_spacing_um[ profile_idx ] )
@@ -603,8 +602,12 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 
 	def get_binarization( self, binarization_set_point=0.5 ):
-		concatenate_profiles = np.array( self.layer_profiles, dtype=np.float )
-		return compute_binarization( concatenate_profiles, binarization_set_point )
+		concatenate_profiles = []
+		for profile_idx in range( 0, len( self.layer_profiles ) ):
+			for value in self.layer_profiles[ profile_idx ]:
+				concatenate_profiles.append( value )
+
+		return compute_binarization( np.array( concatenate_profiles ), binarization_set_point )
 
 
 	def update( self, gradient_real, graident_imag, gradient_real_lsf, gradient_imag_lsf, epoch, iteration ):
@@ -712,8 +715,13 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 		else:
 
-			concatenate_profiles = np.array( self.layer_profiles, dtype=np.float )
-			concatenate_gradient = np.zeros( concatenate_profiles.shape, dtype=np.float )
+			concatenate_profiles = []
+			for profile_idx in range( 0, len( self.layer_profiles ) ):
+				for value in self.layer_profiles[ profile_idx ]:
+					concatenate_profiles.append( value )
+			concatenate_profiles = np.array( concatenate_profiles )
+
+			concatenate_gradient = []
 
 			for profile_idx in range( 0, len( self.layer_profiles ) ):
 				get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
@@ -725,18 +733,26 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 				get_profile = self.layer_profiles[ profile_idx ]
 				downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
-				concatenate_gradient[ profile_idx, : ] = downsampled_grad
+				for value in downsampled_grad:
+					concatenate_gradient.apend( value )
+				concatenate_gradient = np.array( concatenate_gradient )
 
 
 			permittivity_max_movement = 0.02
 			density_max_movement = permittivity_max_movement / ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] )
+			binarize_movement_factor = 0.5
 			
-			proposed_step = self.step_binarize( concatenate_gradient, concatenate_profiles, 0.1, density_max_movement )
+			proposed_step = np.minimum( 1.0,
+				np.maximum( 0.0,
+					self.step_binarize( concatenate_gradient, concatenate_profiles, binarize_movement_factor, density_max_movement )
+				)
+			)
 
+			cur_counter = 0
 			for profile_idx in range( 0, len( self.layer_profiles ) ):
-
-				self.layer_profiles[ profile_idx ] = np.minimum( 1.0, np.maximum( proposed_step[ profile_idx ], 0 ) )
-
+				profile_length = len( self.layer_profiles[ profile_idx ] )
+				self.layer_profiles[ profile_idx, : ] = proposed_step[ cur_counter : ( cur_counter + profile_length ) ]
+				cur_counter += profile_length
 
 
 	def save_design( self, filebase, epoch ):

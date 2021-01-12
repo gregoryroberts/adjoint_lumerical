@@ -800,7 +800,7 @@ def optimize_parent_locally( parent_object, num_iterations, binarization_termina
 		cur_binarization = parent_object.get_binarization()
 
 		fom_track.append( figure_of_merit_by_device[ 0 ] )
-		binarization_track.append( parent_object.get_binarization() )
+		binarization_track.append( cur_binarization )
 		parent_object.submit_figure_of_merit( figure_of_merit_by_device, iteration, 0 )
 		parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
 
@@ -960,6 +960,7 @@ figure_of_merit_evolution = []
 for epoch_idx in range( 0, 1 ):
 
 	binarization_terminate_threshold = 0.995
+
 	my_optimization_state, local_fom, local_binarization = optimize_parent_locally( my_optimization_state, num_iterations, binarization_terminate_threshold )
 
 	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index( num_iterations - 1 ) )
