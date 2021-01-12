@@ -16,7 +16,8 @@ import sys
 # Files
 #
 # project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_lsf_global_3xtsmc_um_focal_1p5um'
-project_name = 'cmos_dielectric_2d_3focal_layered_sio2_p22layers_bin_opt_brg_3xtsmc_um_focal_1p8um_v1'
+# project_name = 'cmos_dielectric_2d_3focal_layered_sio2_p22layers_bin_opt_brg_3xtsmc_um_focal_1p8um_v1'
+project_name = 'cmos_dielectric_2d_3focal_layered_tio2_p22layers_bin_opt_brg_3xtsmc_um_focal_1p8um_v1'
 
 #
 # Optical
@@ -26,10 +27,12 @@ project_name = 'cmos_dielectric_2d_3focal_layered_sio2_p22layers_bin_opt_brg_3xt
 # Check binarized device and look at feature sizes!
 background_index = 1.0
 design_index_background = 1.0#1.35
-device_background_index = 1.46#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
+# device_background_index = 1.46#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
+device_background_index = 2.2#2.1#1.46#2.1#1.46#2.1#1.46#1.35# 2.5
 device_lateral_background_density = 1.0
 # high_index_backfill = 2.5
-high_index_backfill = 1.46#2.1#1.46#2.1#1.46#2.1#1.46
+# high_index_backfill = 1.46#2.1#1.46#2.1#1.46#2.1#1.46
+high_index_backfill = 2.2
 # high_index_backfill = 2.1
 substrate_index = 1.0
 
