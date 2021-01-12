@@ -752,7 +752,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 			cur_counter = 0
 			for profile_idx in range( 0, len( self.layer_profiles ) ):
 				profile_length = len( self.layer_profiles[ profile_idx ] )
-				self.layer_profiles[ profile_idx, : ] = proposed_step[ cur_counter : ( cur_counter + profile_length ) ]
+				self.layer_profiles[ profile_idx ] = proposed_step[ cur_counter : ( cur_counter + profile_length ) ]
 				cur_counter += profile_length
 
 
