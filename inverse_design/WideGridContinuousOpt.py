@@ -799,6 +799,10 @@ def optimize_parent_locally( parent_object, num_iterations, binarization_termina
 
 		cur_binarization = parent_object.get_binarization()
 
+		log_file = open(projects_directory_location + "/log.txt", 'a')
+		log_file.write("Binarization for iteration " + str( iteration ) + ": " + str( cur_binarization ) + "\n")
+		log_file.close()
+
 		fom_track.append( figure_of_merit_by_device[ 0 ] )
 		binarization_track.append( cur_binarization )
 		parent_object.submit_figure_of_merit( figure_of_merit_by_device, iteration, 0 )
