@@ -734,7 +734,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 				downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
 				for value in downsampled_grad:
-					concatenate_gradient.apend( value )
+					concatenate_gradient.append( value )
 				concatenate_gradient = np.array( concatenate_gradient )
 
 
