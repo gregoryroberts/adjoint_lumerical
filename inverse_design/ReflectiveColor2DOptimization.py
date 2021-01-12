@@ -555,7 +555,7 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 # You likely should verify the gradient for when you do level set optimized devices!
 
 # num_iterations = 200
-num_iterations = 150
+num_iterations = 1000
 start_iter = 0#100
 
 np.random.seed( 923447 )
