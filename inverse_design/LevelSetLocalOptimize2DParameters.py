@@ -15,7 +15,8 @@ import sys
 #
 # Files
 #
-project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_lsf_global_3xtsmc_um_focal_1p5um'
+# project_name = 'cmos_dielectric_2d_3focal_layered_higherindex_p22layers_rbg_lsf_global_3xtsmc_um_focal_1p5um'
+project_name = 'cmos_dielectric_2d_3focal_layered_sio2_p22layers_bin_opt_brg_3xtsmc_um_focal_1p8um_v1'
 
 #
 # Optical

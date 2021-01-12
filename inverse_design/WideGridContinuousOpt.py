@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from LevelSetLocalOptimize2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = False#True
 
 if run_on_cluster:
 	import imp
@@ -119,6 +119,9 @@ if run_on_cluster:
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
 
+#
+# todo: should do a gradient check especially once the figure of merit is settled!
+#
 should_reload = False#True
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_Hz_sio2_no_constrast_v2"
 projects_directory_location += "/" + project_name + "_continuous_Hz_sio2_no_contrast_v3"
@@ -802,9 +805,147 @@ def optimize_parent_locally( parent_object, num_iterations ):
 	return parent_object, fom_track
 
 
-figure_of_merit_evolution = []
+post_visualization = False
 
-import matplotlib.pyplot as plt
+if post_visualization:
+
+	load_index = np.load('/Users/gregory/Downloads/device_final_splitter_Hz_v3.npy')
+	load_perm = load_index**2
+
+	mid_real_permittivity = 0.5 * ( min_real_permittivity + max_real_permittivity )
+
+	bin_profile = np.greater( load_perm, mid_real_permittivity )
+	negative_profile = np.less_equal( load_perm, mid_real_permittivity )
+	bin_perm = min_real_permittivity + ( max_real_permittivity - min_real_permittivity ) * bin_profile
+	bin_index = np.sqrt( bin_perm )
+
+	plt.imshow( bin_index, cmap='winter', extent=[ 0, designable_size_vertical_um, 0, device_size_lateral_um ] )
+	plt.xlabel( 'Depth (um)', fontsize=16 )
+	plt.ylabel( 'Width (um)', fontsize=16 )
+	plt.colorbar()
+	plt.show()
+
+	layer_idxs = [ 18, 102, 181, 258, 343, 411, 491 ]
+
+	feature_sizes_by_layer = [ [] for idx in range( 0, len( layer_idxs ) ) ]
+	gap_sizes_by_layer = [ [] for idx in range( 0, len( layer_idxs ) ) ]
+
+	def feature_len_by_profile( start_idx, profile ):
+		profile_len = len( profile )
+
+		length = 0
+		while ( start_idx < len( profile ) ) and profile[ start_idx ]:
+			length += 1
+			start_idx += 1
+
+		return length
+
+
+	for layer in range( 0, len( layer_idxs ) ):
+		get_layer = bin_profile[ :, layer_idxs[ layer ] ]
+		start_idx = 0
+
+		while start_idx < len( get_layer ):
+
+			while ( start_idx < len( get_layer ) ) and ( not get_layer[ start_idx ] ):
+				start_idx += 1
+
+			next_length = feature_len_by_profile( start_idx, get_layer )
+
+			if next_length > 0:
+				feature_sizes_by_layer[ layer ].append( next_length )
+
+			start_idx += next_length
+
+		get_layer = negative_profile[ :, layer_idxs[ layer ] ]
+		start_idx = 0
+
+		while start_idx < len( get_layer ):
+
+			while ( start_idx < len( get_layer ) ) and ( not get_layer[ start_idx ] ):
+				start_idx += 1
+
+			next_length = feature_len_by_profile( start_idx, get_layer )
+
+			if next_length > 0:
+				gap_sizes_by_layer[ layer ].append( next_length )
+
+			start_idx += next_length
+
+		# print( feature_sizes_by_layer[ layer ] )
+		# print( gap_sizes_by_layer[ layer ] )
+		# print()
+		# plt.subplot( 1, 3, 1 )
+		# plt.hist( 1e3 * lsf_mesh_spacing_um * np.array( feature_sizes_by_layer[ layer ] ) )
+		# plt.subplot( 1, 3, 2 )
+		# plt.hist( 1e3 * lsf_mesh_spacing_um * np.array( gap_sizes_by_layer[ layer ] ) )
+		# plt.subplot( 1, 3, 3 )
+		# plt.imshow( bin_profile )
+		# plt.show()
+
+	features_hist_coarse = []
+	gaps_hist_coarse = []
+	features_hist_fine = []
+	gaps_hist_fine = []
+	for layer in range( 0, len( layer_idxs ) - 1 ):
+		get_features = feature_sizes_by_layer[ layer ]
+		get_gaps = gap_sizes_by_layer[ layer ]
+
+		for f in get_features:
+			features_hist_coarse.append( f )
+		for g in get_gaps:
+			gaps_hist_coarse.append( g )
+
+
+	get_features = feature_sizes_by_layer[ len( layer_idxs ) - 1 ]
+	get_gaps = gap_sizes_by_layer[ len( layer_idxs ) - 1 ]
+
+	for f in get_features:
+		features_hist_fine.append( f )
+	for g in get_gaps:
+		gaps_hist_fine.append( g )
+
+	features_histogram_data = [ 1e3 * lsf_mesh_spacing_um * np.array( features_hist_coarse ), 1e3 * lsf_mesh_spacing_um * np.array( features_hist_fine ) ]
+	gaps_histogram_data = [ 1e3 * lsf_mesh_spacing_um * np.array( gaps_hist_coarse ), 1e3 * lsf_mesh_spacing_um * np.array( gaps_hist_fine ) ]
+
+	bin_markings = [ 75 + 20 * idx for idx in range( 0, 30 ) ]
+
+	plt.subplot( 1, 2, 1 )
+	plt.hist( features_histogram_data, bins=bin_markings, color=['orange', 'green'] )
+	# plt.hist( features_histogram_data, color=['orange', 'green'] )
+	plt.title( 'Feature Size Distribution', fontsize=18 )
+	plt.xlabel( 'Feature Size (nm)', fontsize=16 )
+	plt.ylabel( 'Count', fontsize=16 )
+	plt.legend( [ 'Coarse Feature Layers (min 100nm)', 'Fine Feature Layer (min 90nm)' ] )
+	plt.subplot( 1, 2, 2 )
+	plt.hist( gaps_histogram_data, bins=bin_markings, color=['blue', 'purple'] )
+	# plt.hist( gaps_histogram_data, color=['blue', 'purple'] )
+	plt.title( 'Gap Size Distribution', fontsize=18 )
+	plt.xlabel( 'Feature Size (nm)', fontsize=16 )
+	plt.ylabel( 'Count', fontsize=16 )
+	plt.legend( [ 'Coarse Gap Layers (min 100nm)', 'Fine Gap Layer (min 90nm)' ] )
+	plt.show()
+
+	print( 1e3 * lsf_mesh_spacing_um * np.max( features_hist_coarse ) )
+	print( 1e3 * lsf_mesh_spacing_um * np.max( features_hist_fine ) )
+	print( 1e3 * lsf_mesh_spacing_um * np.max( gaps_hist_coarse ) )
+	print( 1e3 * lsf_mesh_spacing_um * np.max( gaps_hist_fine ) )
+
+	sys.exit( 0 )
+
+	fdtd_hook.switchtolayout()
+	inflate_index = np.zeros( ( load_index.shape[ 0 ], load_index.shape[ 1 ], 2 ), dtype=np.complex )
+	inflate_index[ :, :, 0 ] = bin_index# load_index
+	inflate_index[ :, :, 1 ] = bin_index# load_index
+	fdtd_hook.select( device_import[ 'name' ] )
+	fdtd_hook.importnk2( inflate_index, device_region_x, device_region_y, device_region_z )
+
+	fdtd_hook.run()
+
+	sys.exit( 0 )
+
+
+figure_of_merit_evolution = []
 
 for epoch_idx in range( 0, 1 ):
 

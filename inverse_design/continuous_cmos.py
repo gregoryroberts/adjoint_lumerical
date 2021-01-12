@@ -4,10 +4,28 @@ from LevelSet import LevelSet
 import OptimizationState
 from scipy import ndimage
 
+import scipy.optimize
+
 import sigmoid
 
-do_sigmoid = True#False
+do_sigmoid = False#True#False
 sigmoid_start_iter = 50
+
+do_binarization_opt = True
+
+assert ( not( do_sigmoid and do_binarization_opt ) ), "Both sigmoid and forced binarization should not be on simultaneously"	
+
+
+def compute_binarization( input_variable, set_point=0.5 ):
+	total_shape = np.product( input_variable.shape )
+	return ( 2. / total_shape ) * np.sum( np.sqrt( ( input_variable - set_point )**2 ) )
+
+def compute_binarization_gradient( input_variable, set_point=0.5 ):
+	total_shape = np.product( input_variable.shape )
+	return ( 2. / total_shape ) * np.sign( input_variable - set_point )
+
+def vector_norm( v_in ):
+	return np.sqrt( np.sum( np.abs( v_in )**2 ) )
 
 
 def upsample_nearest( profile, upsampled_length ):
@@ -488,6 +506,102 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 
 
+	#
+	# Binarize_amount is a factor times the maximum movement possible
+	#
+	def step_binarize( self, gradient, density, binarize_amount_factor, binarize_max_movement, binarization_set_point=0.5, opt_mask=None ):
+
+		density_for_binarizing = density.flatten()
+		flatten_gradient = gradient.flatten()
+
+		if opt_mask is None:
+			flatten_opt_mask = np.ones( len( flatten_gradient ) )
+		else:
+			flatten_opt_mask = opt_mask.flatten()
+
+
+		flatten_design_cuts = []
+		flatten_fom_gradients = []
+		extract_binarization_gradient = []
+
+		for idx in range( 0, len( flatten_opt_mask ) ):
+			if flatten_opt_mask[ idx ] > 0:
+				flatten_design_cuts.append( density_for_binarizing[ idx ] )
+				flatten_fom_gradients.append( flatten_gradient[ idx ] )
+
+		flatten_design_cuts = np.array( flatten_design_cuts )
+		flatten_fom_gradients = np.array( flatten_fom_gradients )
+		extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, binarization_set_point )
+
+		beta = binarize_max_movement
+		projected_binarization_increase = 0
+
+		c = flatten_fom_gradients
+
+		initial_binarization = compute_binarization( flatten_design_cuts, binarization_set_point )
+
+		b = np.real( extract_binarization_gradient )
+
+		lower_bounds = np.zeros( len( c ) )
+		upper_bounds = np.zeros( len( c ) )
+
+		for idx in range( 0, len( c ) ):
+			upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+			lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+
+		max_possible_binarization_change = 0
+		for idx in range( 0, len( c ) ):
+			if b[ idx ] > 0:
+				max_possible_binarization_change += b[ idx ] * upper_bounds[ idx ]
+			else:
+				max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
+		
+		alpha = binarize_amount_factor * max_possible_binarization_change
+
+		def ramp( x ):
+			return np.maximum( x, 0 )
+
+		def opt_function( nu ):
+			lambda_1 = ramp( nu * b - c )
+			lambda_2 = c + lambda_1 - nu * b
+
+			return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
+
+		tolerance = 1e-12
+
+		bin_constraint = scipy.optimize.LinearConstraint(A = 1, lb = 0, ub = np.inf)
+		optimization_solution_nu = scipy.optimize.minimize(
+			opt_function, 0,
+			method='trust-constr',
+			constraints=[bin_constraint] ,
+			options={'xtol': 1E-16, 'gtol': 1E-16, 'barrier_tol': 1E-16})
+
+
+		nu_star = optimization_solution_nu.x
+		lambda_1_star = ramp( nu_star * b - c )
+		lambda_2_star = c + lambda_1_star - nu_star * b
+		x_star = np.zeros( len( c ) )
+
+		for idx in range( 0, len( c ) ):
+			if lambda_1_star[ idx ] > 0:
+				x_star[ idx ] = upper_bounds[ idx ]
+			else:
+				x_star[ idx ] = lower_bounds[ idx ]
+
+
+		proposed_design_variable = flatten_design_cuts + x_star
+		proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
+
+		refill_idx = 0
+		refill_design_variable = density_for_binarizing.copy()
+		for idx in range( 0, len( flatten_opt_mask ) ):
+			if flatten_opt_mask[ idx ] > 0:
+				refill_design_variable[ idx ] = proposed_design_variable[ refill_idx ]
+				refill_idx += 1
+
+		return np.reshape( refill_design_variable, density.shape )
+
+
 	def update( self, gradient_real, graident_imag, gradient_real_lsf, gradient_imag_lsf, epoch, iteration ):
 		# gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		# gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
@@ -564,33 +678,61 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		# plt.imshow( np.squeeze( scaled_gradient ) )
 		# plt.show()
 
-		for profile_idx in range( 0, len( self.layer_profiles ) ):
-			get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
-			get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
+		if not do_binarization_opt:
 
-			upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
-			upsampled_profile_sig = sigmoid_obj.forward( upsampled_profile )
+			for profile_idx in range( 0, len( self.layer_profiles ) ):
+				get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
+				get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
 
-			sigmoid_grad = np.zeros( scaled_gradient[ :, get_start : get_end ].shape )
-			for sublayer in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
-				sigmoid_grad[ :, sublayer ] = sigmoid_obj.chain_rule( scaled_gradient[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
+				upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
+				upsampled_profile_sig = sigmoid_obj.forward( upsampled_profile )
+
+				sigmoid_grad = np.zeros( scaled_gradient[ :, get_start : get_end ].shape )
+				for sublayer in range( 0, self.layer_thicknesses_voxels[ profile_idx ] ):
+					sigmoid_grad[ :, sublayer ] = sigmoid_obj.chain_rule( scaled_gradient[ :, get_start + sublayer ], upsampled_profile_sig, upsampled_profile )
 
 
-			average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
-			if ( iteration > sigmoid_start_iter ) and do_sigmoid:
-				average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
+				average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
+				if ( iteration > sigmoid_start_iter ) and do_sigmoid:
+					average_gradient = np.squeeze( np.mean( sigmoid_grad, axis=1 ) )
 
-			get_profile = self.layer_profiles[ profile_idx ]
-			downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
+				get_profile = self.layer_profiles[ profile_idx ]
+				downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
 
-			# plt.plot( scaled_step_size * downsampled_grad )
-			# plt.show()
+				get_profile -= scaled_step_size * downsampled_grad
 
-			get_profile -= scaled_step_size * downsampled_grad
+				get_profile = np.minimum( 1.0, np.maximum( get_profile, 0.0 ) )
 
-			get_profile = np.minimum( 1.0, np.maximum( get_profile, 0.0 ) )
+				self.layer_profiles[ profile_idx ] = get_profile.copy()
 
-			self.layer_profiles[ profile_idx ] = get_profile.copy()
+		else:
+
+			concatenate_profiles = np.array( self.layer_profiles )
+			concatenate_gradient = np.zeros( concatenate_profiles.shape )
+
+			for profile_idx in range( 0, len( self.layer_profiles ) ):
+				get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
+				get_end = get_start + self.layer_thicknesses_voxels[ profile_idx ]
+
+				upsampled_profile = upsample_nearest( get_profile, self.opt_width_num_voxels )
+				average_gradient = np.squeeze( np.mean( scaled_gradient[ :, get_start : get_end ], axis=1 ) )
+
+				get_profile = self.layer_profiles[ profile_idx ]
+				downsampled_grad = downsample_average( average_gradient, len( self.layer_profiles[ profile_idx ] ) )
+
+				concatenate_gradient[ profile_idx, : ] = downsampled_grad
+
+
+				permittivity_max_movement = 0.02
+				density_max_movement = permittivity_max_movement / ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] )
+
+			
+			proposed_step = self.step_binarize( concatenate_gradient, concatenate_profiles, 0.1, density_max_movement )
+
+			for profile_idx in range( 0, len( self.layer_profiles ) ):
+
+				self.layer_profiles[ profile_idx ] = np.minimum( 1.0, np.maximum( proposed_step[ profile_idx ], 0 ) )
+
 
 
 	def save_design( self, filebase, epoch ):
