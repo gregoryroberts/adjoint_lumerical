@@ -33,6 +33,9 @@ high_index_backfill = 1.46#2.1#1.46#2.1#1.46#2.1#1.46
 # high_index_backfill = 2.1
 substrate_index = 1.0
 
+# TiO2 - amorphous ALD, n=2.2 (page 5)
+# https://core.ac.uk/download/pdf/80703957.pdf
+
 min_real_permittivity = design_index_background**2
 max_real_permittivity = high_index_backfill**2
 
