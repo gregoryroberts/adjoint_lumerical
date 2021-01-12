@@ -603,7 +603,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 
 	def get_binarization( self, binarization_set_point=0.5 ):
-		concatenate_profiles = np.array( self.layer_profiles )
+		concatenate_profiles = np.array( self.layer_profiles, dtype=np.float )
 		return compute_binarization( concatenate_profiles, binarization_set_point )
 
 
@@ -712,8 +712,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 		else:
 
-			concatenate_profiles = np.array( self.layer_profiles )
-			concatenate_gradient = np.zeros( concatenate_profiles.shape )
+			concatenate_profiles = np.array( self.layer_profiles, dtype=np.float )
+			concatenate_gradient = np.zeros( concatenate_profiles.shape, dtype=np.float )
 
 			for profile_idx in range( 0, len( self.layer_profiles ) ):
 				get_start = np.sum( self.layer_thicknesses_voxels[ 0 : profile_idx ] ) + np.sum( self.spacer_thicknesses_voxels[ 0 : profile_idx ] )
@@ -728,9 +728,8 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 				concatenate_gradient[ profile_idx, : ] = downsampled_grad
 
 
-				permittivity_max_movement = 0.02
-				density_max_movement = permittivity_max_movement / ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] )
-
+			permittivity_max_movement = 0.02
+			density_max_movement = permittivity_max_movement / ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] )
 			
 			proposed_step = self.step_binarize( concatenate_gradient, concatenate_profiles, 0.1, density_max_movement )
 
