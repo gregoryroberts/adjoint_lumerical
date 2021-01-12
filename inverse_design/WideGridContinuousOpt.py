@@ -966,4 +966,4 @@ for epoch_idx in range( 0, 1 ):
 	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index( num_iterations - 1 ) )
 	np.save( projects_directory_location + '/final_density.npy', my_optimization_state.assemble_index( 0 ) )
 	np.save( projects_directory_location + '/figure_of_merit.npy', local_fom )
-	np.save( projects_directory_location + '/binarization.npy', local_fom )
+	np.save( projects_directory_location + '/binarization.npy', local_binarization )
