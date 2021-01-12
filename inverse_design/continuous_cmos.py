@@ -739,7 +739,7 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 
 			concatenate_gradient = np.array( concatenate_gradient )
 
-			permittivity_max_movement = 0.02
+			permittivity_max_movement = 0.005#0.02
 			density_max_movement = permittivity_max_movement / ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] )
 			binarize_movement_factor = 0.5
 			
