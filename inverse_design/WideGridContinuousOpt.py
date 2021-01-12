@@ -375,7 +375,8 @@ reversed_field_shape_with_pol = [num_polarizations, 1, designable_device_voxels_
 
 # You likely should verify the gradient for when you do level set optimized devices!
 
-num_iterations = 150#100
+# num_iterations = 150#100
+num_iterations = 1000
 
 np.random.seed( 923447 )
 
@@ -509,8 +510,9 @@ def evaluate_device( index_profile ):
 # Maybe that can also give you a good see to then run level set and particle swarm from.
 #
 
-def optimize_parent_locally( parent_object, num_iterations ):
+def optimize_parent_locally( parent_object, num_iterations, binarization_terminate ):
 	fom_track = []
+	binarization_track = []
 	for iteration in range( 0, num_iterations ):
 
 		figure_of_merit_by_device = np.zeros( parent_object.num_devices )
@@ -794,7 +796,11 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			gradients_real_lsf[ device, : ] = device_gradient_real_lsf
 			gradients_imag_lsf[ device, : ] = device_gradient_imag_lsf
 
+
+		cur_binarization = parent_object.get_binarization()
+
 		fom_track.append( figure_of_merit_by_device[ 0 ] )
+		binarization_track.append( parent_object.get_binarization() )
 		parent_object.submit_figure_of_merit( figure_of_merit_by_device, iteration, 0 )
 		parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
 
@@ -802,7 +808,11 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(iteration) )
 			np.save( projects_directory_location + '/density_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(0) )
 
-	return parent_object, fom_track
+		if cur_binarization > binarization_terminate:
+			break
+
+
+	return parent_object, fom_track, binarization_track
 
 
 post_visualization = False
@@ -949,8 +959,10 @@ figure_of_merit_evolution = []
 
 for epoch_idx in range( 0, 1 ):
 
-	my_optimization_state, local_fom = optimize_parent_locally( my_optimization_state, num_iterations )
+	binarization_terminate_threshold = 0.995
+	my_optimization_state, local_fom, local_binarization = optimize_parent_locally( my_optimization_state, num_iterations, binarization_terminate_threshold )
 
 	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index( num_iterations - 1 ) )
 	np.save( projects_directory_location + '/final_density.npy', my_optimization_state.assemble_index( 0 ) )
 	np.save( projects_directory_location + '/figure_of_merit.npy', local_fom )
+	np.save( projects_directory_location + '/binarization.npy', local_fom )

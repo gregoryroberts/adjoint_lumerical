@@ -602,6 +602,11 @@ class ContinuousCMOS( OptimizationState.OptimizationState ):
 		return np.reshape( refill_design_variable, density.shape )
 
 
+	def get_binarization( self, binarization_set_point=0.5 ):
+		concatenate_profiles = np.array( self.layer_profiles )
+		return compute_binarization( concatenate_profiles, binarization_set_point )
+
+
 	def update( self, gradient_real, graident_imag, gradient_real_lsf, gradient_imag_lsf, epoch, iteration ):
 		# gradient_real_interpolate = self.reinterpolate( np.squeeze( gradient_real ), [ self.opt_width_num_voxels, self.opt_vertical_num_voxels ] )
 		# gradient_real_interpolate = ( self.permittivity_bounds[ 1 ] - self.permittivity_bounds[ 0 ] ) * gradient_real_interpolate
