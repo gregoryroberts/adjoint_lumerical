@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 
 from ReflectiveColor2DParameters import *
 
-run_on_cluster = True
+run_on_cluster = True#False#True
 
 if run_on_cluster:
 	import imp
@@ -142,7 +142,7 @@ if not os.path.isdir(projects_directory_location):
 
 should_reload = False#True#False
 # projects_directory_reload = projects_directory_location + "/" + project_name + "_continuous_reflective_green_sio2_v26"
-projects_directory_location += "/" + project_name + "_continuous_reflective_blue_sio2_v31"
+projects_directory_location += "/" + project_name + "_continuous_reflective_blue_tio2_v1"
 
 if not os.path.isdir(projects_directory_location):
 	os.mkdir(projects_directory_location)
@@ -487,31 +487,31 @@ device_background_side_x = [ -1, 1 ]#, 0, 0 ]
 elongations_left_um = [ 1, 0 ]
 elongations_right_um = [ 0, 1 ]
 # device_background_side_y = [ 0, 0, -1, 1 ]
-side_blocks = []
+# side_blocks = []
 
-for device_background_side_idx in range( 0, 2 ):
-	side_x = device_background_side_x[ device_background_side_idx ]
+# for device_background_side_idx in range( 0, 2 ):
+# 	side_x = device_background_side_x[ device_background_side_idx ]
 
-	side_block = fdtd_hook.addrect()
+# 	side_block = fdtd_hook.addrect()
 
-	center_x_um = side_x * extra_lateral_space_offset_um
-	span_x_um = ( np.abs( side_x ) * extra_lateral_space_per_side_um +
-		( 1 - np.abs( side_x ) ) * fdtd_region_size_lateral_um )
-	left_x_um = center_x_um - 0.5 * span_x_um
-	right_x_um = center_x_um + 0.5 * span_x_um
+# 	center_x_um = side_x * extra_lateral_space_offset_um
+# 	span_x_um = ( np.abs( side_x ) * extra_lateral_space_per_side_um +
+# 		( 1 - np.abs( side_x ) ) * fdtd_region_size_lateral_um )
+# 	left_x_um = center_x_um - 0.5 * span_x_um
+# 	right_x_um = center_x_um + 0.5 * span_x_um
 
-	left_x_um -= elongations_left_um[ device_background_side_idx ]
-	right_x_um += elongations_right_um[ device_background_side_idx ]
+# 	left_x_um -= elongations_left_um[ device_background_side_idx ]
+# 	right_x_um += elongations_right_um[ device_background_side_idx ]
 
-	side_block['name'] = 'device_background_' + side_to_string( side_x )
-	side_block['y min'] = designable_device_vertical_minimum_um * 1e-6
-	side_block['y max'] = designable_device_vertical_maximum_um * 1e-6
-	side_block['x min'] = left_x_um * 1e-6
-	side_block['x max'] = right_x_um * 1e-6
-	side_block['index'] = device_background_index
-	fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
+# 	side_block['name'] = 'device_background_' + side_to_string( side_x )
+# 	side_block['y min'] = designable_device_vertical_minimum_um * 1e-6
+# 	side_block['y max'] = designable_device_vertical_maximum_um * 1e-6
+# 	side_block['x min'] = left_x_um * 1e-6
+# 	side_block['x max'] = right_x_um * 1e-6
+# 	side_block['index'] = device_background_index
+# 	fdtd_hook.addtogroup( device_and_backgrond_group['name'] )
 
-	side_blocks.append( side_block )
+# 	side_blocks.append( side_block )
 
 
 # bottom_silicon = fdtd_hook.addrect()
@@ -1562,8 +1562,9 @@ def check_gradient( pol_idx ):
 # Maybe that can also give you a good see to then run level set and particle swarm from.
 #
 
-def optimize_parent_locally( parent_object, num_iterations ):
+def optimize_parent_locally( parent_object, num_iterations, binarization_terminate ):
 	fom_track = []
+	binarization_track = []
 
 	field_shape_with_devices = [ parent_object.num_devices ]
 	field_shape_with_devices.extend( np.flip( reversed_field_shape ) )
@@ -1590,6 +1591,8 @@ def optimize_parent_locally( parent_object, num_iterations ):
 
 
 		fom_track.append( fom )
+		cur_binarization = parent_object.get_binarization()
+		binarization_track.append( cur_binarization )
 
 		#
 		# Step 4: Step the design variable.
@@ -1605,6 +1608,7 @@ def optimize_parent_locally( parent_object, num_iterations ):
 		gradients_real_lsf[ 0, : ] = device_gradient_real_lsf
 		gradients_imag_lsf[ 0, : ] = device_gradient_imag_lsf
 
+
 		parent_object.submit_figure_of_merit( fom, iteration, 0 )
 		parent_object.update( -gradients_real, -gradients_imag, -gradients_real_lsf, -gradients_imag_lsf, 0, iteration )
 
@@ -1612,7 +1616,11 @@ def optimize_parent_locally( parent_object, num_iterations ):
 			np.save( projects_directory_location + '/device_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(iteration) )
 			np.save( projects_directory_location + '/density_' + str( int( iteration / 10 ) ) + '.npy', parent_object.assemble_index(0) )
 
-	return parent_object, fom_track
+		if cur_binarization > binarization_terminate:
+			break
+
+
+	return parent_object, fom_track, binarization_track
 
 
 fdtd_hook.select(device_and_backgrond_group['name'])
@@ -1799,63 +1807,68 @@ fdtd_hook.set('enabled', 1)
 
 # check_gradient_full( 1 )
 
-# load_index = np.load('/Users/gregory/Downloads/device_final_blue_sio2_v30.npy')
-# plt.imshow( load_index )
-# plt.colorbar()
-# plt.show()
-# bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.0 + 0.5 * ( 1.46 - 1.0 ) )
-# bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.7 * ( 2.1 - 1.0) )
+viz = False
+if viz:
+
+	load_index = np.load('/Users/gregory/Downloads/device_final_green_sio2_v32.npy')
+	# plt.imshow( load_index )
+	# plt.colorbar()
+	# plt.show()
+	bin_index = 1.0 + 0.46 * np.greater_equal( load_index, 1.0 + 0.5 * ( 1.46 - 1.0 ) )
+	# bin_index = 1.0 + 1.1 * np.greater_equal( load_index, 1.0 + 0.7 * ( 2.1 - 1.0) )
 
 
-# compute_gradient( load_index )
-# compute_gradient( bin_index )
+	# compute_gradient( load_index )
+	compute_gradient( bin_index )
 
-# profile_0 = my_optimization_state.layer_profiles[ 0 ].copy()
-# start = int( 0.25 * len( profile_0 ) )
-# end = start + 10#20
+	# profile_0 = my_optimization_state.layer_profiles[ 0 ].copy()
+	# start = int( 0.25 * len( profile_0 ) )
+	# end = start + 10#20
 
-# fom0, gradient = compute_gradient( my_optimization_state.assemble_index() )
+	# fom0, gradient = compute_gradient( my_optimization_state.assemble_index() )
 
-# print( 'init fom = ' + str( fom0 ) )
+	# print( 'init fom = ' + str( fom0 ) )
 
-# profile_grads = my_optimization_state.layer_gradients( gradient )
+	# profile_grads = my_optimization_state.layer_gradients( gradient )
 
-# profile_0_grad = profile_grads[ 0 ]
+	# profile_0_grad = profile_grads[ 0 ]
 
-# fd_profile_0_grad = np.zeros( len( profile_0 ) )
+	# fd_profile_0_grad = np.zeros( len( profile_0 ) )
 
-# h = 1e-3
+	# h = 1e-3
 
-# for idx in range( start, end ):
-# 	print( 'working on fd number ' + str( idx - start ) )
-# 	copy_profile = profile_0.copy()
+	# for idx in range( start, end ):
+	# 	print( 'working on fd number ' + str( idx - start ) )
+	# 	copy_profile = profile_0.copy()
 
-# 	copy_profile[ idx ] += h
+	# 	copy_profile[ idx ] += h
 
-# 	my_optimization_state.layer_profiles[ 0 ] = copy_profile
+	# 	my_optimization_state.layer_profiles[ 0 ] = copy_profile
 
-# 	fom_up = compute_fom( my_optimization_state.assemble_index() )
+	# 	fom_up = compute_fom( my_optimization_state.assemble_index() )
 
-# 	fd_profile_0_grad[ idx ] = ( fom_up - fom0 ) / h
+	# 	fd_profile_0_grad[ idx ] = ( fom_up - fom0 ) / h
 
-# import matplotlib.pyplot as plt
-# plt.plot( fd_profile_0_grad[ start : end ] / np.max( np.abs( fd_profile_0_grad[ start : end ] )), color='r', linewidth=2 )
-# plt.plot( profile_0_grad[ start : end ] / np.max( np.abs( profile_0_grad[ start : end ])), color='g', linestyle='--', linewidth=2 )
-# plt.plot( -profile_0_grad[ start : end ] / np.max( np.abs( profile_0_grad[ start : end ])), color='b', linestyle='--', linewidth=2 )
-# plt.show()
+	# import matplotlib.pyplot as plt
+	# plt.plot( fd_profile_0_grad[ start : end ] / np.max( np.abs( fd_profile_0_grad[ start : end ] )), color='r', linewidth=2 )
+	# plt.plot( profile_0_grad[ start : end ] / np.max( np.abs( profile_0_grad[ start : end ])), color='g', linestyle='--', linewidth=2 )
+	# plt.plot( -profile_0_grad[ start : end ] / np.max( np.abs( profile_0_grad[ start : end ])), color='b', linestyle='--', linewidth=2 )
+	# plt.show()
 
 
 
-# fdtd_hook.run()
+	# fdtd_hook.run()
 
-# sys.exit( 0 )
+	sys.exit( 0 )
 
 figure_of_merit_evolution = []
 
 for epoch_idx in range( 0, 1 ):
 
-	my_optimization_state, local_fom = optimize_parent_locally( my_optimization_state, num_iterations )
+	my_optimization_state, local_fom, local_binarization = optimize_parent_locally( my_optimization_state, num_iterations, 0.995 )
 
 	np.save( projects_directory_location + '/final_device.npy', my_optimization_state.assemble_index(num_iterations - 1) )
 	np.save( projects_directory_location + '/final_density.npy', my_optimization_state.assemble_index(0) )
 	np.save( projects_directory_location + '/figure_of_merit.npy', local_fom )
+	np.save( projects_directory_location + '/binarization.npy', local_binarization )
+
