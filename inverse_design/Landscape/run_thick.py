@@ -439,12 +439,12 @@ else:
 			if binarize_v2 == 1:
 				binarize_max_movement_per_voxel = eps_movement_per_voxel / ( max_relative_permittivity - min_relative_permittivity )
 
-				old_density = np.load(
-					'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v15_' +
-					index_to_name[ max_index ] +
-					'/opt_optimized_density.npy' )
+				# old_density = np.load(
+				# 	'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v15_' +
+				# 	index_to_name[ max_index ] +
+				# 	'/opt_optimized_density.npy' )
 
-				make_optimizer.init_density_directly( old_density )
+				# make_optimizer.init_density_directly( old_density )
 
 
 				make_optimizer.optimize(
