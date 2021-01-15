@@ -1192,9 +1192,11 @@ class ColorSplittingOptimization2D():
 		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
 
 		if dropout_mask is not None:
+			select_fwd_Ez = fwd_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+			select_adj_Ez = adj_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 			obs_Ez = (
 				fwd_Ez[ focal_point_x_loc, self.focal_point_y ] -
-				np.sum( dropout_mask * device_permittivity * eps_nought * fwd_Ez * adj_Ez / np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) )
+				np.sum( dropout_mask * device_permittivity * eps_nought * select_fwd_Ez * select_adj_Ez / np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) )
 			)
 			fom = fom_scaling * np.abs( obs_Ez )**2
 			gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez * np.conj( obs_Ez ) / ( 1j * np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) ) )
