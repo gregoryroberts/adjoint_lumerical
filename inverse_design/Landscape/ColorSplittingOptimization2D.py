@@ -2885,7 +2885,7 @@ class ColorSplittingOptimization2D():
 
 
 			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
-				net_gradient_index_reg *= dropout_mask
+				net_gradient *= dropout_mask
 
 			#
 			# Otherwise we are already in design space! Sloppy here, but want to try it out
