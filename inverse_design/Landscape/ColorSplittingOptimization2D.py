@@ -292,6 +292,12 @@ class ColorSplittingOptimization2D():
 
 		self.rel_eps_simulation = np.ones( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
 
+		#
+		# todo: re-evaluate/re-run the optimization after changing this!!
+		# want to get a baseline and then not run the source through the pml
+		# would be also good to do a comparison with Lumerical especially with final results
+		#
+		# fwd_src_x_range = np.arange( self.pml_voxels, self.simulation_width_voxels - self.pml_voxels )
 		fwd_src_x_range = np.arange( 0, self.simulation_width_voxels )
 		fwd_src_y_range = self.fwd_src_y * np.ones( fwd_src_x_range.shape, dtype=int )
 
@@ -1173,7 +1179,7 @@ class ColorSplittingOptimization2D():
 		return fom, gradient_design
 
 
-	def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+	def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
 		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
 		fom = fom_scaling * np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
 		
@@ -1184,6 +1190,15 @@ class ColorSplittingOptimization2D():
 		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
 
 		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
+
+		if dropout_mask is not None:
+			obs_Ez = (
+				fwd_Ez[ focal_point_x_loc, self.focal_point_y ] -
+				np.sum( dropout_mask * device_permittivity * eps_nought * fwd_Ez * adj_Ez / np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) )
+			)
+			fom = fom_scaling * np.abs( obs_Ez )**2
+			gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez * np.conj( obs_Ez ) / ( 1j * np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) ) )
+
 
 		if self.field_blur:
 			blur_fwd_Ez_real = gaussian_filter( np.real( fwd_Ez ), sigma=self.field_blur_size_voxels )
@@ -2606,6 +2621,10 @@ class ColorSplittingOptimization2D():
 				log_file.write( "Current binarization = " + str( cur_binarization ) + "\n\n" )
 				log_file.close()
 
+			dropout_mask = None
+			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
+				dropout_mask = 1.0 * np.greater( np.random.random( self.design_density.shape ), dropout_p )
+
 
 			# mask_density = opt_mask * self.design_density
 			# sigmoid_epoch = int( iter_idx / iter_per_epoch )
@@ -2794,7 +2813,7 @@ class ColorSplittingOptimization2D():
 				else:
 					get_fom, get_grad = function_for_fom_and_gradient(
 						self.omega_values[ wl_idx ], device_permittivity, self.focal_spots_x_voxels[ get_focal_point_idx ],
-						self.wavelength_intensity_scaling[ wl_idx ] )
+						self.wavelength_intensity_scaling[ wl_idx ], dropout_mask )
 
 					get_fom_index_contrast = get_fom
 					get_grad_index_contrast = get_grad
@@ -2865,6 +2884,9 @@ class ColorSplittingOptimization2D():
 				net_gradient_index_contrast += ( weighting * wl_gradient )
 
 
+			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
+				net_gradient_index_reg *= dropout_mask
+
 			#
 			# Otherwise we are already in design space! Sloppy here, but want to try it out
 			#
@@ -2882,9 +2904,6 @@ class ColorSplittingOptimization2D():
 			net_gradient_index_contrast = self.layer_spacer_averaging( net_gradient_index_contrast )
 
 			# net_gradient = make_sigmoid.chain_rule( net_gradient, sigmoid_density, self.design_density )
-
-			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
-				net_gradient *= 1.0 * np.greater( np.random.random( net_gradient.shape ), dropout_p )
 
 			net_gradient *= opt_mask
 			gradient_norm = vector_norm( net_gradient )
