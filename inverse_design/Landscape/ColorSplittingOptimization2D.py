@@ -2621,10 +2621,6 @@ class ColorSplittingOptimization2D():
 				log_file.write( "Current binarization = " + str( cur_binarization ) + "\n\n" )
 				log_file.close()
 
-			dropout_mask = None
-			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
-				dropout_mask = 1.0 * np.greater( np.random.random( self.design_density.shape ), dropout_p )
-
 
 			# mask_density = opt_mask * self.design_density
 			# sigmoid_epoch = int( iter_idx / iter_per_epoch )
@@ -2636,6 +2632,11 @@ class ColorSplittingOptimization2D():
 			# import_density = upsample( self.design_density, self.coarsen_factor )
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
+
+			dropout_mask = None
+			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
+				dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
+
 
 			index_contrast_df_h = 1e-3
 			device_permittivity_index_contrast = (
