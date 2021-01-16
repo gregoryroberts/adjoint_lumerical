@@ -442,16 +442,16 @@ else:
 			if binarize_v2 == 1:
 				binarize_max_movement_per_voxel = eps_movement_per_voxel / ( max_relative_permittivity - min_relative_permittivity )
 
-				# old_density = np.load(
-				# 	'/central/groups/Faraon_Computing/projects/binarize_bin_rate_down_avg_wider_save_v15_' +
-				# 	index_to_name[ max_index ] +
-				# 	'/opt_optimized_density.npy' )
+				old_density = np.load(
+					'/central/groups/Faraon_Computing/projects/very_thick_bin2_v3_1p5/' +
+					index_to_name[ max_index ] +
+					'/opt_optimized_density.npy' )
 
 				# make_optimizer.init_density_directly( old_density )
 
 				dropout_start = 0
-				dropout_end = 0#int( 0.75 * num_iterations )
-				dropout_p = 0.5
+				dropout_end = int( 0.75 * num_iterations )
+				dropout_p = 0.75
 				binarize = True#False
 
 				make_optimizer.optimize(
@@ -484,13 +484,57 @@ else:
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
 
-			final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
+			final_density1 = np.load( '/Users/gregory/Downloads/very_thick_density_v1.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/very_thick_density_v2.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/very_thick_density_v3.npy' )
+
+			plt.subplot( 1, 3, 1 )
+			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
+			plt.subplot( 1, 3, 2 )
+			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
+			plt.subplot( 1, 3, 3 )
+			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
+			plt.show()
+
+
+			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
+
+			final_density = final_density3
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 			# make_optimizer.init_density_directly( final_density )
 			make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
-			make_optimizer.plot_fields( 6 )
+			Ez_dev = make_optimizer.plot_fields( 6 )
+			I_dev = np.abs( Ez_dev )**2
+			I_dev = I_dev[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
+			make_optimizer.init_density_with_uniform( 0 * 0.5 )
+			Ez_flat = make_optimizer.plot_fields( 6 )
+			I_flat = np.abs( Ez_flat )**2
+			I_flat = I_flat[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
+
+			sum_flat = np.sum( I_flat )
+			sum_dev = np.sum( I_dev )
+			left_t = np.sum( I_dev[ 0 : int( 0.5 * len( I_dev ) ) ] ) / sum_flat
+			right_t = np.sum( I_dev[ int( 0.5 * len( I_dev ) ) : -1 ] ) / sum_flat
+
+			print( 'Net transmission ~ ' + str( sum_dev / sum_flat ) )
+			print( 'Left transmission ~ ' + str( left_t ) )
+			print( 'Right transmission ~ ' + str( right_t ) )
+
+			fp_dev = (
+				np.abs( I_dev )
+			)
+			fp_flat = (
+				np.abs( I_flat )
+			)
+
+			plt.plot( fp_dev, color='r', linewidth=2 )
+			plt.plot( fp_flat, color='g', linewidth=2 )
+			plt.show()
+
+
+			sys.exit( 0 )
 			print( make_optimizer.compute_net_fom() )
 			# make_optimizer.optimize_with_level_set( 10 )
