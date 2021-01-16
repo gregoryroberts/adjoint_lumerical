@@ -400,7 +400,7 @@ else:
 
 		# make_optimizer.init_density_directly( old_density )
 
-		viz_opt = False#True#False#True
+		viz_opt = False#True
 
 		if not viz_opt:
 
@@ -452,7 +452,7 @@ else:
 
 				dropout_start = 0
 				dropout_end = int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
-				dropout_p = 0.25#0.5#0.75#0.9#0.75
+				dropout_p = 0.1#0.25#0.5#0.75#0.9#0.75
 				binarize = True#False
 
 				make_optimizer.optimize(
@@ -487,19 +487,19 @@ else:
 
 			final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_density_v1.npy' )
 			final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_density_v2.npy' )
-			# final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_density_v3.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_density_v3.npy' )
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/very_thick_density_v1.npy' )
 			# final_density2 = np.load( '/Users/gregory/Downloads/very_thick_density_v2.npy' )
 			# final_density3 = np.load( '/Users/gregory/Downloads/very_thick_density_v3.npy' )
 
-			plt.subplot( 1, 2, 1 )
+			plt.subplot( 1, 3, 1 )
 			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 2, 2 )
+			plt.subplot( 1, 3, 2 )
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
-			# plt.subplot( 1, 2, 3 )
-			# plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
+			plt.subplot( 1, 3, 3 )
+			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
 			plt.show()
 
 
@@ -508,15 +508,15 @@ else:
 			final_density = final_density1
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
-			# make_optimizer.init_density_directly( final_density )
-			make_optimizer.init_density_directly( bin_final_density )
+			make_optimizer.init_density_directly( final_density )
+			# make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
-			Ez_dev = make_optimizer.plot_fields( 6 )
+			Ez_dev = make_optimizer.plot_fields( 2 )
 			I_dev = np.abs( Ez_dev )**2
 			I_dev = I_dev[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
 			make_optimizer.init_density_with_uniform( 0 * 0.5 )
-			Ez_flat = make_optimizer.plot_fields( 6 )
+			Ez_flat = make_optimizer.plot_fields( 2 )
 			I_flat = np.abs( Ez_flat )**2
 			I_flat = I_flat[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
