@@ -451,7 +451,7 @@ else:
 				# make_optimizer.init_density_directly( old_density )
 
 				dropout_start = 0
-				dropout_end = num_iterations# int( 0.75 * num_iterations )
+				dropout_end = 0#num_iterations# int( 0.75 * num_iterations )
 				dropout_p = 0.75#0.9#0.75
 				binarize = True#False
 
