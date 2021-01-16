@@ -97,7 +97,8 @@ else:
 	device_width_voxels = 80#200
 	# device_height_voxels = 80 * 5
 	# device_height_voxels = 120
-	device_height_voxels = 800
+	# device_height_voxels = 800
+	device_height_voxels = 400
 	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
@@ -451,7 +452,7 @@ else:
 
 				dropout_start = 0
 				dropout_end = num_iterations# int( 0.75 * num_iterations )
-				dropout_p = 0.9#0.75
+				dropout_p = 0.75#0.9#0.75
 				binarize = True#False
 
 				make_optimizer.optimize(
