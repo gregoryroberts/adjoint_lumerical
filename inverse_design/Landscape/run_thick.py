@@ -447,7 +447,7 @@ else:
 					index_to_name[ max_index ] +
 					'/opt_optimized_density.npy' )
 
-				# make_optimizer.init_density_directly( old_density )
+				make_optimizer.init_density_directly( old_density )
 
 				dropout_start = 0
 				dropout_end = 0#int( 0.75 * num_iterations )
