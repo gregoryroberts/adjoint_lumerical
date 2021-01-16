@@ -96,7 +96,7 @@ else:
 	# device_width_voxels = 162
 	device_width_voxels = 80#200
 	# device_height_voxels = 80 * 5
-	device_height_voxels = 40
+	device_height_voxels = 120
 	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
@@ -482,15 +482,14 @@ else:
 
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
-			# folder_to_plot = './bin_rate_down_avg_wider_v3'
-			# folder_to_plot = './bin_rate_down_avg_wider_boot_v1'
 
-			# folder_to_plot = './bootstrap_avg_wider_v2'
-			folder_to_plot = './bin_rate_down_avg_wider_save_v15'
-			final_density = np.load(  folder_to_plot + '/opt_2p5/opt_optimized_density.npy' )
-
-			# print( make_optimizer.compute_net_fom() )
+			final_density = np.load( '/Users/gregory/Downloads/thick_density_v2.npy' )
+			# bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 			make_optimizer.init_density_directly( final_density )
+			# make_optimizer.init_density_directly( bin_final_density )
+			# make_optimizer.init_density_with_uniform( 0.5 )
 			make_optimizer.plot_fields( 6 )
+
+			print( make_optimizer.compute_net_fom() )
 			# make_optimizer.optimize_with_level_set( 10 )
