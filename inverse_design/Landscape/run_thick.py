@@ -451,7 +451,7 @@ else:
 				dropout_start = 0
 				dropout_end = 0#int( 0.75 * num_iterations )
 				dropout_p = 0.5
-				binarize = False
+				binarize = True#False
 
 				make_optimizer.optimize(
 					num_iterations,
@@ -483,11 +483,11 @@ else:
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
 
-			final_density = np.load( '/Users/gregory/Downloads/thick_density_v2.npy' )
-			# bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
+			final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
+			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
-			make_optimizer.init_density_directly( final_density )
-			# make_optimizer.init_density_directly( bin_final_density )
+			# make_optimizer.init_density_directly( final_density )
+			make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
 			make_optimizer.plot_fields( 6 )
 
