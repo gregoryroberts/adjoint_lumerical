@@ -443,14 +443,14 @@ else:
 				binarize_max_movement_per_voxel = eps_movement_per_voxel / ( max_relative_permittivity - min_relative_permittivity )
 
 				old_density = np.load(
-					'/central/groups/Faraon_Computing/projects/very_thick_bin2_v1_' +
+					'/central/groups/Faraon_Computing/projects/very_thick_bin2_v2_' +
 					index_to_name[ max_index ] +
 					'/opt_optimized_density.npy' )
 
 				make_optimizer.init_density_directly( old_density )
 
 				dropout_start = 0
-				dropout_end = 0#int( 0.75 * num_iterations )
+				dropout_end = int( 0.75 * num_iterations )
 				dropout_p = 0.5#0.75
 				binarize = True#False
 
