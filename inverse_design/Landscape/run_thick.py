@@ -451,7 +451,7 @@ else:
 
 				dropout_start = 0
 				dropout_end = int( 0.75 * num_iterations )
-				dropout_p = 0.75
+				dropout_p = 0.5
 				binarize = True#False
 
 				make_optimizer.optimize(
