@@ -400,7 +400,7 @@ else:
 
 		# make_optimizer.init_density_directly( old_density )
 
-		viz_opt = False#True
+		viz_opt = False#True#False#True
 
 		if not viz_opt:
 
@@ -451,8 +451,8 @@ else:
 				# make_optimizer.init_density_directly( old_density )
 
 				dropout_start = 0
-				dropout_end = 0#num_iterations# int( 0.75 * num_iterations )
-				dropout_p = 0.75#0.9#0.75
+				dropout_end = int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
+				dropout_p = 0.5#0.75#0.9#0.75
 				binarize = True#False
 
 				make_optimizer.optimize(
@@ -485,22 +485,27 @@ else:
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
 
-			final_density1 = np.load( '/Users/gregory/Downloads/very_thick_density_v1.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/very_thick_density_v2.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/very_thick_density_v3.npy' )
+			final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_density_v1.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_density_v2.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_density_v3.npy' )
 
-			plt.subplot( 1, 3, 1 )
+
+			# final_density1 = np.load( '/Users/gregory/Downloads/very_thick_density_v1.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/very_thick_density_v2.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/very_thick_density_v3.npy' )
+
+			plt.subplot( 1, 2, 1 )
 			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 3, 2 )
+			plt.subplot( 1, 2, 2 )
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 3, 3 )
-			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
+			# plt.subplot( 1, 2, 3 )
+			# plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
 			plt.show()
 
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density3
+			final_density = final_density1
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 			# make_optimizer.init_density_directly( final_density )
