@@ -96,13 +96,14 @@ else:
 	# device_width_voxels = 162
 	device_width_voxels = 80#200
 	# device_height_voxels = 80 * 5
-	device_height_voxels = 80
+	device_height_voxels = 40
+	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
 	# device_height_voxels = 48#32
 	# device_height_voxels = 32#24
 	device_voxels_total = device_width_voxels * device_height_voxels
-	focal_length_voxels = 100#135#100#132#100
+	focal_length_voxels = 50#135#100#132#100
 	focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
