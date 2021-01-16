@@ -133,7 +133,8 @@ blur_fields = False#True
 # num_iterations_nominal = 150
 # num_iterations_nominal = 300
 # num_iterations_nominal = 300#360
-num_iterations_nominal = 320
+# num_iterations_nominal = 320
+num_iterations_nominal = 4 * 350
 # num_iterations_nominal = 80
 # num_iterations_nominal = 200
 num_iterations = int( np.ceil(
@@ -400,7 +401,7 @@ else:
 
 		# make_optimizer.init_density_directly( old_density )
 
-		viz_opt = False#True
+		viz_opt = False#True#False#True
 
 		if not viz_opt:
 
@@ -439,7 +440,7 @@ else:
 			# 	downsample_abs_max )
 
 			binarize_v2 = 1
-			eps_movement_per_voxel = 0.02
+			eps_movement_per_voxel = 0.02 / 4.
 			if binarize_v2 == 1:
 				binarize_max_movement_per_voxel = eps_movement_per_voxel / ( max_relative_permittivity - min_relative_permittivity )
 
@@ -488,28 +489,31 @@ else:
 			final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_density_v1.npy' )
 			final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_density_v2.npy' )
 			final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_density_v3.npy' )
+			final_density4 = np.load( '/Users/gregory/Downloads/mid_thick_density_v4.npy' )
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/very_thick_density_v1.npy' )
 			# final_density2 = np.load( '/Users/gregory/Downloads/very_thick_density_v2.npy' )
 			# final_density3 = np.load( '/Users/gregory/Downloads/very_thick_density_v3.npy' )
 
-			plt.subplot( 1, 3, 1 )
+			plt.subplot( 1, 4, 1 )
 			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 3, 2 )
+			plt.subplot( 1, 4, 2 )
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 3, 3 )
+			plt.subplot( 1, 4, 3 )
 			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
+			plt.subplot( 1, 4, 4 )
+			plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
 			plt.show()
 
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density1
+			final_density = final_density4
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
-			make_optimizer.init_density_directly( final_density )
-			# make_optimizer.init_density_directly( bin_final_density )
+			# make_optimizer.init_density_directly( final_density )
+			make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
 			Ez_dev = make_optimizer.plot_fields( 2 )
 			I_dev = np.abs( Ez_dev )**2
