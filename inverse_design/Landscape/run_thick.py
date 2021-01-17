@@ -97,9 +97,9 @@ else:
 	device_width_voxels = 80#200
 	# device_height_voxels = 80 * 5
 	# device_height_voxels = 120
-	# device_height_voxels = 800
+	device_height_voxels = 800
 	# device_height_voxels = 400
-	device_height_voxels = 200
+	# device_height_voxels = 200
 	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
@@ -402,7 +402,7 @@ else:
 
 		# make_optimizer.init_density_directly( old_density )
 
-		viz_opt = False#True#False#True
+		viz_opt = False#True
 
 		if not viz_opt:
 
@@ -487,10 +487,15 @@ else:
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
 
+			final_density1 = np.load( '/Users/gregory/Downloads/five_um_bin_v1_density.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/five_um_bin_v2_density.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v3_density.npy' )
+			# final_density4 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v4_density.npy' )
 
-			final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v1_density.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v2_density.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v3_density.npy' )
+
+			# final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v1_density.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v2_density.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v3_density.npy' )
 			# final_density4 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v4_density.npy' )
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_density_v1.npy' )
@@ -507,8 +512,8 @@ else:
 			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
 			plt.subplot( 1, 4, 2 )
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 4, 3 )
-			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
+			# plt.subplot( 1, 4, 3 )
+			# plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
 			# plt.subplot( 1, 4, 4 )
 			# plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
 			plt.show()
@@ -517,7 +522,7 @@ else:
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density3
+			final_density = final_density2
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
