@@ -98,7 +98,8 @@ else:
 	# device_height_voxels = 80 * 5
 	# device_height_voxels = 120
 	# device_height_voxels = 800
-	device_height_voxels = 400
+	# device_height_voxels = 400
+	device_height_voxels = 200
 	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
 	# device_height_voxels = #52#64#52
@@ -452,7 +453,7 @@ else:
 				# make_optimizer.init_density_directly( old_density )
 
 				dropout_start = 0
-				dropout_end = int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
+				dropout_end = 0#int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
 				dropout_p = 0.1#0.25#0.5#0.75#0.9#0.75
 				binarize = True#False
 
@@ -486,10 +487,16 @@ else:
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
 
-			final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_density_v1.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_density_v2.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_density_v3.npy' )
-			final_density4 = np.load( '/Users/gregory/Downloads/mid_thick_density_v4.npy' )
+
+			final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v1_density.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v2_density.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v3_density.npy' )
+			# final_density4 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v4_density.npy' )
+
+			# final_density1 = np.load( '/Users/gregory/Downloads/mid_thick_density_v1.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/mid_thick_density_v2.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_density_v3.npy' )
+			# final_density4 = np.load( '/Users/gregory/Downloads/mid_thick_density_v4.npy' )
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/very_thick_density_v1.npy' )
@@ -502,15 +509,15 @@ else:
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
 			plt.subplot( 1, 4, 3 )
 			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 4, 4 )
-			plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
+			# plt.subplot( 1, 4, 4 )
+			# plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
 			plt.show()
 
 			# make_optimizer.init_density_with_uniform( 0.5 )
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density4
+			final_density = final_density3
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
@@ -519,17 +526,17 @@ else:
 			# import_density = ColorSplittingOptimization2D.upsample( make_optimizer.design_density, make_optimizer.coarsen_factor )
 			device_permittivity = make_optimizer.density_to_permittivity( import_density )
 
-			make_optimizer.compute_fom_and_gradient(
-				make_optimizer.omega_values[ 2 ],
-				device_permittivity,
-				make_optimizer.focal_spots_x_voxels[ 0 ],
-				1.0,
-				1.0 * ( np.random.random( device_permittivity.shape ) >= 0.25 ) )
+			# make_optimizer.compute_fom_and_gradient(
+			# 	make_optimizer.omega_values[ 2 ],
+			# 	device_permittivity,
+			# 	make_optimizer.focal_spots_x_voxels[ 0 ],
+			# 	1.0,
+			# 	1.0 * ( np.random.random( device_permittivity.shape ) >= 0.25 ) )
 
-			sys.exit( 0 )
+			# sys.exit( 0 )
 
-			make_optimizer.init_density_directly( final_density )
-			# make_optimizer.init_density_directly( bin_final_density )
+			# make_optimizer.init_density_directly( final_density )
+			make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
 			Ez_dev = make_optimizer.plot_fields( 2 )
 			I_dev = np.abs( Ez_dev )**2
