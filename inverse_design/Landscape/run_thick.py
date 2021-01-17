@@ -452,8 +452,8 @@ else:
 				# make_optimizer.init_density_directly( old_density )
 
 				dropout_start = 0
-				dropout_end = 0#int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
-				dropout_p = 0.1#0.25#0.5#0.75#0.9#0.75
+				dropout_end = int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
+				dropout_p = 0.25#0.25#0.5#0.75#0.9#0.75
 				binarize = True#False
 
 				make_optimizer.optimize(
@@ -506,14 +506,30 @@ else:
 			plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
 			plt.show()
 
+			# make_optimizer.init_density_with_uniform( 0.5 )
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
 			final_density = final_density4
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
-			# make_optimizer.init_density_directly( final_density )
-			make_optimizer.init_density_directly( bin_final_density )
+	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
+
+			import_density = ColorSplittingOptimization2D.upsample( final_density1, make_optimizer.coarsen_factor )
+			# import_density = ColorSplittingOptimization2D.upsample( make_optimizer.design_density, make_optimizer.coarsen_factor )
+			device_permittivity = make_optimizer.density_to_permittivity( import_density )
+
+			make_optimizer.compute_fom_and_gradient(
+				make_optimizer.omega_values[ 2 ],
+				device_permittivity,
+				make_optimizer.focal_spots_x_voxels[ 0 ],
+				1.0,
+				1.0 * ( np.random.random( device_permittivity.shape ) >= 0.25 ) )
+
+			sys.exit( 0 )
+
+			make_optimizer.init_density_directly( final_density )
+			# make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
 			Ez_dev = make_optimizer.plot_fields( 2 )
 			I_dev = np.abs( Ez_dev )**2

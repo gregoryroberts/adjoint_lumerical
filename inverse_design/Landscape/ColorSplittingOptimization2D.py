@@ -491,6 +491,8 @@ class ColorSplittingOptimization2D():
 
 		Ez = self.compute_forward_fields( self.omega_values[ omega_idx ], device_permittivity )
 
+		# return Ez
+
 		plt.subplot( 1, 2, 1 )
 		plt.imshow( np.abs( Ez ), cmap='Blues' )
 		plt.subplot( 1, 2, 2 )
@@ -511,6 +513,8 @@ class ColorSplittingOptimization2D():
 		plt.subplot( 1, 2, 2 )
 		plt.imshow( np.flip( np.swapaxes( np.real( self.rel_eps_simulation ), 0, 1 ), axis=0 ), cmap='Greens' )
 		plt.show()
+
+		return Ez
 
 	def compute_forward_fields( self, omega, device_permittivity ):
 		self.rel_eps_simulation[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] = device_permittivity
@@ -1184,30 +1188,70 @@ class ColorSplittingOptimization2D():
 		fom = fom_scaling * np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2
 		
 		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
-		adj_source[ focal_point_x_loc, self.focal_point_y ] = np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+		adj_source[ focal_point_x_loc, self.focal_point_y ] = 1.0#np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
 
 		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
 		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
+		# adj_Hx *= np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+		# adj_Hy *= np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+		# adj_Ez *= np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
 
-		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
+		gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez * np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) / 1j )
 
 		if dropout_mask is not None:
 			select_fwd_Ez = fwd_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
 			select_adj_Ez = adj_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
-			obs_Ez = (
-				fwd_Ez[ focal_point_x_loc, self.focal_point_y ] -
-				np.sum( dropout_mask * device_permittivity * eps_nought * select_fwd_Ez * select_adj_Ez / np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) )
-			)
-			fom = fom_scaling * np.abs( obs_Ez )**2
-			gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez * np.conj( obs_Ez ) / ( 1j * np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) ) )
+			
+			extra_src = self.fwd_source.copy()
+			extra_src[
+				self.device_width_start : self.device_width_end,
+				self.device_height_start : self.device_height_end ] += dropout_mask * (
+					omega * eps_nought * ( device_permittivity - 1 ) * select_fwd_Ez
+				) / 1j
+
+			# self.rel_eps_simulation[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ] = device_permittivity
+
+			simulation_extra = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
+			extra_fwd_Hx, extra_fwd_Hy, extra_fwd_Ez = simulation_extra.solve( extra_src )
+
+			# select_extra_fwd_Ez = extra_fwd_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+
+			# import matplotlib.pyplot as plt
+			# plt.subplot( 1, 2, 1 )
+			# plt.imshow( np.swapaxes( np.real( select_fwd_Ez ), 0, 1 ), cmap='hot' )
+			# plt.subplot( 1, 2, 2 )
+			# plt.imshow( np.swapaxes( np.real( select_extra_fwd_Ez ), 0, 1 ), cmap='hot' )
+			# plt.show()
+
+# extra_src[
+# 	dropout_sim.device_width_start : dropout_sim.device_width_end,
+# 	dropout_sim.device_height_start : dropout_sim.device_height_end ] = (
+# 		omega * dropout_runner.eps_nought * ( device_permittivity - 1 ) * get_fields_dropout[
+# 		dropout_sim.device_width_start : dropout_sim.device_width_end,
+# 		dropout_sim.device_height_start : dropout_sim.device_height_end ]
+# 	) / 1j
+
+			# obs_Ez = (
+			# 	fwd_Ez[ focal_point_x_loc, self.focal_point_y ] -
+			# 	np.sum( omega * ( 1. - dropout_mask ) * ( device_permittivity - 1.0 ) * eps_nought * select_fwd_Ez * select_adj_Ez / 1j )
+			# )
+			# print( np.sum( omega * ( 1. - dropout_mask ) * ( device_permittivity - 1.0 ) * eps_nought * select_fwd_Ez * select_adj_Ez / 1j ) )
+			# print( obs_Ez )
+			# print( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+			# print( extra_fwd_Ez[ focal_point_x_loc, self.focal_point_y ] - fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+			# print()
+
+			# fom = fom_scaling * np.abs( obs_Ez )**2
+			# gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez * np.conj( obs_Ez ) / 1j )
+			gradient = fom_scaling * 2 * np.real( omega * eps_nought * extra_fwd_Ez * adj_Ez * np.conj( extra_fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) / 1j )
 
 
 		if self.field_blur:
 			blur_fwd_Ez_real = gaussian_filter( np.real( fwd_Ez ), sigma=self.field_blur_size_voxels )
 			blur_fwd_Ez_imag = gaussian_filter( np.imag( fwd_Ez ), sigma=self.field_blur_size_voxels )
 
-			blur_adj_Ez_real = gaussian_filter( np.real( adj_Ez ), sigma=self.field_blur_size_voxels )
-			blur_adj_Ez_imag = gaussian_filter( np.imag( adj_Ez ), sigma=self.field_blur_size_voxels )
+			blur_adj_Ez_real = gaussian_filter( np.real( np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) * adj_Ez ), sigma=self.field_blur_size_voxels )
+			blur_adj_Ez_imag = gaussian_filter( np.imag( np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) * adj_Ez ), sigma=self.field_blur_size_voxels )
 
 			blur_fwd_Ez = blur_fwd_Ez_real + 1j * blur_fwd_Ez_imag
 			blur_adj_Ez = blur_adj_Ez_real + 1j * blur_adj_Ez_imag
