@@ -459,6 +459,10 @@ else:
 				fom_ratio = True
 				fom_simple_sum = True
 
+				mask_generator = np.random.random( ( design_width, design_height ) ) 
+				half_opt_mask = mask_generator >= 0.5
+				negative_half_opt_mask = mask_generator < 0.5
+
 				make_optimizer.optimize(
 					num_iterations,
 					save_folder + "/opt",
@@ -471,6 +475,37 @@ else:
 					dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
 					index_regularization,
 					downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
+
+
+				use_half_opt_mask = True
+				if use_half_opt_mask:
+					make_optimizer.optimize(
+						int( 0.5 * num_iterations ),
+						save_folder + "/opt",
+						False, 20, 20, 0.95,
+						# None,
+						half_opt_mask,
+						use_log_fom,
+						wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+						binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+						dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+						index_regularization,
+						downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
+					
+					make_optimizer.optimize(
+						int( 0.5 * num_iterations ),
+						save_folder + "/opt",
+						False, 20, 20, 0.95,
+						# None,
+						negative_half_opt_mask,
+						use_log_fom,
+						wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+						binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+						dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+						index_regularization,
+						downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
+
+
 			else:
 				make_optimizer.optimize(
 					num_iterations,
@@ -505,7 +540,7 @@ else:
 
 			final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v1_density.npy' )
 			final_density2 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v2_density.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v3_density.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_v1_density.npy' )
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/five_um_bin_v1_density.npy' )
 			# final_density2 = np.load( '/Users/gregory/Downloads/five_um_bin_v2_density.npy' )
@@ -563,12 +598,12 @@ else:
 			make_optimizer.init_density_directly( final_density )
 			# make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
-			Ez_dev = make_optimizer.plot_fields( 2 )
+			Ez_dev = make_optimizer.plot_fields( 6 )
 			I_dev = np.abs( Ez_dev )**2
 			I_dev = I_dev[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
-			make_optimizer.init_density_with_uniform( 0 * 0.5 )
-			Ez_flat = make_optimizer.plot_fields( 2 )
+			make_optimizer.init_density_with_uniform( 1 * 0.5 )
+			Ez_flat = make_optimizer.plot_fields( 6 )
 			I_flat = np.abs( Ez_flat )**2
 			I_flat = I_flat[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
