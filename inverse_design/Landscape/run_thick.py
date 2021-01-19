@@ -456,6 +456,8 @@ else:
 				dropout_end = 0#num_iterations#int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
 				dropout_p = 0.1#0.25#0.5#0.75#0.9#0.75
 				binarize = True#False
+				fom_ratio = True
+				fom_simple_sum = True
 
 				make_optimizer.optimize(
 					num_iterations,
@@ -468,7 +470,7 @@ else:
 					binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
 					dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
 					index_regularization,
-					downsample_abs_max, binarize_v2, 0.1 )
+					downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
 			else:
 				make_optimizer.optimize(
 					num_iterations,
@@ -487,8 +489,26 @@ else:
 			make_optimizer.save_optimization_data( save_folder + "/opt" )
 		else:
 
-			final_density1 = np.load( '/Users/gregory/Downloads/five_um_bin_v1_density.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/five_um_bin_v2_density.npy' )
+			#
+			# 1. Random dipoles
+			# 2. Loss function
+			# 3. Train in pieces
+			# 4. Currently have dropout
+			# 5. Change around wavelengths for generalization - i.e. different wavelength batches
+			# 6. Go even thicker?
+			# 7. Loss function regularization?
+			# 8. Explicit feature size pressures? Homogenization penalty function for when voxels want to be too inhomogenous locally
+			# 9. Field and/or gradient blurring
+			# 10. Modal averaging (weight against a mode profile for a given supervoxel size)
+			# 11. Lateral focal shift invariance in the loss function?
+			#
+
+			final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v1_density.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v2_density.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v3_density.npy' )
+
+			# final_density1 = np.load( '/Users/gregory/Downloads/five_um_bin_v1_density.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/five_um_bin_v2_density.npy' )
 			# final_density3 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v3_density.npy' )
 			# final_density4 = np.load( '/Users/gregory/Downloads/mid_thick_bin_v2_v4_density.npy' )
 
@@ -512,8 +532,8 @@ else:
 			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
 			plt.subplot( 1, 4, 2 )
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
-			# plt.subplot( 1, 4, 3 )
-			# plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
+			plt.subplot( 1, 4, 3 )
+			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
 			# plt.subplot( 1, 4, 4 )
 			# plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
 			plt.show()
@@ -522,7 +542,7 @@ else:
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density2
+			final_density = final_density3
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
@@ -540,8 +560,8 @@ else:
 
 			# sys.exit( 0 )
 
-			# make_optimizer.init_density_directly( final_density )
-			make_optimizer.init_density_directly( bin_final_density )
+			make_optimizer.init_density_directly( final_density )
+			# make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
 			Ez_dev = make_optimizer.plot_fields( 2 )
 			I_dev = np.abs( Ez_dev )**2

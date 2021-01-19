@@ -494,9 +494,9 @@ class ColorSplittingOptimization2D():
 		# return Ez
 
 		plt.subplot( 1, 2, 1 )
-		plt.imshow( np.abs( Ez ), cmap='Blues' )
+		plt.imshow( np.swapaxes( np.abs( Ez ), 0, 1 ), cmap='Blues' )
 		plt.subplot( 1, 2, 2 )
-		plt.imshow( np.real( Ez ), cmap='Greens' )
+		plt.imshow( np.swapaxes( np.real( Ez ), 0, 1 ), cmap='Greens' )
 		plt.show()
 
 		norm_by_fp = (
@@ -1223,40 +1223,41 @@ class ColorSplittingOptimization2D():
 			# plt.imshow( np.swapaxes( np.real( select_extra_fwd_Ez ), 0, 1 ), cmap='hot' )
 			# plt.show()
 
-# extra_src[
-# 	dropout_sim.device_width_start : dropout_sim.device_width_end,
-# 	dropout_sim.device_height_start : dropout_sim.device_height_end ] = (
-# 		omega * dropout_runner.eps_nought * ( device_permittivity - 1 ) * get_fields_dropout[
-# 		dropout_sim.device_width_start : dropout_sim.device_width_end,
-# 		dropout_sim.device_height_start : dropout_sim.device_height_end ]
-# 	) / 1j
+	def compute_fom_and_gradient_focal_ratio( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
+		# Ignoring fom_scaling for now
+		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )
+		net_focal_intensity = np.sum( np.abs( fwd_Ez )**2 )
+		fom = np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2 / net_focal_intensity
+		
+		adj_source = np.zeros( ( self.simulation_width_voxels, self.simulation_height_voxels ), dtype=np.complex )
+		adj_source[ focal_point_x_loc, self.focal_point_y ] = 1.0#np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
 
-			# obs_Ez = (
-			# 	fwd_Ez[ focal_point_x_loc, self.focal_point_y ] -
-			# 	np.sum( omega * ( 1. - dropout_mask ) * ( device_permittivity - 1.0 ) * eps_nought * select_fwd_Ez * select_adj_Ez / 1j )
-			# )
-			# print( np.sum( omega * ( 1. - dropout_mask ) * ( device_permittivity - 1.0 ) * eps_nought * select_fwd_Ez * select_adj_Ez / 1j ) )
-			# print( obs_Ez )
-			# print( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
-			# print( extra_fwd_Ez[ focal_point_x_loc, self.focal_point_y ] - fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
-			# print()
+		simulation = ceviche.fdfd_ez( omega, self.mesh_size_m, self.rel_eps_simulation, [ self.pml_voxels, self.pml_voxels ] )
+		adj_Hx, adj_Hy, adj_Ez = simulation.solve( adj_source )
+		# adj_Hx *= np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+		# adj_Hy *= np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
+		# adj_Ez *= np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )
 
-			# fom = fom_scaling * np.abs( obs_Ez )**2
-			# gradient = fom_scaling * 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez * np.conj( obs_Ez ) / 1j )
-			gradient = fom_scaling * 2 * np.real( omega * eps_nought * extra_fwd_Ez * adj_Ez * np.conj( extra_fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) / 1j )
+		gradient = 2 * np.real( omega * eps_nought * fwd_Ez * adj_Ez * np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) / 1j )
+
+		if dropout_mask is not None:
+			select_fwd_Ez = fwd_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+			select_adj_Ez = adj_Ez[ self.device_width_start : self.device_width_end, self.device_height_start : self.device_height_end ]
+			
+			extra_src = self.fwd_source.copy()
+			extra_src[
+				self.device_width_start : self.device_width_end,
+				self.device_height_start : self.device_height_end ] += dropout_mask * (
+					omega * eps_nought * ( device_permittivity - 1 ) * select_fwd_Ez
+				) / 1j
+
+			simulation_extra = ceviche.fdfd_ez( omega, self.mesh_size_m, np.ones( self.rel_eps_simulation.shape ), [ self.pml_voxels, self.pml_voxels ] )
+			extra_fwd_Hx, extra_fwd_Hy, extra_fwd_Ez = simulation_extra.solve( extra_src )
+
+			gradient = 2 * np.real( omega * eps_nought * extra_fwd_Ez * adj_Ez * np.conj( extra_fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) / 1j )
 
 
-		if self.field_blur:
-			blur_fwd_Ez_real = gaussian_filter( np.real( fwd_Ez ), sigma=self.field_blur_size_voxels )
-			blur_fwd_Ez_imag = gaussian_filter( np.imag( fwd_Ez ), sigma=self.field_blur_size_voxels )
-
-			blur_adj_Ez_real = gaussian_filter( np.real( np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) * adj_Ez ), sigma=self.field_blur_size_voxels )
-			blur_adj_Ez_imag = gaussian_filter( np.imag( np.conj( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] ) * adj_Ez ), sigma=self.field_blur_size_voxels )
-
-			blur_fwd_Ez = blur_fwd_Ez_real + 1j * blur_fwd_Ez_imag
-			blur_adj_Ez = blur_adj_Ez_real + 1j * blur_adj_Ez_imag
-
-			gradient = fom_scaling * 2 * np.real( omega * eps_nought * blur_fwd_Ez * blur_adj_Ez / 1j )
+		gradient /= net_focal_intensity
 
 		return fom, gradient
 
@@ -2592,7 +2593,8 @@ class ColorSplittingOptimization2D():
 		dropout_start=0, dropout_end=0, dropout_p=0.5,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
 		index_contrast_regularization=False,
-		downsample_max=False, binarization_version=0, binarize_amount_factor=0.1 ):
+		downsample_max=False, binarization_version=0, binarize_amount_factor=0.1,
+		fom_focal_ratio=False, fom_simple_sum=False ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
@@ -2651,6 +2653,8 @@ class ColorSplittingOptimization2D():
 		self.dense_plots = []
 
 		function_for_fom_and_gradient = self.compute_fom_and_gradient
+		if fom_focal_ratio:
+			function_for_fom_and_gradient = self.compute_fom_and_gradient_focal_ratio
 
 		# num_sigmoid_epochs = 8
 		# sigmoid_beta_start = 0.125
@@ -2894,8 +2898,10 @@ class ColorSplittingOptimization2D():
 				fom_no_loss_by_wl.append( get_fom_no_loss )
 
 			net_fom = np.product( fom_by_wl )
-			# net_fom = np.sum( fom_by_wl )
 			net_fom_no_loss = np.product( fom_no_loss_by_wl )
+			if fom_simple_sum:
+				net_fom = np.sum( fom_by_wl )
+				net_fom_no_loss = np.sum( net_fom_no_loss )
 
 			net_fom_index_contrast = np.product( fom_by_wl_index_contrast )
 
@@ -2906,15 +2912,16 @@ class ColorSplittingOptimization2D():
 			net_gradient = np.zeros( gradient_by_wl[ 0 ].shape )
 			net_gradient_index_contrast = np.zeros( gradient_by_wl[ 0 ].shape )
 
-			# fom_by_wl_np = np.array( fom_by_wl )
-			# performance_weights = ( 2. / len( fom_by_wl ) ) - fom_by_wl_np**2 / np.sum( fom_by_wl_np**2 )
-			# performance_weights = np.maximum( performance_weights, 0.0 )
-			# performance_weights /= np.sum( performance_weights )
+			fom_by_wl_np = np.array( fom_by_wl )
+			performance_weights = ( 2. / len( fom_by_wl ) ) - fom_by_wl_np**2 / np.sum( fom_by_wl_np**2 )
+			performance_weights = np.maximum( performance_weights, 0.0 )
+			performance_weights /= np.sum( performance_weights )
 			# We are currently not doing a performance based weighting here, but we can add it in
 			for wl_idx in range( 0, self.num_wavelengths ):
 				wl_gradient = np.real( self.max_relative_permittivity - self.min_relative_permittivity ) * gradient_by_wl[ wl_idx ]
 				weighting = net_fom / fom_by_wl[ wl_idx ]
-				# weighting = performance_weights[ wl_idx ]
+				if fom_simple_sum:
+					weighting = performance_weights[ wl_idx ]
 
 				if use_log_fom:
 					weighting = 1. / fom_by_wl[ wl_idx ]
