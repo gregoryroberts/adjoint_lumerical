@@ -492,6 +492,9 @@ else:
 						index_regularization,
 						downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
 					
+					make_optimizer.save_optimization_data( save_folder + "/opt0_" )
+
+
 					make_optimizer.optimize(
 						int( 0.5 * num_iterations ),
 						save_folder + "/opt",
@@ -538,9 +541,23 @@ else:
 			# 11. Lateral focal shift invariance in the loss function?
 			#
 
-			final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v1_density.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/twenty_um_bin_v2_density.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_v1_density.npy' )
+			# mask_generator = np.random.random( ( design_width, design_height ) ) 
+			# half_opt_mask = mask_generator >= 0.5
+			# negative_half_opt_mask = mask_generator < 0.5
+
+			# plt.imshow( half_opt_mask )
+			# plt.show()
+			# plt.imshow( negative_half_opt_mask )
+			# plt.show()
+			# sys.exit(0)
+
+
+			final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_v1_density.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_v2_density.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v1_density.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_v3_density.npy' )
+
+			print( np.sum( np.abs( final_density1 - final_density2 ) ) )
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/five_um_bin_v1_density.npy' )
 			# final_density2 = np.load( '/Users/gregory/Downloads/five_um_bin_v2_density.npy' )
@@ -577,7 +594,7 @@ else:
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density3
+			final_density = final_density2
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
@@ -598,12 +615,12 @@ else:
 			make_optimizer.init_density_directly( final_density )
 			# make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
-			Ez_dev = make_optimizer.plot_fields( 6 )
+			Ez_dev = make_optimizer.plot_fields( 2 )
 			I_dev = np.abs( Ez_dev )**2
 			I_dev = I_dev[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
 			make_optimizer.init_density_with_uniform( 1 * 0.5 )
-			Ez_flat = make_optimizer.plot_fields( 6 )
+			Ez_flat = make_optimizer.plot_fields( 2 )
 			I_flat = np.abs( Ez_flat )**2
 			I_flat = I_flat[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
