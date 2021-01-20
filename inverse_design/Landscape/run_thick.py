@@ -441,7 +441,8 @@ else:
 			# 	downsample_abs_max )
 
 			binarize_v2 = 1
-			eps_movement_per_voxel = 0.02 / 4.
+			# eps_movement_per_voxel = 0.02 / 4.
+			eps_movement_per_voxel = 0.02 / 2.
 			if binarize_v2 == 1:
 				binarize_max_movement_per_voxel = eps_movement_per_voxel / ( max_relative_permittivity - min_relative_permittivity )
 
