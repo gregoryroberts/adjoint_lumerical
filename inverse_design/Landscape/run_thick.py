@@ -463,20 +463,6 @@ else:
 				half_opt_mask = mask_generator >= 0.5
 				negative_half_opt_mask = mask_generator < 0.5
 
-				make_optimizer.optimize(
-					num_iterations,
-					save_folder + "/opt",
-					False, 20, 20, 0.95,
-					None,
-					# opt_mask,
-					use_log_fom,
-					wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
-					binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-					dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
-					index_regularization,
-					downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
-
-
 				use_half_opt_mask = True
 				if use_half_opt_mask:
 					make_optimizer.optimize(
@@ -501,6 +487,19 @@ else:
 						False, 20, 20, 0.95,
 						# None,
 						negative_half_opt_mask,
+						use_log_fom,
+						wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
+						binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
+						dropout_start, dropout_end, dropout_p, dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
+						index_regularization,
+						downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
+				else:				
+					make_optimizer.optimize(
+						num_iterations,
+						save_folder + "/opt",
+						False, 20, 20, 0.95,
+						None,
+						# opt_mask,
 						use_log_fom,
 						wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 						binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
