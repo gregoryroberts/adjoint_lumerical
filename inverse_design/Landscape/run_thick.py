@@ -456,7 +456,7 @@ else:
 
 				dropout_start = 0
 				dropout_end = num_iterations#int( 0.75 * num_iterations )#0#num_iterations# int( 0.75 * num_iterations )
-				dropout_p = 0.1#0.25#0.5#0.75#0.9#0.75
+				dropout_p = 0.25#0.1#0.25#0.5#0.75#0.9#0.75
 				binarize = True#False
 				fom_ratio = True
 				fom_simple_sum = True
