@@ -94,7 +94,8 @@ else:
 	#
 	# device_width_voxels = 120#160#120
 	# device_width_voxels = 162
-	device_width_voxels = 80#200
+	# device_width_voxels = 80#200
+	device_width_voxels = 320
 	# device_height_voxels = 80 * 5
 	# device_height_voxels = 120
 	# device_height_voxels = 800
