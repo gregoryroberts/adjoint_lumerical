@@ -108,7 +108,8 @@ else:
 	# device_height_voxels = 48#32
 	# device_height_voxels = 32#24
 	device_voxels_total = device_width_voxels * device_height_voxels
-	focal_length_voxels = 50#135#100#132#100
+	# focal_length_voxels = 50#135#100#132#100
+	focal_length_voxels = 200
 	focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -554,9 +555,9 @@ else:
 			# sys.exit(0)
 
 
-			final_density1 = np.load( '/Users/gregory/Downloads/fifteen_um_bin_sum_fom_ratio_v1.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/fifteen_um_bin_sum_fom_ratio_v2.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/fifteen_um_bin_sum_fom_ratio_v3.npy' )
+			final_density1 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_v1.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_v1.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_v1.npy' )
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v2_v1_density.npy' )
@@ -624,15 +625,15 @@ else:
 
 			# sys.exit( 0 )
 
-			# make_optimizer.init_density_directly( final_density )
-			make_optimizer.init_density_directly( bin_final_density )
+			make_optimizer.init_density_directly( final_density )
+			# make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
-			Ez_dev = make_optimizer.plot_fields( 6 )
+			Ez_dev = make_optimizer.plot_fields( 2 )
 			I_dev = np.abs( Ez_dev )**2
 			I_dev = I_dev[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
 			make_optimizer.init_density_with_uniform( 1 * 0.5 )
-			Ez_flat = make_optimizer.plot_fields( 6 )
+			Ez_flat = make_optimizer.plot_fields( 2 )
 			I_flat = np.abs( Ez_flat )**2
 			I_flat = I_flat[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
