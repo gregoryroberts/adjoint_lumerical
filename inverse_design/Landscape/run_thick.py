@@ -47,7 +47,7 @@ random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 25
 # mesh_size_nm = 8#6#4#8#6#8
-density_coarsen_factor = 20
+density_coarsen_factor = 16#20
 # density_coarsen_factor = 4#3#4
 mesh_size_m = mesh_size_nm * 1e-9
 lambda_min_um = 0.45
@@ -98,8 +98,8 @@ else:
 	# device_height_voxels = 80 * 5
 	# device_height_voxels = 120
 	# device_height_voxels = 800
-	device_height_voxels = 600
-	# device_height_voxels = 400
+	# device_height_voxels = 600
+	device_height_voxels = 400
 	# device_height_voxels = 200
 	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
@@ -552,9 +552,15 @@ else:
 			# plt.show()
 			# sys.exit(0)
 
-			final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v2_v1_density.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v2_v2_density.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v2_v3_density.npy' )
+
+			final_density1 = np.load( '/Users/gregory/Downloads/fifteen_um_bin_sum_fom_ratio_v1.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/fifteen_um_bin_sum_fom_ratio_v2.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/fifteen_um_bin_sum_fom_ratio_v3.npy' )
+
+
+			# final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v2_v1_density.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v2_v2_density.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_mask_v2_v3_density.npy' )
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/twenty_um_bin_sum_fom_ratio_v1_density.npy' )
@@ -599,7 +605,7 @@ else:
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density2
+			final_density = final_density3
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
@@ -617,8 +623,8 @@ else:
 
 			# sys.exit( 0 )
 
-			make_optimizer.init_density_directly( final_density )
-			# make_optimizer.init_density_directly( bin_final_density )
+			# make_optimizer.init_density_directly( final_density )
+			make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
 			Ez_dev = make_optimizer.plot_fields( 6 )
 			I_dev = np.abs( Ez_dev )**2
