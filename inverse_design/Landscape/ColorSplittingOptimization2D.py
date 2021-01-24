@@ -13,6 +13,8 @@ import scipy.optimize
 
 from scipy.ndimage import gaussian_filter
 from scipy.interpolate import RectBivariateSpline
+from scipy.ndimage import grey_dilation
+from scipy.ndimage import grey_erosion
 
 sys.path.insert(1, '../')
 import heaviside
@@ -2615,11 +2617,11 @@ class ColorSplittingOptimization2D():
 		use_log_fom=False,
 		wavelength_adversary=False, adversary_update_iters=-1, bottom_wls_um=None, top_wls_um=None,
 		binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
-		dropout_start=0, dropout_end=0, dropout_p=0.5,
+		dropout_start=0, dropout_end=0, dropout_p=0.5, dropout_mask_binarization_change_freq=-1,
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
 		index_contrast_regularization=False,
 		downsample_max=False, binarization_version=0, binarize_amount_factor=0.1,
-		fom_focal_ratio=False, fom_simple_sum=False ):
+		fom_focal_ratio=False, fom_simple_sum=False, dilation_erosion=False, dilation_erosion_amt=1, dilation_erosion_binarization_freq=0.025 ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
@@ -2688,6 +2690,13 @@ class ColorSplittingOptimization2D():
 
 		binarization_condition_met = False
 
+		dropout_mask = None
+		dropout_next_change = dropout_mask_binarization_change_freq
+		if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
+			dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
+
+		dilation_erosion_next_change = 0
+
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
 				cur_binarization = compute_binarization( self.design_density.flatten() )
@@ -2705,12 +2714,39 @@ class ColorSplittingOptimization2D():
 			# sigmoid_density = make_sigmoid.forward( self.design_density )
 
 			# import_density = upsample( self.design_density, self.coarsen_factor )
+			iter_binarization = compute_binarization( self.design_density.flatten() )
+
+			if dilation_erosion:
+				if ( dilation_erosion_binarization_freq < 0 ) or ( iter_binarization > dilation_erosion_next_change ):
+					cur_density = self.design_density.copy()
+
+					dilation_erosion_size = int( 2 * dilation_erosion_amt + 1 )
+
+					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
+					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
+					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
+					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
+
+					cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
+
+					self.design_density = cur_density.copy()
+
+					if dilation_erosion_binarization_freq > 0:
+						dilation_erosion_next_change += dilation_erosion_binarization_freq
+
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
 
-			dropout_mask = None
 			if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
-				dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
+
+				if dropout_mask_binarization_change_freq < 0:
+					dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
+
+				if iter_binarization >= dropout_next_change:
+					dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
+					dropout_next_change += dropout_mask_binarization_change_freq
+			else:
+				dropout_mask = None
 
 
 			index_contrast_df_h = 1e-3

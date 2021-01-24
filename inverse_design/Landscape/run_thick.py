@@ -536,7 +536,7 @@ else:
 						use_log_fom,
 						wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 						binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
-						dropout_start, dropout_end, dropout_p, dropout_mask_binarization_change_freq,
+						dropout_start, dropout_end, dropout_p, dropout_bin_freq,
 						dense_plot_freq_iters, dense_plot_wls, dense_focal_map,
 						index_regularization,
 						downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum,
