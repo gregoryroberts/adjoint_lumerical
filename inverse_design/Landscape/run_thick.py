@@ -507,32 +507,45 @@ else:
 						index_regularization,
 						downsample_abs_max, binarize_v2, 0.1, fom_ratio, fom_simple_sum )
 				else:		
-	# def optimize(
-	# 	self, num_iterations,
-	# 	folder_for_saving,
-	# 	random_globals=False, random_global_iteration_frequency=10, random_global_scan_points=10, bounds_cutoff=0.9,
-	# 	opt_mask=None,
-	# 	use_log_fom=False,
-	# 	wavelength_adversary=False, adversary_update_iters=-1, bottom_wls_um=None, top_wls_um=None,
-	# 	binarize=False, binarize_movement_per_step=0.01, binarize_max_movement_per_voxel=0.025,
-	# 	dropout_start=0, dropout_end=0, dropout_p=0.5, dropout_mask_binarization_change_freq=-1,
-	# 	dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
-	# 	index_contrast_regularization=False,
-	# 	downsample_max=False, binarization_version=0, binarize_amount_factor=0.1,
-	# 	fom_focal_ratio=False, fom_simple_sum=False, dilation_erosion=False, dilation_erosion_amt=1, dilation_erosion_binarization_freq=0.025 ):
-
 					dilation_erosion = True
 					dilation_erosion_amt = 2
 					dilation_erosion_binarization_freq = 0.025
 
 
+					depth_sectioned_opt_mask = np.zeros( make_optimizer.design_density.shape )
+					num_voxels_material = 6
+					num_voxels_spacer = 7
+
+					voxel_idx = 0
+					in_material = True
+					num_remaining = num_voxels_material
+					while voxel_idx < depth_sectioned_opt_mask.shape[ 1 ]:
+						if in_material:
+							depth_sectioned_opt_mask[ :, voxel_idx ] = 1
+							num_remaining -= 1
+
+							if num_remaining == 0:
+								in_material = False
+								num_remaining = num_voxels_spacer
+						else:
+							depth_sectioned_opt_mask[ :, voxel_idx ] = 0
+							make_optimizer.design_density[ :, voxel_idx ] = 0
+
+							num_remaining -= 1
+
+							if num_remaining == 0:
+								in_material = True
+								num_remaining = num_voxels_material
+
+						voxel_idx += 1
 
 					make_optimizer.optimize(
 						num_iterations,
 						save_folder + "/opt",
 						False, 20, 20, 0.95,
-						None,
+						# None,
 						# opt_mask,
+						depth_sectioned_opt_mask,
 						use_log_fom,
 						wavelength_adversary, adversary_update_iters, lambda_left, lambda_right,
 						binarize, binarize_movement_per_step, binarize_max_movement_per_voxel,
