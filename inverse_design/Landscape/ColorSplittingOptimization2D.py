@@ -2725,10 +2725,10 @@ class ColorSplittingOptimization2D():
 
 					dilation_erosion_size = int( 2 * dilation_erosion_amt + 1 )
 
-					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
-					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
-					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
-					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='contant', cval=0.0 )
+					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
+					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
+					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
+					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
 
 					cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
 
