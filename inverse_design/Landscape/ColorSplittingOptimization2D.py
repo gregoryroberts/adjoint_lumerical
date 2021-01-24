@@ -539,6 +539,13 @@ class ColorSplittingOptimization2D():
 		
 		return fom
 
+	def compute_fom_ratio( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
+		fwd_Ez = self.compute_forward_fields( omega, device_permittivity )		
+		net_focal_intensity = np.sum( np.abs( fwd_Ez )**2 )
+		fom = np.abs( fwd_Ez[ focal_point_x_loc, self.focal_point_y ] )**2 / net_focal_intensity
+
+		return fom
+
 	def compute_fom_and_gradient_with_polarizability__( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0 ):
 		assert not self.field_blur, "Field blur not supported with polarizability"
 
@@ -1276,6 +1283,24 @@ class ColorSplittingOptimization2D():
 		gradient_imag = -2 * np.imag( omega * eps_nought * fwd_Ez * adj_Ez / 1j )
 
 		return fom, gradient_real, gradient_imag
+
+
+	def compute_net_ratio_sum_fom_from_density( self, input_density ):
+		fom_by_wl = []
+
+		import_density = upsample( input_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+
+		for wl_idx in range( 0, self.num_wavelengths ):
+			get_focal_point_idx = self.wavelength_idx_to_focal_idx[ wl_idx ]
+			get_fom = self.compute_fom_ratio(
+				self.omega_values[ wl_idx ], device_permittivity,
+				self.focal_spots_x_voxels[ get_focal_point_idx ], self.wavelength_intensity_scaling[ wl_idx ] )
+			fom_by_wl.append( get_fom )
+
+		net_fom = np.sum( fom_by_wl )
+
+		return net_fom
 
 	def compute_net_fom_from_density( self, input_density ):
 		fom_by_wl = []
