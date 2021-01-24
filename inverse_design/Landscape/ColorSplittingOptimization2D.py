@@ -2692,7 +2692,7 @@ class ColorSplittingOptimization2D():
 
 		dropout_mask = None
 		dropout_next_change = dropout_mask_binarization_change_freq
-		if ( iter_idx >= dropout_start ) and ( iter_idx < dropout_end ):
+		if ( 0 >= dropout_start ) and ( 0 < dropout_end ):
 			dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
 
 		dilation_erosion_next_change = 0
