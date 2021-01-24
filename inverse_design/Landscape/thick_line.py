@@ -94,10 +94,6 @@ focal_map = [ 0 for idx in range( 0, num_lambda_values ) ]
 for idx in range( int( 0.5 * num_lambda_values ), num_lambda_values ):
 	focal_map[ idx ] = 1
 
-log_file = open( save_folder + "/log.txt", 'w' )
-log_file.write( "Log\n" )
-log_file.close()
-
 design_width = int( device_width_voxels / density_coarsen_factor )
 design_height = int( device_height_voxels / density_coarsen_factor )
 num_design_voxels = design_width * design_height
