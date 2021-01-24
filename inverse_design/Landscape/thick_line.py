@@ -25,6 +25,8 @@ import ColorSplittingOptimization2D
 max_index = 1.5
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
+save_folder = '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v1_1p5/'
+
 mesh_size_nm = 25
 # mesh_size_nm = 8#6#4#8#6#8
 density_coarsen_factor = 16#20
