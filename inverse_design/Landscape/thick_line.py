@@ -98,6 +98,8 @@ design_width = int( device_width_voxels / density_coarsen_factor )
 design_height = int( device_height_voxels / density_coarsen_factor )
 num_design_voxels = design_width * design_height
 
+binarize_set_point = 0.5
+
 
 make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	[ device_width_voxels, device_height_voxels ],
