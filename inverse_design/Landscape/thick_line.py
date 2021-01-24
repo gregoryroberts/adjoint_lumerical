@@ -117,7 +117,7 @@ loc1 = '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_
 density0 = np.load( loc0 + 'opt_optimized_density.npy' )
 density1 = np.load( loc1 + 'opt_optimized_density.npy' )
 
-num_alpha = 10
+num_alpha = 100
 alphas = np.linspace( 0, 1, num_alpha )
 
 fom_line = np.zeros( num_alpha )
