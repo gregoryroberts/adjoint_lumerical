@@ -22,17 +22,7 @@ import matplotlib.pylab as plt
 #
 import ColorSplittingOptimization2D
 
-if len( sys.argv ) < 3:
-	print( "Usage: python " + sys.argv[ 0 ] + " { save folder } { max index }" )
-	sys.exit( 1 )
-
-save_folder = sys.argv[ 1 ]
-max_index = float( sys.argv[ 2 ] )
-
-
-if ( max_index > 1.5 ):
-	print( "This index is a bit too high for the simulation mesh" )
-
+max_index = 1.5
 random_seed = np.random.randint( 0, 2**32 - 1 )
 
 mesh_size_nm = 25
