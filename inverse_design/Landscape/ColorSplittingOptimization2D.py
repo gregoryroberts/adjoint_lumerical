@@ -2731,6 +2731,7 @@ class ColorSplittingOptimization2D():
 					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
 
 					cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
+					cur_density *= opt_mask
 
 					self.design_density = cur_density.copy()
 
