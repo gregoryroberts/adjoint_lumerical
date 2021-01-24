@@ -112,7 +112,7 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 
 
 loc0 = '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v1_1p5/'
-loc1 = '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v3_1p5/'
+loc1 = '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v2_1p5/'
 
 density0 = 1.0 * np.greater_equal( np.load( loc0 + 'opt_optimized_density.npy' ), 0.5 )
 density1 = 1.0 * np.greater_equal( np.load( loc1 + 'opt_optimized_density.npy' ), 0.5 )
@@ -131,8 +131,8 @@ for alpha_idx in range( 0, num_alpha ):
 
 	fom_line[ alpha_idx ] = net_fom
 
-np.save( '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v1_1p5/fom_line_bin_v1_v3.npy', fom_line )
-np.save( '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v2_1p5/fom_line_bin_v1_v3.npy', fom_line )
+np.save( '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v1_1p5/fom_line_bin_v1_v2.npy', fom_line )
+np.save( '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v2_1p5/fom_line_bin_v1_v2.npy', fom_line )
 
 
 
