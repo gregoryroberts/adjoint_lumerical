@@ -2690,6 +2690,9 @@ class ColorSplittingOptimization2D():
 
 		binarization_condition_met = False
 
+		import_density = upsample( self.design_density, self.coarsen_factor )
+		device_permittivity = self.density_to_permittivity( import_density )
+
 		dropout_mask = None
 		dropout_next_change = dropout_mask_binarization_change_freq
 		if ( 0 >= dropout_start ) and ( 0 < dropout_end ):
@@ -2717,7 +2720,7 @@ class ColorSplittingOptimization2D():
 			iter_binarization = compute_binarization( self.design_density.flatten() )
 
 			if dilation_erosion:
-				if ( dilation_erosion_binarization_freq < 0 ) or ( iter_binarization > dilation_erosion_next_change ):
+				if ( dilation_erosion_binarization_freq < 0 ) or ( iter_binarization >= dilation_erosion_next_change ):
 					cur_density = self.design_density.copy()
 
 					dilation_erosion_size = int( 2 * dilation_erosion_amt + 1 )
@@ -2731,7 +2734,7 @@ class ColorSplittingOptimization2D():
 
 					self.design_density = cur_density.copy()
 
-					if dilation_erosion_binarization_freq > 0:
+					if dilation_erosion_binarization_freq >= 0:
 						dilation_erosion_next_change += dilation_erosion_binarization_freq
 
 			import_density = upsample( self.design_density, self.coarsen_factor )
