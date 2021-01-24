@@ -106,7 +106,7 @@ make_optimizer = ColorSplittingOptimization2D.ColorSplittingOptimization2D(
 	focal_points_x_relative, focal_length_voxels,
 	lambda_values_um, focal_map, random_seed,
 	num_layers, designable_layer_indicators, non_designable_permittivity, save_folder,
-	blur_fields, blur_fields_size_voxels, None, binarize_set_point )
+	False, 0, None, binarize_set_point )
 
 
 loc0 = '/central/groups/Faraon_Computing/projects/ten_um_bin_sum_fom_ratio_wide_longer_f_v1_1p5/'
