@@ -2700,7 +2700,7 @@ class ColorSplittingOptimization2D():
 
 		dilation_erosion_next_change = 0
 		dilation_first = True
-					dilation_erosion_size = int( 2 * dilation_erosion_amt + 1 )
+		dilation_erosion_size = int( 2 * dilation_erosion_amt + 1 )
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
