@@ -512,7 +512,8 @@ else:
 				else:		
 					dilation_erosion = True
 					dilation_erosion_amt = 2
-					dilation_erosion_binarization_freq = 0.025
+					# dilation_erosion_binarization_freq = 0.025
+					dilation_erosion_binarization_freq = 0.1
 					# dilation_erosion_binarization_freq = 0.05
 
 
