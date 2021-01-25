@@ -98,13 +98,15 @@ else:
 	# device_width_voxels = 162
 	# device_width_voxels = 80#200
 	# device_width_voxels = 320
-	device_width_voxels = 50 * 6
+	# device_width_voxels = 50 * 6
+	device_width_voxels = 50 * 4
 	# device_height_voxels = 80 * 5
 	# device_height_voxels = 120
 	# device_height_voxels = 800
 	# device_height_voxels = 600
 	# device_height_voxels = 400
-	device_height_voxels = 50 * 6
+	# device_height_voxels = 50 * 6
+	device_height_voxels = 50 * 2
 	# device_height_voxels = 200
 	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
@@ -114,7 +116,8 @@ else:
 	device_voxels_total = device_width_voxels * device_height_voxels
 	# focal_length_voxels = 50#135#100#132#100
 	# focal_length_voxels = 200
-	focal_length_voxels = 50 * 5
+	# focal_length_voxels = 50 * 5
+	focal_length_voxels = 50 * 4
 	focal_points_x_relative = [ 0.25, 0.75 ]
 
 num_layers = int( device_height_voxels / density_coarsen_factor )
@@ -510,6 +513,7 @@ else:
 					dilation_erosion = True
 					dilation_erosion_amt = 2
 					dilation_erosion_binarization_freq = 0.025
+					# dilation_erosion_binarization_freq = 0.05
 
 
 					# depth_sectioned_opt_mask = np.zeros( make_optimizer.design_density.shape )
@@ -598,42 +602,76 @@ else:
 			# plt.show()
 			# sys.exit(0)
 
-			final_density1 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
+			# final_density1 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
+			final_density1 = np.load( '/Users/gregory/Downloads/erode_dilate_50_v1.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/erode_dilate_100_v1.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/erode_dilate_150_v1.npy' )
+			final_density4 = np.load( '/Users/gregory/Downloads/erode_dilate_350_v1.npy' )
+			final_density5 = np.load( '/Users/gregory/Downloads/erode_dilate_500_v1.npy' )
 
 
-			# from scipy.ndimage import grey_dilation
-			# from scipy.ndimage import grey_erosion
-			# from scipy.ndimage import gaussian_filter
-			# test_density = np.random.random( ( 50, 50 ) )
-			# test_density = gaussian_filter( test_density, 3 )
-			# test_density -= np.min( test_density )
-			# test_density /= np.max( test_density )
+			from scipy.ndimage import grey_dilation
+			from scipy.ndimage import grey_erosion
+			from scipy.ndimage import gaussian_filter
+			test_density = np.random.random( ( 50, 50 ) )
+			test_density = gaussian_filter( test_density, 3 )
+			test_density -= np.min( test_density )
+			test_density /= np.max( test_density )
 
-			# test_density *= 0
-			# test_density[ :, 0 ] = 1
+			test_density *= 0
+			test_density[ 10:15, 10:15 ] = 1
+			test_density[ 10:15, 18:23 ] = 1
 
-			# dilation_erosion_size = 5
+			test_density = final_density4.copy()
 
-			# cur_density = grey_dilation( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			# cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			# cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			dilation_erosion_size = 5
+
+			cur_density = grey_dilation( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+
+			# cur_density = grey_erosion( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
 			# cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			# cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			# cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
 
-			# cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
 
-			# print( np.mean( test_density ) )
-			# print( np.mean( cur_density ) )
-			# print()
+			cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
+
+			print( np.mean( test_density ) )
+			print( np.mean( cur_density ) )
+			print()
+
+			plt.subplot( 1, 2, 1 )
+			plt.imshow( test_density )
+			plt.colorbar()
+			plt.subplot( 1, 2, 2 )
+			plt.imshow( cur_density )
+			plt.colorbar()
+			plt.show()
 
 			# plt.subplot( 1, 2, 1 )
-			# plt.imshow( test_density )
-			# plt.colorbar()
+			plt.plot( test_density[ :, 5 ], linewidth=2, color='r' )
+			# plt.plot( test_density[ :, 9 ], linewidth=2, color='r' )
+			# plt.plot( test_density[ :, 11 ], linewidth=2, color='r' )
+			# plt.plot( test_density[ :, 8 ], linewidth=2, color='r' )
+			# plt.plot( test_density[ :, 12 ], linewidth=2, color='r' )
 			# plt.subplot( 1, 2, 2 )
-			# plt.imshow( cur_density )
-			# plt.colorbar()
-			# plt.show()
+			# plt.plot( cur_density[ :, 8 ], linewidth=2, color='g', linestyle='--' )
+			# plt.plot( cur_density[ :, 9 ], linewidth=2, color='g', linestyle='--' )
+			plt.plot( cur_density[ :, 5 ], linewidth=2, color='g', linestyle='--' )
+			# plt.plot( cur_density[ :, 11 ], linewidth=2, color='g', linestyle='--' )
+			# plt.plot( cur_density[ :, 12 ], linewidth=2, color='g', linestyle='--' )
+			plt.show()
+
+			plt.plot( final_density1[ :, 10 ], linewidth=2, color='r' )
+			# plt.subplot( 1, 2, 2 )
+			plt.plot( final_density2[ :, 10 ], linewidth=2, color='g', linestyle='--' )
+			plt.plot( final_density3[ :, 10 ], linewidth=2, color='b', linestyle='--' )
+			plt.plot( final_density4[ :, 10 ], linewidth=2, color='m', linestyle='--' )
+			plt.plot( final_density5[ :, 10 ], linewidth=2, color='c', linestyle='--' )
+			plt.show()
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v1.npy' )
@@ -679,21 +717,25 @@ else:
 			# final_density2 = np.load( '/Users/gregory/Downloads/very_thick_density_v2.npy' )
 			# final_density3 = np.load( '/Users/gregory/Downloads/very_thick_density_v3.npy' )
 
-			plt.subplot( 1, 4, 1 )
+			plt.subplot( 1, 5, 1 )
 			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 4, 2 )
+			plt.subplot( 1, 5, 2 )
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 4, 3 )
+			plt.subplot( 1, 5, 3 )
 			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
-			# plt.subplot( 1, 4, 4 )
-			# plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
+			plt.subplot( 1, 5, 4 )
+			plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
+			plt.subplot( 1, 5, 5 )
+			plt.imshow( np.swapaxes( final_density5, 0, 1 ), cmap='Blues' )
 			plt.show()
+
+			# sys.exit( 0 )
 
 			# make_optimizer.init_density_with_uniform( 0.5 )
 
 			# final_density = np.load( '/Users/gregory/Downloads/thick_2_density_v2.npy' )
 
-			final_density = final_density3
+			final_density = final_density5
 			bin_final_density = 1.0 * np.greater_equal( final_density, 0.5 )
 
 	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
@@ -711,8 +753,8 @@ else:
 
 			# sys.exit( 0 )
 
-			make_optimizer.init_density_directly( final_density )
-			# make_optimizer.init_density_directly( bin_final_density )
+			# make_optimizer.init_density_directly( final_density )
+			make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
 			Ez_dev = make_optimizer.plot_fields( 6 )
 			I_dev = np.abs( Ez_dev )**2
