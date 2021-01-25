@@ -2750,7 +2750,9 @@ class ColorSplittingOptimization2D():
 					self.design_density = cur_density.copy()
 
 					if dilation_erosion_binarization_freq >= 0:
-						dilation_erosion_next_change = iter_binarization + dilation_erosion_binarization_freq
+						new_binarization = compute_binarization( self.design_density.flatten() )
+
+						dilation_erosion_next_change = new_binarization + dilation_erosion_binarization_freq
 
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )
