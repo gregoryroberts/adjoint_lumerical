@@ -598,11 +598,49 @@ else:
 			# plt.show()
 			# sys.exit(0)
 
+			final_density1 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
+			final_density2 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
+			final_density3 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
 
 
-			final_density1 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v1.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v2.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v3.npy' )
+			from scipy.ndimage import grey_dilation
+			from scipy.ndimage import grey_erosion
+			from scipy.ndimage import gaussian_filter
+			test_density = np.random.random( ( 50, 50 ) )
+			test_density = gaussian_filter( test_density, 3 )
+			test_density -= np.min( test_density )
+			test_density /= np.max( test_density )
+
+			# test_density *= 0
+			# test_density[ :, 0 ] = 1
+
+			dilation_erosion_size = 5
+
+			cur_density = grey_dilation( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+
+			# cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
+
+			print( np.mean( test_density ) )
+			print( np.mean( cur_density ) )
+			print()
+
+			plt.subplot( 1, 2, 1 )
+			plt.imshow( test_density )
+			plt.colorbar()
+			plt.subplot( 1, 2, 2 )
+			plt.imshow( cur_density )
+			plt.colorbar()
+			plt.show()
+
+			asdf
+
+
+			# final_density1 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v1.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v2.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v3.npy' )
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_v1.npy' )
@@ -675,15 +713,15 @@ else:
 
 			# sys.exit( 0 )
 
-			# make_optimizer.init_density_directly( final_density )
-			make_optimizer.init_density_directly( bin_final_density )
+			make_optimizer.init_density_directly( final_density )
+			# make_optimizer.init_density_directly( bin_final_density )
 			# make_optimizer.init_density_with_uniform( 0.5 )
-			Ez_dev = make_optimizer.plot_fields( 2 )
+			Ez_dev = make_optimizer.plot_fields( 6 )
 			I_dev = np.abs( Ez_dev )**2
 			I_dev = I_dev[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 
 			make_optimizer.init_density_with_uniform( 1 * 0.5 )
-			Ez_flat = make_optimizer.plot_fields( 2 )
+			Ez_flat = make_optimizer.plot_fields( 6 )
 			I_flat = np.abs( Ez_flat )**2
 			I_flat = I_flat[ make_optimizer.device_width_start : make_optimizer.device_width_end, make_optimizer.focal_point_y ]
 

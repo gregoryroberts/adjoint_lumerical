@@ -2699,6 +2699,8 @@ class ColorSplittingOptimization2D():
 			dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
 
 		dilation_erosion_next_change = 0
+		dilation_first = True
+					dilation_erosion_size = int( 2 * dilation_erosion_amt + 1 )
 
 		for iter_idx in range( 0, num_iterations ):
 			if ( iter_idx % 10 ) == 0:
@@ -2723,12 +2725,21 @@ class ColorSplittingOptimization2D():
 				if ( dilation_erosion_binarization_freq < 0 ) or ( iter_binarization >= dilation_erosion_next_change ):
 					cur_density = self.design_density.copy()
 
-					dilation_erosion_size = int( 2 * dilation_erosion_amt + 1 )
 
-					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
-					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
-					cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
-					cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='constant', cval=0.0 )
+					if dilation_first:
+						cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+						cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+						cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+						cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+
+						dilation_first = False
+					else:
+						cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+						cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+						cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+						cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+
+						dilation_first = True
 
 					cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
 					cur_density *= opt_mask
