@@ -2710,6 +2710,9 @@ class ColorSplittingOptimization2D():
 				log_file.write( "Current binarization = " + str( cur_binarization ) + "\n\n" )
 				log_file.close()
 
+			if ( iter_idx % 50 ) == 0:
+				np.save( self.save_folder + "/optimized_density_" + str( iter_idx ) + ".npy", self.design_density )
+
 
 			# mask_density = opt_mask * self.design_density
 			# sigmoid_epoch = int( iter_idx / iter_per_epoch )
@@ -2747,7 +2750,7 @@ class ColorSplittingOptimization2D():
 					self.design_density = cur_density.copy()
 
 					if dilation_erosion_binarization_freq >= 0:
-						dilation_erosion_next_change += dilation_erosion_binarization_freq
+						dilation_erosion_next_change = iter_binarization + dilation_erosion_binarization_freq
 
 			import_density = upsample( self.design_density, self.coarsen_factor )
 			device_permittivity = self.density_to_permittivity( import_density )

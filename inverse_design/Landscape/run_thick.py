@@ -413,7 +413,7 @@ else:
 		# todo: try to run dropout for several iterations with a given mask instead of switching it every iteration
 		# (or run it over a certain amount of binarization)
 
-		viz_opt = False#True
+		viz_opt = True#False#True
 
 		if not viz_opt:
 
@@ -512,32 +512,32 @@ else:
 					dilation_erosion_binarization_freq = 0.025
 
 
-					depth_sectioned_opt_mask = np.zeros( make_optimizer.design_density.shape )
-					num_voxels_material = 6
-					num_voxels_spacer = 7
+					# depth_sectioned_opt_mask = np.zeros( make_optimizer.design_density.shape )
+					# num_voxels_material = 6
+					# num_voxels_spacer = 7
 
-					voxel_idx = 0
-					in_material = True
-					num_remaining = num_voxels_material
-					while voxel_idx < depth_sectioned_opt_mask.shape[ 1 ]:
-						if in_material:
-							depth_sectioned_opt_mask[ :, voxel_idx ] = 1
-							num_remaining -= 1
+					# voxel_idx = 0
+					# in_material = True
+					# num_remaining = num_voxels_material
+					# while voxel_idx < depth_sectioned_opt_mask.shape[ 1 ]:
+					# 	if in_material:
+					# 		depth_sectioned_opt_mask[ :, voxel_idx ] = 1
+					# 		num_remaining -= 1
 
-							if num_remaining == 0:
-								in_material = False
-								num_remaining = num_voxels_spacer
-						else:
-							depth_sectioned_opt_mask[ :, voxel_idx ] = 0
-							make_optimizer.design_density[ :, voxel_idx ] = 0
+					# 		if num_remaining == 0:
+					# 			in_material = False
+					# 			num_remaining = num_voxels_spacer
+					# 	else:
+					# 		depth_sectioned_opt_mask[ :, voxel_idx ] = 0
+					# 		make_optimizer.design_density[ :, voxel_idx ] = 0
 
-							num_remaining -= 1
+					# 		num_remaining -= 1
 
-							if num_remaining == 0:
-								in_material = True
-								num_remaining = num_voxels_material
+					# 		if num_remaining == 0:
+					# 			in_material = True
+					# 			num_remaining = num_voxels_material
 
-						voxel_idx += 1
+					# 	voxel_idx += 1
 
 					make_optimizer.optimize(
 						num_iterations,
@@ -603,39 +603,37 @@ else:
 			final_density3 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
 
 
-			from scipy.ndimage import grey_dilation
-			from scipy.ndimage import grey_erosion
-			from scipy.ndimage import gaussian_filter
-			test_density = np.random.random( ( 50, 50 ) )
-			test_density = gaussian_filter( test_density, 3 )
-			test_density -= np.min( test_density )
-			test_density /= np.max( test_density )
+			# from scipy.ndimage import grey_dilation
+			# from scipy.ndimage import grey_erosion
+			# from scipy.ndimage import gaussian_filter
+			# test_density = np.random.random( ( 50, 50 ) )
+			# test_density = gaussian_filter( test_density, 3 )
+			# test_density -= np.min( test_density )
+			# test_density /= np.max( test_density )
 
 			# test_density *= 0
 			# test_density[ :, 0 ] = 1
 
-			dilation_erosion_size = 5
+			# dilation_erosion_size = 5
 
-			cur_density = grey_dilation( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			# cur_density = grey_dilation( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			# cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			# cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+			# cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
 
 			# cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
 
-			print( np.mean( test_density ) )
-			print( np.mean( cur_density ) )
-			print()
+			# print( np.mean( test_density ) )
+			# print( np.mean( cur_density ) )
+			# print()
 
-			plt.subplot( 1, 2, 1 )
-			plt.imshow( test_density )
-			plt.colorbar()
-			plt.subplot( 1, 2, 2 )
-			plt.imshow( cur_density )
-			plt.colorbar()
-			plt.show()
-
-			asdf
+			# plt.subplot( 1, 2, 1 )
+			# plt.imshow( test_density )
+			# plt.colorbar()
+			# plt.subplot( 1, 2, 2 )
+			# plt.imshow( cur_density )
+			# plt.colorbar()
+			# plt.show()
 
 
 			# final_density1 = np.load( '/Users/gregory/Downloads/ten_um_bin_sum_fom_ratio_wide_longer_f_v1.npy' )
