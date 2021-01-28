@@ -432,7 +432,7 @@ else:
 		# todo: try to run dropout for several iterations with a given mask instead of switching it every iteration
 		# (or run it over a certain amount of binarization)
 
-		viz_opt = False#True
+		viz_opt = True#False#True
 
 		if not viz_opt:
 
@@ -626,464 +626,470 @@ else:
 			# plt.show()
 			# sys.exit(0)
 
+			final_density1 = np.load('/Users/gregory/Downloads/fab_penalty_v1_450.npy')
+			final_density2 = np.load('/Users/gregory/Downloads/fab_penalty_v2_150.npy')
 			# final_density1 = np.load( '/Users/gregory/Downloads/erode_dilate_v1.npy' )
-			final_density1 = np.load( '/Users/gregory/Downloads/four_um_erode_dilate_final_v2_v1.npy' )
-			final_density2 = np.load( '/Users/gregory/Downloads/four_um_v2_erode_dilate_100_v1.npy' )
-			final_density3 = np.load( '/Users/gregory/Downloads/four_um_erode_dilate_200_v1.npy' )
-			final_density4 = np.load( '/Users/gregory/Downloads/four_um_v2_erode_dilate_200_v1.npy' )
-			final_density5 = np.load( '/Users/gregory/Downloads/four_um_erode_dilate_100_v1.npy' )
-
-
-			np.random.seed( 12123 )
-
-			from scipy.ndimage import grey_dilation
-			from scipy.ndimage import grey_erosion
-			from scipy.ndimage import gaussian_filter
-			# test_density = np.random.random( ( 51, 51 ) )
-			# test_density = np.random.random( ( 41, 41 ) )
-			test_density = np.random.random( ( 21, 21 ) )
-			raw_density = test_density.copy()
-			test_density = gaussian_filter( test_density, 7 )
-			test_density -= np.min( test_density )
-			test_density /= np.max( test_density )
-
-			print( np.mean( test_density ) )
-
-			# test_density = np.zeros( ( 41, 41 ) )
-			# test_density[ 0:5, : ] = 1
-			# test_density[ 10:15, : ] = 1
-			# test_density[ 20:25, : ] = 1
-			# test_density[ 30:35, : ] = 1
-
-			# spacing = 1
-			# counter = 0
-			# cur = 1
-
-			# while counter < 41:
-			# 	test_density[ counter : np.minimum( counter + spacing, 41 ), : ] = cur
-			# 	test_density[ :, counter : np.minimum( counter + spacing, 41 ) ] = 0.75 * ( 1 - cur )
-			# 	cur = 1 - cur
-			# 	counter += spacing
-
-
-
-			def step_binarize_v2( density, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
-
-				if opt_mask is None:
-					opt_mask = np.ones( density.shape )
-
-				density_for_binarizing = density.flatten()
-				flatten_gradient = gradient.flatten()
-
-				# flatten_design_cuts = density_for_binarizing.copy()
-				# extract_binarization_gradient_full = compute_binarization_gradient( density_for_binarizing, self.binarization_set_point )
-				# flatten_fom_gradients = flatten_gradient.copy()
-				flatten_opt_mask = opt_mask.flatten()
-
-
-				flatten_design_cuts = []
-				flatten_fom_gradients = []
-				extract_binarization_gradient = []
-
-				for idx in range( 0, len( flatten_opt_mask ) ):
-					if flatten_opt_mask[ idx ] > 0:
-						flatten_design_cuts.append( density_for_binarizing[ idx ] )
-						flatten_fom_gradients.append( flatten_gradient[ idx ] )
-						# extract_binarization_gradient.append( extract_binarization_gradient_full[ idx ] )
-
-				flatten_design_cuts = np.array( flatten_design_cuts )
-				flatten_fom_gradients = np.array( flatten_fom_gradients )
-				# extract_binarization_gradient = np.array( extract_binarization_gradient )
-				extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, 0.5 )
-
-				beta = binarize_max_movement
-				projected_binarization_increase = 0
-
-				c = flatten_fom_gradients
-
-				initial_binarization = compute_binarization( flatten_design_cuts, 0.5 )
-
-				b = np.real( extract_binarization_gradient )
-
-				lower_bounds = np.zeros( len( c ) )
-				upper_bounds = np.zeros( len( c ) )
-
-				for idx in range( 0, len( c ) ):
-					upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
-					lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
-
-				max_possible_binarization_change = 0
-				for idx in range( 0, len( c ) ):
-					if b[ idx ] > 0:
-						max_possible_binarization_change += b[ idx ] * upper_bounds[ idx ]
-					else:
-						max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
-				
-				# Try this! Not sure how well it will work
-				# if initial_binarization < 0.1:
-				# 	alpha = binarize_amount
-				# else:
-					# alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
-				# alpha = np.minimum( max_possible_binarization_change, binarize_amount )
-				alpha = binarize_amount_factor * max_possible_binarization_change
-
-				def ramp( x ):
-					return np.maximum( x, 0 )
-
-				def opt_function( nu ):
-					lambda_1 = ramp( nu * b - c )
-					lambda_2 = c + lambda_1 - nu * b
-
-					return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
-
-				tolerance = 1e-12
-				# optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance )
-				# optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance, bounds=[ [ 0.0, np.inf ] ] )
-
-				bin_constraint = scipy.optimize.LinearConstraint(A = 1, lb = 0, ub = np.inf)
-				optimization_solution_nu = scipy.optimize.minimize(
-					opt_function, 0,
-					method='trust-constr',
-					constraints=[bin_constraint] ,
-					options={'xtol': 1E-16, 'gtol': 1E-16, 'barrier_tol': 1E-16})
-
-
-				nu_star = optimization_solution_nu.x
-				lambda_1_star = ramp( nu_star * b - c )
-				lambda_2_star = c + lambda_1_star - nu_star * b
-				x_star = np.zeros( len( c ) )
-
-				for idx in range( 0, len( c ) ):
-					if lambda_1_star[ idx ] > 0:
-						x_star[ idx ] = upper_bounds[ idx ]
-					else:
-						x_star[ idx ] = lower_bounds[ idx ]
-
-
-				proposed_design_variable = flatten_design_cuts + x_star
-				proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
-
-				refill_idx = 0
-				refill_design_variable = density_for_binarizing.copy()
-				for idx in range( 0, len( flatten_opt_mask ) ):
-					if flatten_opt_mask[ idx ] > 0:
-						refill_design_variable[ idx ] = proposed_design_variable[ refill_idx ]
-						refill_idx += 1
-
-				return np.reshape( refill_design_variable, density.shape )
-
-
-
-
-
-
-			def compute_fab_penalty_fourier( rho, feature_size ):
-
-				pad_size = 10
-				decay_width = 5
-				input_rho = np.pad( rho, ( ( pad_size, pad_size ), ( pad_size, pad_size ) ) )
-
-				for x_idx in range( 0, pad_size ):
-					input_rho[ x_idx, : ] = input_rho[ pad_size, : ] * np.exp( -( x_idx - pad_size )**2 / decay_width**2 )
-					input_rho[ input_rho.shape[ 0 ] - x_idx - 1, : ] = input_rho[ input_rho.shape[ 0 ] - pad_size - 1, : ] * np.exp( -( x_idx - pad_size )**2 / decay_width**2 )
-				for y_idx in range( 0, pad_size ):
-					input_rho[ :, y_idx ] = input_rho[ :, pad_size ] * np.exp( -( y_idx - pad_size )**2 / decay_width**2 )
-					input_rho[ :, input_rho.shape[ 1 ] - y_idx - 1 ] = input_rho[ :, input_rho.shape[ 1 ] - pad_size - 1 ] * np.exp( -( y_idx - pad_size )**2 / decay_width**2 )
-
-
-				mid_pt = input_rho.shape[ 0 ] // 2
-				feature_cutoff = mid_pt / ( 1.0 * feature_size )
-
-
-				input_rho -= np.mean( input_rho )
-				# input_rho /= ( np.max( input_rho ) - np.min( input_rho ) )
-
-				fft_rho = np.fft.fftshift( np.fft.fft2( input_rho ) )
-
-				# fft_rho = np.fft.fftshift( np.fft.fft2( input_rho - np.mean( input_rho ) ) )
-				# fft_rho = np.fft.fftshift( np.fft.fft2( input_rho ) )
-				# plt.subplot( 1, 2, 1 )
-				# plt.imshow( input_rho )
-				# plt.subplot( 1, 2, 2 )
-				# plt.imshow( np.abs( fft_rho ) )
-				# plt.subplot( 1, 3, 3 )
-				# plt.imshow( np.imag( fft_rho ) )
-
-				# fig = plt.gcf()
-				# ax = fig.gca()
-
-				# feature_circle = plt.Circle((mid_pt, mid_pt), feature_cutoff, color='r', fill=False)
-				# ax.add_patch(feature_circle)
-
-				# plt.show()
-
-				inside = 0
-				outside = 0
-				for x_idx in range( 0, input_rho.shape[ 0 ] ):
-					for y_idx in range( 0, input_rho.shape[ 1 ] ):
-						radius = np.sqrt( ( x_idx - mid_pt )**2 + ( y_idx - mid_pt )**2 )
-
-						if radius > feature_cutoff:
-							outside += np.abs( fft_rho[ x_idx, y_idx ] )**2
-						else:
-							inside += np.abs( fft_rho[ x_idx, y_idx ] )**2
-
-				# print( outside + inside )
-				return outside / ( outside + inside )
-				# return outside
-
-			def compute_fab_penalty( input_rho, feature_size, do_sum=True ):
-				d = feature_size
-				beta = 1. / 3.
-
-				rho = input_rho.copy()
-
-				rho -= 0.5
-				rho /= 0.5
-
-				pad_rho = np.pad( rho, ( ( 1, 1 ), ( 1, 1 ) ), mode='edge' )
-
-				pad_rho_plus_x = pad_rho[ 2 :, 1 : -1 ]
-				pad_rho_minus_x = pad_rho[ 0 : -2, 1 : -1 ]
-
-				pad_rho_plus_y = pad_rho[ 1 : -1 , 2 : ]
-				pad_rho_minus_y = pad_rho[ 1 : -1, 0 : -2 ]
-
-				d_dx = 0.5 * ( pad_rho_plus_x - pad_rho_minus_x )
-				d_dy = 0.5 * ( pad_rho_plus_y - pad_rho_minus_y )
-
-				norm_gradient_direction = np.sqrt( d_dx**2 + d_dy**2 )
-				normalized_gradient_direction = [ d_dx / norm_gradient_direction, d_dy / norm_gradient_direction ]
-
-				project_first_order = ( d_dx * normalized_gradient_direction[ 0 ] + d_dy * normalized_gradient_direction[ 1 ] )
-
-				get_plus_projected = normalized_gradient_direction[ 0 ] * pad_rho_plus_x + normalized_gradient_direction[ 1 ] * pad_rho_plus_y
-				get_minus_projected = normalized_gradient_direction[ 0 ] * pad_rho_minus_x + normalized_gradient_direction[ 1 ] * pad_rho_minus_y
-				
-				d2_dv2 = get_plus_projected + get_minus_projected - 2 * rho
-				d_dv = 0.5 * ( get_plus_projected - get_minus_projected )
-
-
-				term0 = np.abs( d2_dv2 ) / ( ( np.pi / d ) * np.abs( rho ) + beta * d_dv )
-				term1 = np.pi / d
-				combine_terms = np.maximum( term0 - term1, 0 )
-
-				if do_sum:
-					total = np.sum( combine_terms )
-
-					return total
-				else:
-					return combine_terms
-
-			def compute_fab_gradient( input_rho, feature_size, method ):
-
-				h = 1e-3
-				deriv = np.zeros( input_rho.shape )
-
-				middle = method( input_rho, test_feature_size )
-
-				for x in range( 0, input_rho.shape[ 0 ] ):
-					for y in range( 0, input_rho.shape[ 1 ] ):
-						input_rho_copy = input_rho.copy()
-						input_rho_copy[ x, y ] += h
-						up = method( input_rho_copy, test_feature_size )
-
-						# input_rho_copy = input_rho.copy()
-						# input_rho_copy[ x, y ] -= h
-						# down = method( input_rho_copy, test_feature_size )
-
-						# deriv[ x, y ] = ( up - down ) / ( 2 * h )
-						deriv[ x, y ] = ( up  - middle ) / h
-
-
-				return deriv
-
-			feature_sweep = np.linspace( 1, 20, 100 )
-			penalties = []
-			for feature in feature_sweep:
-				penalties.append( compute_fab_penalty_fourier( test_density, feature ) )
-
-			plt.plot( feature_sweep, penalties, linewidth=2, color='r' )
-			# plt.show()
-
-			feature_sweep = np.linspace( 1, 9, 100 )
-			penalties = []
-			for feature in feature_sweep:
-				test_density = gaussian_filter( raw_density, feature )
+			# final_density1 = np.load( '/Users/gregory/Downloads/four_um_erode_dilate_final_v2_v1.npy' )
+			# final_density2 = np.load( '/Users/gregory/Downloads/four_um_v2_erode_dilate_100_v1.npy' )
+			# final_density3 = np.load( '/Users/gregory/Downloads/four_um_erode_dilate_200_v1.npy' )
+			# final_density4 = np.load( '/Users/gregory/Downloads/four_um_v2_erode_dilate_200_v1.npy' )
+			# final_density5 = np.load( '/Users/gregory/Downloads/four_um_erode_dilate_100_v1.npy' )
+
+
+			eval_fab = False
+
+			if eval_fab:
+
+				np.random.seed( 12123 )
+
+				from scipy.ndimage import grey_dilation
+				from scipy.ndimage import grey_erosion
+				from scipy.ndimage import gaussian_filter
+				# test_density = np.random.random( ( 51, 51 ) )
+				# test_density = np.random.random( ( 41, 41 ) )
+				test_density = np.random.random( ( 21, 21 ) )
+				raw_density = test_density.copy()
+				test_density = gaussian_filter( test_density, 7 )
 				test_density -= np.min( test_density )
 				test_density /= np.max( test_density )
 
-				penalties.append( compute_fab_penalty_fourier( test_density, 3 ) )
+				print( np.mean( test_density ) )
 
-			plt.plot( feature_sweep, penalties, linewidth=2, color='g' )
-			plt.show()
+				# test_density = np.zeros( ( 41, 41 ) )
+				# test_density[ 0:5, : ] = 1
+				# test_density[ 10:15, : ] = 1
+				# test_density[ 20:25, : ] = 1
+				# test_density[ 30:35, : ] = 1
 
-			# test_feature_size = 9
-			# print( test_density.shape )
-			# print( compute_fab_penalty_fourier( test_density, test_feature_size ) )
+				# spacing = 1
+				# counter = 0
+				# cur = 1
 
-
-			test_density = gaussian_filter( raw_density, 2 )
-			test_density -= np.min( test_density )
-			test_density /= np.max( test_density )
-			test_feature_size = 4
-
-
-			# sys.exit( 0 )
-
-
+				# while counter < 41:
+				# 	test_density[ counter : np.minimum( counter + spacing, 41 ), : ] = cur
+				# 	test_density[ :, counter : np.minimum( counter + spacing, 41 ) ] = 0.75 * ( 1 - cur )
+				# 	cur = 1 - cur
+				# 	counter += spacing
 
 
-			start = test_density.copy()
-			num_steps = 30#50#10
 
-			print( 'before = ' + str( compute_fab_penalty_fourier( test_density, test_feature_size ) ) )
-			print( np.mean( test_density ) )
-			print( np.std( test_density ) )
+				def step_binarize_v2( density, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
 
-			last = 0
-			for step in range( 0, num_steps ):
-				print( 'step = ' + str( step ) )
-				cur_penalty = compute_fab_penalty_fourier( test_density, test_feature_size )
-				cur_binarization = compute_binarization( test_density.flatten(), 0.5 )
-				print( 'cur binarization = ' + str(  cur_binarization ) )
-				print( 'cur penalty = ' + str(  cur_penalty ) )
-				print( cur_penalty - last )
-				last = cur_penalty
-				# print()
+					if opt_mask is None:
+						opt_mask = np.ones( density.shape )
 
-				# import time
-				# import sys
-				# start_time = time.time()
-				get_fab_deriv = compute_fab_gradient( test_density, test_feature_size, compute_fab_penalty_fourier )
-				# elapsed_time = time.time() - start_time
-				# print( 'Gradient took ' + str( elapsed_time ) + ' seconds' )
-				# sys.exit(0)
-				# plt.subplot( 1, 2, 1 )
-				# plt.imshow( test_density, cmap='hot' )
-				# plt.colorbar()
-				# plt.subplot( 1, 2, 2 )
-				# plt.imshow( get_fab_deriv, cmap='hot' )
-				# plt.colorbar()
+					density_for_binarizing = density.flatten()
+					flatten_gradient = gradient.flatten()
+
+					# flatten_design_cuts = density_for_binarizing.copy()
+					# extract_binarization_gradient_full = compute_binarization_gradient( density_for_binarizing, self.binarization_set_point )
+					# flatten_fom_gradients = flatten_gradient.copy()
+					flatten_opt_mask = opt_mask.flatten()
+
+
+					flatten_design_cuts = []
+					flatten_fom_gradients = []
+					extract_binarization_gradient = []
+
+					for idx in range( 0, len( flatten_opt_mask ) ):
+						if flatten_opt_mask[ idx ] > 0:
+							flatten_design_cuts.append( density_for_binarizing[ idx ] )
+							flatten_fom_gradients.append( flatten_gradient[ idx ] )
+							# extract_binarization_gradient.append( extract_binarization_gradient_full[ idx ] )
+
+					flatten_design_cuts = np.array( flatten_design_cuts )
+					flatten_fom_gradients = np.array( flatten_fom_gradients )
+					# extract_binarization_gradient = np.array( extract_binarization_gradient )
+					extract_binarization_gradient = compute_binarization_gradient( flatten_design_cuts, 0.5 )
+
+					beta = binarize_max_movement
+					projected_binarization_increase = 0
+
+					c = flatten_fom_gradients
+
+					initial_binarization = compute_binarization( flatten_design_cuts, 0.5 )
+
+					b = np.real( extract_binarization_gradient )
+
+					lower_bounds = np.zeros( len( c ) )
+					upper_bounds = np.zeros( len( c ) )
+
+					for idx in range( 0, len( c ) ):
+						upper_bounds[ idx ] = np.maximum( np.minimum( beta, 1 - flatten_design_cuts[ idx ] ), 0 )
+						lower_bounds[ idx ] = np.minimum( np.maximum( -beta, -flatten_design_cuts[ idx ] ), 0 )
+
+					max_possible_binarization_change = 0
+					for idx in range( 0, len( c ) ):
+						if b[ idx ] > 0:
+							max_possible_binarization_change += b[ idx ] * upper_bounds[ idx ]
+						else:
+							max_possible_binarization_change += b[ idx ] * lower_bounds[ idx ]
+					
+					# Try this! Not sure how well it will work
+					# if initial_binarization < 0.1:
+					# 	alpha = binarize_amount
+					# else:
+						# alpha = np.minimum( initial_binarization * max_possible_binarization_change, binarize_amount )
+					# alpha = np.minimum( max_possible_binarization_change, binarize_amount )
+					alpha = binarize_amount_factor * max_possible_binarization_change
+
+					def ramp( x ):
+						return np.maximum( x, 0 )
+
+					def opt_function( nu ):
+						lambda_1 = ramp( nu * b - c )
+						lambda_2 = c + lambda_1 - nu * b
+
+						return -( -np.dot( lambda_1, upper_bounds ) + np.dot( lambda_2, lower_bounds ) + nu * alpha )
+
+					tolerance = 1e-12
+					# optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance )
+					# optimization_solution_nu = scipy.optimize.minimize( opt_function, 0, tol=tolerance, bounds=[ [ 0.0, np.inf ] ] )
+
+					bin_constraint = scipy.optimize.LinearConstraint(A = 1, lb = 0, ub = np.inf)
+					optimization_solution_nu = scipy.optimize.minimize(
+						opt_function, 0,
+						method='trust-constr',
+						constraints=[bin_constraint] ,
+						options={'xtol': 1E-16, 'gtol': 1E-16, 'barrier_tol': 1E-16})
+
+
+					nu_star = optimization_solution_nu.x
+					lambda_1_star = ramp( nu_star * b - c )
+					lambda_2_star = c + lambda_1_star - nu_star * b
+					x_star = np.zeros( len( c ) )
+
+					for idx in range( 0, len( c ) ):
+						if lambda_1_star[ idx ] > 0:
+							x_star[ idx ] = upper_bounds[ idx ]
+						else:
+							x_star[ idx ] = lower_bounds[ idx ]
+
+
+					proposed_design_variable = flatten_design_cuts + x_star
+					proposed_design_variable = np.minimum( np.maximum( proposed_design_variable, 0 ), 1 )
+
+					refill_idx = 0
+					refill_design_variable = density_for_binarizing.copy()
+					for idx in range( 0, len( flatten_opt_mask ) ):
+						if flatten_opt_mask[ idx ] > 0:
+							refill_design_variable[ idx ] = proposed_design_variable[ refill_idx ]
+							refill_idx += 1
+
+					return np.reshape( refill_design_variable, density.shape )
+
+
+
+
+
+
+				def compute_fab_penalty_fourier( rho, feature_size ):
+
+					pad_size = 10
+					decay_width = 5
+					input_rho = np.pad( rho, ( ( pad_size, pad_size ), ( pad_size, pad_size ) ) )
+
+					for x_idx in range( 0, pad_size ):
+						input_rho[ x_idx, : ] = input_rho[ pad_size, : ] * np.exp( -( x_idx - pad_size )**2 / decay_width**2 )
+						input_rho[ input_rho.shape[ 0 ] - x_idx - 1, : ] = input_rho[ input_rho.shape[ 0 ] - pad_size - 1, : ] * np.exp( -( x_idx - pad_size )**2 / decay_width**2 )
+					for y_idx in range( 0, pad_size ):
+						input_rho[ :, y_idx ] = input_rho[ :, pad_size ] * np.exp( -( y_idx - pad_size )**2 / decay_width**2 )
+						input_rho[ :, input_rho.shape[ 1 ] - y_idx - 1 ] = input_rho[ :, input_rho.shape[ 1 ] - pad_size - 1 ] * np.exp( -( y_idx - pad_size )**2 / decay_width**2 )
+
+
+					mid_pt = input_rho.shape[ 0 ] // 2
+					feature_cutoff = mid_pt / ( 1.0 * feature_size )
+
+
+					input_rho -= np.mean( input_rho )
+					# input_rho /= ( np.max( input_rho ) - np.min( input_rho ) )
+
+					fft_rho = np.fft.fftshift( np.fft.fft2( input_rho ) )
+
+					# fft_rho = np.fft.fftshift( np.fft.fft2( input_rho - np.mean( input_rho ) ) )
+					# fft_rho = np.fft.fftshift( np.fft.fft2( input_rho ) )
+					# plt.subplot( 1, 2, 1 )
+					# plt.imshow( input_rho )
+					# plt.subplot( 1, 2, 2 )
+					# plt.imshow( np.abs( fft_rho ) )
+					# plt.subplot( 1, 3, 3 )
+					# plt.imshow( np.imag( fft_rho ) )
+
+					# fig = plt.gcf()
+					# ax = fig.gca()
+
+					# feature_circle = plt.Circle((mid_pt, mid_pt), feature_cutoff, color='r', fill=False)
+					# ax.add_patch(feature_circle)
+
+					# plt.show()
+
+					inside = 0
+					outside = 0
+					for x_idx in range( 0, input_rho.shape[ 0 ] ):
+						for y_idx in range( 0, input_rho.shape[ 1 ] ):
+							radius = np.sqrt( ( x_idx - mid_pt )**2 + ( y_idx - mid_pt )**2 )
+
+							if radius > feature_cutoff:
+								outside += np.abs( fft_rho[ x_idx, y_idx ] )**2
+							else:
+								inside += np.abs( fft_rho[ x_idx, y_idx ] )**2
+
+					# print( outside + inside )
+					return outside / ( outside + inside )
+					# return outside
+
+				def compute_fab_penalty( input_rho, feature_size, do_sum=True ):
+					d = feature_size
+					beta = 1. / 3.
+
+					rho = input_rho.copy()
+
+					rho -= 0.5
+					rho /= 0.5
+
+					pad_rho = np.pad( rho, ( ( 1, 1 ), ( 1, 1 ) ), mode='edge' )
+
+					pad_rho_plus_x = pad_rho[ 2 :, 1 : -1 ]
+					pad_rho_minus_x = pad_rho[ 0 : -2, 1 : -1 ]
+
+					pad_rho_plus_y = pad_rho[ 1 : -1 , 2 : ]
+					pad_rho_minus_y = pad_rho[ 1 : -1, 0 : -2 ]
+
+					d_dx = 0.5 * ( pad_rho_plus_x - pad_rho_minus_x )
+					d_dy = 0.5 * ( pad_rho_plus_y - pad_rho_minus_y )
+
+					norm_gradient_direction = np.sqrt( d_dx**2 + d_dy**2 )
+					normalized_gradient_direction = [ d_dx / norm_gradient_direction, d_dy / norm_gradient_direction ]
+
+					project_first_order = ( d_dx * normalized_gradient_direction[ 0 ] + d_dy * normalized_gradient_direction[ 1 ] )
+
+					get_plus_projected = normalized_gradient_direction[ 0 ] * pad_rho_plus_x + normalized_gradient_direction[ 1 ] * pad_rho_plus_y
+					get_minus_projected = normalized_gradient_direction[ 0 ] * pad_rho_minus_x + normalized_gradient_direction[ 1 ] * pad_rho_minus_y
+					
+					d2_dv2 = get_plus_projected + get_minus_projected - 2 * rho
+					d_dv = 0.5 * ( get_plus_projected - get_minus_projected )
+
+
+					term0 = np.abs( d2_dv2 ) / ( ( np.pi / d ) * np.abs( rho ) + beta * d_dv )
+					term1 = np.pi / d
+					combine_terms = np.maximum( term0 - term1, 0 )
+
+					if do_sum:
+						total = np.sum( combine_terms )
+
+						return total
+					else:
+						return combine_terms
+
+				def compute_fab_gradient( input_rho, feature_size, method ):
+
+					h = 1e-3
+					deriv = np.zeros( input_rho.shape )
+
+					middle = method( input_rho, test_feature_size )
+
+					for x in range( 0, input_rho.shape[ 0 ] ):
+						for y in range( 0, input_rho.shape[ 1 ] ):
+							input_rho_copy = input_rho.copy()
+							input_rho_copy[ x, y ] += h
+							up = method( input_rho_copy, test_feature_size )
+
+							# input_rho_copy = input_rho.copy()
+							# input_rho_copy[ x, y ] -= h
+							# down = method( input_rho_copy, test_feature_size )
+
+							# deriv[ x, y ] = ( up - down ) / ( 2 * h )
+							deriv[ x, y ] = ( up  - middle ) / h
+
+
+					return deriv
+
+				feature_sweep = np.linspace( 1, 20, 100 )
+				penalties = []
+				for feature in feature_sweep:
+					penalties.append( compute_fab_penalty_fourier( test_density, feature ) )
+
+				plt.plot( feature_sweep, penalties, linewidth=2, color='r' )
 				# plt.show()
 
-				norm = np.max( np.abs( get_fab_deriv ) )
-				get_fab_deriv /= norm
+				feature_sweep = np.linspace( 1, 9, 100 )
+				penalties = []
+				for feature in feature_sweep:
+					test_density = gaussian_filter( raw_density, feature )
+					test_density -= np.min( test_density )
+					test_density /= np.max( test_density )
 
-				# test_density -= 0.5 * get_fab_deriv# * 1e-5
-				# test_density -= 0.02 * get_fab_deriv# * 1e-5
+					penalties.append( compute_fab_penalty_fourier( test_density, 3 ) )
 
-				change_deriv = get_fab_deriv.copy()
-				# change_deriv = np.zeros( test_density.shape )
-				# change_deriv[ 10, 10 ] = get_fab_deriv[ 10, 10 ]
+				plt.plot( feature_sweep, penalties, linewidth=2, color='g' )
+				plt.show()
+
+				# test_feature_size = 9
+				# print( test_density.shape )
+				# print( compute_fab_penalty_fourier( test_density, test_feature_size ) )
 
 
-		# def step_binarize_v2( density, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
+				test_density = gaussian_filter( raw_density, 2 )
+				test_density -= np.min( test_density )
+				test_density /= np.max( test_density )
+				test_feature_size = 4
 
-				# test_density = step_binarize_v2( test_density, 0.02 * change_deriv, 0.1, 0.02, None )
-				test_density -= 0.02 * change_deriv
 
-				expected_change = np.sum( -norm * get_fab_deriv * 0.02 * change_deriv )
-				print( 'expected... = ' + str( expected_change ) )
+				# sys.exit( 0 )
+
+
+
+
+				start = test_density.copy()
+				num_steps = 30#50#10
+
+				print( 'before = ' + str( compute_fab_penalty_fourier( test_density, test_feature_size ) ) )
+				print( np.mean( test_density ) )
+				print( np.std( test_density ) )
+
+				last = 0
+				for step in range( 0, num_steps ):
+					print( 'step = ' + str( step ) )
+					cur_penalty = compute_fab_penalty_fourier( test_density, test_feature_size )
+					cur_binarization = compute_binarization( test_density.flatten(), 0.5 )
+					print( 'cur binarization = ' + str(  cur_binarization ) )
+					print( 'cur penalty = ' + str(  cur_penalty ) )
+					print( cur_penalty - last )
+					last = cur_penalty
+					# print()
+
+					# import time
+					# import sys
+					# start_time = time.time()
+					get_fab_deriv = compute_fab_gradient( test_density, test_feature_size, compute_fab_penalty_fourier )
+					# elapsed_time = time.time() - start_time
+					# print( 'Gradient took ' + str( elapsed_time ) + ' seconds' )
+					# sys.exit(0)
+					# plt.subplot( 1, 2, 1 )
+					# plt.imshow( test_density, cmap='hot' )
+					# plt.colorbar()
+					# plt.subplot( 1, 2, 2 )
+					# plt.imshow( get_fab_deriv, cmap='hot' )
+					# plt.colorbar()
+					# plt.show()
+
+					norm = np.max( np.abs( get_fab_deriv ) )
+					get_fab_deriv /= norm
+
+					# test_density -= 0.5 * get_fab_deriv# * 1e-5
+					# test_density -= 0.02 * get_fab_deriv# * 1e-5
+
+					change_deriv = get_fab_deriv.copy()
+					# change_deriv = np.zeros( test_density.shape )
+					# change_deriv[ 10, 10 ] = get_fab_deriv[ 10, 10 ]
+
+
+			# def step_binarize_v2( density, gradient, binarize_amount_factor, binarize_max_movement, opt_mask ):
+
+					# test_density = step_binarize_v2( test_density, 0.02 * change_deriv, 0.1, 0.02, None )
+					test_density -= 0.02 * change_deriv
+
+					expected_change = np.sum( -norm * get_fab_deriv * 0.02 * change_deriv )
+					print( 'expected... = ' + str( expected_change ) )
+					print()
+
+
+					# test_density = np.minimum( 1.0, np.maximum( 0.0, test_density ) )
+
+
+				print( 'after = ' + str( compute_fab_penalty_fourier( test_density, test_feature_size ) ) )
+				print( np.mean( test_density ) )
+				print( np.std( test_density ) )
+
+				plt.subplot( 1, 2, 1 )
+				plt.imshow( start )
+				plt.clim([ 0, 1 ])
+				plt.colorbar()
+				plt.subplot( 1, 2, 2 )
+				plt.imshow( test_density )
+				plt.clim([ 0, 1 ])
+				plt.colorbar()
+				plt.show()
+
+				plt.plot( start[ 10, : ], color='g', linewidth=2 )
+				plt.plot( test_density[ 10, : ], color='r', linestyle='--', linewidth=2 )
+
+				plt.ylim([ 0, 1 ])
+				plt.show()
+
+				# plt.plot( start[ :, 7 ], color='g', linewidth=2 )
+				# plt.plot( test_density[ :, 7 ], color='r', linestyle='--', linewidth=2 )
+				# plt.ylim([ 0, 1 ])
+				# plt.show()
+
+				plt.plot( 1.0 * np.greater_equal( start[ 10, : ], 0.5 ), color='g', linewidth=2 )
+				plt.plot( 1.0 * np.greater_equal( test_density[ 10, : ], 0.5 ), color='r', linestyle='--', linewidth=2 )
+				plt.ylim([ -0.25, 1.25 ])
+				plt.show()
+
+
+				# print( compute_fab_penalty( test_density, test_feature_size ) )
+
+				# print( compute_fab_penalty( test_density, 3 ) )
+				# print( compute_fab_penalty( test_density, 5 ) )
+				# print( compute_fab_penalty( test_density, 7 ) )
+				# print( compute_fab_penalty( test_density, 15 ) )
+				sys.exit(0)
+
+
+				test_density *= 0
+				test_density[ 10:15, 10:15 ] = 1
+				test_density[ 10:15, 18:23 ] = 1
+
+				test_density = final_density4.copy()
+
+				dilation_erosion_size = 5
+
+				cur_density = grey_dilation( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+				cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+				cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+				cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+
+				# cur_density = grey_erosion( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+				# cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+				# cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+				# cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
+
+
+				cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
+
+				print( np.mean( test_density ) )
+				print( np.mean( cur_density ) )
 				print()
 
+				plt.subplot( 1, 2, 1 )
+				plt.imshow( test_density )
+				plt.colorbar()
+				plt.subplot( 1, 2, 2 )
+				plt.imshow( cur_density )
+				plt.colorbar()
+				plt.show()
 
-				# test_density = np.minimum( 1.0, np.maximum( 0.0, test_density ) )
+				# plt.subplot( 1, 2, 1 )
+				plt.plot( test_density[ :, 5 ], linewidth=2, color='r' )
+				# plt.plot( test_density[ :, 9 ], linewidth=2, color='r' )
+				# plt.plot( test_density[ :, 11 ], linewidth=2, color='r' )
+				# plt.plot( test_density[ :, 8 ], linewidth=2, color='r' )
+				# plt.plot( test_density[ :, 12 ], linewidth=2, color='r' )
+				# plt.subplot( 1, 2, 2 )
+				# plt.plot( cur_density[ :, 8 ], linewidth=2, color='g', linestyle='--' )
+				# plt.plot( cur_density[ :, 9 ], linewidth=2, color='g', linestyle='--' )
+				plt.plot( cur_density[ :, 5 ], linewidth=2, color='g', linestyle='--' )
+				# plt.plot( cur_density[ :, 11 ], linewidth=2, color='g', linestyle='--' )
+				# plt.plot( cur_density[ :, 12 ], linewidth=2, color='g', linestyle='--' )
+				plt.show()
 
-
-			print( 'after = ' + str( compute_fab_penalty_fourier( test_density, test_feature_size ) ) )
-			print( np.mean( test_density ) )
-			print( np.std( test_density ) )
-
-			plt.subplot( 1, 2, 1 )
-			plt.imshow( start )
-			plt.clim([ 0, 1 ])
-			plt.colorbar()
-			plt.subplot( 1, 2, 2 )
-			plt.imshow( test_density )
-			plt.clim([ 0, 1 ])
-			plt.colorbar()
-			plt.show()
-
-			plt.plot( start[ 10, : ], color='g', linewidth=2 )
-			plt.plot( test_density[ 10, : ], color='r', linestyle='--', linewidth=2 )
-
-			plt.ylim([ 0, 1 ])
-			plt.show()
-
-			# plt.plot( start[ :, 7 ], color='g', linewidth=2 )
-			# plt.plot( test_density[ :, 7 ], color='r', linestyle='--', linewidth=2 )
-			# plt.ylim([ 0, 1 ])
-			# plt.show()
-
-			plt.plot( 1.0 * np.greater_equal( start[ 10, : ], 0.5 ), color='g', linewidth=2 )
-			plt.plot( 1.0 * np.greater_equal( test_density[ 10, : ], 0.5 ), color='r', linestyle='--', linewidth=2 )
-			plt.ylim([ -0.25, 1.25 ])
-			plt.show()
-
-
-			# print( compute_fab_penalty( test_density, test_feature_size ) )
-
-			# print( compute_fab_penalty( test_density, 3 ) )
-			# print( compute_fab_penalty( test_density, 5 ) )
-			# print( compute_fab_penalty( test_density, 7 ) )
-			# print( compute_fab_penalty( test_density, 15 ) )
-			sys.exit(0)
-
-
-			test_density *= 0
-			test_density[ 10:15, 10:15 ] = 1
-			test_density[ 10:15, 18:23 ] = 1
-
-			test_density = final_density4.copy()
-
-			dilation_erosion_size = 5
-
-			cur_density = grey_dilation( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-
-			# cur_density = grey_erosion( test_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			# cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			# cur_density = grey_dilation( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-			# cur_density = grey_erosion( cur_density, ( dilation_erosion_size, dilation_erosion_size ), mode='nearest' )
-
-
-			cur_density = np.maximum( 0.0, np.minimum( 1.0, cur_density ) )
-
-			print( np.mean( test_density ) )
-			print( np.mean( cur_density ) )
-			print()
-
-			plt.subplot( 1, 2, 1 )
-			plt.imshow( test_density )
-			plt.colorbar()
-			plt.subplot( 1, 2, 2 )
-			plt.imshow( cur_density )
-			plt.colorbar()
-			plt.show()
-
-			# plt.subplot( 1, 2, 1 )
-			plt.plot( test_density[ :, 5 ], linewidth=2, color='r' )
-			# plt.plot( test_density[ :, 9 ], linewidth=2, color='r' )
-			# plt.plot( test_density[ :, 11 ], linewidth=2, color='r' )
-			# plt.plot( test_density[ :, 8 ], linewidth=2, color='r' )
-			# plt.plot( test_density[ :, 12 ], linewidth=2, color='r' )
+			plt.plot( final_density1[ :, 25 ], linewidth=2, color='r' )
 			# plt.subplot( 1, 2, 2 )
-			# plt.plot( cur_density[ :, 8 ], linewidth=2, color='g', linestyle='--' )
-			# plt.plot( cur_density[ :, 9 ], linewidth=2, color='g', linestyle='--' )
-			plt.plot( cur_density[ :, 5 ], linewidth=2, color='g', linestyle='--' )
-			# plt.plot( cur_density[ :, 11 ], linewidth=2, color='g', linestyle='--' )
-			# plt.plot( cur_density[ :, 12 ], linewidth=2, color='g', linestyle='--' )
-			plt.show()
-
-			plt.plot( final_density1[ :, 10 ], linewidth=2, color='r' )
-			# plt.subplot( 1, 2, 2 )
-			plt.plot( final_density2[ :, 10 ], linewidth=2, color='g', linestyle='--' )
-			plt.plot( final_density3[ :, 10 ], linewidth=2, color='b', linestyle='--' )
-			plt.plot( final_density4[ :, 10 ], linewidth=2, color='m', linestyle='--' )
-			plt.plot( final_density5[ :, 10 ], linewidth=2, color='c', linestyle='--' )
+			# plt.plot( final_density2[ :, 10 ], linewidth=2, color='g', linestyle='--' )
+			# plt.plot( final_density3[ :, 10 ], linewidth=2, color='b', linestyle='--' )
+			# plt.plot( final_density4[ :, 10 ], linewidth=2, color='m', linestyle='--' )
+			# plt.plot( final_density5[ :, 10 ], linewidth=2, color='c', linestyle='--' )
 			plt.show()
 
 
@@ -1132,17 +1138,18 @@ else:
 
 			plt.subplot( 1, 5, 1 )
 			plt.imshow( np.swapaxes( final_density1, 0, 1 ), cmap='Blues' )
+			# plt.colorbar()
 			plt.subplot( 1, 5, 2 )
 			plt.imshow( np.swapaxes( final_density2, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 5, 3 )
-			plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 5, 4 )
-			plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
-			plt.subplot( 1, 5, 5 )
-			plt.imshow( np.swapaxes( final_density5, 0, 1 ), cmap='Blues' )
+			# plt.subplot( 1, 5, 3 )
+			# plt.imshow( np.swapaxes( final_density3, 0, 1 ), cmap='Blues' )
+			# plt.subplot( 1, 5, 4 )
+			# plt.imshow( np.swapaxes( final_density4, 0, 1 ), cmap='Blues' )
+			# plt.subplot( 1, 5, 5 )
+			# plt.imshow( np.swapaxes( final_density5, 0, 1 ), cmap='Blues' )
 			plt.show()
 
-			sys.exit( 0 )
+			# sys.exit( 0 )
 
 			# make_optimizer.init_density_with_uniform( 0.5 )
 
@@ -1153,7 +1160,7 @@ else:
 
 	# def compute_fom_and_gradient( self, omega, device_permittivity, focal_point_x_loc, fom_scaling=1.0, dropout_mask=None ):
 
-			import_density = ColorSplittingOptimization2D.upsample( final_density1, make_optimizer.coarsen_factor )
+			import_density = ColorSplittingOptimization2D.upsample( final_density, make_optimizer.coarsen_factor )
 			# import_density = ColorSplittingOptimization2D.upsample( make_optimizer.design_density, make_optimizer.coarsen_factor )
 			device_permittivity = make_optimizer.density_to_permittivity( import_density )
 
