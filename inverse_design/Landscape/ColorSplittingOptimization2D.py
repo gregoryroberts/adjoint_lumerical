@@ -3237,13 +3237,14 @@ class ColorSplittingOptimization2D():
 						cur_fom_even_weight = cur_fourier_penalty
 						cur_fourier_even_weight = cur_fom
 
-						cur_fom_even_weight *= ( 1. - fourier_fab_penalty_relative_weight )
-						cur_fourier_even_weight *= fourier_fab_penalty_relative_weight
+						fom_weight = cur_fom_even_weight * ( 1. - fourier_fab_penalty_relative_weight )
+						fourier_weight = cur_fourier_even_weight * fourier_fab_penalty_relative_weight
 
 						fab_gradient = self.compute_fab_penalty_fourier_grad( self.design_density, fourier_fab_penalty_feature_size )
 
-						choose_gradient = unscaled_gradient - fab_gradient
+						choose_gradient = fom_weight * unscaled_gradient - fourier_weight * fab_gradient
 						# choose_gradient = -fab_gradient
+						choose_gradient = curfom
 
 
 					proposed_step = self.step_binarize_v2( -choose_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
