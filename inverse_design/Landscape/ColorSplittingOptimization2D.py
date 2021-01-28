@@ -3244,7 +3244,6 @@ class ColorSplittingOptimization2D():
 
 						choose_gradient = fom_weight * unscaled_gradient - fourier_weight * fab_gradient
 						# choose_gradient = -fab_gradient
-						choose_gradient = curfom
 
 
 					proposed_step = self.step_binarize_v2( -choose_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
