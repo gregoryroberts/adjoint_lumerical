@@ -2781,7 +2781,7 @@ class ColorSplittingOptimization2D():
 				np.save( self.save_folder + "/optimized_density_" + str( iter_idx ) + ".npy", self.design_density )
 
 
-			cur_fab_penalty = self.fourier_fab_penalty( self.design_density, fourier_fab_penalty_feature_size )
+			cur_fab_penalty = self.compute_fourier_fab_penalty( self.design_density, fourier_fab_penalty_feature_size )
 			self.fab_penalty[ iter_idx ] = cur_fab_penalty
 
 			# mask_density = opt_mask * self.design_density
