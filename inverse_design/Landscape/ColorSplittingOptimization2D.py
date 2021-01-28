@@ -2653,18 +2653,18 @@ class ColorSplittingOptimization2D():
 
 	def compute_fab_penalty_fourier_grad( self, rho, feature_size ):
 		h = 1e-3
-		deriv = np.zeros( input_rho.shape )
+		deriv = np.zeros( rho.shape )
 
 		middle = self.compute_fab_penalty_fourier( rho, feature_size )
 
 
-		for x in range( 0, input_rho.shape[ 0 ] ):
-			for y in range( 0, input_rho.shape[ 1 ] ):
-				input_rho_copy = input_rho.copy()
-				input_rho_copy[ x, y ] += h
-				up = self.compute_fab_penalty_fourier( input_rho_copy, test_feature_size )
+		for x in range( 0, rho.shape[ 0 ] ):
+			for y in range( 0, rho.shape[ 1 ] ):
+				rho_copy = rho.copy()
+				rho_copy[ x, y ] += h
+				up = self.compute_fab_penalty_fourier( rho_copy, test_feature_size )
 
-				# input_rho_copy = input_rho.copy()
+				# rho_copy = rho.copy()
 				# input_rho_copy[ x, y ] -= h
 				# down = self.compute_fab_penalty_fourier( input_rho_copy, test_feature_size )
 
