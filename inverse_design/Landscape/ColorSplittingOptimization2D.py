@@ -2662,7 +2662,7 @@ class ColorSplittingOptimization2D():
 			for y in range( 0, rho.shape[ 1 ] ):
 				rho_copy = rho.copy()
 				rho_copy[ x, y ] += h
-				up = self.compute_fab_penalty_fourier( rho_copy, test_feature_size )
+				up = self.compute_fab_penalty_fourier( rho_copy, feature_size )
 
 				# rho_copy = rho.copy()
 				# input_rho_copy[ x, y ] -= h
