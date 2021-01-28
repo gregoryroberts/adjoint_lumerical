@@ -122,7 +122,8 @@ else:
 	# device_height_voxels = 600
 	# device_height_voxels = 400
 	# device_height_voxels = 50 * 6
-	device_height_voxels = 51 * 4
+	# device_height_voxels = 51 * 4
+	device_height_voxels = 51 * 6
 	# device_height_voxels = 200
 	# spacing_device_height_voxels = 40
 	# device_height_voxels = 72#100#72
