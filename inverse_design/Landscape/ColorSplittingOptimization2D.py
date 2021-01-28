@@ -3234,8 +3234,8 @@ class ColorSplittingOptimization2D():
 						headstart_fom = self.fom_evolution[ fourier_fab_penalty_opt_headstart_iters ]
 						headstart_fourier_penalty = self.fab_penalty[ fourier_fab_penalty_opt_headstart_iters ]
 
-						cur_fom_even_weight = cur_fourier_penalty
-						cur_fourier_even_weight = cur_fom
+						cur_fom_even_weight = headstart_fourier_penalty
+						cur_fourier_even_weight = headstart_fom
 
 						fom_weight = cur_fom_even_weight * ( 1. - fourier_fab_penalty_relative_weight )
 						fourier_weight = cur_fourier_even_weight * fourier_fab_penalty_relative_weight
