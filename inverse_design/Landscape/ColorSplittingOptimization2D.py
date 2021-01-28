@@ -2609,6 +2609,70 @@ class ColorSplittingOptimization2D():
 		return output_array
 
 
+	def compute_fab_penalty_fourier( self, rho, feature_size ):
+
+		assert ( rho.shape[ 0 ] % 2 ) == 1, "Shape should be odd!"
+		assert ( rho.shape[ 0 ] % 2 ) == 1, "Shape should be even!"
+
+		pad_size = 10
+		decay_width = 5
+		input_rho = np.pad( rho, ( ( pad_size, pad_size ), ( pad_size, pad_size ) ) )
+
+		for x_idx in range( 0, pad_size ):
+			input_rho[ x_idx, : ] = input_rho[ pad_size, : ] * np.exp( -( x_idx - pad_size )**2 / decay_width**2 )
+			input_rho[ input_rho.shape[ 0 ] - x_idx - 1, : ] = input_rho[ input_rho.shape[ 0 ] - pad_size - 1, : ] * np.exp( -( x_idx - pad_size )**2 / decay_width**2 )
+		for y_idx in range( 0, pad_size ):
+			input_rho[ :, y_idx ] = input_rho[ :, pad_size ] * np.exp( -( y_idx - pad_size )**2 / decay_width**2 )
+			input_rho[ :, input_rho.shape[ 1 ] - y_idx - 1 ] = input_rho[ :, input_rho.shape[ 1 ] - pad_size - 1 ] * np.exp( -( y_idx - pad_size )**2 / decay_width**2 )
+
+
+		mid_pt_x = input_rho.shape[ 0 ] // 2
+		mid_pt_y = input_rho.shape[ 1 ] // 2
+		feature_cutoff_x = mid_pt_x / ( 1.0 * feature_size )
+		feature_cutoff_y = mid_pt_y / ( 1.0 * feature_size )
+
+
+		input_rho -= np.mean( input_rho )
+
+		fft_rho = np.fft.fftshift( np.fft.fft2( input_rho ) )
+
+		inside = 0
+		outside = 0
+		for x_idx in range( 0, input_rho.shape[ 0 ] ):
+			for y_idx in range( 0, input_rho.shape[ 1 ] ):
+				radius = np.sqrt(
+					( ( x_idx - mid_pt_x )**2 / feature_cutoff_x**2 ) +
+					( ( y_idx - mid_pt_y )**2 / feature_cutoff_y**2 ) )
+
+				if radius > 1.0:
+					outside += np.abs( fft_rho[ x_idx, y_idx ] )**2
+				else:
+					inside += np.abs( fft_rho[ x_idx, y_idx ] )**2
+
+		return outside / ( outside + inside )
+
+	def compute_fab_penalty_fourier_grad( self, rho, feature_size ):
+		h = 1e-3
+		deriv = np.zeros( input_rho.shape )
+
+		middle = self.compute_fab_penalty_fourier( rho, feature_size )
+
+
+		for x in range( 0, input_rho.shape[ 0 ] ):
+			for y in range( 0, input_rho.shape[ 1 ] ):
+				input_rho_copy = input_rho.copy()
+				input_rho_copy[ x, y ] += h
+				up = self.compute_fab_penalty_fourier( input_rho_copy, test_feature_size )
+
+				# input_rho_copy = input_rho.copy()
+				# input_rho_copy[ x, y ] -= h
+				# down = self.compute_fab_penalty_fourier( input_rho_copy, test_feature_size )
+
+				deriv[ x, y ] = ( up - middle ) / h
+
+		return deriv
+
+
 	def optimize(
 		self, num_iterations,
 		folder_for_saving,
@@ -2621,7 +2685,8 @@ class ColorSplittingOptimization2D():
 		dense_plot_iters=-1, dense_plot_lambda=None, focal_assignments=None,
 		index_contrast_regularization=False,
 		downsample_max=False, binarization_version=0, binarize_amount_factor=0.1,
-		fom_focal_ratio=False, fom_simple_sum=False, dilation_erosion=False, dilation_erosion_amt=1, dilation_erosion_binarization_freq=0.025 ):
+		fom_focal_ratio=False, fom_simple_sum=False, dilation_erosion=False, dilation_erosion_amt=1, dilation_erosion_binarization_freq=0.025,
+		fourier_fab_penalty=False, fourier_fab_penalty_opt_headstart_iters=100, fourier_fab_penalty_feature_size=2, fourier_fab_penalty_relative_weight=0.5 ):
 
 		if dense_plot_iters == -1:
 			dense_plot_iters = num_iterations
@@ -2679,6 +2744,8 @@ class ColorSplittingOptimization2D():
 		self.dense_plot_idxs = []
 		self.dense_plots = []
 
+		self.fab_penalty = []
+
 		function_for_fom_and_gradient = self.compute_fom_and_gradient
 		if fom_focal_ratio:
 			function_for_fom_and_gradient = self.compute_fom_and_gradient_focal_ratio
@@ -2713,6 +2780,9 @@ class ColorSplittingOptimization2D():
 			if ( iter_idx % 50 ) == 0:
 				np.save( self.save_folder + "/optimized_density_" + str( iter_idx ) + ".npy", self.design_density )
 
+
+			cur_fab_penalty = self.fourier_fab_penalty( self.design_density, fourier_fab_penalty_feature_size )
+			self.fab_penalty[ iter_idx ] = cur_fab_penalty
 
 			# mask_density = opt_mask * self.design_density
 			# sigmoid_epoch = int( iter_idx / iter_per_epoch )
@@ -2762,9 +2832,10 @@ class ColorSplittingOptimization2D():
 				if dropout_mask_binarization_change_freq < 0:
 					dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
 
+				cur_binarization = compute_binarization( self.design_density.flatten() )
 				if iter_binarization >= dropout_next_change:
 					dropout_mask = 1.0 * np.greater( np.random.random( device_permittivity.shape ), dropout_p )
-					dropout_next_change += dropout_mask_binarization_change_freq
+					dropout_next_change = cur_binarization + dropout_mask_binarization_change_freq
 			else:
 				dropout_mask = None
 
@@ -3087,6 +3158,7 @@ class ColorSplittingOptimization2D():
 			self.fom_by_wl_evolution[ iter_idx ] = np.array( fom_by_wl )
 			self.gradient_norm_evolution[ iter_idx ] = gradient_norm
 
+			unscaled_gradient = net_gradient.copy()
 			norm_scaled_gradient = net_gradient / gradient_norm
 
 			if self.do_density_pairings:
@@ -3157,7 +3229,25 @@ class ColorSplittingOptimization2D():
 						binarization_condition_met = True
 						continue
 
-					proposed_step = self.step_binarize_v2( -norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
+					choose_gradient = norm_scaled_gradient
+					if fourier_fab_penalty and ( iter_idx > fourier_fab_penalty_opt_headstart_iters ):
+						cur_fom = self.fom_evolution[ iter_idx ]
+						cur_fourier_penalty = self.fourier_fab_penalty_evolution[ iter_idx ]
+
+						cur_fom_even_weight = cur_fourier_penalty
+						cur_fourier_even_weight = cur_fom
+
+						cur_fom_even_weight *= ( 1. - fourier_fab_penalty_relative_weight )
+						cur_fourier_even_weight *= fourier_fab_penalty_relative_weight
+
+						fab_gradient = self.compute_fab_penalty_fourier_grad( self.design_density, fourier_fab_penalty_feature_size )
+
+						choose_gradient = unscaled_gradient - fab_gradient
+
+
+					proposed_step = self.step_binarize_v2( -choose_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
+
+					# proposed_step = self.step_binarize_v2( -norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
 					# proposed_step = self.step_binarize_conner( norm_scaled_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
 					self.design_density = opt_mask * proposed_step + ( 1 - opt_mask ) * self.design_density
 					self.design_density = np.maximum( 0.0, np.minimum( self.design_density, 1.0 ) )
@@ -3173,6 +3263,7 @@ class ColorSplittingOptimization2D():
 			np.save( folder_for_saving + "_index_reg_evolution.npy", self.index_reg_evolution )
 			np.save( folder_for_saving + "_raw_fom_evolution.npy", self.raw_fom_evolution )
 			np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
+			np.save( folder_for_saving + "_fourier_fab_penalty_evolution.npy", self.fourier_fab_penalty_evolution )
 			np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
 			np.save( folder_for_saving + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 
