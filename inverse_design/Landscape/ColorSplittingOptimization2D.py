@@ -2744,7 +2744,7 @@ class ColorSplittingOptimization2D():
 		self.dense_plot_idxs = []
 		self.dense_plots = []
 
-		self.fab_penalty = []
+		self.fab_penalty = np.zeros( num_iterations )
 
 		function_for_fom_and_gradient = self.compute_fom_and_gradient
 		if fom_focal_ratio:
