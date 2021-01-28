@@ -533,7 +533,7 @@ else:
 					# dilation_erosion_binarization_freq = 0.05
 
 					fourier_fab_penalty = True
-					fourier_fab_penalty_opt_headstart_iters = 3
+					fourier_fab_penalty_opt_headstart_iters = 100
 					fourier_fab_penalty_feature_size = 5
 					fourier_fab_penalty_relative_weight = 0.5
 

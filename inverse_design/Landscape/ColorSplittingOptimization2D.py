@@ -3242,8 +3242,8 @@ class ColorSplittingOptimization2D():
 
 						fab_gradient = self.compute_fab_penalty_fourier_grad( self.design_density, fourier_fab_penalty_feature_size )
 
-						# choose_gradient = unscaled_gradient - fab_gradient
-						choose_gradient = -fab_gradient
+						choose_gradient = unscaled_gradient - fab_gradient
+						# choose_gradient = -fab_gradient
 
 
 					proposed_step = self.step_binarize_v2( -choose_gradient, binarize_amount_factor, binarize_max_movement_per_voxel, opt_mask )
