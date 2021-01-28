@@ -432,7 +432,7 @@ else:
 		# todo: try to run dropout for several iterations with a given mask instead of switching it every iteration
 		# (or run it over a certain amount of binarization)
 
-		viz_opt = True#False#True
+		viz_opt = False#True
 
 		if not viz_opt:
 
