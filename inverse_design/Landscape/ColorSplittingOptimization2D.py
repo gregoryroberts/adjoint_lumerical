@@ -3232,7 +3232,7 @@ class ColorSplittingOptimization2D():
 					choose_gradient = norm_scaled_gradient
 					if fourier_fab_penalty and ( iter_idx > fourier_fab_penalty_opt_headstart_iters ):
 						cur_fom = self.fom_evolution[ iter_idx ]
-						cur_fourier_penalty = self.fourier_fab_penalty_evolution[ iter_idx ]
+						cur_fourier_penalty = self.fab_penalty[ iter_idx ]
 
 						cur_fom_even_weight = cur_fourier_penalty
 						cur_fourier_even_weight = cur_fom
@@ -3263,7 +3263,7 @@ class ColorSplittingOptimization2D():
 			np.save( folder_for_saving + "_index_reg_evolution.npy", self.index_reg_evolution )
 			np.save( folder_for_saving + "_raw_fom_evolution.npy", self.raw_fom_evolution )
 			np.save( folder_for_saving + "_fom_evolution.npy", self.fom_evolution )
-			np.save( folder_for_saving + "_fourier_fab_penalty_evolution.npy", self.fourier_fab_penalty_evolution )
+			np.save( folder_for_saving + "_fourier_fab_penalty_evolution.npy", self.fab_penalty )
 			np.save( folder_for_saving + "_binarization_evolution.npy", self.binarization_evolution )
 			np.save( folder_for_saving + "_fom_by_wl_evolution.npy", self.fom_by_wl_evolution )
 
