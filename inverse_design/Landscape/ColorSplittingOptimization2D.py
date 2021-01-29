@@ -3232,7 +3232,7 @@ class ColorSplittingOptimization2D():
 					choose_gradient = norm_scaled_gradient
 					if fourier_fab_penalty and ( iter_idx > fourier_fab_penalty_opt_headstart_iters ):
 						headstart_fom = self.fom_evolution[ fourier_fab_penalty_opt_headstart_iters ]
-						headstart_fourier_penalty = self.fab_penalty[ fourier_fab_penalty_opt_headstart_iters ]
+						headstart_fourier_penalty = 1.0 - self.fab_penalty[ fourier_fab_penalty_opt_headstart_iters ]
 
 						cur_fom_even_weight = headstart_fourier_penalty
 						cur_fourier_even_weight = headstart_fom
